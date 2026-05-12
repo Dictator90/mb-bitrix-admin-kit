@@ -1,0 +1,22 @@
+{
+  "name": "mb4it/bitrix-admin-kit",
+  "description": "Admin Kit Library for 1C-Bitrix",
+  "type": "library",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "license": "MIT",
+  "require": {
+    "php": "^8.2"
+  },
+  "authors": [
+    {
+      "name": "Maxim Bezvodinskikh",
+      "email": "m.bezvodinskikh@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "MB\\Bitrix\\AdminKit\\": "src/"
+    }
+  }
+}

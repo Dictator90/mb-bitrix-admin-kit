@@ -1,0 +1,24 @@
+.ui-tag-selector-outer-container {
+    border-radius: var(--ui-border-radius-2xs);
+}
+
+.ui-tag-selector-text-box {
+    width: 110px !important;
+    padding: 0 5px !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    outline: none !important;
+    background: #fff !important;
+    color: #555 !important;
+    font-size: 13px !important;
+    box-shadow: none !important;
+    font-family: var(--ui-font-family-primary, var(--ui-font-family-helvetica));
+    transition: opacity 100ms ease;
+}
+
+.ui-tag-selector-item {
+    vertical-align: top !important;
+    position: relative !important;
+    margin: 2px !important;
+    height: 30px !important;
+}
