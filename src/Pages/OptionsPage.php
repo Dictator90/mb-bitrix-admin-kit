@@ -134,7 +134,7 @@ abstract class OptionsPage extends AbstractPage
         $fields = $this->collectAllFields();
 
         foreach ($fields as $field) {
-            $value       = $field->serializePostValue($this->request->getPost($field->getColumn()));
+            $value = $field->serializePostValue($this->request->getPost($field->getColumn()));
             $fieldErrors = $field->runValidation($value);
 
             if (!empty($fieldErrors)) {
@@ -167,7 +167,7 @@ abstract class OptionsPage extends AbstractPage
         $errors = [];
 
         foreach ($fields as $field) {
-            $value       = $field->serializePostValue($this->request->getPost($field->getColumn()));
+            $value = $field->serializePostValue($this->request->getPost($field->getColumn()));
             $fieldErrors = $field->runValidation($value);
 
             if (!empty($fieldErrors)) {
@@ -204,7 +204,7 @@ abstract class OptionsPage extends AbstractPage
     {
         $sites = SiteTable::getList([
             'select' => ['LID', 'SITE_NAME', 'NAME'],
-            'order'  => ['SORT' => 'ASC'],
+            'order' => ['SORT' => 'ASC'],
         ])->fetchAll();
 
         if (empty($sites)) {
@@ -217,8 +217,8 @@ abstract class OptionsPage extends AbstractPage
         echo '<div class="adminkit-sites-switcher">';
         foreach ($sites as $site) {
             $activeClass = ($site['LID'] === $currentSiteId) ? ' ui-btn-primary' : ' ui-btn-light-border';
-            $siteName    = htmlspecialcharsbx($site['SITE_NAME'] ?: $site['NAME'] ?: $site['LID']);
-            $url         = $this->buildSiteUrl($site['LID']);
+            $siteName = htmlspecialcharsbx($site['SITE_NAME'] ?: $site['NAME'] ?: $site['LID']);
+            $url = $this->buildSiteUrl($site['LID']);
             echo '<a href="' . $url . '" class="ui-btn' . $activeClass . '">' . $siteName . ' [' . $site['LID'] . ']</a> ';
         }
         echo '</div>';
@@ -230,15 +230,15 @@ abstract class OptionsPage extends AbstractPage
 
     protected function renderOptionsForm(string $moduleId, string $siteId): void
     {
-        $action     = $this->request->getRequestUri();
+        $action = $this->request->getRequestUri();
         $components = iterator_to_array($this->components());
-        $wrapper    = $this->buildOptionsWrapper($moduleId, $siteId, $components);
-        $formId     = 'adminkit-options-' . md5(static::class . $siteId);
+        $wrapper = $this->buildOptionsWrapper($moduleId, $siteId, $components);
+        $formId = 'adminkit-options-' . md5(static::class . $siteId);
 
         // Apply field dependencies using current saved values so dependent fields
         // are rendered with the correct state (e.g. correct iblockId) on first load.
         $allFields = $this->extractAllFields($components);
-        $formData  = [];
+        $formData = [];
         foreach ($allFields as $field) {
             $formData[$field->getColumn()] = $wrapper->get($field->getColumn());
         }
@@ -304,9 +304,9 @@ abstract class OptionsPage extends AbstractPage
         echo <<<HTML
         <script>
         BX.ready(function() {
-            var form = document.getElementById({$formIdJs});
+            var form = document.getElementById({$formIdJs})
             if (!form) return;
-            var submitBtn = document.getElementById({$formIdJs} + '-submit');
+            var submitBtn = document.getElementById({$formIdJs} + '-submit')
 
             function notify(content, isError) {
                 BX.UI.Notification.Center.notify({
@@ -360,7 +360,7 @@ abstract class OptionsPage extends AbstractPage
         echo <<<HTML
         <script>
         BX.ready(function() {
-            var form = document.getElementById({$formIdJs});
+            var form = document.getElementById({$formIdJs})
             if (!form) return;
 
             function getFieldValue(col) {
@@ -416,13 +416,13 @@ abstract class OptionsPage extends AbstractPage
 
     protected function renderFieldRow(FieldContract $field, mixed $value, mixed $sourceValResolver = null): void
     {
-        $column   = htmlspecialcharsbx($field->getColumn());
-        $label    = htmlspecialcharsbx($field->getLabel());
+        $column = htmlspecialcharsbx($field->getColumn());
+        $label = htmlspecialcharsbx($field->getLabel());
         $required = $field->isRequired() ? ' <span class="ui-ctl-required">*</span>' : '';
-        $hint     = method_exists($field, 'renderHint') ? $field->renderHint() : '';
+        $hint = method_exists($field, 'renderHint') ? $field->renderHint() : '';
 
         $visibilityAttr = '';
-        $extraClass     = '';
+        $extraClass = '';
         if (method_exists($field, 'getVisibleWhen') && ($rule = $field->getVisibleWhen()) !== null) {
             $visibilityAttr = ' data-visible-when="' . htmlspecialcharsbx(json_encode($rule)) . '"';
             $sourceVal = is_callable($sourceValResolver) ? $sourceValResolver($rule['column']) : null;
@@ -446,8 +446,11 @@ abstract class OptionsPage extends AbstractPage
         return $str === ($rule['value'] ?? '');
     }
 
-    protected function wrapComponentWithVisibility(ComponentContract $component, string $inner, mixed $sourceValResolver = null): string
-    {
+    protected function wrapComponentWithVisibility(
+        ComponentContract $component,
+        string $inner,
+        mixed $sourceValResolver = null
+    ): string {
         if (!method_exists($component, 'getVisibleWhen')) {
             return $inner;
         }
@@ -456,7 +459,7 @@ abstract class OptionsPage extends AbstractPage
             return $inner;
         }
 
-        $json   = htmlspecialcharsbx(json_encode($rule));
+        $json = htmlspecialcharsbx(json_encode($rule));
         $colVal = is_callable($sourceValResolver) ? $sourceValResolver($rule['column']) : null;
         $hidden = $this->checkVisibilityRule($rule, $colVal) ? '' : ' adminkit-conditional-hidden';
 
@@ -469,8 +472,8 @@ abstract class OptionsPage extends AbstractPage
      */
     protected function handleReactivePost(string $moduleId): void
     {
-        $fields   = $this->collectAllFields();
-        $siteId   = $this->request->getPost('site_id') ?: '';
+        $fields = $this->collectAllFields();
+        $siteId = $this->request->getPost('site_id') ?: '';
         $formData = [];
 
         foreach ($fields as $field) {
@@ -503,7 +506,7 @@ abstract class OptionsPage extends AbstractPage
      */
     protected function renderDependencyScript(string $formId): void
     {
-        $allFields  = $this->collectAllFields();
+        $allFields = $this->collectAllFields();
         $sourceCols = [];
         $dependsMap = [];
 
@@ -522,12 +525,12 @@ abstract class OptionsPage extends AbstractPage
 
         $sourceColsJson = json_encode(array_keys($sourceCols));
         $dependsMapJson = json_encode($dependsMap);
-        $formIdJs       = json_encode($formId);
+        $formIdJs = json_encode($formId);
 
         echo <<<HTML
         <script>
         BX.ready(function() {
-            var form = document.getElementById({$formIdJs});
+            var form = document.getElementById({$formIdJs})
             var sourceCols = {$sourceColsJson};
             var dependsMap = {$dependsMapJson};
             if (!form || !sourceCols.length) return;
@@ -695,7 +698,7 @@ abstract class OptionsPage extends AbstractPage
 
     protected function buildSiteUrl(string $siteId): string
     {
-        $uri    = $this->request->getRequestUri();
+        $uri = $this->request->getRequestUri();
         $parsed = parse_url($uri);
         parse_str($parsed['query'] ?? '', $query);
         $query['site_id'] = $siteId;

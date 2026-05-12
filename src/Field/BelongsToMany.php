@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use Throwable;
+
 /**
  * Select multiple records from a DataManager table.
  * Values are stored as comma-separated IDs (or whatever valueColumn holds).
@@ -30,8 +32,8 @@ class BelongsToMany extends BelongsTo
     {
         $rawValue = $this->resolveValue($value);
         $selected = $this->parseIds($rawValue);
-        $options  = $this->loadOptions();
-        $name     = htmlspecialcharsbx($this->column);
+        $options = $this->loadOptions();
+        $name = htmlspecialcharsbx($this->column);
 
         if ($this->asCheckboxes) {
             return $this->renderCheckboxes($name, $options, $selected);
@@ -53,12 +55,12 @@ class BelongsToMany extends BelongsTo
 
     protected function renderMultiSelect(string $name, array $options, array $selected): string
     {
-        $inputName   = htmlspecialcharsbx($name) . '[]';
+        $inputName = htmlspecialcharsbx($name) . '[]';
         $optionsHtml = '';
         foreach ($options as $optVal => $optLabel) {
             $sel = in_array((string)$optVal, $selected, true) ? ' selected' : '';
             $optionsHtml .= '<option value="' . htmlspecialcharsbx($optVal) . '"' . $sel . '>'
-                          . htmlspecialcharsbx($optLabel) . '</option>';
+                . htmlspecialcharsbx($optLabel) . '</option>';
         }
 
         return <<<HTML
@@ -72,14 +74,14 @@ class BelongsToMany extends BelongsTo
     {
         $html = '<div class="adminkit-checkbox-list">';
         foreach ($options as $optVal => $optLabel) {
-            $id      = 'cb_' . htmlspecialcharsbx($name) . '_' . htmlspecialcharsbx((string)$optVal);
+            $id = 'cb_' . htmlspecialcharsbx($name) . '_' . htmlspecialcharsbx((string)$optVal);
             $checked = in_array((string)$optVal, $selected, true) ? ' checked' : '';
-            $html   .= '<label class="ui-ctl ui-ctl-checkbox adminkit-checkbox-list__item">'
-                     . '<input type="checkbox" class="ui-ctl-element" id="' . $id . '" '
-                     . 'name="' . htmlspecialcharsbx($name) . '[]" '
-                     . 'value="' . htmlspecialcharsbx($optVal) . '"' . $checked . '>'
-                     . '<div class="ui-ctl-label-text">' . htmlspecialcharsbx($optLabel) . '</div>'
-                     . '</label>';
+            $html .= '<label class="ui-ctl ui-ctl-checkbox adminkit-checkbox-list__item">'
+                . '<input type="checkbox" class="ui-ctl-element" id="' . $id . '" '
+                . 'name="' . htmlspecialcharsbx($name) . '[]" '
+                . 'value="' . htmlspecialcharsbx($optVal) . '"' . $checked . '>'
+                . '<div class="ui-ctl-label-text">' . htmlspecialcharsbx($optLabel) . '</div>'
+                . '</label>';
         }
         $html .= '</div>';
         return $html;
@@ -94,7 +96,7 @@ class BelongsToMany extends BelongsTo
 
         if ($this->optionsCallback !== null) {
             $options = ($this->optionsCallback)();
-            $labels  = array_map(fn($id) => $options[$id] ?? $id, $ids);
+            $labels = array_map(fn($id) => $options[$id] ?? $id, $ids);
         } else {
             $labels = $this->loadLabels($ids);
         }
@@ -117,7 +119,7 @@ class BelongsToMany extends BelongsTo
                 $map[(string)$row[$this->valueColumn]] = (string)($row[$this->titleColumn] ?? '');
             }
             return array_map(fn($id) => $map[$id] ?? $id, $ids);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $ids;
         }
     }

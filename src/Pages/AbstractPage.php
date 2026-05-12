@@ -27,19 +27,31 @@ abstract class AbstractPage
     abstract public static function getTitle(): string;
 
     /** Sort order for admin sidebar (lower = higher). */
-    public static function getSort(): int { return 100; }
+    public static function getSort(): int
+    {
+        return 100;
+    }
 
     /** CSS icon class (e.g. 'adm-menu-settings', or empty string). */
-    public static function getMenuIcon(): string { return ''; }
+    public static function getMenuIcon(): string
+    {
+        return '';
+    }
 
     /** Whether the page appears in the admin sidebar. */
-    public static function isVisibleInMenu(): bool { return true; }
+    public static function isVisibleInMenu(): bool
+    {
+        return true;
+    }
 
     /**
      * Return the getId() of a parent Resource or AbstractPage to nest this entry.
      * Null = root-level menu item.
      */
-    public static function getParentMenuId(): ?string { return null; }
+    public static function getParentMenuId(): ?string
+    {
+        return null;
+    }
 
     /**
      * Render the full page content.

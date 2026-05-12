@@ -28,11 +28,19 @@ trait HasLifecycleEvents
         return $item;
     }
 
-    protected function beforeDeleting(DataWrapper $item): void {}
+    protected function beforeDeleting(DataWrapper $item): void
+    {
+    }
 
-    protected function afterDeleted(DataWrapper $item): void {}
+    protected function afterDeleted(DataWrapper $item): void
+    {
+    }
 
-    protected function beforeMassDeleting(array $ids): void {}
+    protected function beforeMassDeleting(array $ids): void
+    {
+    }
 
-    protected function afterMassDeleted(array $ids): void {}
+    protected function afterMassDeleted(array $ids): void
+    {
+    }
 }

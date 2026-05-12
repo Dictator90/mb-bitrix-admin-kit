@@ -14,7 +14,9 @@ class CsvExporter
     protected string $enclosure = '"';
     protected string $charset = 'windows-1251';
 
-    public function __construct(protected ResourceContract $resource) {}
+    public function __construct(protected ResourceContract $resource)
+    {
+    }
 
     public function delimiter(string $delimiter): static
     {
@@ -70,7 +72,7 @@ class CsvExporter
             $result = $dataManagerClass::getList([
                 'select' => $select,
                 'filter' => $ormFilter,
-                'order'  => [$this->resource->getPrimaryKey() => 'DESC'],
+                'order' => [$this->resource->getPrimaryKey() => 'DESC'],
             ]);
 
             while ($row = $result->fetch()) {

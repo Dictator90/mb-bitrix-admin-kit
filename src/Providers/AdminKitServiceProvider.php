@@ -13,7 +13,9 @@ class AdminKitServiceProvider extends ServiceProvider
         $this->registerComponentPath();
     }
 
-    public function boot(): void {}
+    public function boot(): void
+    {
+    }
 
     protected function registerComponentPath(): void
     {

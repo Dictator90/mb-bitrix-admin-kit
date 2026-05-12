@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Resource;
 
+use Bitrix\Main\ORM\Data\DataManager;
+use MB\Bitrix\AdminKit\Action\AsyncAction;
+use MB\Bitrix\AdminKit\Contracts\ActionContract;
+use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Page\DetailPage;
 use MB\Bitrix\AdminKit\Page\FormPage;
@@ -11,13 +16,14 @@ use MB\Bitrix\AdminKit\Page\IndexPage;
 use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
 use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
 use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
+use MB\Bitrix\AdminKit\Support\Tab;
 
 /**
  * Base for ORM-backed CRUD resources (Grid + Form + Detail pages).
  *
  * For settings/options pages, use Pages\OptionsPage instead.
  *
- * @template T of \Bitrix\Main\ORM\Data\DataManager
+ * @template T of DataManager
  */
 abstract class Resource implements ResourceContract
 {
@@ -93,43 +99,43 @@ abstract class Resource implements ResourceContract
 
     // ── Field / Filter / Action definitions ──────────────────────────────
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<FieldContract> */
     abstract public function indexFields(): iterable;
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<FieldContract> */
     abstract public function formFields(): iterable;
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<FieldContract> */
     public function detailFields(): iterable
     {
         return $this->formFields();
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FilterContract> */
+    /** @return iterable<FilterContract> */
     public function filters(): iterable
     {
         return [];
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\ActionContract> */
+    /** @return iterable<ActionContract> */
     public function rowActions(): iterable
     {
         return [];
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\ActionContract> */
+    /** @return iterable<ActionContract> */
     public function bulkActions(): iterable
     {
         return [];
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Action\AsyncAction> */
+    /** @return iterable<AsyncAction> */
     public function asyncActions(): iterable
     {
         return [];
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Support\Tab> */
+    /** @return iterable<Tab> */
     public function formTabs(): iterable
     {
         return [];

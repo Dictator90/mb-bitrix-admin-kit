@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid\Panel;
 
+use Closure;
+
 /**
  * @deprecated Not used with the new Grid API. Bulk delete is handled via POST in IndexPage.
  */
 class BulkDeletePanelAction
 {
-    public function __construct(private \Closure $deleteCallback) {}
+    public function __construct(private Closure $deleteCallback)
+    {
+    }
 
     public function execute(array $ids): void
     {

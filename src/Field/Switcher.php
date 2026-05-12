@@ -35,12 +35,12 @@ class Switcher extends Field
     {
         Extension::load('ui.switcher');
 
-        $currentValue  = $this->resolveValue($value);
-        $name          = htmlspecialcharsbx($this->column);
-        $isChecked     = ((string)$currentValue === $this->checkedValue) ? 'true' : 'false';
-        $checkedVal    = htmlspecialcharsbx($this->checkedValue);
-        $uncheckedVal  = htmlspecialcharsbx($this->uncheckedValue);
-        $inputId       = 'switcher_' . $name . '_' . uniqid();
+        $currentValue = $this->resolveValue($value);
+        $name = htmlspecialcharsbx($this->column);
+        $isChecked = ((string)$currentValue === $this->checkedValue) ? 'true' : 'false';
+        $checkedVal = htmlspecialcharsbx($this->checkedValue);
+        $uncheckedVal = htmlspecialcharsbx($this->uncheckedValue);
+        $inputId = 'switcher_' . $name . '_' . uniqid();
 
         return <<<HTML
             <div id="{$inputId}"></div>
@@ -52,7 +52,7 @@ class Switcher extends Field
                     inputName: '{$name}',
                     inputValue: '{$checkedVal}',
                     inputValueOff: '{$uncheckedVal}'
-                });
+                })
             });
             </script>
         HTML;

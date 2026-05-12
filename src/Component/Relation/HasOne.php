@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Component\Relation;
 
+use Throwable;
+
 /**
  * Renders the fields of a single related record inline.
  * The related record is found using a foreign key on the related table.
@@ -27,19 +29,20 @@ class HasOne extends HasMany
     public function render(): string
     {
         $parentId = $this->item?->get($this->parentKey);
-        $row      = null;
+        $row = null;
 
         if ($parentId !== null && $parentId !== '' && class_exists($this->dataManagerClass)) {
             try {
                 $params = [
-                    'filter' => [$this->foreignKey => $parentId],
-                    'limit'  => 1,
+                        'filter' => [$this->foreignKey => $parentId],
+                        'limit' => 1,
                 ];
                 $row = $this->dataManagerClass::getList($params)->fetch() ?: null;
-            } catch (\Throwable) {}
+            } catch (Throwable) {
+            }
         }
 
-        $label  = htmlspecialcharsbx($this->label);
+        $label = htmlspecialcharsbx($this->label);
         $editBtn = '';
         if ($this->editUrlCallback !== null && $row !== null) {
             $editUrl = htmlspecialcharsbx(($this->editUrlCallback)($row));
@@ -47,7 +50,7 @@ class HasOne extends HasMany
         }
         if ($this->createUrlCallback !== null && $row === null && $parentId !== null) {
             $createUrl = htmlspecialcharsbx(($this->createUrlCallback)($parentId));
-            $editBtn   = ' <a href="' . $createUrl . '" class="ui-btn ui-btn-xs ui-btn-success-light">Создать</a>';
+            $editBtn = ' <a href="' . $createUrl . '" class="ui-btn ui-btn-xs ui-btn-success-light">Создать</a>';
         }
 
         ob_start();
@@ -58,13 +61,17 @@ class HasOne extends HasMany
                 <?= $editBtn ?>
             </div>
             <div class="adminkit-hasmany__body">
-                <?php if ($row === null): ?>
+                <?php
+                if ($row === null): ?>
                     <div class="adminkit-hasmany__empty">Запись не найдена</div>
-                <?php elseif (empty($this->columns)): ?>
+                <?php
+                elseif (empty($this->columns)): ?>
                     <div class="adminkit-hasmany__empty">Столбцы не заданы — используйте ->columns([...])</div>
-                <?php else: ?>
+                <?php
+                else: ?>
                     <div class="ui-form">
-                        <?php foreach ($this->columns as $col): ?>
+                        <?php
+                        foreach ($this->columns as $col): ?>
                             <div class="ui-form-row">
                                 <div class="ui-form-label">
                                     <div class="ui-ctl-label-text"><?= htmlspecialcharsbx($col->getLabel()) ?></div>
@@ -73,9 +80,11 @@ class HasOne extends HasMany
                                     <?= $this->renderCell($col, $row[$col->getColumn()] ?? null) ?>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
+                        <?php
+                        endforeach; ?>
                     </div>
-                <?php endif; ?>
+                <?php
+                endif; ?>
             </div>
         </div>
         <?php

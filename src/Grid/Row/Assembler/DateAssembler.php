@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Grid\Row\Assembler;
 
 use Bitrix\Main\Type\Date;
 use Bitrix\Main\Type\DateTime;
+use Exception;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 
 class DateAssembler implements FieldAssembler
@@ -13,7 +14,8 @@ class DateAssembler implements FieldAssembler
     public function __construct(
         protected array $columnIds,
         protected string $format = 'd.m.Y',
-    ) {}
+    ) {
+    }
 
     public function processRow(array $row): array
     {
@@ -38,7 +40,7 @@ class DateAssembler implements FieldAssembler
         if (is_string($value) && $value !== '') {
             try {
                 return (new \DateTime($value))->format($this->format);
-            } catch (\Exception) {
+            } catch (Exception) {
             }
         }
 

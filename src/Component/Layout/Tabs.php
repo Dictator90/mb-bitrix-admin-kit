@@ -89,15 +89,15 @@ class Tabs implements ComponentContract
         }
 
         $containerId = 'adminkit-tabs-' . bin2hex(random_bytes(5));
-        $items       = [];
+        $items = [];
 
         foreach ($this->tabs as $sort => $tab) {
             $items[] = [
-                'id'     => $tab->getId(),
-                'sort'   => $sort,
+                'id' => $tab->getId(),
+                'sort' => $sort,
                 'active' => $tab->isActive(),
-                'head'   => $tab->getHeadOptions(),
-                'body'   => $this->renderTabBody($tab),
+                'head' => $tab->getHeadOptions(),
+                'body' => $this->renderTabBody($tab),
             ];
         }
 
@@ -105,22 +105,22 @@ class Tabs implements ComponentContract
         // into the DOM after getContainer(). Reason: Tab.js lazy-loads body on 'onActive'
         // event, but for initially-active tabs #active starts as true so activate() skips
         // the emit — the body never loads. Direct DOM injection bypasses this entirely.
-        $jsItems  = [];
+        $jsItems = [];
         $bodyInjects = [];
 
         foreach ($items as $item) {
             $bodyInjects[] = [
-                'id'     => $item['id'],
-                'html'   => $item['body'],
+                'id' => $item['id'],
+                'html' => $item['body'],
                 'active' => $item['active'],
             ];
             unset($item['body']);
             $jsItems[] = $item;
         }
 
-        $cid           = htmlspecialchars($containerId, ENT_QUOTES);
-        $ext           = json_encode($this->extension, JSON_UNESCAPED_UNICODE);
-        $jsItemsJson   = json_encode($jsItems, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
+        $cid = htmlspecialchars($containerId, ENT_QUOTES);
+        $ext = json_encode($this->extension, JSON_UNESCAPED_UNICODE);
+        $jsItemsJson = json_encode($jsItems, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
         $bodyInjectJson = json_encode($bodyInjects, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
 
         return <<<HTML
@@ -129,7 +129,7 @@ class Tabs implements ComponentContract
         BX.ready(function() {
             BX.Runtime.loadExtension({$ext}).then(function(m) {
                 console.log(m);
-                var tabs = new m.Tabs({ id: '{$cid}', items: {$jsItemsJson} });
+                var tabs = new m.Tabs({ id: '{$cid}', items: {$jsItemsJson} })
                 var container = tabs.getContainer();
                 var bodies = {$bodyInjectJson};
                 for (var i = 0; i < bodies.length; i++) {
@@ -211,17 +211,17 @@ class Tabs implements ComponentContract
 
     protected function renderFieldRow(FieldContract $field): string
     {
-        $value    = $this->item?->get($field->getColumn()) ?? $field->getDefault();
-        $column   = htmlspecialcharsbx($field->getColumn());
-        $label    = htmlspecialcharsbx($field->getLabel());
+        $value = $this->item?->get($field->getColumn()) ?? $field->getDefault();
+        $column = htmlspecialcharsbx($field->getColumn());
+        $label = htmlspecialcharsbx($field->getLabel());
         $required = $field->isRequired() ? ' <span class="ui-ctl-required">*</span>' : '';
-        $hint     = method_exists($field, 'renderHint') ? $field->renderHint() : '';
+        $hint = method_exists($field, 'renderHint') ? $field->renderHint() : '';
 
         $visibilityAttr = '';
-        $extraClass     = '';
+        $extraClass = '';
         if (method_exists($field, 'getVisibleWhen') && ($rule = $field->getVisibleWhen()) !== null) {
             $visibilityAttr = ' data-visible-when="' . htmlspecialcharsbx(json_encode($rule)) . '"';
-            $sourceVal      = $this->item?->get($rule['column']) ?? null;
+            $sourceVal = $this->item?->get($rule['column']) ?? null;
             if (!$this->checkVisibilityRule($rule, $sourceVal)) {
                 $extraClass = ' adminkit-conditional-hidden';
             }
@@ -243,7 +243,7 @@ class Tabs implements ComponentContract
             return $inner;
         }
 
-        $json   = htmlspecialcharsbx(json_encode($rule));
+        $json = htmlspecialcharsbx(json_encode($rule));
         $colVal = $this->item?->get($rule['column']);
         $hidden = $this->checkVisibilityRule($rule, $colVal) ? '' : ' adminkit-conditional-hidden';
 

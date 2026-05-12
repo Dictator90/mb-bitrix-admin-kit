@@ -69,8 +69,8 @@ class IndexPage extends Page
             return $this->grid;
         }
 
-        $fields     = $this->getVisibleFields();
-        $filters    = iterator_to_array($this->resource->filters());
+        $fields = $this->getVisibleFields();
+        $filters = iterator_to_array($this->resource->filters());
         $rowActions = iterator_to_array($this->resource->rowActions());
 
         $this->grid = new Grid(
@@ -101,7 +101,7 @@ class IndexPage extends Page
             return;
         }
 
-        $params     = $grid->getOrmParams();
+        $params = $grid->getOrmParams();
         $primaryKey = $this->resource->getPrimaryKey();
 
         if (!in_array($primaryKey, $params['select'], true)) {
@@ -129,8 +129,8 @@ class IndexPage extends Page
             Toolbar::addButton(
                 new Button([
                     'color' => Color::SUCCESS,
-                    'icon'  => Icon::ADD,
-                    'text'  => 'Создать',
+                    'icon' => Icon::ADD,
+                    'text' => 'Создать',
                     'click' => new JsCode(
                         'BX.SidePanel.Instance.open(' . json_encode($addUrl) . ', {
                             events: {
@@ -168,7 +168,7 @@ class IndexPage extends Page
      */
     protected function baseListUrl(): string
     {
-        $uri    = $this->request->getRequestUri();
+        $uri = $this->request->getRequestUri();
         $parsed = parse_url($uri);
         parse_str($parsed['query'] ?? '', $query);
 
@@ -187,8 +187,8 @@ class IndexPage extends Page
     protected function baseFormUrl(string $action = 'add', ?int $id = null): string
     {
         $base = $this->baseListUrl();
-        $sep  = str_contains($base, '?') ? '&' : '?';
-        $url  = $base . $sep . 'action=' . $action;
+        $sep = str_contains($base, '?') ? '&' : '?';
+        $url = $base . $sep . 'action=' . $action;
 
         if ($id !== null) {
             $url .= '&id=' . $id;

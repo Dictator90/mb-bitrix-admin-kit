@@ -65,11 +65,11 @@ class Heading extends AbstractLayoutComponent
 
         $class = $this->buildClassAttr(['adminkit-heading']);
         $style = $this->buildStyleAttr([
-            'font-size'    => $fontSize,
-            'font-weight'  => 'var(--ui-font-weight-medium, 500)',
-            'color'        => 'var(--ui-color-base-90, #1f2733)',
-            'margin'       => '0 0 8px 0',
-            'padding'      => '0',
+            'font-size' => $fontSize,
+            'font-weight' => 'var(--ui-font-weight-medium, 500)',
+            'color' => 'var(--ui-color-base-90, #1f2733)',
+            'margin' => '0 0 8px 0',
+            'padding' => '0',
         ]);
         $attrs = $this->buildExtraAttrs();
 

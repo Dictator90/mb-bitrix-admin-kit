@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid\Row\Assembler;
 
+use CFile;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 
 class ImageAssembler implements FieldAssembler
@@ -12,7 +13,8 @@ class ImageAssembler implements FieldAssembler
         protected array $columnIds,
         protected int $width = 40,
         protected int $height = 40,
-    ) {}
+    ) {
+    }
 
     public function processRow(array $row): array
     {
@@ -30,12 +32,12 @@ class ImageAssembler implements FieldAssembler
             return '';
         }
 
-        $fileInfo = \CFile::GetByID($fileId)->Fetch();
+        $fileInfo = CFile::GetByID($fileId)->Fetch();
         if (!$fileInfo) {
             return '';
         }
 
-        $thumb = \CFile::ResizeImageGet(
+        $thumb = CFile::ResizeImageGet(
             $fileInfo,
             ['width' => $this->width, 'height' => $this->height],
             BX_RESIZE_IMAGE_PROPORTIONAL

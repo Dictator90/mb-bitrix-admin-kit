@@ -18,9 +18,9 @@ use MB\Bitrix\AdminKit\Support\DataWrapper;
 class Badge extends AbstractLayoutComponent
 {
     public const SUCCESS = 'success';
-    public const DANGER  = 'danger';
+    public const DANGER = 'danger';
     public const WARNING = 'warning';
-    public const INFO    = 'info';
+    public const INFO = 'info';
     public const NEUTRAL = 'neutral';
 
     protected string $text;
@@ -76,7 +76,7 @@ class Badge extends AbstractLayoutComponent
         return $this;
     }
 
-    /** @param array<string, string> $map  value => badge type */
+    /** @param array<string, string> $map value => badge type */
     public function map(array $map): static
     {
         $this->colorMap = $map;
@@ -102,10 +102,10 @@ class Badge extends AbstractLayoutComponent
 
         [$bg, $color] = match ($type) {
             static::SUCCESS => ['#d5f1e2', '#1a7f4b'],
-            static::DANGER  => ['#fde8e8', '#c0392b'],
+            static::DANGER => ['#fde8e8', '#c0392b'],
             static::WARNING => ['#fff3cd', '#856404'],
-            static::INFO    => ['#d1ecf1', '#0c5460'],
-            default         => ['var(--ui-color-base-10, #eef2f4)', 'var(--ui-color-base-60, #7a8592)'],
+            static::INFO => ['#d1ecf1', '#0c5460'],
+            default => ['var(--ui-color-base-10, #eef2f4)', 'var(--ui-color-base-60, #7a8592)'],
         };
 
         $radius = $this->pill ? '100px' : 'var(--ui-border-radius-sm, 3px)';
@@ -113,14 +113,14 @@ class Badge extends AbstractLayoutComponent
 
         $class = $this->buildClassAttr(['adminkit-badge']);
         $style = $this->buildStyleAttr([
-            'display'       => 'inline-block',
-            'padding'       => '2px 10px',
+            'display' => 'inline-block',
+            'padding' => '2px 10px',
             'border-radius' => $radius,
-            'background'    => $bg,
-            'color'         => $color,
-            'font-size'     => '12px',
-            'font-weight'   => 'var(--ui-font-weight-medium, 500)',
-            'white-space'   => 'nowrap',
+            'background' => $bg,
+            'color' => $color,
+            'font-size' => '12px',
+            'font-weight' => 'var(--ui-font-weight-medium, 500)',
+            'white-space' => 'nowrap',
         ]);
         $attrs = $this->buildExtraAttrs();
 

@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid\Row\Assembler;
 
+use Closure;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 
 class LinkAssembler implements FieldAssembler
 {
     /**
-     * @param \Closure|null $urlResolver fn($value, $rowData): string
+     * @param Closure|null $urlResolver fn($value, $rowData): string
      */
     public function __construct(
         protected array $columnIds,
         protected bool $newTab = true,
-        protected ?\Closure $urlResolver = null,
-    ) {}
+        protected ?Closure $urlResolver = null,
+    ) {
+    }
 
     public function processRow(array $row): array
     {

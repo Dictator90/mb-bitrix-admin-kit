@@ -104,10 +104,10 @@ class Preview extends Field
 
         static $map = [
             'success' => 'ui-label-success',
-            'danger'  => 'ui-label-red',
-            'error'   => 'ui-label-red',
+            'danger' => 'ui-label-red',
+            'error' => 'ui-label-red',
             'warning' => 'ui-label-yellow',
-            'info'    => 'ui-label-blue',
+            'info' => 'ui-label-blue',
             'default' => 'ui-label-gray',
             'primary' => 'ui-label-blue',
         ];

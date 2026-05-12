@@ -154,23 +154,23 @@ abstract class AbstractLayoutComponent implements ComponentContract
             return $inner;
         }
 
-        $json    = htmlspecialcharsbx(json_encode($rule));
-        $colVal  = $this->item?->get($rule['column']);
-        $hidden  = $this->checkVisibilityRule($rule, $colVal) ? '' : ' adminkit-conditional-hidden';
+        $json = htmlspecialcharsbx(json_encode($rule));
+        $colVal = $this->item?->get($rule['column']);
+        $hidden = $this->checkVisibilityRule($rule, $colVal) ? '' : ' adminkit-conditional-hidden';
 
         return '<div data-visible-when="' . $json . '" class="adminkit-visibility-wrapper' . $hidden . '">' . $inner . '</div>';
     }
 
     protected function renderField(FieldContract $field): string
     {
-        $value        = $this->item?->get($field->getColumn());
-        $column       = htmlspecialcharsbx($field->getColumn());
-        $label        = htmlspecialcharsbx($field->getLabel());
+        $value = $this->item?->get($field->getColumn());
+        $column = htmlspecialcharsbx($field->getColumn());
+        $label = htmlspecialcharsbx($field->getLabel());
         $requiredMark = $field->isRequired() ? ' <span class="ui-ctl-required">*</span>' : '';
-        $hint         = method_exists($field, 'renderHint') ? $field->renderHint() : '';
+        $hint = method_exists($field, 'renderHint') ? $field->renderHint() : '';
 
         $visibilityAttr = '';
-        $extraClass     = '';
+        $extraClass = '';
         if (method_exists($field, 'getVisibleWhen') && ($rule = $field->getVisibleWhen()) !== null) {
             $visibilityAttr = ' data-visible-when="' . htmlspecialcharsbx(json_encode($rule)) . '"';
             if (!$this->checkVisibilityRule($rule, $this->item?->get($rule['column']))) {

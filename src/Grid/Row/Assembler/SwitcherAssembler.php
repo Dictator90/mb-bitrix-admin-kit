@@ -13,7 +13,8 @@ class SwitcherAssembler implements FieldAssembler
         protected string $checkedValue = 'Y',
         protected string $checkedLabel = '✓',
         protected string $uncheckedLabel = '—',
-    ) {}
+    ) {
+    }
 
     public function processRow(array $row): array
     {
@@ -22,7 +23,9 @@ class SwitcherAssembler implements FieldAssembler
             $isChecked = (string)$raw === $this->checkedValue;
             $color = $isChecked ? '#4caf50' : '#aaa';
             $icon = $isChecked ? '●' : '○';
-            $row['columns'][$id] = '<span style="color:' . $color . ';font-size:14px;" title="' . htmlspecialcharsbx((string)$raw) . '">' . $icon . '</span>';
+            $row['columns'][$id] = '<span style="color:' . $color . ';font-size:14px;" title="' . htmlspecialcharsbx(
+                    (string)$raw
+                ) . '">' . $icon . '</span>';
         }
 
         return $row;

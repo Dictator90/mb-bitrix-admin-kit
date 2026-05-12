@@ -21,7 +21,7 @@ class Tab
     protected int|string|null $count = null;
 
     /**
-     * @param string                              $title Human-readable tab label.
+     * @param string $title Human-readable tab label.
      * @param array<int, FieldContract|ComponentContract> $items Optional initial items.
      */
     public function __construct(string $title, array $items = [])
@@ -31,7 +31,7 @@ class Tab
     }
 
     /**
-     * @param string                              $title Human-readable tab label.
+     * @param string $title Human-readable tab label.
      * @param array<int, FieldContract|ComponentContract> $items Optional initial items.
      */
     public static function make(string $title, array $items = []): static
@@ -144,10 +144,25 @@ class Tab
         return 'tab_' . substr(md5((string)mt_rand()), 0, 8);
     }
 
-    public function getTitle(): string { return $this->title; }
-    public function getDescription(): ?string { return $this->description; }
-    public function getIcon(): ?string { return $this->icon; }
-    public function getCount(): int|string|null { return $this->count; }
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    public function getCount(): int|string|null
+    {
+        return $this->count;
+    }
 
     /**
      * Build the `head` option array for the ui.tabs / mb.ui.tabs JS constructor.
@@ -172,11 +187,14 @@ class Tab
     }
 
     /** @return array<int, FieldContract|ComponentContract> */
-    public function getItems(): array { return $this->items; }
+    public function getItems(): array
+    {
+        return $this->items;
+    }
 
     /**
-     * @deprecated Use getItems() — recursively unwraps ComponentContract children too.
      * @return FieldContract[]
+     * @deprecated Use getItems() — recursively unwraps ComponentContract children too.
      */
     public function getFields(): array
     {
@@ -192,5 +210,8 @@ class Tab
         return $fields;
     }
 
-    public function isActive(): bool { return $this->active; }
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
 }

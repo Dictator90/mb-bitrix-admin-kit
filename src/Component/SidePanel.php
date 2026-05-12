@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Component;
 
+use CUtil;
+
 class SidePanel
 {
     public static function open(string $url, array $options = []): string
     {
-        $jsUrl = \CUtil::JSEscape($url);
+        $jsUrl = CUtil::JSEscape($url);
         $width = (int)($options['width'] ?? 1100);
-        $loader = \CUtil::JSEscape($options['loader'] ?? 'default-loader');
-        $gridId = isset($options['reloadGridId']) ? \CUtil::JSEscape($options['reloadGridId']) : '';
+        $loader = CUtil::JSEscape($options['loader'] ?? 'default-loader');
+        $gridId = isset($options['reloadGridId']) ? CUtil::JSEscape($options['reloadGridId']) : '';
 
         $reloadCallback = '';
         if ($gridId) {
             $reloadCallback = <<<JS
-            events: {
+            {
                 onCloseStart: function(event) {
                     var grid = BX.Main.gridManager.getInstanceById('{$gridId}');
                     if (grid) grid.reload();
@@ -30,7 +32,7 @@ class SidePanel
             width: {$width},
             loader: '{$loader}',
             {$reloadCallback}
-        });
+        })
         JS;
     }
 
@@ -50,7 +52,7 @@ class SidePanel
      */
     public static function notifyParentGrid(string $gridId): string
     {
-        $jsGridId = \CUtil::JSEscape($gridId);
+        $jsGridId = CUtil::JSEscape($gridId);
 
         return <<<JS
         if (window.parent && window.parent.BX) {

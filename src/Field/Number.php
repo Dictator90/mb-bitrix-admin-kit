@@ -41,10 +41,18 @@ class Number extends Field
         $val = htmlspecialcharsbx((string)$this->resolveValue($value));
         $name = htmlspecialcharsbx($this->column);
         $attrs = '';
-        if ($this->min !== null) $attrs .= ' min="' . $this->min . '"';
-        if ($this->max !== null) $attrs .= ' max="' . $this->max . '"';
-        if ($this->step !== null) $attrs .= ' step="' . $this->step . '"';
-        if ($this->required) $attrs .= ' required';
+        if ($this->min !== null) {
+            $attrs .= ' min="' . $this->min . '"';
+        }
+        if ($this->max !== null) {
+            $attrs .= ' max="' . $this->max . '"';
+        }
+        if ($this->step !== null) {
+            $attrs .= ' step="' . $this->step . '"';
+        }
+        if ($this->required) {
+            $attrs .= ' required';
+        }
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textbox">

@@ -12,7 +12,8 @@ class PanelDataProvider
     public function __construct(
         protected string $gridId,
         protected array $actions = [],
-    ) {}
+    ) {
+    }
 
     public function getActions(): array
     {

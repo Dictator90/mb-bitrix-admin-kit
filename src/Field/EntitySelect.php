@@ -41,17 +41,17 @@ class EntitySelect extends Field
     /**
      * Add a dynamic entity to the selector dialog.
      *
-     * @param string $id          Entity ID (e.g. 'user-list', 'iblock-element-list')
-     * @param array  $entityOptions  Entity-specific options passed to the provider
+     * @param string $id Entity ID (e.g. 'user-list', 'iblock-element-list')
+     * @param array $entityOptions Entity-specific options passed to the provider
      *                               (e.g. ['iblockId' => 5], ['filter' => [...]])
      *                               The current field value is injected as 'selected' automatically.
      */
     public function entity(string $id, array $entityOptions = []): static
     {
         $this->entities[] = [
-            'id'            => $id,
-            'options'       => $entityOptions,
-            'dynamicLoad'   => true,
+            'id' => $id,
+            'options' => $entityOptions,
+            'dynamicLoad' => true,
             'dynamicSearch' => true,
         ];
 
@@ -94,14 +94,14 @@ class EntitySelect extends Field
     {
         Extension::load(['ui', 'mb.ui.dialog-selector']);
 
-        $name       = htmlspecialcharsbx($this->column);
-        $uid        = 'tag_selector_' . $name . '_' . substr(md5(uniqid('', true)), 0, 8);
-        $context    = 'ADMINKIT_' . strtoupper(preg_replace('/[^A-Za-z0-9]/', '_', $name))
-                      . '_' . substr(md5(uniqid('', true)), 0, 6);
+        $name = htmlspecialcharsbx($this->column);
+        $uid = 'tag_selector_' . $name . '_' . substr(md5(uniqid('', true)), 0, 8);
+        $context = 'ADMINKIT_' . strtoupper(preg_replace('/[^A-Za-z0-9]/', '_', $name))
+            . '_' . substr(md5(uniqid('', true)), 0, 6);
         $multipleJs = $this->multiple ? 'true' : 'false';
 
         // Inject current selected IDs into each entity's options
-        $ids      = $this->parseIds($this->resolveValue($value));
+        $ids = $this->parseIds($this->resolveValue($value));
         $entities = $this->entities;
         foreach ($entities as &$ent) {
             $ent['options']['selected'] = $ids;

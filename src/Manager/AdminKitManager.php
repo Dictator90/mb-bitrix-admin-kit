@@ -254,15 +254,15 @@ final class AdminKitManager
             }
 
             $action = (new $class())->hasCrud() ? 'list' : 'options';
-            $sep    = str_contains($baseUrl, '?') ? '&' : '?';
-            $url    = $baseUrl . $sep . self::PAGE_PARAM . '=' . urlencode($id) . '&action=' . $action;
+            $sep = str_contains($baseUrl, '?') ? '&' : '?';
+            $url = $baseUrl . $sep . self::PAGE_PARAM . '=' . urlencode($id) . '&action=' . $action;
 
             $entries[] = [
-                'text'    => (new $class())->getTitle(),
-                'title'   => (new $class())->getTitle(),
-                'url'     => $url,
-                'icon'    => $class::getMenuIcon(),
-                'sort'    => $class::getSort(),
+                'text' => (new $class())->getTitle(),
+                'title' => (new $class())->getTitle(),
+                'url' => $url,
+                'icon' => $class::getMenuIcon(),
+                'sort' => $class::getSort(),
                 '_parent' => $class::getParentMenuId(),
             ];
         }
@@ -276,11 +276,11 @@ final class AdminKitManager
             $url = $baseUrl . $sep . self::PAGE_PARAM . '=' . urlencode($id);
 
             $entries[] = [
-                'text'    => $class::getTitle(),
-                'title'   => $class::getTitle(),
-                'url'     => $url,
-                'icon'    => $class::getMenuIcon(),
-                'sort'    => $class::getSort(),
+                'text' => $class::getTitle(),
+                'title' => $class::getTitle(),
+                'url' => $url,
+                'icon' => $class::getMenuIcon(),
+                'sort' => $class::getSort(),
                 '_parent' => $class::getParentMenuId(),
             ];
         }
@@ -299,12 +299,12 @@ final class AdminKitManager
         $url = $baseUrl . $sep . self::PAGE_PARAM . '=' . urlencode($parentId);
 
         return [
-            'text'     => $parentClass ? $parentClass::getTitle() : $parentId,
-            'sort'     => $parentClass ? $parentClass::getSort() : 500,
-            'url'      => $url,
+            'text' => $parentClass ? $parentClass::getTitle() : $parentId,
+            'sort' => $parentClass ? $parentClass::getSort() : 500,
+            'url' => $url,
             'items_id' => 'adminkit_group_' . $parentId,
             'more_url' => [],
-            'items'    => [],
+            'items' => [],
         ];
     }
 

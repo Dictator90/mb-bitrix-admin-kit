@@ -112,7 +112,7 @@ class FormPage extends Page
         }
 
         $wrapper = new DataWrapper($data, $this->id);
-        $saved   = $this->resource->save($wrapper);
+        $saved = $this->resource->save($wrapper);
 
         if ($saved->getId()) {
             if ($this->isSidePanelMode()) {
@@ -120,7 +120,7 @@ class FormPage extends Page
                 $this->savedInSidePanel = true;
             } else {
                 $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
-                $sep     = str_contains($backUrl, '?') ? '&' : '?';
+                $sep = str_contains($backUrl, '?') ? '&' : '?';
                 $this->redirect($backUrl . $sep . 'saved=1');
             }
         }
@@ -144,8 +144,8 @@ class FormPage extends Page
     protected function renderForm(): void
     {
         $action = $this->request->getRequestUri();
-        $tabs   = iterator_to_array($this->resource->formTabs());
-        $fid    = htmlspecialcharsbx($this->formId);
+        $tabs = iterator_to_array($this->resource->formTabs());
+        $fid = htmlspecialcharsbx($this->formId);
 
         echo '<form id="' . $fid . '" method="POST" action="' . htmlspecialcharsbx($action) . '">';
         echo bitrix_sessid_post();
@@ -239,13 +239,13 @@ class FormPage extends Page
 
     protected function renderFormRow(FieldContract $field, mixed $value): void
     {
-        $column       = htmlspecialcharsbx($field->getColumn());
-        $label        = htmlspecialcharsbx($field->getLabel());
+        $column = htmlspecialcharsbx($field->getColumn());
+        $label = htmlspecialcharsbx($field->getLabel());
         $requiredMark = $field->isRequired() ? ' <span class="ui-ctl-required">*</span>' : '';
-        $hint         = method_exists($field, 'renderHint') ? $field->renderHint() : '';
+        $hint = method_exists($field, 'renderHint') ? $field->renderHint() : '';
 
         $visibilityAttr = '';
-        $extraClass     = '';
+        $extraClass = '';
         if (method_exists($field, 'getVisibleWhen') && ($rule = $field->getVisibleWhen()) !== null) {
             $visibilityAttr = ' data-visible-when="' . htmlspecialcharsbx(json_encode($rule)) . '"';
             $sourceVal = $this->item?->get($rule['column']);
@@ -281,7 +281,7 @@ class FormPage extends Page
             return $inner;
         }
 
-        $json   = htmlspecialcharsbx(json_encode($rule));
+        $json = htmlspecialcharsbx(json_encode($rule));
         $colVal = $this->item?->get($rule['column']);
         $hidden = $this->checkVisibilityRule($rule, $colVal) ? '' : ' adminkit-conditional-hidden';
 
@@ -296,7 +296,9 @@ class FormPage extends Page
 
         echo '<div class="ui-button-panel adminkit-button-panel">';
         echo '<button type="submit" class="ui-btn ui-btn-success" name="save" value="Y">Сохранить</button>';
-        echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialcharsbx($cancelAction) . '">Отмена</button>';
+        echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialcharsbx(
+                $cancelAction
+            ) . '">Отмена</button>';
         echo '</div>';
     }
 
@@ -438,7 +440,7 @@ class FormPage extends Page
      */
     protected function handleReactivePost(): void
     {
-        $fields   = $this->collectAllFields();
+        $fields = $this->collectAllFields();
         $formData = [];
 
         foreach ($fields as $field) {
@@ -473,7 +475,7 @@ class FormPage extends Page
      */
     protected function renderDependencyScript(string $formId): void
     {
-        $allFields  = $this->collectAllFields();
+        $allFields = $this->collectAllFields();
         $sourceCols = [];
         $dependsMap = [];
 
@@ -492,12 +494,12 @@ class FormPage extends Page
 
         $sourceColsJson = json_encode(array_keys($sourceCols));
         $dependsMapJson = json_encode($dependsMap);
-        $formIdJs       = json_encode($formId);
+        $formIdJs = json_encode($formId);
 
         echo <<<HTML
         <script>
         BX.ready(function() {
-            var form = document.getElementById({$formIdJs});
+            var form = document.getElementById({$formIdJs})
             var sourceCols = {$sourceColsJson};
             var dependsMap = {$dependsMapJson};
             if (!form || !sourceCols.length) return;
@@ -625,7 +627,7 @@ class FormPage extends Page
         echo <<<HTML
         <script>
         BX.ready(function() {
-            var form = document.getElementById({$formIdJs});
+            var form = document.getElementById({$formIdJs})
             if (!form) return;
 
             function getFieldValue(col) {

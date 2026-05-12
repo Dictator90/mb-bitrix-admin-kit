@@ -14,7 +14,9 @@ use MB\Bitrix\AdminKit\Contracts\FilterContract;
 class FilterDataProvider
 {
     /** @param FilterContract[] $filters */
-    public function __construct(protected array $filters) {}
+    public function __construct(protected array $filters)
+    {
+    }
 
     /** @return array[] Field configs for bitrix:main.ui.filter FILTER param */
     public function getFields(): array

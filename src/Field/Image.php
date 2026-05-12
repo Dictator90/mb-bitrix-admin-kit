@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use CFile;
 use MB\Bitrix\AdminKit\Grid\Row\Assembler\ImageAssembler;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 
@@ -33,10 +34,10 @@ class Image extends File
         $existingHtml = '';
 
         if ($fileId > 0) {
-            $fileInfo = \CFile::GetByID($fileId)->Fetch();
+            $fileInfo = CFile::GetByID($fileId)->Fetch();
             if ($fileInfo) {
-                $filePath = \CFile::GetFileSRC($fileInfo);
-                $thumb = \CFile::ResizeImageGet($fileInfo, [
+                $filePath = CFile::GetFileSRC($fileInfo);
+                $thumb = CFile::ResizeImageGet($fileInfo, [
                     'width' => $this->previewWidth,
                     'height' => $this->previewHeight,
                 ], BX_RESIZE_IMAGE_PROPORTIONAL);
@@ -77,18 +78,20 @@ class Image extends File
             return '';
         }
 
-        $fileInfo = \CFile::GetByID($fileId)->Fetch();
+        $fileInfo = CFile::GetByID($fileId)->Fetch();
         if (!$fileInfo) {
             return '';
         }
 
-        $filePath = \CFile::GetFileSRC($fileInfo);
-        $thumb = \CFile::ResizeImageGet($fileInfo, [
+        $filePath = CFile::GetFileSRC($fileInfo);
+        $thumb = CFile::ResizeImageGet($fileInfo, [
             'width' => $this->previewWidth,
             'height' => $this->previewHeight,
         ], BX_RESIZE_IMAGE_PROPORTIONAL);
         $thumbSrc = $thumb['src'] ?? $filePath;
 
-        return '<img src="' . htmlspecialcharsbx($thumbSrc) . '" style="max-width:' . $this->previewWidth . 'px;max-height:' . $this->previewHeight . 'px;">';
+        return '<img src="' . htmlspecialcharsbx(
+                $thumbSrc
+            ) . '" style="max-width:' . $this->previewWidth . 'px;max-height:' . $this->previewHeight . 'px;">';
     }
 }

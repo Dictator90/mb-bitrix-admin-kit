@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Action;
 
 use Bitrix\Main\HttpRequest;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
+use Throwable;
 
 abstract class AsyncAction implements ActionContract
 {
@@ -53,7 +54,7 @@ abstract class AsyncAction implements ActionContract
         try {
             $result = $this->handle($request->toArray());
             $this->sendSuccess($result);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->sendError($e->getMessage());
         }
     }

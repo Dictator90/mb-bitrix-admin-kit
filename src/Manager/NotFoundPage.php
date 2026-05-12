@@ -11,7 +11,7 @@ final class NotFoundPage
         global $APPLICATION;
 
         $APPLICATION->IncludeComponent('bitrix:ui.info.error', '', [
-            'TITLE'       => 'Страница не найдена',
+            'TITLE' => 'Страница не найдена',
             'DESCRIPTION' => 'Запрашиваемый ресурс не зарегистрирован в AdminKit.',
         ]);
     }

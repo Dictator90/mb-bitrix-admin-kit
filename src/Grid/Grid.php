@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Grid;
 
 use Bitrix\Main\Grid\Options as GridOptions;
+use Bitrix\Main\ORM\Query\Result;
 use Bitrix\Main\UI\Filter\Options as FilterOptions;
 use Bitrix\Main\UI\PageNavigation;
+use CUtil;
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
@@ -80,7 +82,7 @@ class Grid
 
     /**
      * Feed an ORM result into the grid rows.
-     * @param \Bitrix\Main\ORM\Query\Result $result
+     * @param Result $result
      */
     public function setRawRows($result): void
     {
@@ -206,8 +208,8 @@ class Grid
             ];
 
             if ($action->isDelete()) {
-                $confirm = \CUtil::JSEscape($action->getConfirmText() ?? 'Вы уверены?');
-                $gridIdJs = \CUtil::JSEscape($this->id);
+                $confirm = CUtil::JSEscape($action->getConfirmText() ?? 'Вы уверены?');
+                $gridIdJs = CUtil::JSEscape($this->id);
                 $item['ONCLICK'] =
                     "if(!confirm('{$confirm}'))return;" .
                     "var g=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .

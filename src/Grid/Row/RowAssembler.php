@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid\Row;
 
+use Bitrix\Main\ORM\Query\Result;
 use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
@@ -11,18 +12,19 @@ use MB\Bitrix\AdminKit\Contracts\FieldContract;
 class RowAssembler
 {
     /**
-     * @param FieldContract[]   $fields
-     * @param ActionContract[]  $rowActions
+     * @param FieldContract[] $fields
+     * @param ActionContract[] $rowActions
      */
     public function __construct(
         protected array $fields,
         protected array $rowActions = [],
         protected string $baseUrl = '',
         protected string $primaryKey = 'ID',
-    ) {}
+    ) {
+    }
 
     /**
-     * @param \Bitrix\Main\ORM\Query\Result $result
+     * @param Result $result
      * @return array[]
      */
     public function buildRows($result): array
@@ -54,7 +56,7 @@ class RowAssembler
             }
         }
 
-        $row['id']      = $data[$this->primaryKey] ?? null;
+        $row['id'] = $data[$this->primaryKey] ?? null;
         $row['actions'] = $actions;
 
         return $row;

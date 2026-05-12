@@ -26,8 +26,8 @@ trait HasReactivity
      *           // mutate $field in place (e.g. change options)
      *       })
      *
-     * @param string|array  $sourceColumns  Column(s) that trigger the re-render
-     * @param Closure|null  $modifier       fn(static $field, mixed $sourceValue, array $allData): void
+     * @param string|array $sourceColumns Column(s) that trigger the re-render
+     * @param Closure|null $modifier fn(static $field, mixed $sourceValue, array $allData): void
      */
     public function dependsOn(string|array $sourceColumns, ?Closure $modifier = null): static
     {
@@ -74,8 +74,8 @@ trait HasReactivity
      *   Select::make('Category', 'CATEGORY_ID')
      *       ->onChange('SUBCATEGORY_ID', fn($categoryId) => SubcategoryTable::getOptions($categoryId))
      *
-     * @param string  $targetColumn  Column whose value will be reloaded
-     * @param Closure $resolver      fn($value, array $allData): mixed  New value or options array
+     * @param string $targetColumn Column whose value will be reloaded
+     * @param Closure $resolver fn($value, array $allData): mixed  New value or options array
      */
     public function onChange(string $targetColumn, Closure $resolver): static
     {
@@ -99,8 +99,8 @@ trait HasReactivity
     /**
      * Resolve new values for dependent fields when this field's value changes.
      *
-     * @param  mixed $value     New value of this field
-     * @param  array $allData   All current form data
+     * @param mixed $value New value of this field
+     * @param array $allData All current form data
      * @return array            ['targetColumn' => newValue, ...]
      */
     public function resolveReactiveDependencies(mixed $value, array $allData = []): array

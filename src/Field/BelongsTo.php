@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use Closure;
+use Throwable;
 
 /**
  * Select one record from a DataManager table (foreign-key select).
@@ -21,9 +22,9 @@ class BelongsTo extends Field
     protected string $dataManagerClass;
     protected string $titleColumn = 'NAME';
     protected string $valueColumn = 'ID';
-    protected string $emptyLabel  = '';
-    protected array  $filter      = [];
-    protected array  $order       = [];
+    protected string $emptyLabel = '';
+    protected array $filter = [];
+    protected array $order = [];
     protected ?Closure $optionsCallback = null;
 
     public function __construct(string $label, ?string $column = null, string $dataManagerClass = '')
@@ -105,16 +106,17 @@ class BelongsTo extends Field
             while ($row = $result->fetch()) {
                 $options[(string)$row[$this->valueColumn]] = (string)($row[$this->titleColumn] ?? '');
             }
-        } catch (\Throwable) {}
+        } catch (Throwable) {
+        }
 
         return $options;
     }
 
     public function renderFormField(mixed $value = null): string
     {
-        $current  = (string)($this->resolveValue($value) ?? '');
-        $name     = htmlspecialcharsbx($this->column);
-        $options  = $this->loadOptions();
+        $current = (string)($this->resolveValue($value) ?? '');
+        $name = htmlspecialcharsbx($this->column);
+        $options = $this->loadOptions();
         $reactive = $this->renderReactiveAttrs();
         $required = $this->required ? ' required' : '';
 
@@ -126,7 +128,7 @@ class BelongsTo extends Field
         foreach ($options as $optVal => $optLabel) {
             $sel = $optVal === $current ? ' selected' : '';
             $optionsHtml .= '<option value="' . htmlspecialcharsbx($optVal) . '"' . $sel . '>'
-                          . htmlspecialcharsbx($optLabel) . '</option>';
+                . htmlspecialcharsbx($optLabel) . '</option>';
         }
 
         return <<<HTML
@@ -153,12 +155,13 @@ class BelongsTo extends Field
             $row = $this->dataManagerClass::getList([
                 'select' => [$this->titleColumn],
                 'filter' => [$this->valueColumn => $value],
-                'limit'  => 1,
+                'limit' => 1,
             ])->fetch();
             if ($row) {
                 return htmlspecialcharsbx((string)($row[$this->titleColumn] ?? $value));
             }
-        } catch (\Throwable) {}
+        } catch (Throwable) {
+        }
 
         return htmlspecialcharsbx((string)$value);
     }

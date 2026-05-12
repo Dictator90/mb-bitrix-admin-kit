@@ -18,9 +18,9 @@ use MB\Bitrix\AdminKit\Support\DataWrapper;
 class Alert extends AbstractLayoutComponent
 {
     public const SUCCESS = 'success';
-    public const DANGER  = 'danger';
+    public const DANGER = 'danger';
     public const WARNING = 'warning';
-    public const INFO    = 'info';
+    public const INFO = 'info';
 
     protected string $message;
     protected string $type;
@@ -82,9 +82,9 @@ class Alert extends AbstractLayoutComponent
     {
         $cssType = match ($this->type) {
             static::SUCCESS => 'ui-alert-success',
-            static::DANGER  => 'ui-alert-danger',
+            static::DANGER => 'ui-alert-danger',
             static::WARNING => 'ui-alert-warning',
-            default         => 'ui-alert-info',
+            default => 'ui-alert-info',
         };
 
         $class = $this->buildClassAttr(['ui-alert', $cssType]);

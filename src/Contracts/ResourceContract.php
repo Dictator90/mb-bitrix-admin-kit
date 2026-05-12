@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Contracts;
 
+use MB\Bitrix\AdminKit\Action\AsyncAction;
 use MB\Bitrix\AdminKit\Page\DetailPage;
 use MB\Bitrix\AdminKit\Page\FormPage;
 use MB\Bitrix\AdminKit\Page\IndexPage;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
+use MB\Bitrix\AdminKit\Support\Tab;
 
 interface ResourceContract
 {
@@ -41,10 +43,10 @@ interface ResourceContract
     /** @return iterable<ActionContract> */
     public function bulkActions(): iterable;
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Action\AsyncAction> */
+    /** @return iterable<AsyncAction> */
     public function asyncActions(): iterable;
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Support\Tab> */
+    /** @return iterable<Tab> */
     public function formTabs(): iterable;
 
     public function findItem(int|string $id): ?DataWrapper;

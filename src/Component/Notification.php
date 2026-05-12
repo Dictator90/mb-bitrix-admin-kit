@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Component;
 
 use Bitrix\Main\UI\Extension;
+use CUtil;
 
 class Notification
 {
@@ -38,7 +39,7 @@ class Notification
      */
     public static function show(string $message, string $type = self::TYPE_INFO, int $autoclose = 3000): string
     {
-        $jsMessage = \CUtil::JSEscape($message);
+        $jsMessage = CUtil::JSEscape($message);
         $autocloseProp = $autoclose > 0 ? "autoClose: {$autoclose}," : '';
 
         return <<<JS
@@ -46,7 +47,7 @@ class Notification
             content: BX.message ? BX.message('{$jsMessage}') || '{$jsMessage}' : '{$jsMessage}',
             type: '{$type}',
             {$autocloseProp}
-        });
+        })
         JS;
     }
 
@@ -69,8 +70,11 @@ class Notification
     /**
      * Loads the ui.notification extension and renders a script that shows a notification on page load.
      */
-    public static function renderOnLoad(string $message, string $type = self::TYPE_SUCCESS, int $autoclose = 3000): string
-    {
+    public static function renderOnLoad(
+        string $message,
+        string $type = self::TYPE_SUCCESS,
+        int $autoclose = 3000
+    ): string {
         Extension::load(['ui.notification']);
         $js = static::show($message, $type, $autoclose);
 

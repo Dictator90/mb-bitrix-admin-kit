@@ -9,7 +9,9 @@ use MB\Bitrix\AdminKit\Contracts\FieldContract;
 class ColumnDataProvider
 {
     /** @param FieldContract[] $fields */
-    public function __construct(protected array $fields) {}
+    public function __construct(protected array $fields)
+    {
+    }
 
     /** @return array[] */
     public function getColumns(): array

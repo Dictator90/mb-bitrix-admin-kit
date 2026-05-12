@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use CFile;
+
 class File extends Field
 {
     protected array $allowedExtensions = [];
@@ -44,11 +46,11 @@ class File extends Field
         $existingHtml = '';
 
         if ($fileId > 0) {
-            $fileInfo = \CFile::GetByID($fileId)->Fetch();
+            $fileInfo = CFile::GetByID($fileId)->Fetch();
             if ($fileInfo) {
                 $fileName = htmlspecialcharsbx($fileInfo['ORIGINAL_NAME'] ?? $fileInfo['FILE_NAME'] ?? '');
-                $filePath = \CFile::GetFileSRC($fileInfo);
-                $fileSize = \CFile::FormatSize((int)$fileInfo['FILE_SIZE']);
+                $filePath = CFile::GetFileSRC($fileInfo);
+                $fileSize = CFile::FormatSize((int)$fileInfo['FILE_SIZE']);
                 $existingHtml = <<<HTML
                 <div class="adminkit-file-current" style="margin-bottom:8px;">
                     <span class="ui-icon ui-icon-file" style="vertical-align:middle;"></span>
@@ -92,7 +94,7 @@ class File extends Field
             return '';
         }
 
-        $fileInfo = \CFile::GetByID($fileId)->Fetch();
+        $fileInfo = CFile::GetByID($fileId)->Fetch();
         if (!$fileInfo) {
             return '';
         }

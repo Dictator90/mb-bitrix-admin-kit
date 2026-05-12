@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Support\Validation;
 
 use Closure;
+use InvalidArgumentException;
 
 class Validator
 {
@@ -89,12 +90,12 @@ class Validator
     /**
      * Validate and throw an exception if validation fails.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function validateOrFail(array $data, array $rules): void
     {
         if (!$this->validate($data, $rules)) {
-            throw new \InvalidArgumentException(implode('; ', $this->getFlatErrors()));
+            throw new InvalidArgumentException(implode('; ', $this->getFlatErrors()));
         }
     }
 }

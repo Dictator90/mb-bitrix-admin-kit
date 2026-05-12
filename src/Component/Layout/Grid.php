@@ -41,9 +41,9 @@ class Grid extends AbstractLayoutComponent
     public function render(): string
     {
         $styleExtra = [
-            'display'               => 'grid',
+            'display' => 'grid',
             'grid-template-columns' => "repeat({$this->columns}, 1fr)",
-            'gap'                   => $this->gap . 'px',
+            'gap' => $this->gap . 'px',
         ];
 
         $class = $this->buildClassAttr();

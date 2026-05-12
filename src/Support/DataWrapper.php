@@ -11,7 +11,8 @@ class DataWrapper implements ArrayAccess
     public function __construct(
         protected array $data = [],
         protected int|string|null $id = null,
-    ) {}
+    ) {
+    }
 
     public static function fromArray(array $data, string $primaryKey = 'ID'): static
     {

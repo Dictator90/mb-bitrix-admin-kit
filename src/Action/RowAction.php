@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Action;
 
+use CUtil;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 
 class RowAction implements ActionContract
@@ -87,25 +88,27 @@ class RowAction implements ActionContract
 
     public function toArray(array $row, string $baseUrl = ''): array
     {
-        $id  = $row['ID'] ?? $row['id'] ?? '';
+        $id = $row['ID'] ?? $row['id'] ?? '';
         $sep = str_contains($baseUrl, '?') ? '&' : '?';
 
         $result = [
-            'text'    => $this->label,
+            'text' => $this->label,
             'default' => $this->id === 'edit',
         ];
 
         if ($this->type === 'delete') {
-            $deleteUrl   = $baseUrl . $sep . 'action=delete&id=' . (int)$id
+            $deleteUrl = $baseUrl . $sep . 'action=delete&id=' . (int)$id
                 . '&sessid=' . bitrix_sessid();
-            $confirmText = \CUtil::JSEscape($this->confirmText ?? '');
-            $result['onclick'] = "if(confirm('" . $confirmText . "')) { window.location.href='" . \CUtil::JSEscape($deleteUrl) . "'; }";
+            $confirmText = CUtil::JSEscape($this->confirmText ?? '');
+            $result['onclick'] = "if(confirm('" . $confirmText . "')) { window.location.href='" . CUtil::JSEscape(
+                    $deleteUrl
+                ) . "'; }";
         } else {
             $url = $this->url ?: ($baseUrl . $sep . 'action=' . $this->id . '&id=#ID#');
             $url = str_replace('#ID#', (string)$id, $url);
 
             if ($this->useSidePanel) {
-                $result['onclick'] = "BX.SidePanel.Instance.open('" . \CUtil::JSEscape($url) . "')";
+                $result['onclick'] = "BX.SidePanel.Instance.open('" . CUtil::JSEscape($url) . "')";
             } else {
                 $result['href'] = $url;
             }

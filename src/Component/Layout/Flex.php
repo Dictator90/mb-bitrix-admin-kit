@@ -63,29 +63,29 @@ class Flex extends AbstractLayoutComponent
     public function render(): string
     {
         $justify = match ($this->justify) {
-            'end'     => 'flex-end',
-            'center'  => 'center',
+            'end' => 'flex-end',
+            'center' => 'center',
             'between' => 'space-between',
-            'around'  => 'space-around',
-            'evenly'  => 'space-evenly',
-            default   => 'flex-start',
+            'around' => 'space-around',
+            'evenly' => 'space-evenly',
+            default => 'flex-start',
         };
 
         $align = match ($this->align) {
-            'end'      => 'flex-end',
-            'center'   => 'center',
-            'stretch'  => 'stretch',
+            'end' => 'flex-end',
+            'center' => 'center',
+            'stretch' => 'stretch',
             'baseline' => 'baseline',
-            default    => 'flex-start',
+            default => 'flex-start',
         };
 
         $styleExtra = [
-            'display'         => 'flex',
-            'flex-direction'  => $this->direction,
-            'flex-wrap'       => $this->wrap ? 'wrap' : 'nowrap',
+            'display' => 'flex',
+            'flex-direction' => $this->direction,
+            'flex-wrap' => $this->wrap ? 'wrap' : 'nowrap',
             'justify-content' => $justify,
-            'align-items'     => $align,
-            'gap'             => $this->gap . 'px',
+            'align-items' => $align,
+            'gap' => $this->gap . 'px',
         ];
 
         $class = $this->buildClassAttr();

@@ -17,19 +17,21 @@ use MB\Bitrix\AdminKit\Contracts\ResourceContract;
  */
 final class ResourcePage
 {
-    public function __construct(private ResourceContract $resource) {}
+    public function __construct(private ResourceContract $resource)
+    {
+    }
 
     public function render(): void
     {
         $request = Context::getCurrent()->getRequest();
-        $action  = (string)($request->get('action') ?: $request->getPost('action') ?: 'list');
-        $id      = (int)($request->get('id') ?: 0);
+        $action = (string)($request->get('action') ?: $request->getPost('action') ?: 'list');
+        $id = (int)($request->get('id') ?: 0);
 
         match ($action) {
-            'add'    => $this->resource->formPage()->render(),
-            'edit'   => $this->resource->formPage($id ?: null)->render(),
-            'view'   => $this->resource->detailPage($id)->render(),
-            default  => $this->resource->indexPage()->render(),
+            'add' => $this->resource->formPage()->render(),
+            'edit' => $this->resource->formPage($id ?: null)->render(),
+            'view' => $this->resource->detailPage($id)->render(),
+            default => $this->resource->indexPage()->render(),
         };
     }
 }

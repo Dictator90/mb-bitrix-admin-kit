@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Component;
 
 use Bitrix\Main\UI\Extension;
 use Bitrix\UI\Buttons\AddButton;
+use Bitrix\UI\Buttons\Color;
 use Bitrix\UI\Toolbar\Toolbar as BitrixToolbar;
 
 class Toolbar
@@ -96,7 +97,7 @@ class Toolbar
                 (new AddButton())
                     ->setLink($url)
                     ->setText($title)
-                    ->setColor(\Bitrix\UI\Buttons\Color::SUCCESS)
+                    ->setColor(Color::SUCCESS)
             );
             $toolbar->show();
         } else {

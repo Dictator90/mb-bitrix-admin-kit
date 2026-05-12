@@ -9,6 +9,7 @@ use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use Throwable;
 
 /**
  * Renders a read-only table of related records inside a FormPage.
@@ -161,7 +162,7 @@ class HasMany implements ComponentContract
                 while ($row = $result->fetch()) {
                     $rows[] = $row;
                 }
-            } catch (\Throwable) {
+            } catch (Throwable) {
             }
         }
 
