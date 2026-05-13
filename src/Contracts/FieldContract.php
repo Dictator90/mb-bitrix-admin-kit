@@ -29,6 +29,14 @@ interface FieldContract
 
     public function renderFormField(mixed $value = null): string;
 
+    public function renderIndex(mixed $value, array $row = []): string;
+
+    public function renderForm(mixed $value = null, array $context = []): string;
+
+    public function renderDetail(mixed $value, array $row = []): string;
+
+    public function normalize(mixed $value): mixed;
+
     public function getDefault(): mixed;
 
     public function getFieldAssembler(): ?FieldAssembler;
@@ -37,4 +45,16 @@ interface FieldContract
 
     /** Read-only fields are displayed but never written back to the model on save. */
     public function isReadOnly(): bool;
+
+    public function default(mixed $value): static;
+
+    public function required(bool $required = true): static;
+
+    public function readonly(bool $readonly = true): static;
+
+    public function multiple(bool $multiple = true): static;
+
+    public function help(?string $text): static;
+
+    public function placeholder(?string $text): static;
 }

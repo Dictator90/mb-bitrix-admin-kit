@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Contracts;
 
 use MB\Bitrix\AdminKit\Action\AsyncAction;
+use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Page\DetailPage;
 use MB\Bitrix\AdminKit\Page\FormPage;
 use MB\Bitrix\AdminKit\Page\IndexPage;
@@ -17,7 +18,11 @@ interface ResourceContract
 
     public function getDataManagerClass(): ?string;
 
+    public function dataManagerClass(): string;
+
     public function getPrimaryKey(): string;
+
+    public function primaryKey(): string;
 
     public function hasCrud(): bool;
 
@@ -49,7 +54,27 @@ interface ResourceContract
     /** @return iterable<Tab> */
     public function formTabs(): iterable;
 
-    public function findItem(int|string $id): ?DataWrapper;
+    public function defaultSort(): array;
+
+    public function defaultFilter(): array;
+
+    public function defaultSelect(): array;
+
+    public function runtimeFields(): array;
+
+    public function modifyIndexParams(array $params, GridContext $context): array;
+
+    public function findItem(mixed $id): ?array;
+
+    public function getList(array $params = []): array;
+
+    public function getCount(array $filter = []): int;
+
+    public function createItem(array $data): mixed;
+
+    public function updateItem(mixed $id, array $data): bool;
+
+    public function deleteItem(mixed $id): bool;
 
     public function save(DataWrapper $item): DataWrapper;
 

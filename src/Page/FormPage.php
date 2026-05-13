@@ -8,6 +8,7 @@ use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\Tab;
@@ -49,7 +50,8 @@ class FormPage extends Page
         $this->formId = 'adminkit-form-' . md5(static::class . ($this->id ?? ''));
 
         if ($this->id) {
-            $this->item = $this->resource->findItem($this->id);
+            $row = $this->resource->findItem($this->id);
+            $this->item = $row ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey()) : null;
         }
 
         if ($this->isPost() && check_bitrix_sessid()) {
@@ -98,23 +100,43 @@ class FormPage extends Page
     protected function handlePost(): void
     {
         $fields = $this->collectAllFields();
-        $data = [];
+        $raw = [];
+        $normalized = [];
+        $validated = [];
+        $formData = new FormData();
 
         foreach ($fields as $field) {
-            $value = $field->serializePostValue($this->request->getPost($field->getColumn()));
-            $data[$field->getColumn()] = $value;
+            if ($field->isReadOnly()) {
+                continue;
+            }
 
-            $this->errors = array_merge($this->errors, $field->runValidation($value));
+            $column = $field->getColumn();
+            $raw[$column] = $this->request->getPost($column);
+            $value = $field->normalize($raw[$column]);
+            $normalized[$column] = $value;
+
+            foreach ($field->runValidation($value) as $message) {
+                $formData->addError($column, $message);
+                $this->errors[] = $message;
+            }
+
+            $validated[$column] = $value;
         }
 
-        if (!empty($this->errors)) {
+        $formData = $formData->withRaw($raw)->withNormalized($normalized)->withValidated($validated);
+
+        if ($formData->hasErrors()) {
             return;
         }
 
-        $wrapper = new DataWrapper($data, $this->id);
-        $saved = $this->resource->save($wrapper);
+        if ($this->id) {
+            $saved = $this->resource->updateItem($this->id, $formData->validated());
+            $savedId = $saved ? $this->id : null;
+        } else {
+            $savedId = $this->resource->createItem($formData->validated());
+        }
 
-        if ($saved->getId()) {
+        if ($savedId) {
             if ($this->isSidePanelMode()) {
                 // Don't redirect — signal the slider to close; grid reload happens in onCloseComplete
                 $this->savedInSidePanel = true;
@@ -448,7 +470,8 @@ class FormPage extends Page
         }
 
         if ($this->id && $this->item === null) {
-            $this->item = $this->resource->findItem($this->id);
+            $row = $this->resource->findItem($this->id);
+            $this->item = $row ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey()) : null;
         }
 
         $result = [];

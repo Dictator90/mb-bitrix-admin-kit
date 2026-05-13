@@ -16,6 +16,7 @@ use MB\Bitrix\AdminKit\Page\IndexPage;
 use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
 use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
 use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
+use MB\Bitrix\AdminKit\Support\AdminString;
 use MB\Bitrix\AdminKit\Support\Tab;
 
 /**
@@ -46,8 +47,7 @@ abstract class Resource implements ResourceContract
      */
     public static function getId(): string
     {
-        $parts = explode('\\', static::class);
-        return mb_strtolower((string)preg_replace('/Resource$/', '', end($parts)));
+        return AdminString::resourceId(static::class);
     }
 
     public static function getSort(): int
@@ -84,8 +84,43 @@ abstract class Resource implements ResourceContract
     /** @return class-string<T>|null */
     public function getDataManagerClass(): ?string
     {
-        return $this->dataManagerClass;
+        return $this->dataManagerClass ?: null;
     }
+    public function dataManagerClass(): string
+    {
+        return $this->dataManagerClass ?? '';
+    }
+
+    public function primaryKey(): string
+    {
+        return $this->primaryKey;
+    }
+
+    public function defaultSort(): array
+    {
+        return [$this->getPrimaryKey() => 'DESC'];
+    }
+
+    public function defaultFilter(): array
+    {
+        return [];
+    }
+
+    public function defaultSelect(): array
+    {
+        return [];
+    }
+
+    public function runtimeFields(): array
+    {
+        return [];
+    }
+
+    public function modifyIndexParams(array $params, \MB\Bitrix\AdminKit\Grid\GridContext $context): array
+    {
+        return $params;
+    }
+
 
     public function getPrimaryKey(): string
     {
@@ -94,7 +129,7 @@ abstract class Resource implements ResourceContract
 
     public function hasCrud(): bool
     {
-        return $this->dataManagerClass !== null;
+        return $this->getDataManagerClass() !== null;
     }
 
     // ── Field / Filter / Action definitions ──────────────────────────────
@@ -162,12 +197,11 @@ abstract class Resource implements ResourceContract
 
     public function getGridId(): string
     {
-        $base = $this->dataManagerClass ?: static::class;
-        return 'ADMIN_KIT_' . mb_strtoupper(str_replace('\\', '_', $base));
+        return AdminString::gridId($this->dataManagerClass ?: static::class);
     }
 
     public function getFilterId(): string
     {
-        return $this->getGridId() . '_FILTER';
+        return AdminString::filterId($this->dataManagerClass ?: static::class);
     }
 }

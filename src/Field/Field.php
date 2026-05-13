@@ -27,6 +27,10 @@ abstract class Field implements FieldContract
     protected bool $sortable = true;
     protected bool $editable = false;
     protected ?string $hint = null;
+    protected bool $readonly = false;
+    protected bool $multiple = false;
+    protected ?string $help = null;
+    protected ?string $placeholder = null;
 
     public function __construct(string $label, ?string $column = null)
     {
@@ -89,6 +93,35 @@ abstract class Field implements FieldContract
         return $this;
     }
 
+    public function help(?string $text): static
+    {
+        $this->help = $text;
+        $this->hint = $text;
+
+        return $this;
+    }
+
+    public function placeholder(?string $text): static
+    {
+        $this->placeholder = $text;
+
+        return $this;
+    }
+
+    public function readonly(bool $readonly = true): static
+    {
+        $this->readonly = $readonly;
+
+        return $this;
+    }
+
+    public function multiple(bool $multiple = true): static
+    {
+        $this->multiple = $multiple;
+
+        return $this;
+    }
+
     public function getGridColumnType(): string
     {
         return 'text';
@@ -138,22 +171,41 @@ abstract class Field implements FieldContract
 
     public function isReadOnly(): bool
     {
-        return false;
+        return $this->readonly;
     }
 
-    /**
-     * Normalize a raw POST value to a storable scalar string.
-     * Override in subclasses that store multi-value data (e.g. EntitySelect).
-     *
-     * Default: join arrays with commas; pass scalars through unchanged.
-     */
-    public function serializePostValue(mixed $value): mixed
+    public function renderIndex(mixed $value, array $row = []): string
     {
+        return htmlspecialcharsbx((string)($this->previewValue($value) ?? ''));
+    }
+
+    public function renderForm(mixed $value = null, array $context = []): string
+    {
+        return $this->renderFormField($value);
+    }
+
+    public function renderDetail(mixed $value, array $row = []): string
+    {
+        return $this->renderIndex($value, $row);
+    }
+
+    public function normalize(mixed $value): mixed
+    {
+        if ($this->multiple) {
+            return is_array($value) ? array_values($value) : ($value === null ? [] : [$value]);
+        }
+
         if (is_array($value)) {
-            return implode(',', array_filter(array_map('strval', $value)));
+            $first = reset($value);
+            return $first === false && $value === [] ? null : $first;
         }
 
         return $value;
+    }
+
+    public function serializePostValue(mixed $value): mixed
+    {
+        return $this->normalize($value);
     }
 
     protected ?array $visibleWhenRule = null;

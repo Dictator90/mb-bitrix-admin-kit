@@ -26,11 +26,14 @@ trait HasValidation
         return $this->required;
     }
 
-    public function validate(Closure $validator): static
+    public function validate(mixed $value): array|static
     {
-        $this->validators[] = $validator;
+        if ($value instanceof Closure) {
+            $this->validators[] = $value;
+            return $this;
+        }
 
-        return $this;
+        return $this->runValidation($value);
     }
 
     public function minLength(int $min, string $message = ''): static
