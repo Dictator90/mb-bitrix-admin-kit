@@ -7,8 +7,6 @@ namespace MB\Bitrix\AdminKit\Field;
 class Select extends Field
 {
     protected array $options = [];
-    protected bool $multiple = false;
-    protected ?string $placeholder = null;
 
     public function options(array $options): static
     {
@@ -29,7 +27,7 @@ class Select extends Field
         return $this;
     }
 
-    public function placeholder(string $placeholder): static
+    public function placeholder(?string $placeholder): static
     {
         $this->placeholder = $placeholder;
 
@@ -82,6 +80,15 @@ class Select extends Field
             <select class="ui-ctl-element" name="{$name}"{$multipleAttr}{$reqAttr}{$reactiveAttrs}>{$optionsHtml}</select>
         </div>
         HTML;
+    }
+
+    public function normalize(mixed $value): mixed
+    {
+        if ($this->multiple) {
+            return is_array($value) ? array_values($value) : ($value === null || $value === '' ? [] : [$value]);
+        }
+
+        return parent::normalize($value);
     }
 
     protected function isSelected(mixed $optValue, mixed $currentValue): bool

@@ -15,7 +15,10 @@ use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
+use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 class IndexPage extends Page
 {
@@ -101,13 +104,20 @@ class IndexPage extends Page
             return;
         }
 
-        $params = $grid->getOrmParams();
-        $primaryKey = $this->resource->getPrimaryKey();
+        $context = new GridContext(
+            $this->resource,
+            $grid->getId(),
+            $grid->getFilterId(),
+            [],
+            [],
+            $grid->getPagination()->getPageSize(),
+            $grid->getPagination()->getCurrentPage(),
+            $grid->getPagination()->getOffset(),
+            $grid->getPagination()->getLimit(),
+            $this->request,
+        );
 
-        if (!in_array($primaryKey, $params['select'], true)) {
-            $params['select'][] = $primaryKey;
-        }
-
+        $params = (new GridQueryBuilder())->build($this->resource, $context);
         $grid->setTotalCount($dataManagerClass::getCount($params['filter'] ?? []));
         $grid->setRawRows($dataManagerClass::getList($params));
     }
@@ -168,32 +178,13 @@ class IndexPage extends Page
      */
     protected function baseListUrl(): string
     {
-        $uri = $this->request->getRequestUri();
-        $parsed = parse_url($uri);
-        parse_str($parsed['query'] ?? '', $query);
-
-        // Keep only `page` (the resource identifier), strip everything else
-        $keep = [];
-        if (isset($query['page'])) {
-            $keep['page'] = $query['page'];
-        }
-
-        $path = $parsed['path'] ?? '';
-
-        return empty($keep) ? $path : $path . '?' . http_build_query($keep);
+        return UrlGenerator::forCurrentRequest($this->request)->indexUrl();
     }
 
     /** URL for add/edit form — list base + action (+ optional id). */
     protected function baseFormUrl(string $action = 'add', ?int $id = null): string
     {
-        $base = $this->baseListUrl();
-        $sep = str_contains($base, '?') ? '&' : '?';
-        $url = $base . $sep . 'action=' . $action;
-
-        if ($id !== null) {
-            $url .= '&id=' . $id;
-        }
-
-        return $url;
+        $generator = new UrlGenerator($this->baseListUrl());
+        return $action === 'add' ? $generator->createUrl() : $generator->editUrl($id);
     }
 }
