@@ -5,28 +5,19 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page;
 
 use Bitrix\Main\UI\Extension;
-use Bitrix\UI\Buttons\Button;
-use Bitrix\UI\Buttons\Color;
-use Bitrix\UI\Buttons\Icon;
-use Bitrix\UI\Buttons\JsCode;
-use Bitrix\UI\Toolbar\ButtonLocation;
-use Bitrix\UI\Toolbar\Facade\Toolbar;
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\MassDeleteAction;
+use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
-use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
-use MB\Bitrix\AdminKit\Database\Performance\QueryPerformanceContext;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Grid\Grid;
-use MB\Bitrix\AdminKit\Grid\GridContext;
-use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
+use MB\Bitrix\AdminKit\Grid\GridDataLoader;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
-use MB\Bitrix\AdminKit\Support\AdminString;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
@@ -123,142 +114,12 @@ class IndexPage extends Page
 
     protected function loadData(Grid $grid): void
     {
-        $dataManagerClass = $this->resource->getDataManagerClass();
-        if (!$dataManagerClass) {
-            return;
-        }
-
-        $context = new GridContext(
-            $this->resource,
-            $grid->getId(),
-            $grid->getFilterId(),
-            [],
-            [],
-            $grid->getPagination()->getPageSize(),
-            $grid->getPagination()->getCurrentPage(),
-            $grid->getPagination()->getOffset(),
-            $grid->getPagination()->getLimit(),
-            $this->request,
-        );
-
-        $params = (new QueryGuard())->guardGridParams((new GridQueryBuilder())->build($this->resource, $context), $context);
-        $start = microtime(true);
-        $countQueryUsed = false;
-        $cacheUsed = false;
-
-        if ($this->resource->useTotalCount($context)) {
-            [$count, $cacheUsed] = $this->resolveTotalCount($dataManagerClass, $context, $params['filter'] ?? []);
-            $countQueryUsed = !$cacheUsed;
-            $grid->setTotalCount($count);
-        }
-
-        $result = $dataManagerClass::getList($params);
-        $grid->setRawRows($result, $context);
-        $this->debugQuery(new QueryPerformanceContext(
-            $this->resource,
-            $context,
-            $params,
-            microtime(true) - $start,
-            0,
-            $countQueryUsed,
-            $cacheUsed,
-        ));
-    }
-
-
-    /** @param class-string $dataManagerClass @param array<string,mixed> $filter @return array{0:int,1:bool} */
-    protected function resolveTotalCount(string $dataManagerClass, GridContext $context, array $filter): array
-    {
-        $ttl = $this->resource->countCacheTtl($context);
-        if ($ttl <= 0) {
-            return [(int)$dataManagerClass::getCount($filter), false];
-        }
-
-        $key = AdminString::cacheKey('adminkit_count', [
-            'module' => 'mb.bitrix.adminkit',
-            'resource' => $this->resource::getId(),
-            'grid' => $context->gridId,
-            'filter' => $filter,
-            'user' => $this->currentUserId(),
-        ]);
-        $cached = ArrayTtlCache::get($key);
-        if ($cached !== null) {
-            return [(int)$cached, true];
-        }
-
-        $count = (int)$dataManagerClass::getCount($filter);
-        ArrayTtlCache::set($key, $count, $ttl);
-
-        return [$count, false];
-    }
-
-    protected function debugQuery(QueryPerformanceContext $context): void
-    {
-        if (!$this->isDebugAllowed()) {
-            return;
-        }
-
-        error_log('AdminKit ORM params: ' . json_encode([
-            'resource' => $context->resource::getId(),
-            'params' => $context->params,
-            'executionTime' => $context->executionTime,
-            'rowCount' => $context->rowCount,
-            'countQueryUsed' => $context->countQueryUsed,
-            'cacheUsed' => $context->cacheUsed,
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    }
-
-    protected function isDebugAllowed(): bool
-    {
-        if (!defined('ADMIN_KIT_DEBUG') || ADMIN_KIT_DEBUG !== true) {
-            return false;
-        }
-
-        global $USER;
-        return is_object($USER) && method_exists($USER, 'IsAdmin') && (bool)$USER->IsAdmin();
-    }
-
-    protected function currentUserId(): mixed
-    {
-        global $USER;
-        return is_object($USER) && method_exists($USER, 'GetID') ? $USER->GetID() : null;
+        (new GridDataLoader())->load($this->resource, $grid, $this->request);
     }
 
     protected function renderToolbar(Grid $grid): void
     {
-        global $APPLICATION;
-
-        // Integrate filter into toolbar (Toolbar::addFilter captures main.ui.filter output)
-        if ($filterParams = $grid->getFilterComponentParams()) {
-            Toolbar::addFilter($filterParams);
-        }
-
-        // "Create" button — opens FormPage in a SidePanel; reloads grid on close
-        if ($this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
-            $addUrl = $this->baseFormUrl('add');
-            $gridId = $this->resource->getGridId();
-
-            Toolbar::addButton(
-                new Button([
-                    'color' => Color::SUCCESS,
-                    'icon' => Icon::ADD,
-                    'text' => 'Создать',
-                    'click' => new JsCode(
-                        'BX.SidePanel.Instance.open(' . json_encode($addUrl) . ', {
-                            events: {
-                                onCloseComplete: function() {
-                                    var grid = BX.Main.gridManager.getInstanceById(' . json_encode($gridId) . ');
-                                    if (grid) { grid.reload(); }
-                                }
-                            }
-                        })'
-                    ),
-                ]),
-                ButtonLocation::AFTER_TITLE
-            );
-        }
-
-        $APPLICATION->IncludeComponent('bitrix:ui.toolbar', 'admin', []);
+        (new ToolbarRenderer())->render($this->resource, $grid, $this->baseFormUrl('add'));
     }
 
     protected function renderBulkResult(): void
