@@ -38,6 +38,10 @@ if (is_file($autoload)) {
 }
 ```
 
+## Public facade
+
+`MB\Bitrix\AdminKit\AdminKit::manager($module)` creates an `AdminKitManager` for a module entity. The manager remains the primary facade for resource/page registration, menu building, routing, and rendering.
+
 ## Подключение в Bitrix-модуле
 
 Минимальная структура модуля:
@@ -327,13 +331,46 @@ AdminKit использует `mb4it/collections`, `mb4it/stringable` и `mb4it/
 
 Публичный API принимает обычные `array`, `iterable`, `callable` и `Closure`; разработчику модуля не нужно зависеть от конкретной Collection-реализации.
 
+
+## v1.0.0 stable API
+
+v1.0.0 фиксирует публичный API AdminKit для реальных Bitrix-модулей. В minor/patch релизах не ломаются public/protected сигнатуры, namespace, базовый CRUD, `FormData`, `GridContext`, `DbResult`, `BulkResult`, Field/Filter/Action API и Resource/CrudResource extension points. Подробная политика описана в `docs/backward-compatibility.md`.
+
+## Lifecycle, transactions и permissions
+
+CRUD операции проходят через единый pipeline: Field normalization/validation, `FormData`, lifecycle hooks, `PermissionContext`, `CrudPersister` и при необходимости `TransactionManager`. Опасные операции (`delete`, row action, bulk action, import/export) должны проверять CSRF и права на уровне Resource/action.
+
+## Database health и performance
+
+Для диагностики схем используйте `SchemaAwareResource`, `TableSchema`, `DatabaseSchemaInspector`, `TableHealthCheck` и системную страницу health-check. Диагностика read-only по умолчанию. Производительные возможности (`useTotalCount()`, count/options/lookup cache, `QueryGuard`, `maxPageSize()`) включайте консервативно и документируйте в Resource.
+
+## Bitrix UI Field adapters
+
+`EntitySelectorField`, `UserSelectorField`, `IblockElementSelectorField` и `IblockSectionSelectorField` являются адаптерами над Bitrix `ui.entity-selector`/`BX.UI.EntitySelector.TagSelector` и штатными провайдерами. Пакет не реализует собственный selector engine.
+
 ## Документация
 
+- Installation: `docs/installation.md`.
 - Quick start: `docs/quick-start.md`.
-- Cookbook: `docs/cookbook/`.
-- Architecture: `docs/architecture.md`.
+- Resources: `docs/resources.md`.
+- CRUD Resource: `docs/crud-resource.md`.
+- Database integration: `docs/database.md`.
+- Grid: `docs/grid.md`.
+- Filters: `docs/filters.md`.
+- Forms: `docs/forms.md`.
+- Fields: `docs/fields.md`.
+- Actions: `docs/actions.md`.
+- Bulk actions: `docs/bulk-actions.md`.
+- Lifecycle: `docs/lifecycle.md`.
+- Transactions: `docs/transactions.md`.
+- Permissions: `docs/permissions.md`.
+- Performance: `docs/performance.md`.
+- Database health: `docs/database-health.md`.
+- Import/export: `docs/import-export.md`.
 - Support packages: `docs/support-packages.md`.
-- Upgrade/deprecation: `docs/upgrade.md`.
+- Backward compatibility: `docs/backward-compatibility.md`.
+- Cookbook: `docs/cookbook/`.
+- Examples: `examples/`.
 
 ## Разработка пакета
 

@@ -56,3 +56,8 @@
 - Prefer small, realistic examples over introducing new framework abstractions in DX work.
 - Keep PHPStan, PHPUnit, php-cs-fixer, and CI commands documented and runnable through Composer scripts.
 - Public API removals must be preceded by `@deprecated` phpdoc and documented migration notes.
+
+## v1.0.0 stabilization notes
+- Treat Resource, CrudResource, GridContext, FormData, DbResult, BulkResult, Field, Filter, Action, support adapters, persistence, grid query, URL, and import/export classes as stable public API unless a task explicitly requests a breaking change.
+- Do not require userland resources to type against `MB\Support\Collection`, global helpers, or internal adapter classes; keep public extension points based on simple PHP types and callables.
+- Document every backward-compatibility exception and migration step in `docs/backward-compatibility.md` and `CHANGELOG.md` before changing code.
