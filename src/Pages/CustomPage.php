@@ -4,41 +4,66 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Pages;
 
-use Bitrix\Main\UI\Extension;
+use MB\Bitrix\AdminKit\Manager\AssetManager;
+use MB\Bitrix\AdminKit\Manager\ToolbarAction;
+use MB\Bitrix\AdminKit\Support\AdminCollection;
 
-/**
- * Base for arbitrary admin pages (dashboards, reports, etc.).
- *
- * Usage:
- *   class DashboardPage extends CustomPage
- *   {
- *       public static function getId(): string    { return 'dashboard'; }
- *       public static function getTitle(): string { return 'Дашборд'; }
- *
- *       protected function content(): string
- *       {
- *           return '<p>Hello from the dashboard!</p>';
- *       }
- *   }
- */
+/** Base for arbitrary admin pages (dashboards, reports, integration pages). */
 abstract class CustomPage extends AbstractPage
 {
     /** @var string[] Bitrix UI extensions to load before rendering. */
     protected array $extensions = [];
 
-    /** Return the HTML content of the page. */
+    /** @return iterable<ToolbarAction|string> */
+    protected function toolbarActions(): iterable
+    {
+        return [];
+    }
+
+    protected function pageTitle(): string
+    {
+        return $this->title();
+    }
+
     abstract protected function content(): string;
 
-    public function render(): void
+    public function render()
     {
         global $APPLICATION;
 
-        if (!empty($this->extensions)) {
-            Extension::load($this->extensions);
+        (new AssetManager())->addExtensions($this->extensions)->load();
+
+        if (is_object($APPLICATION) && method_exists($APPLICATION, 'SetTitle')) {
+            $APPLICATION->SetTitle($this->title());
         }
 
-        $APPLICATION->SetTitle(static::getTitle());
+        $html = '<div class="adminkit-page adminkit-page--custom">';
+        $html .= '<h1 class="adminkit-page__title">' . htmlspecialcharsbx($this->pageTitle()) . '</h1>';
+        $html .= $this->renderToolbar();
+        $html .= '<div class="adminkit-page__content">' . $this->content() . '</div>';
+        $html .= '</div>';
 
-        echo $this->content();
+        return $html;
+    }
+
+    protected function renderToolbar(): string
+    {
+        $items = [];
+        foreach (AdminCollection::make($this->toolbarActions())->all() as $action) {
+            if ($action instanceof ToolbarAction) {
+                if ($action->isVisible(['page' => $this])) {
+                    $items[] = $action->render();
+                }
+                continue;
+            }
+
+            $items[] = (string)$action;
+        }
+
+        if ($items === []) {
+            return '';
+        }
+
+        return '<div class="adminkit-toolbar">' . implode('', $items) . '</div>';
     }
 }

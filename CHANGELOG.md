@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.8.0 - Pages, menu, routing, SidePanel
+
+- Added a backward-compatible manager split: `AdminKitRegistry`, `AdminKitRouter`, `AdminKitMenuBuilder`, and `AdminKitRenderer`.
+- Stabilized standalone page API with instance `id`, `title`, `sort`, `icon`, `group`, `canView`, `render`, and `url` methods while keeping legacy static methods.
+- Added centralized URL routing helpers for CRUD pages, standalone pages, action endpoints, bulk actions, and import/export endpoints.
+- Added `AssetManager`, `ToolbarAction`, `SidePanelAdapter`, and `DashboardPage`.
+- Extended resources with SidePanel settings and menu grouping helpers.
+- Added the simple `OptionsPage::fields()` API while preserving component-based options pages.
+- Documented pages, routing, menus, options pages, custom pages, dashboards, SidePanel, toolbars, and assets.
+- Added v0.8.0 tests for registry, routing, menus, page API, options/custom/dashboard pages, SidePanel, toolbar, assets, permissions, and URL routing.
+
+
 ## v0.7.0 - 2026-05-14
 
 ### Added

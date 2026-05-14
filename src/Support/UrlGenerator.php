@@ -25,18 +25,26 @@ final class UrlGenerator
     public function indexUrl(ResourceContract|string|null $resource = null): string
     {
         if ($resource instanceof ResourceContract) {
-            return $this->withQuery(['page' => $resource::getId()]);
+            return $this->resourceUrl($resource::getId());
         }
         if (is_string($resource)) {
-            return $this->withQuery(['page' => $resource]);
+            return $this->resourceUrl($resource);
         }
         return $this->baseUrl;
     }
 
+    public function pageUrl(string $pageId, array $params = []): string { return $this->withQuery(['page' => $pageId] + $params); }
+    public function resourceUrl(ResourceContract|string $resource, array $params = []): string { return $this->pageUrl($resource instanceof ResourceContract ? $resource::getId() : $resource, $params); }
     public function createUrl(array $extra = []): string { return $this->withQuery(['action' => 'add'] + $extra); }
     public function editUrl(mixed $id, array $extra = []): string { return $this->withQuery(['action' => 'edit', 'id' => $id] + $extra); }
+    public function detailUrl(mixed $id, array $extra = []): string { return $this->withQuery(['action' => 'detail', 'id' => $id] + $extra); }
     public function deleteUrl(mixed $id, array $extra = []): string { return $this->withQuery(['action' => 'delete', 'id' => $id, 'sessid' => (function_exists('bitrix_sessid') ? bitrix_sessid() : '')] + $extra); }
     public function actionUrl(string $action, array $params = []): string { return $this->withQuery(['action' => $action] + $params); }
+    public function bulkActionUrl(string $action, array $params = []): string { return $this->actionUrl('bulk', ['bulk_action' => $action] + $params); }
+    public function importUrl(array $params = []): string { return $this->actionUrl('import', $params); }
+    public function exportUrl(array $params = []): string { return $this->actionUrl('export', $params); }
+    public function endpointUrl(string $endpoint, array $params = []): string { return $this->actionUrl($endpoint, $params); }
+    public function with(array $params): string { return $this->withQuery($params); }
 
     private function withQuery(array $params): string
     {

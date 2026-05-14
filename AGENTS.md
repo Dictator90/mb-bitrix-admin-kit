@@ -43,3 +43,10 @@
 - Export actions must require either explicit selected IDs or an allowed filter; full export remains disabled unless a resource/action opts in.
 - Import must reuse `Form\DataPipeline` so form saves and CSV imports share Field `normalize()` and validation behavior.
 - Keep import/export row sets, mappings, chunks, selected IDs, and errors on `AdminCollection` rather than global helper functions.
+
+## v0.8.0 page/menu/routing notes
+- Keep `AdminKitManager` as the public facade and delegate page storage, routing, menu building, and rendering to focused manager classes when possible.
+- Build admin URLs through `Support\UrlGenerator`; avoid manual query-string concatenation in page/menu/routing code.
+- Standalone pages should preserve the legacy static API while also supporting the v0.8.0 instance API (`id`, `title`, `sort`, `icon`, `group`, `canView`, `render`, `url`).
+- Centralize Bitrix UI extension loading through `Manager\AssetManager` for new page-layer work.
+- Use `Manager\SidePanelAdapter` for create/edit/detail slider behavior and keep full-page mode working when `IFRAME=Y` is absent.

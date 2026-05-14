@@ -8,7 +8,7 @@ use Bitrix\Main\Config\Option;
 use Bitrix\Main\Context;
 use Bitrix\Main\HttpRequest;
 use Bitrix\Main\SiteTable;
-use Bitrix\Main\UI\Extension;
+use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
@@ -70,9 +70,19 @@ abstract class OptionsPage extends AbstractPage
      *
      * @return iterable<FieldContract|ComponentContract|Tab>
      */
-    protected function components(): iterable
+    public function fields(): iterable
     {
         return [];
+    }
+
+    protected function components(): iterable
+    {
+        $fields = $this->fields();
+        if ($fields instanceof \Traversable) {
+            return iterator_to_array($fields);
+        }
+
+        return $fields;
     }
 
     /** Whether to save/load options per-site. */
@@ -87,7 +97,7 @@ abstract class OptionsPage extends AbstractPage
     {
         global $APPLICATION;
 
-        Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.hint', 'ui.alerts', 'ui.notification']);
+        (new AssetManager())->forForm()->addExtensions(['ui.layout-form', 'ui.hint', 'ui.alerts', 'ui.notification'])->load();
 
         $APPLICATION->SetTitle(static::getTitle());
 
