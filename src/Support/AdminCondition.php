@@ -8,6 +8,11 @@ use MB\Support\Conditionable\ConditionTree;
 
 final class AdminCondition
 {
+    public static function make(array $contexts = []): ConditionTree
+    {
+        return self::tree($contexts);
+    }
+
     /** @param array<string,mixed> $contexts */
     public static function tree(array $contexts = []): ConditionTree
     {

@@ -17,6 +17,7 @@ use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
+use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
@@ -38,7 +39,8 @@ class IndexPage extends Page
 
         if ($action === 'delete' && check_bitrix_sessid()) {
             $id = (int)($this->request->get('id') ?: 0);
-            if ($id > 0 && $this->resource->canDelete()) {
+            $item = $id > 0 ? $this->resource->findItem($id) : null;
+            if ($id > 0 && $this->resource->canDelete(new PermissionContext(resource: $this->resource, operation: 'delete', item: $item))) {
                 $this->resource->delete($id);
             }
             $this->redirect($this->baseListUrl());
@@ -48,7 +50,7 @@ class IndexPage extends Page
         // Handle bulk delete (from ACTION_PANEL)
         if ($action === 'delete_bulk' && $this->isPost() && check_bitrix_sessid()) {
             $ids = array_filter(array_map('intval', (array)$this->request->getPost('id')));
-            if (!empty($ids)) {
+            if (!empty($ids) && $this->resource->canDelete(new PermissionContext(resource: $this->resource, operation: 'massDelete', item: $ids))) {
                 $this->resource->massDelete($ids);
             }
             $this->redirect($this->baseListUrl());
@@ -132,7 +134,7 @@ class IndexPage extends Page
         }
 
         // "Create" button — opens FormPage in a SidePanel; reloads grid on close
-        if ($this->resource->canCreate()) {
+        if ($this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
             $addUrl = $this->baseFormUrl('add');
             $gridId = $this->resource->getGridId();
 

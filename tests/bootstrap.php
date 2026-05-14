@@ -33,11 +33,28 @@ namespace MB\Support {
 
 namespace MB\Support\Conditionable {
     class ConditionTree {
+        private array $conditions = [];
+        private array $context = [];
         public static function create(array $contexts = []): static { return new static(); }
-        public function context(object|array|string $context, ?string $alias): static { return $this; }
-        public function calculate(): CalculationResult { return new CalculationResult(fn() => true, null); }
+        public function where(string $field, string $operator, mixed $value): static { $this->conditions[] = [$field, $operator, $value]; return $this; }
+        public function context(object|array|string $context, ?string $alias): static { if (is_array($context)) { $this->context = $context; } return $this; }
+        public function calculate(): CalculationResult { $conditions = $this->conditions; $context = $this->context; return new CalculationResult(function () use ($conditions, $context) { foreach ($conditions as [$field, $operator, $value]) { $actual = $context[$field] ?? ($context['form'][$field] ?? null); if ((string)$actual !== (string)$value) return false; } return true; }, null); }
     }
     class CalculationResult { public function __construct(private $resolver, private $context = null) {} public function result(): bool { return (bool)($this->resolver)(); } }
+}
+
+
+namespace Bitrix\Main {
+    class Application {
+        public static ?object $connection = null;
+        public static function getConnection(): object { return self::$connection ??= new class {
+            public array $calls = [];
+            public function startTransaction(): void { $this->calls[] = 'start'; }
+            public function commitTransaction(): void { $this->calls[] = 'commit'; }
+            public function rollbackTransaction(): void { $this->calls[] = 'rollback'; }
+        }; }
+    }
+    class HttpRequest {}
 }
 
 namespace Bitrix\Main\Grid { class Options { public function __construct(private string $id) {} public function getSorting(array $params): array { return $params; } public function getNavParams(array $params): array { return $params; } } }

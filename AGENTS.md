@@ -15,3 +15,8 @@
 
 ## Testing
 - Run the relevant PHPUnit tests after code changes when possible.
+
+## v0.3.0 persistence notes
+- Route CRUD persistence through `MB\Bitrix\AdminKit\Database\CrudPersister` and return `DbResult` for low-level ORM errors.
+- Keep `FormData` stage-aware (`raw`, `normalized`, `validated`, `errors`) when changing form save behavior.
+- Permission checks should use `MB\Bitrix\AdminKit\Security\PermissionContext` for dangerous actions.

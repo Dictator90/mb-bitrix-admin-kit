@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Contracts;
 
 use MB\Bitrix\AdminKit\Action\AsyncAction;
+use MB\Bitrix\AdminKit\Database\DbOperationContext;
+use MB\Bitrix\AdminKit\Database\DbResult;
+use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Page\DetailPage;
 use MB\Bitrix\AdminKit\Page\FormPage;
 use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Tab;
 
@@ -86,9 +90,15 @@ interface ResourceContract
 
     public function createItem(array $data): mixed;
 
+    public function createItemResult(FormData|array $data, ?DbOperationContext $context = null): DbResult;
+
     public function updateItem(mixed $id, array $data): bool;
 
+    public function updateItemResult(mixed $id, FormData|array $data, ?DbOperationContext $context = null): DbResult;
+
     public function deleteItem(mixed $id): bool;
+
+    public function deleteItemResult(mixed $id, ?DbOperationContext $context = null): DbResult;
 
     public function save(DataWrapper $item): DataWrapper;
 
@@ -96,17 +106,23 @@ interface ResourceContract
 
     public function massDelete(array $ids): void;
 
+    public function useTransactions(): bool;
+
+    public function beforeValidate(FormData $data, DbOperationContext $context): void;
+
+    public function afterValidate(FormData $data, DbOperationContext $context): void;
+
     public function indexPage(): IndexPage;
 
     public function formPage(?int $id = null): FormPage;
 
     public function detailPage(int $id): DetailPage;
 
-    public function canCreate(): bool;
+    public function canCreate(?PermissionContext $context = null): bool;
 
-    public function canUpdate(?DataWrapper $item = null): bool;
+    public function canUpdate(PermissionContext|DataWrapper|null $context = null): bool;
 
-    public function canDelete(?DataWrapper $item = null): bool;
+    public function canDelete(PermissionContext|DataWrapper|null $context = null): bool;
 
-    public function canView(): bool;
+    public function canView(?PermissionContext $context = null): bool;
 }
