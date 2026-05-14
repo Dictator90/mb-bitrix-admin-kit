@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.5.0 - 2026-05-14
+
+### Added
+- Added a unified Field API for index/form/detail rendering, normalization, conditional required/readonly/visible behavior, dependencies, placeholders, help text, defaults, and `displayUsing()` presentation callbacks.
+- Added Bitrix UI selector adapters: `EntitySelectorField`, `UserSelectorField`, `IblockElementSelectorField`, and `IblockSectionSelectorField`, while keeping legacy selector class names available.
+- Added `UfField` as an adapter over Bitrix user-field metadata and rendering.
+- Added `RelationResolver` for batched request-level relation lookup caching to avoid N+1 display queries.
+- Added field compatibility tests for callable options, multiple normalization, conditional behavior, selector normalization, display callbacks, and relation preloading.
+- Added field documentation for the common Field API, concrete fields, Bitrix UI selector adapters, UF fields, normalization, validation, conditions, dependencies, and lookup preloading.
+
+### Changed
+- `Select` now supports callable options, correct single/multiple rendering, label rendering in index/detail views, required validation, and array-safe multiple normalization without comma implosion.
+- Required validation now treats empty arrays as empty values for multiple fields.
+- `Number` now normalizes empty input to `null` and numeric input to `int` or `float`.
+
 ## v0.4.0 - 2026-05-14
 
 ### Added

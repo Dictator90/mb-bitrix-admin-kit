@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Contracts;
 
+use Closure;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Support\Conditionable\ConditionTree;
 
 interface FieldContract
 {
@@ -57,4 +59,14 @@ interface FieldContract
     public function help(?string $text): static;
 
     public function placeholder(?string $text): static;
+
+    public function visibleWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static;
+
+    public function requiredWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static;
+
+    public function readonlyWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static;
+
+    public function dependsOn(string|array $sourceColumns, ?Closure $modifier = null): static;
+
+    public function displayUsing(Closure $callback): static;
 }

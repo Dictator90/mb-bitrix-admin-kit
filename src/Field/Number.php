@@ -53,11 +53,32 @@ class Number extends Field
         if ($this->required) {
             $attrs .= ' required';
         }
+        if ($this->readonly) {
+            $attrs .= ' readonly';
+        }
+        if ($this->placeholder !== null) {
+            $attrs .= ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"';
+        }
+        $attrs .= $this->renderReactiveAttrs();
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textbox">
             <input type="number" class="ui-ctl-element" name="{$name}" value="{$val}"{$attrs}>
         </div>
         HTML;
+    }
+
+    public function normalize(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            $first = reset($value);
+            $value = $first === false ? null : $first;
+        }
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_numeric($value) ? (str_contains((string)$value, '.') ? (float)$value : (int)$value) : $value;
     }
 }
