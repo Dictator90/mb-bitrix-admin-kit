@@ -21,7 +21,7 @@ class FilterDataProvider
     /** @return array[] Field configs for bitrix:main.ui.filter FILTER param */
     public function getFields(): array
     {
-        return array_map(fn(FilterContract $f) => $f->getFilterFieldConfig(), $this->filters);
+        return array_map(fn (FilterContract $f) => $f->getFilterFieldConfig(), $this->filters);
     }
 
     /** @return FilterContract[] */

@@ -6,8 +6,8 @@ namespace MB\Bitrix\AdminKit\Export;
 
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
-use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\AdminString;
+use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 final class CsvExporter implements ExporterInterface
 {
@@ -16,7 +16,8 @@ final class CsvExporter implements ExporterInterface
         private readonly string $enclosure = '"',
         private readonly string $escape = '\\',
         private readonly bool $withBom = true,
-    ) {}
+    ) {
+    }
 
     public function supports(string $format): bool
     {
@@ -41,7 +42,7 @@ final class CsvExporter implements ExporterInterface
 
         fputcsv(
             $handle,
-            array_map(static fn(FieldContract $field): string => $field->getLabel(), $fields),
+            array_map(static fn (FieldContract $field): string => $field->getLabel(), $fields),
             $this->delimiter,
             $this->enclosure,
             $this->escape,

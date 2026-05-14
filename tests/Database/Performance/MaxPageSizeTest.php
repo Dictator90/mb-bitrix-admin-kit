@@ -13,7 +13,12 @@ final class MaxPageSizeTest extends TestCase
 {
     public function testGridLimitIsCappedByResourceMaxPageSize(): void
     {
-        $resource = new class extends ProductResource { public function maxPageSize(): int { return 50; } };
+        $resource = new class () extends ProductResource {
+            public function maxPageSize(): int
+            {
+                return 50;
+            }
+        };
         $context = GridContext::make($resource, null, ['limit' => 500, 'pageSize' => 500]);
 
         $params = (new QueryGuard())->guardGridParams(['limit' => 500], $context);

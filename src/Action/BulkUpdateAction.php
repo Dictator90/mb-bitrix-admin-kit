@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Action;
 
-use Throwable;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use Throwable;
 
 class BulkUpdateAction extends BulkAction
 {

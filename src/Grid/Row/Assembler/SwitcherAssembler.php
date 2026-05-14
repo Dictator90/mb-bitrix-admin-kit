@@ -24,8 +24,8 @@ class SwitcherAssembler implements FieldAssembler
             $color = $isChecked ? '#4caf50' : '#aaa';
             $icon = $isChecked ? '●' : '○';
             $row['columns'][$id] = '<span style="color:' . $color . ';font-size:14px;" title="' . htmlspecialcharsbx(
-                    (string)$raw
-                ) . '">' . $icon . '</span>';
+                (string)$raw
+            ) . '">' . $icon . '</span>';
         }
 
         return $row;

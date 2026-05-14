@@ -14,12 +14,12 @@ final class GridQueryBuilderSelectTest extends TestCase
 {
     public function testItMergesIndexFieldsDefaultSelectAndIndexSelectWithoutComputedColumns(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function indexFields(): iterable
             {
                 return [
                     Text::make('Name', 'NAME'),
-                    Text::make('Computed', 'FULL_NAME')->computed(fn(array $row): string => 'computed'),
+                    Text::make('Computed', 'FULL_NAME')->computed(fn (array $row): string => 'computed'),
                 ];
             }
 

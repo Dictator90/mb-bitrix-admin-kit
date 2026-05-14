@@ -15,8 +15,8 @@ final class FieldApiV050Test extends TestCase
     public function testCallableOptionsAndDisplayUsingWorkWithoutCollectionApi(): void
     {
         $field = Select::make('Status', 'STATUS')
-            ->options(static fn(): array => ['new' => 'Новый', 'done' => 'Готово'])
-            ->displayUsing(static fn(mixed $value): string => strtoupper((string)$value));
+            ->options(static fn (): array => ['new' => 'Новый', 'done' => 'Готово'])
+            ->displayUsing(static fn (mixed $value): string => strtoupper((string)$value));
 
         self::assertSame(['new' => 'Новый', 'done' => 'Готово'], $field->getOptions());
         self::assertSame('DONE', $field->renderIndex('done'));

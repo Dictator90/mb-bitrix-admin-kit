@@ -67,7 +67,7 @@ class File extends Field
 
         $acceptAttr = '';
         if (!empty($this->allowedExtensions)) {
-            $accepts = array_map(fn($ext) => '.' . ltrim($ext, '.'), $this->allowedExtensions);
+            $accepts = array_map(fn ($ext) => '.' . ltrim($ext, '.'), $this->allowedExtensions);
             $acceptAttr = ' accept="' . implode(',', $accepts) . '"';
         }
 

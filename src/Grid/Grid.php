@@ -118,7 +118,7 @@ class Grid
             'vars' => ['by' => 'by', 'order' => 'order'],
         ]);
 
-        $select = array_map(fn(FieldContract $f) => $f->getColumn(), AdminCollection::make($this->fields)->all());
+        $select = array_map(fn (FieldContract $f) => $f->getColumn(), AdminCollection::make($this->fields)->all());
 
         return [
             'select' => $select,
@@ -158,7 +158,7 @@ class Grid
             'vars' => ['by' => 'by', 'order' => 'order'],
         ]);
 
-        $columns = array_map(fn(FieldContract $f) => $f->getGridColumnConfig(), AdminCollection::make($this->fields)->all());
+        $columns = array_map(fn (FieldContract $f) => $f->getGridColumnConfig(), AdminCollection::make($this->fields)->all());
 
         $params = [
             'GRID_ID' => $this->id,
@@ -197,7 +197,7 @@ class Grid
             return null;
         }
 
-        $fields = array_map(fn(FilterContract $f) => $f->getFilterFieldConfig(), AdminCollection::make($this->filters)->all());
+        $fields = array_map(fn (FilterContract $f) => $f->getFilterFieldConfig(), AdminCollection::make($this->filters)->all());
 
         return [
             'FILTER_ID' => $this->filterId,

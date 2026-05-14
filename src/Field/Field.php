@@ -363,8 +363,8 @@ abstract class Field implements FieldContract
         }
 
         return '<span class="ui-hint" data-hint="' . htmlspecialcharsbx(
-                $this->hint
-            ) . '"><span class="ui-hint-icon"></span></span>';
+            $this->hint
+        ) . '"><span class="ui-hint-icon"></span></span>';
     }
 
     protected function renderRequired(): string

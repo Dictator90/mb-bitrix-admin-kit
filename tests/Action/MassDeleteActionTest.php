@@ -29,10 +29,16 @@ final class MassDeleteActionTest extends TestCase
 
     public function testItDeletesSelectedRowsAndCallsMassHooks(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public array $hooks = [];
-            public function beforeMassDelete(array $ids, DbOperationContext $context): void { $this->hooks[] = ['before', $ids, $context->operation]; }
-            public function afterMassDelete(array $ids, DbOperationContext $context): void { $this->hooks[] = ['after', $ids, $context->operation]; }
+            public function beforeMassDelete(array $ids, DbOperationContext $context): void
+            {
+                $this->hooks[] = ['before', $ids, $context->operation];
+            }
+            public function afterMassDelete(array $ids, DbOperationContext $context): void
+            {
+                $this->hooks[] = ['after', $ids, $context->operation];
+            }
         };
 
         $result = (new MassDeleteAction())->execute(new BulkOperationContext($resource, 'delete', [1, 2]));

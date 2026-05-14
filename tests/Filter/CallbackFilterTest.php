@@ -14,7 +14,7 @@ final class CallbackFilterTest extends TestCase
 {
     public function testItAppliesCallbackToOrmFilter(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function filters(): iterable
             {
                 return [CallbackFilter::make('Search', 'SEARCH')->apply(function (array $filter, mixed $value): array {

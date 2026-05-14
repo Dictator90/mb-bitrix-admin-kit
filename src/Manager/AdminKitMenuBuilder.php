@@ -11,7 +11,9 @@ use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 final class AdminKitMenuBuilder
 {
-    public function __construct(private AdminKitRegistry $registry, private string $baseUrl = '') {}
+    public function __construct(private AdminKitRegistry $registry, private string $baseUrl = '')
+    {
+    }
 
     /** @return array<int, array<string, mixed>> */
     public function build(?PermissionContext $context = null): array
@@ -34,11 +36,11 @@ final class AdminKitMenuBuilder
         }
 
         foreach ($groups as $group) {
-            usort($group['items'], static fn(array $a, array $b): int => ($a['sort'] ?? 500) <=> ($b['sort'] ?? 500));
+            usort($group['items'], static fn (array $a, array $b): int => ($a['sort'] ?? 500) <=> ($b['sort'] ?? 500));
             $result[] = $group;
         }
 
-        usort($result, static fn(array $a, array $b): int => ($a['sort'] ?? 500) <=> ($b['sort'] ?? 500));
+        usort($result, static fn (array $a, array $b): int => ($a['sort'] ?? 500) <=> ($b['sort'] ?? 500));
 
         return $result;
     }
@@ -81,7 +83,7 @@ final class AdminKitMenuBuilder
             ];
         }
 
-        usort($entries, static fn(array $a, array $b): int => ($a['sort'] ?? 500) <=> ($b['sort'] ?? 500));
+        usort($entries, static fn (array $a, array $b): int => ($a['sort'] ?? 500) <=> ($b['sort'] ?? 500));
 
         return $entries;
     }

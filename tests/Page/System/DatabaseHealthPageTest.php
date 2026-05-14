@@ -15,16 +15,25 @@ final class DatabaseHealthPageTest extends TestCase
 {
     public function testDiagnosticsAreReadOnlyAndReportResourceHealth(): void
     {
-        $resource = new class extends ProductResource implements SchemaAwareResource {
+        $resource = new class () extends ProductResource implements SchemaAwareResource {
             public function expectedTableSchema(): TableSchema
             {
                 return TableSchema::make('vendor_product')->column('ID', 'int', required: true)->index('PRIMARY', ['ID']);
             }
         };
-        $inspector = new class extends DatabaseSchemaInspector {
-            public function tableExists(string $tableName): bool { return true; }
-            public function getColumns(string $tableName): array { return ['ID' => ['type' => 'int']]; }
-            public function getIndexes(string $tableName): array { return ['PRIMARY' => ['columns' => ['ID']]]; }
+        $inspector = new class () extends DatabaseSchemaInspector {
+            public function tableExists(string $tableName): bool
+            {
+                return true;
+            }
+            public function getColumns(string $tableName): array
+            {
+                return ['ID' => ['type' => 'int']];
+            }
+            public function getIndexes(string $tableName): array
+            {
+                return ['PRIMARY' => ['columns' => ['ID']]];
+            }
         };
 
         $rows = (new DatabaseHealthPage([$resource], $inspector))->diagnostics();

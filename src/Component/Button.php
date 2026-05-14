@@ -26,8 +26,8 @@ class Button
         $escapedUrl = htmlspecialcharsbx($url);
 
         return '<a href="' . $escapedUrl . '" class="ui-btn ui-btn-primary ui-btn-icon-add">' . htmlspecialcharsbx(
-                $text
-            ) . '</a>';
+            $text
+        ) . '</a>';
     }
 
     public static function primary(string $text, array $attrs = []): string
@@ -79,7 +79,7 @@ class Button
         }
 
         return '<button type="' . $type . '" class="' . $class . '"' . $attrStr . '>' . htmlspecialcharsbx(
-                $text
-            ) . '</button>';
+            $text
+        ) . '</button>';
     }
 }

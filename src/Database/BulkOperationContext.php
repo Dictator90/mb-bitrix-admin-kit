@@ -22,7 +22,8 @@ final class BulkOperationContext
         public readonly ?HttpRequest $request = null,
         public readonly array $filter = [],
         public readonly ?GridContext $gridContext = null,
-    ) {}
+    ) {
+    }
 
     /** @param array<string,mixed> $changes */
     public function with(array $changes): self

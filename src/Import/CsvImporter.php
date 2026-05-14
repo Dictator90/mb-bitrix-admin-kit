@@ -20,7 +20,8 @@ final class CsvImporter implements ImporterInterface
         private readonly string $delimiter = ',',
         private readonly string $enclosure = '"',
         private readonly string $escape = '\\',
-    ) {}
+    ) {
+    }
 
     public function parseUploadedFile(mixed $file, ImportContext $context): ImportResult
     {
@@ -43,7 +44,7 @@ final class CsvImporter implements ImporterInterface
                 if ($data !== []) {
                     $data[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string)$data[0]);
                 }
-                $headers = array_map(static fn(mixed $value): string => trim((string)$value), $data);
+                $headers = array_map(static fn (mixed $value): string => trim((string)$value), $data);
                 continue;
             }
 

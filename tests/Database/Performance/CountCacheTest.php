@@ -18,11 +18,17 @@ final class CountCacheTest extends TestCase
     {
         ArrayTtlCache::clear();
         ProductTable::reset();
-        $resource = new class extends ProductResource {
-            public function countCacheTtl(GridContext $context): int { return 3600; }
+        $resource = new class () extends ProductResource {
+            public function countCacheTtl(GridContext $context): int
+            {
+                return 3600;
+            }
         };
-        $page = new class($resource) extends IndexPage {
-            public function run(Grid $grid): void { $this->loadData($grid); }
+        $page = new class ($resource) extends IndexPage {
+            public function run(Grid $grid): void
+            {
+                $this->loadData($grid);
+            }
         };
         $grid = new Grid($resource->getGridId(), iterator_to_array($resource->indexFields()), [], [], '', 'ID');
 

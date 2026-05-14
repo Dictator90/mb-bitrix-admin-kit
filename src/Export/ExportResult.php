@@ -12,7 +12,8 @@ final class ExportResult
         public readonly string $filename = '',
         public readonly string $contentType = 'text/csv; charset=UTF-8',
         public readonly array $errors = [],
-    ) {}
+    ) {
+    }
 
     public static function success(string $content, string $filename, string $contentType = 'text/csv; charset=UTF-8'): self
     {

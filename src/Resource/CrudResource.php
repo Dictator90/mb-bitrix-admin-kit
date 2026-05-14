@@ -98,11 +98,20 @@ abstract class CrudResource extends Resource
     }
 
     /** @return iterable<FilterContract> */
-    public function filters(): iterable { return []; }
+    public function filters(): iterable
+    {
+        return [];
+    }
 
     /** @return iterable<ActionContract> */
-    public function rowActions(): iterable { return []; }
+    public function rowActions(): iterable
+    {
+        return [];
+    }
 
     /** @return iterable<ActionContract> */
-    public function bulkActions(): iterable { return []; }
+    public function bulkActions(): iterable
+    {
+        return [];
+    }
 }

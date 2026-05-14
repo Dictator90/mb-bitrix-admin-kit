@@ -13,14 +13,17 @@ use PHPUnit\Framework\TestCase;
 
 final class ImportUsesFieldPipelineTest extends TestCase
 {
-    protected function setUp(): void { ProductTable::reset(); }
+    protected function setUp(): void
+    {
+        ProductTable::reset();
+    }
 
     public function testImportUsesFieldNormalizeAndValidatePipeline(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function formFields(): iterable
             {
-                return [new class('Name', 'NAME') extends Text {
+                return [new class ('Name', 'NAME') extends Text {
                     public function normalize(mixed $value): mixed
                     {
                         return strtoupper((string)$value);

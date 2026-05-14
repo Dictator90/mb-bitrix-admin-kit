@@ -17,7 +17,8 @@ final class DatabaseHealthPage
     public function __construct(
         private readonly iterable $resources,
         private readonly ?DatabaseSchemaInspector $inspector = null,
-    ) {}
+    ) {
+    }
 
     /** @return array<int,array<string,mixed>> */
     public function diagnostics(): array

@@ -13,7 +13,7 @@ final class GridQueryBuilderOrderTest extends TestCase
 {
     public function testItMergesDefaultUiAndIndexOrder(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function indexOrder(GridContext $context): array
             {
                 return ['SORT' => 'ASC'];

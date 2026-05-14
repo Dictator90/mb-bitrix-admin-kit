@@ -11,10 +11,19 @@ final class DatabaseSchemaInspectorTest extends TestCase
 {
     public function testReadsTableColumnsAndIndexesFromConnection(): void
     {
-        $connection = new class {
-            public function isTableExists(string $table): bool { return $table === 'vendor_product'; }
-            public function getTableFields(string $table): array { return ['ID' => ['type' => 'int'], 'NAME' => ['type' => 'varchar(255)']]; }
-            public function getTableIndexes(string $table): array { return ['PRIMARY' => ['columns' => ['ID']]]; }
+        $connection = new class () {
+            public function isTableExists(string $table): bool
+            {
+                return $table === 'vendor_product';
+            }
+            public function getTableFields(string $table): array
+            {
+                return ['ID' => ['type' => 'int'], 'NAME' => ['type' => 'varchar(255)']];
+            }
+            public function getTableIndexes(string $table): array
+            {
+                return ['PRIMARY' => ['columns' => ['ID']]];
+            }
         };
 
         $inspector = new DatabaseSchemaInspector($connection);

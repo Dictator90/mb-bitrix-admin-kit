@@ -13,10 +13,16 @@ final class LifecycleUpdateTest extends TestCase
 {
     public function testUpdateHooksAreCalled(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public array $calls = [];
-            public function beforeUpdate(array $oldItem, FormData $data, DbOperationContext $context): void { $this->calls[] = 'before:' . $oldItem['NAME']; }
-            public function afterUpdate(array $item, FormData $data, DbOperationContext $context): void { $this->calls[] = 'after:' . $item['NAME']; }
+            public function beforeUpdate(array $oldItem, FormData $data, DbOperationContext $context): void
+            {
+                $this->calls[] = 'before:' . $oldItem['NAME'];
+            }
+            public function afterUpdate(array $item, FormData $data, DbOperationContext $context): void
+            {
+                $this->calls[] = 'after:' . $item['NAME'];
+            }
         };
 
         $resource->updateItem(1, ['NAME' => 'New']);

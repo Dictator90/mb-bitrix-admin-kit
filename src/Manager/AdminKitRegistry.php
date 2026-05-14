@@ -112,7 +112,7 @@ final class AdminKitRegistry
 
     private function sort(): void
     {
-        uasort($this->resources, static fn(string $a, string $b): int => $a::getSort() <=> $b::getSort());
-        uasort($this->pages, static fn(string $a, string $b): int => $a::getSort() <=> $b::getSort());
+        uasort($this->resources, static fn (string $a, string $b): int => $a::getSort() <=> $b::getSort());
+        uasort($this->pages, static fn (string $a, string $b): int => $a::getSort() <=> $b::getSort());
     }
 }

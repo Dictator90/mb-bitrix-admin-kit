@@ -8,9 +8,9 @@ use Bitrix\Main\Config\Option;
 use Bitrix\Main\Context;
 use Bitrix\Main\HttpRequest;
 use Bitrix\Main\SiteTable;
-use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\Tab;
@@ -263,7 +263,7 @@ abstract class OptionsPage extends AbstractPage
         echo '<input type="hidden" name="site_id" value="' . htmlspecialcharsbx($siteId) . '">';
         echo '<input type="hidden" name="adminkit_ajax" value="Y">';
 
-        $resolver = static fn(string $col) => $wrapper->get($col);
+        $resolver = static fn (string $col) => $wrapper->get($col);
 
         echo '<div class="ui-form">';
         foreach ($components as $item) {
@@ -703,7 +703,7 @@ abstract class OptionsPage extends AbstractPage
     {
         $fields = $this->extractAllFields(iterator_to_array($this->components()));
 
-        return array_values(array_filter($fields, fn(FieldContract $f) => !$f->isReadOnly()));
+        return array_values(array_filter($fields, fn (FieldContract $f) => !$f->isReadOnly()));
     }
 
     protected function buildSiteUrl(string $siteId): string

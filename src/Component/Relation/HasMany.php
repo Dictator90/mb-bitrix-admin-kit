@@ -187,8 +187,7 @@ class HasMany implements ComponentContract
                 <?php
                 if (empty($this->columns)): ?>
                     <div class="adminkit-hasmany__empty">Столбцы не заданы — используйте ->columns([...])</div>
-                <?php
-                else: ?>
+                <?php else: ?>
                     <table class="adminkit-hasmany__table">
                         <thead>
                         <tr>
@@ -209,8 +208,7 @@ class HasMany implements ComponentContract
                             <tr>
                                 <td colspan="<?= $colCount ?>" class="adminkit-hasmany__empty">Нет записей</td>
                             </tr>
-                        <?php
-                        else: ?>
+                        <?php else: ?>
                             <?php
                             foreach ($rows as $row): ?>
                                 <tr>

@@ -14,7 +14,7 @@ final class ComputedColumnTest extends TestCase
     public function testItComputesGridColumnAfterDatabaseFetch(): void
     {
         $field = Text::make('User', 'USER_FULL_NAME')->computed(
-            fn(array $row): string => trim(($row['USER_NAME'] ?? '') . ' ' . ($row['USER_LAST_NAME'] ?? ''))
+            fn (array $row): string => trim(($row['USER_NAME'] ?? '') . ' ' . ($row['USER_LAST_NAME'] ?? ''))
         );
 
         $rows = (new RowAssembler([$field]))->buildRows(new FakeQueryResult([

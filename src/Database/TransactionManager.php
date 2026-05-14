@@ -9,7 +9,9 @@ use Throwable;
 
 final class TransactionManager
 {
-    public function __construct(private ?object $connection = null) {}
+    public function __construct(private ?object $connection = null)
+    {
+    }
 
     public function start(): void
     {

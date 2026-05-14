@@ -101,8 +101,8 @@ class RowAction implements ActionContract
                 . '&sessid=' . bitrix_sessid();
             $confirmText = CUtil::JSEscape($this->confirmText ?? '');
             $result['onclick'] = "if(confirm('" . $confirmText . "')) { window.location.href='" . CUtil::JSEscape(
-                    $deleteUrl
-                ) . "'; }";
+                $deleteUrl
+            ) . "'; }";
         } else {
             $url = $this->url ?: ($baseUrl . $sep . 'action=' . $this->id . '&id=#ID#');
             $url = str_replace('#ID#', (string)$id, $url);

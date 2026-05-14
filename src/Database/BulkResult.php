@@ -49,7 +49,7 @@ final class BulkResult
     public function addError(mixed $id, string|array $errors): void
     {
         $key = $this->key($id);
-        $messages = array_values(array_filter(array_map('strval', (array)$errors), static fn(string $error): bool => $error !== ''));
+        $messages = array_values(array_filter(array_map('strval', (array)$errors), static fn (string $error): bool => $error !== ''));
         $this->errorsById[$key] = array_merge($this->errorsById[$key] ?? [], $messages ?: ['Bulk operation failed.']);
         $this->failedCount = count($this->errorsById);
         $this->recalculateTotal();

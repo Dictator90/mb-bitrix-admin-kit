@@ -26,8 +26,11 @@ final class BulkChunkProcessingTest extends TestCase
             ['ID' => 3, 'NAME' => 'Three'],
         ];
 
-        $resource = new class extends ProductResource {
-            public function bulkChunkSize(): int { return 2; }
+        $resource = new class () extends ProductResource {
+            public function bulkChunkSize(): int
+            {
+                return 2;
+            }
         };
 
         $result = BulkUpdateAction::make('activate')->update(['ACTIVE' => 'Y'])->execute(

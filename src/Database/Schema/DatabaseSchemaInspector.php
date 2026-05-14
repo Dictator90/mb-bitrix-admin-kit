@@ -9,7 +9,9 @@ use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 class DatabaseSchemaInspector
 {
-    public function __construct(private readonly ?object $connection = null) {}
+    public function __construct(private readonly ?object $connection = null)
+    {
+    }
 
     public function tableExists(string $tableName): bool
     {

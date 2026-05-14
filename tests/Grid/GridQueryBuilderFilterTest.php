@@ -15,7 +15,7 @@ final class GridQueryBuilderFilterTest extends TestCase
 {
     public function testItMergesDefaultUiAndIndexFilters(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function filters(): iterable
             {
                 return [TextFilter::make('Name', 'NAME')->exact(), NumberFilter::make('Price', 'PRICE')->greaterThan()];

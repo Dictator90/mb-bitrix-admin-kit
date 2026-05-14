@@ -29,7 +29,7 @@ final class BulkPermissionTest extends TestCase
 
     public function testItSkipsRowsWithoutUpdatePermission(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function canUpdate(PermissionContext|\MB\Bitrix\AdminKit\Support\DataWrapper|null $context = null): bool
             {
                 return (int)($context instanceof PermissionContext ? ($context->item['ID'] ?? 0) : 0) !== 2;

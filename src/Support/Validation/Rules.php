@@ -179,7 +179,7 @@ class Rules
     {
         return function (mixed $value) use ($confirmFieldName, $confirmValue, $message): bool|string {
             if ($value !== $confirmValue) {
-                return $message ?: "Поле не совпадает с полем подтверждения";
+                return $message ?: 'Поле не совпадает с полем подтверждения';
             }
 
             return true;

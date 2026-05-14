@@ -13,10 +13,16 @@ final class LifecycleCreateTest extends TestCase
 {
     public function testCreateHooksAreCalled(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public array $calls = [];
-            public function beforeCreate(FormData $data, DbOperationContext $context): void { $this->calls[] = 'before:' . $context->operation; }
-            public function afterCreate(mixed $id, FormData $data, DbOperationContext $context): void { $this->calls[] = 'after:' . $id; }
+            public function beforeCreate(FormData $data, DbOperationContext $context): void
+            {
+                $this->calls[] = 'before:' . $context->operation;
+            }
+            public function afterCreate(mixed $id, FormData $data, DbOperationContext $context): void
+            {
+                $this->calls[] = 'after:' . $id;
+            }
         };
 
         $resource->createItem(['NAME' => 'Two']);

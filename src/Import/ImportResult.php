@@ -13,7 +13,8 @@ final class ImportResult
         public readonly int $updated = 0,
         public readonly int $skipped = 0,
         public readonly array $errors = [],
-    ) {}
+    ) {
+    }
 
     public static function empty(): self
     {

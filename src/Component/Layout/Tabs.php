@@ -11,7 +11,6 @@ use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\Tab;
 
-
 /**
  * Tabs container — wraps Tab instances and renders using the mb.core:ui.tabs JS extension.
  *
@@ -43,7 +42,7 @@ class Tabs implements ComponentContract
     /** @param Tab[] $tabs */
     public function __construct(array $tabs = [])
     {
-        $this->tabs = array_values(array_filter($tabs, fn($t) => $t instanceof Tab));
+        $this->tabs = array_values(array_filter($tabs, fn ($t) => $t instanceof Tab));
     }
 
     /** @param Tab[] $tabs */
@@ -83,7 +82,7 @@ class Tabs implements ComponentContract
         Extension::load([$this->extension]);
 
         // Ensure at least one tab is active
-        $hasActive = (bool)array_filter($this->tabs, fn(Tab $t) => $t->isActive());
+        $hasActive = (bool)array_filter($this->tabs, fn (Tab $t) => $t->isActive());
         if (!$hasActive) {
             $this->tabs[0]->active();
         }

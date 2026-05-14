@@ -27,7 +27,7 @@ final class DbResult
     {
         $result = new self();
         $result->success = false;
-        $result->errors = array_values(array_filter((array)$errors, static fn($error) => $error !== ''));
+        $result->errors = array_values(array_filter((array)$errors, static fn ($error) => $error !== ''));
 
         if ($result->errors === []) {
             $result->errors[] = 'Bitrix ORM operation failed.';
