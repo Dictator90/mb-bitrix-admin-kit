@@ -9,23 +9,52 @@ use Bitrix\Main\HttpRequest;
 use MB\Bitrix\AdminKit\Pages\AbstractPage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
-use MB\Bitrix\Contracts\Module\Entity as ModuleEntityContract;
 
 /**
- * Per-module admin panel facade.
+ * Scoped admin panel facade.
  *
- * The facade remains backward compatible while delegating v0.8.0 responsibilities
- * to AdminKitRegistry, AdminKitRouter, AdminKitMenuBuilder, and AdminKitRenderer.
+ * The facade delegates page storage, routing, menu building, and rendering to
+ * AdminKitRegistry, AdminKitRouter, AdminKitMenuBuilder, and AdminKitRenderer.
  */
 final class AdminKitManager
 {
+    private AdminKitScope $scope;
     private AdminKitRegistry $registry;
+    private DiscoveryConfig $discovery;
     private HttpRequest $request;
 
-    public function __construct(private ModuleEntityContract $module)
+    /** @param string|object|AdminKitScope $scope */
+    public function __construct(string|object $scope)
     {
+        $this->scope = $scope instanceof AdminKitScope ? $scope : AdminKitScope::fromModule($scope);
         $this->request = Context::getCurrent()->getRequest();
         $this->registry = new AdminKitRegistry();
+        $this->discovery = (new DiscoveryConfig())->addPaths($this->scope->discoveryPaths());
+    }
+
+    public function scope(): AdminKitScope
+    {
+        return $this->scope;
+    }
+
+    public function scopeId(): string
+    {
+        return $this->scope->scopeId();
+    }
+
+    public function discoverIn(string ...$paths): static
+    {
+        $this->discovery->addPaths($paths);
+
+        return $this;
+    }
+
+    /** @param string[] $paths */
+    public function discoverPaths(array $paths): static
+    {
+        $this->discovery->addPaths($paths);
+
+        return $this;
     }
 
     /** @param class-string<Resource> $resourceClass */
@@ -89,7 +118,7 @@ final class AdminKitManager
 
     private function discover(): AdminKitRegistry
     {
-        return $this->registry->discover($this->module->getLibPath());
+        return $this->registry->discoverPaths($this->discovery->paths());
     }
 
     private function resolveBaseUrl(): string

@@ -25,3 +25,14 @@ if (!interface_exists(Entity::class)) {
         public function getLibPath(): string;
     }
 }
+
+namespace Bitrix\UI\EntitySelector;
+
+if (!class_exists(BaseProvider::class)) {
+    abstract class BaseProvider
+    {
+        public function __construct(array $options = [])
+        {
+        }
+    }
+}

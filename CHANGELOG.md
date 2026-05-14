@@ -3,6 +3,11 @@
 ## v1.0.0 - 2026-05-14
 
 ### Added
+- Added scoped AdminKit creation with `AdminKitScope`, `forModule()`, `forScope()`, `fromDirectory()`, and `fromDirectories()` for module, `local/php_interface`, custom-directory, and manual-registration workflows.
+- Added multi-path discovery configuration and registry discovery that safely ignores missing paths and skips abstract classes.
+- Documented scope-based discovery in README and `docs/discovery.md`.
+
+### Added
 - Added the `MB\Bitrix\AdminKit\AdminKit` facade for creating per-module managers.
 - Documented the v1.0.0 stable public API review scope for Resources, CRUD resources, grid/form contexts, database result objects, fields, filters, actions, support adapters, URL generation, and import/export.
 - Added a backward-compatibility policy for v1.x covering public/protected method signatures, class names, namespaces, CRUD behavior, `FormData`, `GridContext`, `DbResult`, `BulkResult`, and base Field/Filter/Action APIs.

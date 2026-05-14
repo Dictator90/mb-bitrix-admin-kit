@@ -61,3 +61,8 @@
 - Treat Resource, CrudResource, GridContext, FormData, DbResult, BulkResult, Field, Filter, Action, support adapters, persistence, grid query, URL, and import/export classes as stable public API unless a task explicitly requests a breaking change.
 - Do not require userland resources to type against `MB\Support\Collection`, global helpers, or internal adapter classes; keep public extension points based on simple PHP types and callables.
 - Document every backward-compatibility exception and migration step in `docs/backward-compatibility.md` and `CHANGELOG.md` before changing code.
+
+## v1.1.0 scope/discovery notes
+- Treat `scopeId` as the AdminKit area identifier; it may be a Bitrix module ID, but code must not assume it is an installed module.
+- Keep `AdminKit::forModule()` module-first while supporting `forScope()`, directory shortcuts, and manual registration without discovery.
+- Discovery paths must remain optional and safe: missing directories should not break manually registered resources or pages.
