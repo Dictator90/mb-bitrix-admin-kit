@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page;
 
 use Bitrix\Main\UI\Extension;
+use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
+use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
@@ -18,7 +20,6 @@ use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 class FormPage extends Page
 {
-    protected ?int $id;
     protected ?DataWrapper $item = null;
     protected array $errors = [];
 
@@ -30,10 +31,18 @@ class FormPage extends Page
 
     protected string $formId = '';
 
-    public function __construct(ResourceContract $resource, ?int $id = null)
+    protected string $mode = 'create';
+
+    public function __construct(ResourceContract $resource, mixed $id = null, array $params = [])
     {
-        parent::__construct($resource);
-        $this->id = $id;
+        parent::__construct($resource, $id, $params);
+        $this->id = $id !== null ? (int)$id : null;
+        $this->mode = (string)($params['mode'] ?? ($this->id ? 'edit' : 'create'));
+    }
+
+    public static function pageName(): string
+    {
+        return 'form';
     }
 
     public function render(): void
@@ -144,6 +153,7 @@ class FormPage extends Page
         try {
             $this->assertSavePermission($context);
             $this->resource->beforeValidate($formData, $context);
+            $this->beforeSave($formData, $context);
 
             if ($formData->hasErrors()) {
                 return;
@@ -157,6 +167,10 @@ class FormPage extends Page
             } else {
                 $result = $this->resource->createItemResult($formData, $context);
                 $savedId = $result->isSuccess() ? $result->id() : null;
+            }
+
+            if ($savedId !== null) {
+                $this->afterSave($formData, $context, $savedId);
             }
         } catch (AdminKitException $exception) {
             $this->errors[] = $exception->getMessage();
@@ -175,11 +189,41 @@ class FormPage extends Page
                 // Don't redirect — signal the slider to close; grid reload happens in onCloseComplete
                 $this->savedInSidePanel = true;
             } else {
-                $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
-                $sep = str_contains($backUrl, '?') ? '&' : '?';
-                $this->redirect($backUrl . $sep . 'saved=1');
+                $redirectUrl = $this->redirectAfterSave($savedId);
+                if ($redirectUrl === null) {
+                    $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
+                    $sep = str_contains($backUrl, '?') ? '&' : '?';
+                    $redirectUrl = $backUrl . $sep . 'saved=1';
+                }
+                $this->redirect($redirectUrl);
             }
         }
+    }
+
+
+    /** @return iterable<FieldContract|ComponentContract> */
+    protected function fields(): iterable
+    {
+        return $this->resource->formFields();
+    }
+
+    /** @return iterable<Tab> */
+    protected function tabs(): iterable
+    {
+        return $this->resource->formTabs();
+    }
+
+    protected function beforeSave(\MB\Bitrix\AdminKit\Form\FormData $data, DbOperationContext $context): void
+    {
+    }
+
+    protected function afterSave(\MB\Bitrix\AdminKit\Form\FormData $data, DbOperationContext $context, mixed $savedId): void
+    {
+    }
+
+    protected function redirectAfterSave(mixed $savedId): ?string
+    {
+        return null;
     }
 
     protected function assertSavePermission(DbOperationContext $context): void
@@ -217,7 +261,7 @@ class FormPage extends Page
     protected function renderForm(): void
     {
         $action = $this->request->getRequestUri();
-        $tabs = iterator_to_array($this->resource->formTabs());
+        $tabs = iterator_to_array($this->tabs());
         $fid = htmlspecialcharsbx($this->formId);
 
         echo '<form id="' . $fid . '" method="POST" action="' . htmlspecialcharsbx($action) . '">';
@@ -252,7 +296,7 @@ class FormPage extends Page
         echo '</div>';
     }
 
-    /** @param Tab[] $tabs */
+    /** @param array<int,Tab> $tabs */
     protected function renderTabbedForm(array $tabs): void
     {
         $hasActive = false;
@@ -330,7 +374,16 @@ class FormPage extends Page
         echo '<div class="ui-form-row' . $extraClass . '" data-field-column="' . $column . '"' . $visibilityAttr . '>';
         echo '<div class="ui-form-label"><div class="ui-ctl-label-text">' . $label . $requiredMark . $hint . '</div></div>';
         echo '<div class="ui-form-content">';
-        echo $field->renderFormField($value);
+        echo $field->renderForm(new FieldRenderContext(
+            field: $field,
+            resource: $this->resource,
+            item: $this->item,
+            value: $value,
+            page: 'form',
+            row: $this->item?->toArray() ?? [],
+            errors: $this->fieldErrors[$field->getColumn()] ?? [],
+            meta: ['mode' => $this->mode],
+        ));
         foreach ($this->fieldErrors[$field->getColumn()] ?? [] as $message) {
             echo '<div class="ui-alert ui-alert-danger adminkit-field-error"><span class="ui-alert-message">' . htmlspecialcharsbx($message) . '</span></div>';
         }
@@ -389,7 +442,7 @@ class FormPage extends Page
     protected function getVisibleItems(): array
     {
         $items = [];
-        foreach ($this->resource->formFields() as $item) {
+        foreach ($this->fields() as $item) {
             if ($item instanceof ComponentContract) {
                 $items[] = $item;
             } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
@@ -775,7 +828,7 @@ class FormPage extends Page
     /** @return FieldContract[] — all writable fields from both flat form and tabs */
     protected function collectAllFields(): array
     {
-        $tabs = iterator_to_array($this->resource->formTabs());
+        $tabs = iterator_to_array($this->tabs());
         if (!empty($tabs)) {
             $fields = [];
             foreach ($tabs as $tab) {

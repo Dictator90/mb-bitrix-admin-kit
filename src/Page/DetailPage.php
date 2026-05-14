@@ -7,18 +7,23 @@ namespace MB\Bitrix\AdminKit\Page;
 use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 class DetailPage extends Page
 {
-    protected int $id;
     protected ?DataWrapper $item = null;
 
-    public function __construct(ResourceContract $resource, int $id)
+    public function __construct(ResourceContract $resource, mixed $id = null, array $params = [])
     {
-        parent::__construct($resource);
+        parent::__construct($resource, $id, $params);
         $this->id = $id;
+    }
+
+    public static function pageName(): string
+    {
+        return 'detail';
     }
 
     public function render(): void
@@ -43,9 +48,16 @@ class DetailPage extends Page
         echo '<div class="ui-form">';
 
         foreach ($fields as $field) {
-            $value = $this->item->get($field->getColumn());
+            $value = $field->resolveValue($this->item, $this->item->toArray());
             $label = htmlspecialcharsbx($field->getLabel());
-            $displayValue = htmlspecialcharsbx((string)$field->previewValue($value));
+            $displayValue = $field->renderDetail(new FieldRenderContext(
+                field: $field,
+                resource: $this->resource,
+                item: $this->item,
+                value: $value,
+                page: 'detail',
+                row: $this->item->toArray(),
+            ));
 
             echo '<div class="ui-form-row">';
             echo '<div class="ui-form-label"><div class="ui-ctl-label-text">' . $label . '</div></div>';
@@ -68,13 +80,20 @@ class DetailPage extends Page
         echo '</div>';
     }
 
+
+    /** @return iterable<FieldContract> */
+    protected function fields(): iterable
+    {
+        return $this->resource->detailFields();
+    }
+
     /**
      * @return FieldContract[]
      */
     protected function getVisibleFields(): array
     {
         $fields = [];
-        foreach ($this->resource->detailFields() as $field) {
+        foreach ($this->fields() as $field) {
             if ($field->isVisibleOn(PageType::DETAIL)) {
                 $fields[] = $field;
             }

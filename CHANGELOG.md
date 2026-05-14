@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Added the `Resource::pages()` model with default `IndexPage`, `FormPage`, and `DetailPage` registrations, plus `PageContract`, `PageFactory`, `ResourcePageResolver`, and `PageNotFoundException` for resolving custom page classes.
+- Added `FieldRenderContext` and wired index, form, and detail field rendering through page-aware render contexts while keeping raw-value field rendering backward compatible.
+
+### Changed
+- Adapted the refactored grid architecture so `IndexPage` supplies fields, filters, actions, and query customization to `GridDataLoader`, `GridQueryBuilder`, and `RowAssembler`.
+- Updated `FormPage` and `DetailPage` so page-level `fields()`/`tabs()` overrides are the primary customization points with resource shortcuts as defaults.
+- Extended routing to distinguish resource ids from page names through `admin_resource` and `admin_page` while preserving legacy action routing.
+
+### Documentation
+- Documented custom Resource pages in README and `docs/pages.md`, including IndexPage/FormPage/DetailPage examples and guidance against `indexResource()`-style abstractions.
+
 ## v1.0.0 - 2026-05-14
 
 ### Changed

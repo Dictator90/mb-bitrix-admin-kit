@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Contracts;
 
 use MB\Bitrix\AdminKit\Action\AsyncAction;
+use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Database\DbResult;
 use MB\Bitrix\AdminKit\Form\FormData;
@@ -82,6 +83,9 @@ interface ResourceContract
     public function mapIndexRow(array $row, GridContext $context): array;
 
     public function modifyIndexParams(array $params, GridContext $context): array;
+
+    /** @return iterable<class-string<PageContract>> */
+    public function pages(): iterable;
 
     public function findItem(mixed $id): ?array;
 

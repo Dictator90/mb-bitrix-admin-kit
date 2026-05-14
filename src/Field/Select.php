@@ -115,12 +115,28 @@ class Select extends Field
 
     public function renderIndex(mixed $value, array $row = []): string
     {
-        return $this->renderSelectedLabels($this->displayValue($value, $row, ['page' => 'index', 'field' => $this]));
+        if ($value instanceof FieldRenderContext) {
+            $row = $value->row;
+            $meta = array_merge($value->meta, ['page' => $value->page, 'field' => $this, 'context' => $value]);
+            $value = $value->value;
+        } else {
+            $meta = ['page' => 'index', 'field' => $this];
+        }
+
+        return $this->renderSelectedLabels($this->displayValue($value, $row, $meta));
     }
 
     public function renderDetail(mixed $value, array $row = []): string
     {
-        return $this->renderSelectedLabels($this->displayValue($value, $row, ['page' => 'detail', 'field' => $this]));
+        if ($value instanceof FieldRenderContext) {
+            $row = $value->row;
+            $meta = array_merge($value->meta, ['page' => $value->page, 'field' => $this, 'context' => $value]);
+            $value = $value->value;
+        } else {
+            $meta = ['page' => 'detail', 'field' => $this];
+        }
+
+        return $this->renderSelectedLabels($this->displayValue($value, $row, $meta));
     }
 
     public function normalize(mixed $value): mixed

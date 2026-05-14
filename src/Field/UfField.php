@@ -86,7 +86,15 @@ class UfField extends Field
 
     public function renderDetail(mixed $value, array $row = []): string
     {
-        $display = $this->displayValue($value, $row, ['page' => 'detail', 'field' => $this]);
+        if ($value instanceof FieldRenderContext) {
+            $row = $value->row;
+            $meta = array_merge($value->meta, ['page' => $value->page, 'field' => $this, 'context' => $value]);
+            $value = $value->value;
+        } else {
+            $meta = ['page' => 'detail', 'field' => $this];
+        }
+
+        $display = $this->displayValue($value, $row, $meta);
         if (is_array($display)) {
             return implode(', ', array_map(static fn ($item): string => htmlspecialcharsbx((string)$item), $display));
         }

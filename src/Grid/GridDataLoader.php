@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid;
 
+use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
@@ -18,15 +19,20 @@ final class GridDataLoader
     ) {
     }
 
-    public function load(ResourceContract $resource, Grid $grid, mixed $request = null, ?GridContext $context = null): ?QueryPerformanceContext
-    {
+    public function load(
+        ResourceContract $resource,
+        Grid $grid,
+        mixed $request = null,
+        ?GridContext $context = null,
+        ?IndexPageDefinitionContract $indexPage = null,
+    ): ?QueryPerformanceContext {
         $dataManagerClass = $resource->getDataManagerClass();
         if (!$dataManagerClass) {
             return null;
         }
 
         $context ??= $this->makeContext($resource, $grid, $request);
-        $params = $this->queryGuard->guardGridParams($this->queryBuilder->build($resource, $context), $context);
+        $params = $this->queryGuard->guardGridParams($this->queryBuilder->build($resource, $context, $indexPage), $context);
 
         $start = microtime(true);
         $countQueryUsed = false;
@@ -39,7 +45,7 @@ final class GridDataLoader
         }
 
         $result = $dataManagerClass::getList($params);
-        $grid->setRawRows($result, $context);
+        $grid->setRawRows($result, $context, $indexPage);
 
         $performance = new QueryPerformanceContext(
             $resource,

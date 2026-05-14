@@ -8,35 +8,45 @@ use Bitrix\Main\Grid\Options as GridOptions;
 use Bitrix\Main\UI\Filter\Options as FilterOptions;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
+use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Page\ResourceBackedIndexPageDefinition;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 final class GridQueryBuilder
 {
-    public function build(ResourceContract $resource, GridContext $context): array
-    {
+    public function build(
+        ResourceContract $resource,
+        GridContext $context,
+        ?IndexPageDefinitionContract $indexPage = null,
+    ): array {
+        $indexPage ??= $this->resourceBackedDefinition($resource);
+
         $params = [
-            'select' => $this->buildSelect($resource, $context),
-            'filter' => $this->buildFilter($resource, $context),
-            'order' => $this->buildOrder($resource, $context),
+            'select' => $this->buildSelect($resource, $context, $indexPage),
+            'filter' => $this->buildFilter($context, $indexPage),
+            'order' => $this->buildOrder($context, $indexPage),
             'limit' => $context->limit,
             'offset' => $context->offset,
         ];
 
-        $runtime = $this->buildRuntime($resource, $context);
+        $runtime = $this->buildRuntime($context, $indexPage);
         if ($runtime !== []) {
             $params['runtime'] = $runtime;
         }
 
-        $params = $resource->beforeIndexQueryParams($params, $context);
+        $params = $indexPage->beforeIndexQueryParams($params, $context);
 
-        return $resource->modifyIndexParams($params, $context);
+        return $indexPage->modifyIndexParams($params, $context);
     }
 
-    private function buildSelect(ResourceContract $resource, GridContext $context): array
-    {
+    private function buildSelect(
+        ResourceContract $resource,
+        GridContext $context,
+        IndexPageDefinitionContract $indexPage,
+    ): array {
         $select = [];
-        foreach (AdminCollection::make($resource->indexFields())->all() as $field) {
+        foreach (AdminCollection::make($indexPage->fields())->all() as $field) {
             if (!$field instanceof FieldContract) {
                 continue;
             }
@@ -46,7 +56,7 @@ final class GridQueryBuilder
             $select[] = $field->getColumn();
         }
 
-        $select = array_merge($select, $resource->defaultSelect(), $resource->indexSelect($context));
+        $select = array_merge($select, $indexPage->defaultSelect(), $indexPage->indexSelect($context));
 
         $primaryKey = $resource->getPrimaryKey();
         if (!in_array($primaryKey, $select, true)) {
@@ -56,11 +66,11 @@ final class GridQueryBuilder
         return array_values(array_unique(array_filter($select)));
     }
 
-    private function buildOrder(ResourceContract $resource, GridContext $context): array
+    private function buildOrder(GridContext $context, IndexPageDefinitionContract $indexPage): array
     {
         $uiOrder = $context->sort ?: $this->readGridSort($context);
 
-        return array_replace($resource->defaultSort(), $uiOrder, $resource->indexOrder($context));
+        return array_replace($indexPage->defaultSort(), $uiOrder, $indexPage->indexOrder($context));
     }
 
     private function readGridSort(GridContext $context): array
@@ -77,7 +87,7 @@ final class GridQueryBuilder
         return [];
     }
 
-    private function buildFilter(ResourceContract $resource, GridContext $context): array
+    private function buildFilter(GridContext $context, IndexPageDefinitionContract $indexPage): array
     {
         $rawValues = $context->filter;
         if ($rawValues === [] && class_exists(FilterOptions::class)) {
@@ -85,7 +95,7 @@ final class GridQueryBuilder
         }
 
         $result = [];
-        foreach (AdminCollection::make($resource->filters())->all() as $filter) {
+        foreach (AdminCollection::make($indexPage->filters())->all() as $filter) {
             if (!$filter instanceof FilterContract) {
                 continue;
             }
@@ -99,15 +109,20 @@ final class GridQueryBuilder
             $result = $filter->applyToOrmFilter($result, $value, $context);
         }
 
-        return array_replace($resource->defaultFilter(), $result, $resource->indexFilter($context));
+        return array_replace($indexPage->defaultFilter(), $result, $indexPage->indexFilter($context));
     }
 
-    private function buildRuntime(ResourceContract $resource, GridContext $context): array
+    private function buildRuntime(GridContext $context, IndexPageDefinitionContract $indexPage): array
     {
         return array_values(array_merge(
-            AdminCollection::make($resource->runtimeFields())->all(),
-            AdminCollection::make($resource->indexRuntime($context))->all(),
+            AdminCollection::make($indexPage->runtimeFields())->all(),
+            AdminCollection::make($indexPage->indexRuntime($context))->all(),
         ));
+    }
+
+    private function resourceBackedDefinition(ResourceContract $resource): IndexPageDefinitionContract
+    {
+        return new ResourceBackedIndexPageDefinition($resource);
     }
 
     private function safeKey(string $column): string

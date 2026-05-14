@@ -72,3 +72,10 @@
 - Keep `GridDataLoader` responsible for GridContext creation, QueryGuard, total count/cache, DataManager calls, and QueryPerformanceContext.
 - Keep `Grid` and `src/Bitrix/Grid/*Adapter.php` focused on UI state and Bitrix component/action-panel params; do not reintroduce ORM query building into `Grid` or `IndexPage`.
 - Keep toolbar/filter/create button integration in `Bitrix\Toolbar\ToolbarRenderer` when changing index-page toolbar behavior.
+
+
+## v1.3.0 resource pages notes
+- Treat `Resource::pages()` plus `IndexPage`, `FormPage`, and `DetailPage` subclasses as the primary view customization mechanism.
+- Keep `indexFields()`, `formFields()`, and `detailFields()` as simple fallback shortcuts; do not add `indexResource()`, `formResource()`, `detailResource()`, or split Resource abstractions.
+- Keep grid query/data/row layers fed by `IndexPage` definitions rather than direct `resource->indexFields()` calls when rendering an index page.
+- Use `FieldRenderContext` for page-aware field rendering on index, form, and detail pages while preserving backward-compatible raw-value rendering.

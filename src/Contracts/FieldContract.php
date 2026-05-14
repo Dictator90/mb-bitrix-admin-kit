@@ -19,6 +19,11 @@ interface FieldContract
 
     public function setValue(mixed $value): static;
 
+    public function fill(mixed $value): static;
+
+    /** @param array<string,mixed> $row */
+    public function resolveValue(mixed $item, array $row = []): mixed;
+
     public function isRequired(): bool;
 
     public function isVisibleOn(PageType $pageType): bool;
@@ -31,13 +36,17 @@ interface FieldContract
 
     public function renderFormField(mixed $value = null): string;
 
-    public function renderIndex(mixed $value, array $row = []): string;
+    public function renderIndex(mixed $context, array $row = []): string;
 
-    public function renderForm(mixed $value = null, array $context = []): string;
+    /** @param array<string,mixed> $data */
+    public function renderForm(mixed $context = null, array $data = []): string;
 
-    public function renderDetail(mixed $value, array $row = []): string;
+    public function renderDetail(mixed $context, array $row = []): string;
 
     public function normalize(mixed $value): mixed;
+
+    /** @return array<int,string>|static */
+    public function validate(mixed $value): array|static;
 
     public function getDefault(): mixed;
 
