@@ -8,6 +8,7 @@ use Bitrix\Main\ORM\Data\DataManager;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
+use MB\Bitrix\AdminKit\Grid\GridContext;
 
 /**
  * Explicit base class for Bitrix D7 ORM-backed CRUD resources.
@@ -41,6 +42,31 @@ abstract class CrudResource extends Resource
     public function bulkChunkSize(): int
     {
         return 100;
+    }
+
+    public function databaseTableName(): string
+    {
+        $class = $this->getDataManagerClass();
+        if ($class && method_exists($class, 'getTableName')) {
+            return (string)$class::getTableName();
+        }
+
+        return '';
+    }
+
+    public function useTotalCount(GridContext $context): bool
+    {
+        return true;
+    }
+
+    public function countCacheTtl(GridContext $context): int
+    {
+        return 0;
+    }
+
+    public function maxPageSize(): int
+    {
+        return 200;
     }
 
     /** @return iterable<FieldContract> */

@@ -88,6 +88,14 @@ interface ResourceContract
 
     public function getCount(array $filter = []): int;
 
+    public function databaseTableName(): string;
+
+    public function useTotalCount(GridContext $context): bool;
+
+    public function countCacheTtl(GridContext $context): int;
+
+    public function maxPageSize(): int;
+
     public function createItem(array $data): mixed;
 
     public function createItemResult(FormData|array $data, ?DbOperationContext $context = null): DbResult;

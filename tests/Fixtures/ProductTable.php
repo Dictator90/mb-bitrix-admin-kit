@@ -8,6 +8,8 @@ final class ProductTable
 {
     public static array $rows = [['ID' => 1, 'NAME' => 'One']];
     public static array $lastParams = [];
+    public static int $countCalls = 0;
+    public static int $listCalls = 0;
     public static array $lastAdded = [];
     public static array $lastUpdated = [];
     public static mixed $lastDeleted = null;
@@ -23,6 +25,8 @@ final class ProductTable
     {
         self::$rows = [['ID' => 1, 'NAME' => 'One']];
         self::$lastParams = [];
+        self::$countCalls = 0;
+        self::$listCalls = 0;
         self::$lastAdded = [];
         self::$lastUpdated = [];
         self::$lastDeleted = null;
@@ -35,8 +39,14 @@ final class ProductTable
         self::$updateErrorsById = [];
     }
 
+    public static function getTableName(): string
+    {
+        return 'vendor_product';
+    }
+
     public static function getList(array $params = []): FakeQueryResult
     {
+        self::$listCalls++;
         self::$lastParams = $params;
         $rows = self::$rows;
         $filter = $params['filter'] ?? [];
@@ -60,6 +70,7 @@ final class ProductTable
 
     public static function getCount(array $filter = []): int
     {
+        self::$countCalls++;
         return count(self::getList(['filter' => $filter])->fetchAll());
     }
 

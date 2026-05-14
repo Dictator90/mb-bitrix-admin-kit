@@ -173,6 +173,31 @@ abstract class Resource implements ResourceContract
         return 100;
     }
 
+    public function databaseTableName(): string
+    {
+        $class = $this->getDataManagerClass();
+        if ($class && method_exists($class, 'getTableName')) {
+            return (string)$class::getTableName();
+        }
+
+        return '';
+    }
+
+    public function useTotalCount(GridContext $context): bool
+    {
+        return true;
+    }
+
+    public function countCacheTtl(GridContext $context): int
+    {
+        return 0;
+    }
+
+    public function maxPageSize(): int
+    {
+        return 200;
+    }
+
     // ── Field / Filter / Action definitions ──────────────────────────────
 
     /** @return iterable<FieldContract> */

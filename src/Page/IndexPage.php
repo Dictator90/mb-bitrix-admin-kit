@@ -15,6 +15,9 @@ use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\MassDeleteAction;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
+use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
+use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
+use MB\Bitrix\AdminKit\Database\Performance\QueryPerformanceContext;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
@@ -23,6 +26,7 @@ use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
+use MB\Bitrix\AdminKit\Support\AdminString;
 
 class IndexPage extends Page
 {
@@ -85,6 +89,7 @@ class IndexPage extends Page
             $this->baseListUrl(),
             $this->resource->getPrimaryKey(),
         );
+        $this->grid->limitPageSize($this->resource->maxPageSize());
 
         $bulkActions = array_filter(
             iterator_to_array($this->resource->bulkActions()),
@@ -118,9 +123,87 @@ class IndexPage extends Page
             $this->request,
         );
 
-        $params = (new GridQueryBuilder())->build($this->resource, $context);
-        $grid->setTotalCount($dataManagerClass::getCount($params['filter'] ?? []));
-        $grid->setRawRows($dataManagerClass::getList($params), $context);
+        $params = (new QueryGuard())->guardGridParams((new GridQueryBuilder())->build($this->resource, $context), $context);
+        $start = microtime(true);
+        $countQueryUsed = false;
+        $cacheUsed = false;
+
+        if ($this->resource->useTotalCount($context)) {
+            [$count, $cacheUsed] = $this->resolveTotalCount($dataManagerClass, $context, $params['filter'] ?? []);
+            $countQueryUsed = !$cacheUsed;
+            $grid->setTotalCount($count);
+        }
+
+        $result = $dataManagerClass::getList($params);
+        $grid->setRawRows($result, $context);
+        $this->debugQuery(new QueryPerformanceContext(
+            $this->resource,
+            $context,
+            $params,
+            microtime(true) - $start,
+            0,
+            $countQueryUsed,
+            $cacheUsed,
+        ));
+    }
+
+
+    /** @param class-string $dataManagerClass @param array<string,mixed> $filter @return array{0:int,1:bool} */
+    protected function resolveTotalCount(string $dataManagerClass, GridContext $context, array $filter): array
+    {
+        $ttl = $this->resource->countCacheTtl($context);
+        if ($ttl <= 0) {
+            return [(int)$dataManagerClass::getCount($filter), false];
+        }
+
+        $key = AdminString::cacheKey('adminkit_count', [
+            'module' => 'mb.bitrix.adminkit',
+            'resource' => $this->resource::getId(),
+            'grid' => $context->gridId,
+            'filter' => $filter,
+            'user' => $this->currentUserId(),
+        ]);
+        $cached = ArrayTtlCache::get($key);
+        if ($cached !== null) {
+            return [(int)$cached, true];
+        }
+
+        $count = (int)$dataManagerClass::getCount($filter);
+        ArrayTtlCache::set($key, $count, $ttl);
+
+        return [$count, false];
+    }
+
+    protected function debugQuery(QueryPerformanceContext $context): void
+    {
+        if (!$this->isDebugAllowed()) {
+            return;
+        }
+
+        error_log('AdminKit ORM params: ' . json_encode([
+            'resource' => $context->resource::getId(),
+            'params' => $context->params,
+            'executionTime' => $context->executionTime,
+            'rowCount' => $context->rowCount,
+            'countQueryUsed' => $context->countQueryUsed,
+            'cacheUsed' => $context->cacheUsed,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    protected function isDebugAllowed(): bool
+    {
+        if (!defined('ADMIN_KIT_DEBUG') || ADMIN_KIT_DEBUG !== true) {
+            return false;
+        }
+
+        global $USER;
+        return is_object($USER) && method_exists($USER, 'IsAdmin') && (bool)$USER->IsAdmin();
+    }
+
+    protected function currentUserId(): mixed
+    {
+        global $USER;
+        return is_object($USER) && method_exists($USER, 'GetID') ? $USER->GetID() : null;
     }
 
     protected function renderToolbar(Grid $grid): void
@@ -194,6 +277,15 @@ class IndexPage extends Page
                 selectedIds: $ids,
                 request: $this->request,
             );
+
+            $guardErrors = (new QueryGuard())->validateBulkOperation($context);
+            if ($guardErrors !== []) {
+                $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$this->resource->getGridId()] = [
+                    'message' => implode(' ', $guardErrors),
+                    'success' => false,
+                ];
+                return true;
+            }
 
             $result = $action->execute($context);
             $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$this->resource->getGridId()] = [

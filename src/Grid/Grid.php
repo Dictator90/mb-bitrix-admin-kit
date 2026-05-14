@@ -69,6 +69,14 @@ class Grid
         return $this->nav;
     }
 
+    public function limitPageSize(int $maxPageSize): void
+    {
+        $maxPageSize = max(1, $maxPageSize);
+        if ($this->nav->getPageSize() > $maxPageSize) {
+            $this->nav->setPageSize($maxPageSize);
+        }
+    }
+
     public function setTotalCount(int $count): void
     {
         $this->totalCount = $count;
