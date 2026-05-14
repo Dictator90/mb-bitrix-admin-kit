@@ -15,6 +15,16 @@
 ### Changed
 - Expanded the README with stable API, lifecycle, transaction, permission, database health, performance, Bitrix UI adapter, documentation, and examples guidance for v1.0.0.
 - Confirmed Composer runtime requirements stay on PHP `^8.2` and support packages `mb4it/collections`, `mb4it/stringable`, and `mb4it/conditionable` `^1.0`.
+- Restored legacy selector aliases (`UserSelect`, `EntitySelect`, `IblockElementSelect`) as first-class adapters rendered through `mb.ui.dialog-selector`/`MB.UI.DialogSelector`, while keeping `*SelectorField` classes available.
+- Reworked bulk action panel execution to use native `main.ui.grid` `reloadTable('POST', ...)` flow (with `action_button_{GRID_ID}` and `action_all_rows_{GRID_ID}`), while keeping legacy `adminkit_bulk_action` JSON handling for backward compatibility.
+- Hardened server-side bulk request parsing for `action_button_{GRID_ID}`, `controls[group_action]`, and multiple selected-ID keys (`id`, `ID`, `rows`, primary-key aliases).
+- Added row action SidePanel close handlers that reload the bound grid after edit/view sliders close.
+- Added native inline grid editing support: enabled `ALLOW_INLINE_EDIT`/`ALLOW_EDIT_SELECTION` for editable fields and handled `action_button_{GRID_ID}=edit` row saves through `DataPipeline` and CRUD persistence.
+- Simplified selector field rendering by unifying `EntitySelectorField` form output through the `mb.ui.dialog-selector` path used by selector aliases, reducing dual-engine complexity.
+- Replaced `*SelectorField` selector classes with `*Select` classes (`EntitySelect`, `DialogSelect`, `TagSelect`, `UserSelect`, `IblockElementSelect`, `IblockSectionSelect`) and removed old `*SelectorField` classes.
+- Updated `EntitySelect` label resolution to use `src/UI/EntitySelector` providers by default; `resolveLabels()` now serves as an optional custom-label override.
+- Improved `IblockElementListProvider` avatar resolution for selector items: now uses `PREVIEW_PICTURE`, then `DETAIL_PICTURE`, then `MORE_PHOTO` fallback.
+- Restored legacy `IblockElementSelect` entity binding to `iblock-element-list` and legacy label resolution behavior from previous support package implementation.
 
 ### Migration notes
 - v1.0.0 is a stabilization release, not a feature expansion release. Existing v0.1.0-v0.9.0 Resource, Field, Filter, Action, persistence, bulk action, import/export, and page-layer extension points remain the migration path.

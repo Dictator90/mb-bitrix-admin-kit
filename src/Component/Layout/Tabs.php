@@ -9,7 +9,7 @@ use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
-use MB\Bitrix\AdminKit\Support\Tab;
+use MB\Bitrix\AdminKit\Component\Layout;
 
 /**
  * Tabs container — wraps Tab instances and renders using the mb.ui.tabs JS extension.

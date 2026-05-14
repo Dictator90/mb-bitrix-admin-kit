@@ -18,7 +18,7 @@ use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
 use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
 use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
 use MB\Bitrix\AdminKit\Support\AdminString;
-use MB\Bitrix\AdminKit\Support\Tab;
+use MB\Bitrix\AdminKit\Component\Layout;
 
 /**
  * Base for ORM-backed CRUD resources (Grid + Form + Detail pages).

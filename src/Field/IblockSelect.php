@@ -12,7 +12,7 @@ use CIBlock;
  *
  *   IblockSelect::make('Инфоблок', 'IBLOCK_ID')
  */
-class IblockSelect extends EntitySelect
+class IblockSelect extends DialogSelect
 {
     public function __construct(string $label, ?string $column = null)
     {

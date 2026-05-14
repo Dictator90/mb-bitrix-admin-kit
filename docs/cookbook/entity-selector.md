@@ -1,7 +1,7 @@
 # Как подключить EntitySelectorField
 
 ```php
-EntitySelectorField::make('User', 'USER_ID')
+EntitySelector::make('User', 'USER_ID')
     ->entity('user')
     ->multiple(false);
 ```

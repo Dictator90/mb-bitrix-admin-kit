@@ -7,7 +7,7 @@ namespace MB\Bitrix\AdminKit\Field;
 use Bitrix\Main\Loader;
 use CIBlockSection;
 
-class IblockSectionSelectorField extends EntitySelectorField
+class IblockSectionSelect extends DialogSelect
 {
     protected int $iblockId = 0;
 

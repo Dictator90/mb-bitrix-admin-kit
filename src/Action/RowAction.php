@@ -86,7 +86,7 @@ class RowAction implements ActionContract
         return $this->useSidePanel;
     }
 
-    public function toArray(array $row, string $baseUrl = ''): array
+    public function toArray(array $row, string $baseUrl = '', ?string $gridId = null): array
     {
         $id = $row['ID'] ?? $row['id'] ?? '';
         $sep = str_contains($baseUrl, '?') ? '&' : '?';
@@ -108,12 +108,38 @@ class RowAction implements ActionContract
             $url = str_replace('#ID#', (string)$id, $url);
 
             if ($this->useSidePanel) {
-                $result['onclick'] = "BX.SidePanel.Instance.open('" . CUtil::JSEscape($url) . "')";
+                $result['onclick'] = $this->buildSidePanelOpenJs($url, $gridId);
             } else {
                 $result['href'] = $url;
             }
         }
 
         return $result;
+    }
+
+    protected function buildSidePanelOpenJs(string $url, ?string $gridId = null): string
+    {
+        $urlJs = CUtil::JSEscape($url);
+        if ($gridId === null || $gridId === '') {
+            return "BX.SidePanel.Instance.open('{$urlJs}')";
+        }
+
+        $gridIdJson = json_encode($gridId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '""';
+
+        return
+            "BX.SidePanel.Instance.open('{$urlJs}',{" .
+                "events:{" .
+                    "onCloseComplete:function(){" .
+                        "var manager=BX.Main&&BX.Main.gridManager?BX.Main.gridManager:null;" .
+                        "if(!manager){return;}" .
+                        "var grid=manager.getInstanceById?manager.getInstanceById({$gridIdJson}):null;" .
+                        "if(!grid&&manager.getById){" .
+                            "var pair=manager.getById({$gridIdJson});" .
+                            "grid=pair&&(pair.instance||pair.grid)?(pair.instance||pair.grid):null;" .
+                        "}" .
+                        "if(grid&&typeof grid.reload==='function'){grid.reload();}" .
+                    "}" .
+                "}" .
+            "})";
     }
 }

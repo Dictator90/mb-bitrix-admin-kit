@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Field;
 
-use MB\Bitrix\AdminKit\Field\EntitySelectorField;
+use MB\Bitrix\AdminKit\Field\EntitySelect;
 use MB\Bitrix\AdminKit\Field\Select;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Field\UserSelectorField;
+use MB\Bitrix\AdminKit\Field\UserSelect;
 use PHPUnit\Framework\TestCase;
 
 final class FieldApiV050Test extends TestCase
@@ -49,16 +49,15 @@ final class FieldApiV050Test extends TestCase
 
     public function testEntitySelectorNormalizesSingleAndMultipleValues(): void
     {
-        self::assertSame('7', EntitySelectorField::make('User', 'USER_ID')->normalize(['7']));
-        self::assertSame(['7', '9'], EntitySelectorField::make('Users', 'USER_IDS')->multiple()->normalize(['7', '9']));
+        self::assertSame('7', EntitySelect::make('User', 'USER_ID')->normalize(['7']));
+        self::assertSame(['7', '9'], EntitySelect::make('Users', 'USER_IDS')->multiple()->normalize(['7', '9']));
     }
 
-    public function testUserSelectorUsesBitrixEntitySelectorAdapter(): void
+    public function testUserSelectorUsesDialogSelectorAdapter(): void
     {
-        $html = UserSelectorField::make('Responsible', 'RESPONSIBLE_ID')->renderForm(7);
+        $html = UserSelect::make('Responsible', 'RESPONSIBLE_ID')->renderForm(7);
 
-        self::assertStringContainsString('BX.UI.EntitySelector.TagSelector', $html);
-        self::assertStringContainsString('ui.entity-selector', $html);
-        self::assertStringContainsString('name="RESPONSIBLE_ID" value="7"', $html);
+        self::assertStringContainsString('MB.UI.DialogSelector.DialogSelector', $html);
+        self::assertStringContainsString("name: 'RESPONSIBLE_ID'", $html);
     }
 }

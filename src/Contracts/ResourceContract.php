@@ -14,7 +14,7 @@ use MB\Bitrix\AdminKit\Page\FormPage;
 use MB\Bitrix\AdminKit\Page\IndexPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
-use MB\Bitrix\AdminKit\Support\Tab;
+use MB\Bitrix\AdminKit\Component\Layout;
 
 interface ResourceContract
 {

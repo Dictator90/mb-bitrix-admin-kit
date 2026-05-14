@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Grid;
 
 use Bitrix\Main\Grid\Options as GridOptions;
+use Bitrix\Main\Grid\Panel\Snippet as GridPanelSnippet;
 use Bitrix\Main\ORM\Query\Result;
 use Bitrix\Main\UI\Filter\Options as FilterOptions;
 use Bitrix\Main\UI\PageNavigation;
@@ -160,6 +161,8 @@ class Grid
 
         $columns = array_map(fn (FieldContract $f) => $f->getGridColumnConfig(), AdminCollection::make($this->fields)->all());
 
+        $inlineEditable = $this->hasEditableFields();
+
         $params = [
             'GRID_ID' => $this->id,
             'COLUMNS' => $columns,
@@ -171,6 +174,8 @@ class Grid
             'SHOW_ROW_CHECKBOXES' => false,
             'SHOW_CHECK_ALL_CHECKBOXES' => false,
             'SHOW_ACTION_PANEL' => false,
+            'ALLOW_INLINE_EDIT' => false,
+            'ALLOW_EDIT_SELECTION' => false,
             'ALLOW_COLUMNS_SORT' => true,
             'ALLOW_COLUMNS_RESIZE' => true,
             'ALLOW_HORIZONTAL_SCROLL' => true,
@@ -180,11 +185,16 @@ class Grid
             'AJAX_OPTION_JUMP' => 'N',
         ];
 
-        if (!empty($this->bulkActions)) {
+        if (!empty($this->bulkActions) || $inlineEditable) {
             $params['SHOW_ROW_CHECKBOXES'] = true;
             $params['SHOW_CHECK_ALL_CHECKBOXES'] = true;
             $params['SHOW_ACTION_PANEL'] = true;
             $params['ACTION_PANEL'] = $this->buildActionPanel();
+        }
+
+        if ($inlineEditable) {
+            $params['ALLOW_INLINE_EDIT'] = true;
+            $params['ALLOW_EDIT_SELECTION'] = true;
         }
 
         return $params;
@@ -212,26 +222,28 @@ class Grid
     protected function buildActionPanel(): array
     {
         $items = [];
+
+        if ($this->hasEditableFields()) {
+            $items[] = $this->buildInlineEditButton();
+        }
+
         foreach ($this->bulkActions as $action) {
             $item = [
                 'TYPE' => 'BUTTON',
                 'ID' => $action->getId(),
                 'TEXT' => $action->getLabel(),
+                'ONCHANGE' => [[
+                    'ACTION' => 'CALLBACK',
+                    'DATA' => [[
+                        'JS' => $this->buildBulkActionCallbackJs($action->getId()),
+                    ]],
+                ]],
             ];
 
-            $gridIdJs = CUtil::JSEscape($this->id);
-            $actionIdJs = CUtil::JSEscape($action->getId());
-            $onclick = '';
-
             if ($action->needsConfirm()) {
-                $confirm = CUtil::JSEscape($action->getConfirmText() ?? 'Вы уверены?');
-                $onclick .= "if(!confirm('{$confirm}'))return;";
+                $item['ONCHANGE'][0]['CONFIRM'] = true;
+                $item['ONCHANGE'][0]['CONFIRM_MESSAGE'] = $action->getConfirmText() ?? 'Are you sure?';
             }
-
-            $onclick .=
-                "var g=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
-                "if(g&&g.grid){g.grid.getForm().submit('{$actionIdJs}');}";
-            $item['ONCLICK'] = $onclick;
 
             if ($action->isDanger()) {
                 $item['CLASS'] = 'adm-btn-danger';
@@ -241,5 +253,62 @@ class Grid
         }
 
         return ['GROUPS' => [['ITEMS' => $items]]];
+    }
+
+    /** @return array<string,mixed> */
+    protected function buildInlineEditButton(): array
+    {
+        return (new GridPanelSnippet())->getEditButton();
+    }
+
+    protected function buildBulkActionCallbackJs(string $actionId): string
+    {
+        $gridIdJs = CUtil::JSEscape($this->id);
+        $actionIdJs = CUtil::JSEscape($actionId);
+        $actionButtonKeyJs = CUtil::JSEscape('action_button_' . $this->id);
+        $forAllKeyJs = 'action_all_rows_' . $gridIdJs;
+
+        return
+            "(function(){" .
+                "var manager=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
+                "var grid=manager&&(manager.instance||manager.grid);" .
+                "if(!grid){return;}" .
+                "var rows=(typeof grid.getRows==='function')?grid.getRows():null;" .
+                "var ids=(rows&&typeof rows.getSelectedIds==='function')?rows.getSelectedIds():[];" .
+                "var panel=(typeof grid.getActionsPanel==='function')?grid.getActionsPanel():null;" .
+                "var values=(panel&&typeof panel.getValues==='function')?panel.getValues():{};" .
+                "var forAll=(values&&values['{$forAllKeyJs}']==='Y')?'Y':'N';" .
+                "if((!ids||ids.length===0)&&forAll!=='Y'){" .
+                    "if(BX.UI&&BX.UI.Notification&&BX.UI.Notification.Center){" .
+                        "BX.UI.Notification.Center.notify({content:'Select at least one row'});" .
+                    "}" .
+                    "return;" .
+                "}" .
+                "var data={};" .
+                "data['{$actionButtonKeyJs}']='{$actionIdJs}';" .
+                "data['{$forAllKeyJs}']=forAll;" .
+                "data.ID=ids;" .
+                "data.id=ids;" .
+                "data.rows=ids;" .
+                "if(typeof grid.reloadTable==='function'){" .
+                    "grid.reloadTable('POST',data);" .
+                "}" .
+            "})();";
+    }
+
+    protected function hasEditableFields(): bool
+    {
+        foreach ($this->fields as $field) {
+            if (!$field instanceof FieldContract) {
+                continue;
+            }
+
+            $editable = $field->getGridColumnConfig()['editable'] ?? false;
+            if ($editable !== false && $editable !== null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

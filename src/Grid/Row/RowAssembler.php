@@ -85,7 +85,7 @@ class RowAssembler
         $actions = [];
         foreach (AdminCollection::make($this->rowActions)->all() as $action) {
             if ($action instanceof RowAction) {
-                $actions[] = $action->toArray($row['data'], $this->baseUrl);
+                $actions[] = $action->toArray($row['data'], $this->baseUrl, $this->context?->gridId);
             }
         }
 

@@ -1851,18 +1851,8 @@ parameters:
 			path: src/Page/DetailPage.php
 
 		-
-			message: "#^Cannot call method get\\(\\) on array\\.$#"
-			count: 1
-			path: src/Page/DetailPage.php
-
-		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 2
-			path: src/Page/DetailPage.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\DetailPage\\:\\:\\$item \\(MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\DataWrapper\\|null\\) does not accept array\\|null\\.$#"
-			count: 1
 			path: src/Page/DetailPage.php
 
 		-
