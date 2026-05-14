@@ -12,6 +12,9 @@ use Bitrix\UI\Buttons\JsCode;
 use Bitrix\UI\Toolbar\ButtonLocation;
 use Bitrix\UI\Toolbar\Facade\Toolbar;
 use MB\Bitrix\AdminKit\Action\BulkAction;
+use MB\Bitrix\AdminKit\Action\MassDeleteAction;
+use MB\Bitrix\AdminKit\Component\Notification;
+use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
@@ -47,12 +50,7 @@ class IndexPage extends Page
             return;
         }
 
-        // Handle bulk delete (from ACTION_PANEL)
-        if ($action === 'delete_bulk' && $this->isPost() && check_bitrix_sessid()) {
-            $ids = array_filter(array_map('intval', (array)$this->request->getPost('id')));
-            if (!empty($ids) && $this->resource->canDelete(new PermissionContext(resource: $this->resource, operation: 'massDelete', item: $ids))) {
-                $this->resource->massDelete($ids);
-            }
+        if ($this->isPost() && is_string($action) && $this->handleBulkAction($action)) {
             $this->redirect($this->baseListUrl());
             return;
         }
@@ -64,6 +62,7 @@ class IndexPage extends Page
         $grid = $this->buildGrid();
         $this->loadData($grid);
         $this->renderToolbar($grid);
+        $this->renderBulkResult();
 
         $APPLICATION->IncludeComponent('bitrix:main.ui.grid', '', $grid->getGridComponentParams());
     }
@@ -89,7 +88,7 @@ class IndexPage extends Page
 
         $bulkActions = array_filter(
             iterator_to_array($this->resource->bulkActions()),
-            fn($a) => $a instanceof BulkAction
+            fn($a) => $a instanceof BulkAction && $a->isVisible()
         );
 
         if (!empty($bulkActions)) {
@@ -159,6 +158,53 @@ class IndexPage extends Page
         }
 
         $APPLICATION->IncludeComponent('bitrix:ui.toolbar', 'admin', []);
+    }
+
+    protected function renderBulkResult(): void
+    {
+        $gridId = $this->resource->getGridId();
+        $result = $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$gridId] ?? null;
+        if (!is_array($result)) {
+            return;
+        }
+
+        unset($_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$gridId]);
+
+        echo Notification::alert(
+            (string)($result['message'] ?? ''),
+            ($result['success'] ?? false) ? Notification::TYPE_SUCCESS : Notification::TYPE_WARNING,
+        );
+    }
+
+    protected function handleBulkAction(string $actionId): bool
+    {
+        foreach ($this->resource->bulkActions() as $bulkAction) {
+            if (!$bulkAction instanceof BulkAction || $bulkAction->getId() !== $actionId) {
+                continue;
+            }
+
+            $action = $bulkAction->isDelete() && !$bulkAction instanceof MassDeleteAction
+                ? new MassDeleteAction($bulkAction->getId(), $bulkAction->getLabel())
+                : $bulkAction;
+
+            $ids = array_values(array_filter((array)$this->request->getPost('id'), static fn($id): bool => $id !== null && $id !== ''));
+            $context = new BulkOperationContext(
+                resource: $this->resource,
+                action: $action,
+                selectedIds: $ids,
+                request: $this->request,
+            );
+
+            $result = $action->execute($context);
+            $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$this->resource->getGridId()] = [
+                'message' => $result->message(),
+                'success' => $result->isSuccess(),
+            ];
+
+            return true;
+        }
+
+        return false;
     }
 
     /** @return FieldContract[] */

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.4.0 - 2026-05-14
+
+### Added
+- Added safe bulk operation infrastructure with `BulkOperationContext`, `BulkResult`, chunked selected-ID processing, per-row permission checks, and user-facing operation summaries.
+- Added fluent bulk action APIs for labels, confirmation, danger styling, visibility/run conditions, callback handlers, simple bulk updates, and opt-in run-by-filter support.
+- Added `MassDeleteAction` and `BulkUpdateAction` for safe mass delete and bulk update operations through the existing CRUD persistence pipeline.
+- Added `bulkChunkSize()` to resources with a default chunk size of 100.
+- Added bulk action documentation covering mass delete, bulk update, callback actions, permissions, chunk processing, and run-by-filter warnings.
+- Added PHPUnit coverage for bulk results, empty selections, mass delete, bulk update, callback handlers, permissions, chunk processing, and `canRun` conditions.
+
+### Changed
+- Grid action panels now submit every configured bulk action through the same safe execution path instead of special-casing only bulk delete.
+
 ## v0.3.0 - 2026-05-14
 
 ### Added

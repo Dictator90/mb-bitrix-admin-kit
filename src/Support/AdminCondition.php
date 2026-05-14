@@ -31,7 +31,12 @@ final class AdminCondition
         }
 
         if ($condition instanceof ConditionTree) {
+            $condition->context($context, null);
             foreach ($context as $alias => $value) {
+                if ($value === null || (!is_array($value) && !is_object($value) && !is_string($value))) {
+                    continue;
+                }
+
                 $condition->context($value, is_string($alias) ? $alias : null);
             }
             return $condition->calculate()->result();
