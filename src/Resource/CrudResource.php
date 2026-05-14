@@ -69,6 +69,22 @@ abstract class CrudResource extends Resource
         return 200;
     }
 
+    public function allowExportByFilter(): bool
+    {
+        return true;
+    }
+
+    public function allowExportAll(): bool
+    {
+        return false;
+    }
+
+    public function maxImportRows(): int
+    {
+        return 1000;
+    }
+
+
     /** @return iterable<FieldContract> */
     abstract public function indexFields(): iterable;
 

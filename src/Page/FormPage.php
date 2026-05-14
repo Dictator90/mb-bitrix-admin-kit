@@ -12,6 +12,7 @@ use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
+use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
@@ -116,42 +117,29 @@ class FormPage extends Page
     {
         $fields = $this->collectAllFields();
         $raw = [];
-        $normalized = [];
-        $validated = [];
-        $formData = new FormData();
 
         foreach ($fields as $field) {
             $column = $field->getColumn();
             $raw[$column] = $this->request->getPost($column);
-            $value = $field->normalize($raw[$column]);
-            $normalized[$column] = $value;
         }
 
-        foreach ($fields as $field) {
-            if (method_exists($field, 'isReadOnlyFor') ? $field->isReadOnlyFor($normalized) : $field->isReadOnly()) {
-                continue;
-            }
-
-            $column = $field->getColumn();
-            foreach ($field->runValidation($normalized[$column] ?? null, $normalized) as $message) {
-                $formData->addError($column, $message);
+        $formData = (new DataPipeline())->process($fields, $raw);
+        foreach ($formData->errors() as $column => $messages) {
+            foreach ($messages as $message) {
                 $this->fieldErrors[$column][] = $message;
                 $this->errors[] = $message;
             }
-
-            $validated[$column] = $normalized[$column] ?? null;
         }
 
-        $formData = $formData->withRaw($raw)->withNormalized($normalized)->withValidated($validated);
         $context = new DbOperationContext(
             resource: $this->resource,
             operation: $this->id ? 'update' : 'create',
             itemId: $this->id,
             oldData: $this->item?->toArray() ?? [],
-            newData: $validated,
-            rawData: $raw,
-            normalizedData: $normalized,
-            validatedData: $validated,
+            newData: $formData->validated(),
+            rawData: $formData->raw(),
+            normalizedData: $formData->normalized(),
+            validatedData: $formData->validated(),
             request: $this->request,
         );
 

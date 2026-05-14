@@ -31,6 +31,10 @@ abstract class Field implements FieldContract
     protected bool $editable = false;
     protected ?string $hint = null;
     protected bool $readonly = false;
+    protected bool $exportable = true;
+    protected bool $importable = true;
+    protected bool $private = false;
+    protected bool $system = false;
 
     /** @var array<int, \Closure|ConditionTree|array<string,mixed>> */
     protected array $readonlyWhen = [];
@@ -121,6 +125,54 @@ abstract class Field implements FieldContract
         $this->readonly = $readonly;
 
         return $this;
+    }
+
+    public function exportable(bool $exportable = true): static
+    {
+        $this->exportable = $exportable;
+
+        return $this;
+    }
+
+    public function importable(bool $importable = true): static
+    {
+        $this->importable = $importable;
+
+        return $this;
+    }
+
+    public function private(bool $private = true): static
+    {
+        $this->private = $private;
+
+        return $this;
+    }
+
+    public function system(bool $system = true): static
+    {
+        $this->system = $system;
+
+        return $this;
+    }
+
+    public function isExportable(): bool
+    {
+        return $this->exportable;
+    }
+
+    public function isImportable(): bool
+    {
+        return $this->importable;
+    }
+
+    public function isPrivate(): bool
+    {
+        return $this->private;
+    }
+
+    public function isSystem(): bool
+    {
+        return $this->system;
     }
 
     public function readonlyWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static
