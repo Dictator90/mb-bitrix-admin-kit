@@ -25,3 +25,9 @@
 - Keep bulk operations safe by default: require explicit selected IDs unless an action opts into `allowRunByFilter()`.
 - Bulk actions should return `MB\Bitrix\AdminKit\Database\BulkResult` and process records in `CrudResource::bulkChunkSize()` chunks.
 - Check action `canRun()` and resource permissions (`canUpdate` / `canDelete`) per record; skipped records should not abort the whole operation.
+
+## v0.5.0 field-layer notes
+- Extend existing Field classes and adapters; do not replace the Field system or create duplicate abstractions when an existing class can be enhanced.
+- Do not implement custom EntitySelector/UserSelector/iblock selector engines; wrap Bitrix `ui.entity-selector`, `BX.UI.EntitySelector.TagSelector`, and documented Bitrix providers/mechanisms.
+- Keep array normalization explicit per concrete field: base/scalar fields must not implode arrays, and multiple fields should preserve arrays.
+- Prefer `displayUsing()` or request-level `Database\RelationResolver` preloading for related labels to avoid N+1 queries.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field\Traits;
 
 use Closure;
+use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\AdminCondition;
 use MB\Bitrix\AdminKit\Support\Validation\Rules;
 use MB\Support\Conditionable\ConditionTree;
@@ -98,10 +99,10 @@ trait HasValidation
      */
     public function runValidation(mixed $value, array $data = []): array
     {
-        $errors = [];
+        $errors = AdminCollection::make([])->all();
         $required = $this->required || $this->hasActiveRequiredCondition($data);
 
-        if ($required && ($value === null || $value === '')) {
+        if ($required && $this->isEmptyValidationValue($value)) {
             $errors[] = "Поле \"{$this->getLabel()}\" обязательно для заполнения";
         }
 
@@ -115,6 +116,11 @@ trait HasValidation
         }
 
         return $errors;
+    }
+
+    private function isEmptyValidationValue(mixed $value): bool
+    {
+        return $value === null || $value === '' || (is_array($value) && AdminCollection::make($value)->all() === []);
     }
 
     private function hasActiveRequiredCondition(array $data): bool

@@ -4,34 +4,28 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use Closure;
+use MB\Bitrix\AdminKit\Support\AdminCollection;
+
 class Select extends Field
 {
-    protected array $options = [];
+    /** @var array<mixed>|Closure */
+    protected array|Closure $options = [];
 
-    public function options(array $options): static
+    /** @param array<mixed>|Closure $options */
+    public function options(array|Closure $options): static
     {
         $this->options = $options;
 
         return $this;
     }
 
-    public function getOptions(): array
+    /** @return array<mixed> */
+    public function getOptions(array $context = []): array
     {
-        return $this->options;
-    }
+        $options = $this->options instanceof Closure ? ($this->options)($context, $this) : $this->options;
 
-    public function multiple(bool $multiple = true): static
-    {
-        $this->multiple = $multiple;
-
-        return $this;
-    }
-
-    public function placeholder(?string $placeholder): static
-    {
-        $this->placeholder = $placeholder;
-
-        return $this;
+        return AdminCollection::make(is_iterable($options) ? $options : [])->all();
     }
 
     public function getGridColumnType(): string
@@ -44,7 +38,7 @@ class Select extends Field
         $config = parent::getGridColumnConfig();
 
         if ($this->editable) {
-            $config['editable'] = ['items' => $this->options];
+            $config['editable'] = ['items' => $this->getOptions()];
         }
 
         return $config;
@@ -53,23 +47,21 @@ class Select extends Field
     public function renderFormField(mixed $value = null): string
     {
         $currentValue = $this->resolveValue($value);
-        $name = htmlspecialcharsbx($this->column);
+        $name = htmlspecialcharsbx($this->column . ($this->multiple ? '[]' : ''));
         $multipleAttr = $this->multiple ? ' multiple' : '';
         $reqAttr = $this->required ? ' required' : '';
-
-        if ($this->multiple) {
-            $name .= '[]';
-        }
-
+        $disabledAttr = $this->readonly ? ' disabled' : '';
         $optionsHtml = '';
-        if ($this->placeholder) {
-            $optionsHtml .= '<option value="">' . htmlspecialcharsbx($this->placeholder) . '</option>';
+
+        if ($this->placeholder !== null && !$this->multiple) {
+            $selected = $currentValue === null || $currentValue === '' ? ' selected' : '';
+            $optionsHtml .= '<option value=""' . $selected . '>' . htmlspecialcharsbx($this->placeholder) . '</option>';
         }
 
-        foreach ($this->options as $optValue => $optLabel) {
+        foreach ($this->getOptions() as $optValue => $optLabel) {
             $selected = $this->isSelected($optValue, $currentValue) ? ' selected' : '';
             $optionsHtml .= '<option value="' . htmlspecialcharsbx((string)$optValue) . '"' . $selected . '>'
-                . htmlspecialcharsbx($optLabel) . '</option>';
+                . htmlspecialcharsbx((string)$optLabel) . '</option>';
         }
 
         $reactiveAttrs = $this->renderReactiveAttrs();
@@ -77,26 +69,84 @@ class Select extends Field
         return <<<HTML
         <div class="ui-ctl ui-ctl-after-icon ui-ctl-dropdown">
             <div class="ui-ctl-after ui-ctl-icon-angle"></div>
-            <select class="ui-ctl-element" name="{$name}"{$multipleAttr}{$reqAttr}{$reactiveAttrs}>{$optionsHtml}</select>
+            <select class="ui-ctl-element" name="{$name}"{$multipleAttr}{$reqAttr}{$disabledAttr}{$reactiveAttrs}>{$optionsHtml}</select>
         </div>
         HTML;
+    }
+
+    public function renderIndex(mixed $value, array $row = []): string
+    {
+        return $this->renderSelectedLabels($this->displayValue($value, $row, ['page' => 'index', 'field' => $this]));
+    }
+
+    public function renderDetail(mixed $value, array $row = []): string
+    {
+        return $this->renderSelectedLabels($this->displayValue($value, $row, ['page' => 'detail', 'field' => $this]));
     }
 
     public function normalize(mixed $value): mixed
     {
         if ($this->multiple) {
-            return is_array($value) ? array_values($value) : ($value === null || $value === '' ? [] : [$value]);
+            if ($value === null || $value === '') {
+                return [];
+            }
+
+            return AdminCollection::make(is_array($value) ? $value : [$value])->all();
         }
 
-        return parent::normalize($value);
+        if (is_array($value)) {
+            $first = reset($value);
+            return $first === false ? null : $first;
+        }
+
+        return $value === '' ? null : $value;
+    }
+
+    public function runValidation(mixed $value, array $data = []): array
+    {
+        $errors = parent::runValidation($value, $data);
+        $options = $this->getOptions($data);
+        $values = $this->multiple ? (array)$this->normalize($value) : [$this->normalize($value)];
+
+        $allowed = array_map('strval', array_keys($options));
+        foreach ($values as $selected) {
+            if ($selected === null || $selected === '') {
+                continue;
+            }
+
+            if (!in_array((string)$selected, $allowed, true)) {
+                $errors[] = "Поле \"{$this->getLabel()}\" содержит недопустимое значение";
+                break;
+            }
+        }
+
+        return $errors;
     }
 
     protected function isSelected(mixed $optValue, mixed $currentValue): bool
     {
         if (is_array($currentValue)) {
-            return in_array($optValue, $currentValue);
+            return in_array((string)$optValue, array_map('strval', $currentValue), true);
         }
 
         return (string)$optValue === (string)$currentValue;
+    }
+
+    protected function renderSelectedLabels(mixed $value): string
+    {
+        if (!is_array($value) && !is_object($value)) {
+            $options = $this->getOptions();
+            $label = $options[$value] ?? $value;
+
+            return htmlspecialcharsbx((string)($label ?? ''));
+        }
+
+        $options = $this->getOptions();
+        $labels = [];
+        foreach (AdminCollection::make((array)$value)->all() as $item) {
+            $labels[] = htmlspecialcharsbx((string)($options[$item] ?? $item));
+        }
+
+        return implode(', ', $labels);
     }
 }

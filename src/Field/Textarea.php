@@ -20,10 +20,13 @@ class Textarea extends Field
         $val = htmlspecialcharsbx((string)$this->resolveValue($value));
         $name = htmlspecialcharsbx($this->column);
         $reqAttr = $this->required ? ' required' : '';
+        $readonlyAttr = $this->readonly ? ' readonly' : '';
+        $placeholderAttr = $this->placeholder !== null ? ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"' : '';
+        $reactiveAttrs = $this->renderReactiveAttrs();
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textarea">
-            <textarea class="ui-ctl-element" name="{$name}" rows="{$this->rows}"{$reqAttr}>{$val}</textarea>
+            <textarea class="ui-ctl-element" name="{$name}" rows="{$this->rows}"{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>{$val}</textarea>
         </div>
         HTML;
     }

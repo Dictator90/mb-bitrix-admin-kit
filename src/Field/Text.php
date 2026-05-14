@@ -21,11 +21,13 @@ class Text extends Field
         $name = htmlspecialcharsbx($this->column);
         $maxAttr = $this->maxLength ? ' maxlength="' . $this->maxLength . '"' : '';
         $reqAttr = $this->required ? ' required' : '';
+        $readonlyAttr = $this->readonly ? ' readonly' : '';
+        $placeholderAttr = $this->placeholder !== null ? ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"' : '';
         $reactiveAttrs = $this->renderReactiveAttrs();
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textbox">
-            <input type="text" class="ui-ctl-element" name="{$name}" value="{$val}"{$maxAttr}{$reqAttr}{$reactiveAttrs}>
+            <input type="text" class="ui-ctl-element" name="{$name}" value="{$val}"{$maxAttr}{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
         </div>
         HTML;
     }
