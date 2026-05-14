@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Filter;
 
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
+use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Support\AdminString;
 
 abstract class Filter implements FilterContract
 {
@@ -15,7 +17,7 @@ abstract class Filter implements FilterContract
     public function __construct(string $label, ?string $column = null)
     {
         $this->label = $label;
-        $this->column = $column ?? mb_strtoupper($label);
+        $this->column = $column ?? AdminString::safeKey($label);
     }
 
     public static function make(string $label, ?string $column = null): static
@@ -45,7 +47,7 @@ abstract class Filter implements FilterContract
     public function getFilterFieldConfig(): array
     {
         return [
-            'id' => $this->column,
+            'id' => AdminString::safeKey($this->column),
             'name' => $this->label,
             'type' => $this->getType(),
             'default' => $this->default,
@@ -55,5 +57,26 @@ abstract class Filter implements FilterContract
     public function prepareFieldData(): array
     {
         return [];
+    }
+
+    public function apply(mixed $filter, mixed $value = null): mixed
+    {
+        if (!is_array($filter)) {
+            return $this;
+        }
+
+        return $this->applyValue($filter, $value, null);
+    }
+
+    public function applyToOrmFilter(array $filter, mixed $value, GridContext $context): array
+    {
+        return $this->applyValue($filter, $value, $context);
+    }
+
+    protected function applyValue(array $filter, mixed $value, ?GridContext $context): array
+    {
+        $filter[$this->column] = $value;
+
+        return $filter;
     }
 }

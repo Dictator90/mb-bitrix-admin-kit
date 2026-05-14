@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Filter\Types;
 
 use MB\Bitrix\AdminKit\Filter\Filter;
+use MB\Bitrix\AdminKit\Grid\GridContext;
 
 class CheckboxFilter extends Filter
 {
@@ -13,11 +14,9 @@ class CheckboxFilter extends Filter
         return 'checkbox';
     }
 
-    public function apply(array $filter, mixed $value): array
+    protected function applyValue(array $filter, mixed $value, ?GridContext $context): array
     {
-        if ($value !== '' && $value !== null) {
-            $filter[$this->column] = $value;
-        }
+        $filter[$this->column] = $value;
 
         return $filter;
     }

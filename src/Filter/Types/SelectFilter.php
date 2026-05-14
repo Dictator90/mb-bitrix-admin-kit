@@ -5,14 +5,31 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Filter\Types;
 
 use MB\Bitrix\AdminKit\Filter\Filter;
+use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 class SelectFilter extends Filter
 {
     protected array $options = [];
+    protected bool $multiple = true;
 
     public function options(array $options): static
     {
         $this->options = $options;
+
+        return $this;
+    }
+
+    public function exact(): static
+    {
+        $this->multiple = false;
+
+        return $this;
+    }
+
+    public function multiple(bool $multiple = true): static
+    {
+        $this->multiple = $multiple;
 
         return $this;
     }
@@ -25,7 +42,7 @@ class SelectFilter extends Filter
     public function getFilterFieldConfig(): array
     {
         $config = parent::getFilterFieldConfig();
-        $config['params'] = ['multiple' => 'Y'];
+        $config['params'] = ['multiple' => $this->multiple ? 'Y' : 'N'];
 
         return $config;
     }
@@ -33,7 +50,7 @@ class SelectFilter extends Filter
     public function prepareFieldData(): array
     {
         $items = [];
-        foreach ($this->options as $value => $label) {
+        foreach (AdminCollection::make($this->options)->all() as $value => $label) {
             $items[] = [
                 'NAME' => $label,
                 'VALUE' => (string)$value,
@@ -43,11 +60,9 @@ class SelectFilter extends Filter
         return ['items' => $items];
     }
 
-    public function apply(array $filter, mixed $value): array
+    protected function applyValue(array $filter, mixed $value, ?GridContext $context): array
     {
-        if ($value !== '' && $value !== null) {
-            $filter[$this->column] = $value;
-        }
+        $filter[$this->column] = $value;
 
         return $filter;
     }

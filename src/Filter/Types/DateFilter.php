@@ -5,14 +5,30 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Filter\Types;
 
 use MB\Bitrix\AdminKit\Filter\Filter;
+use MB\Bitrix\AdminKit\Grid\GridContext;
 
 class DateFilter extends Filter
 {
     protected bool $withTime = false;
+    protected string $operator = 'range';
 
     public function withTime(bool $withTime = true): static
     {
         $this->withTime = $withTime;
+
+        return $this;
+    }
+
+    public function exact(): static
+    {
+        $this->operator = 'exact';
+
+        return $this;
+    }
+
+    public function range(): static
+    {
+        $this->operator = 'range';
 
         return $this;
     }
@@ -27,8 +43,14 @@ class DateFilter extends Filter
         return ['time' => $this->withTime];
     }
 
-    public function apply(array $filter, mixed $value): array
+    protected function applyValue(array $filter, mixed $value, ?GridContext $context): array
     {
+        if ($this->operator === 'exact') {
+            $filter[$this->column] = $value;
+
+            return $filter;
+        }
+
         if (is_array($value)) {
             if (!empty($value['from'])) {
                 $filter['>=' . $this->column] = $value['from'];

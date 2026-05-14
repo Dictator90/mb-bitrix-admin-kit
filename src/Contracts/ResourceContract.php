@@ -62,6 +62,20 @@ interface ResourceContract
 
     public function runtimeFields(): array;
 
+    public function indexSelect(GridContext $context): array;
+
+    public function indexFilter(GridContext $context): array;
+
+    public function indexOrder(GridContext $context): array;
+
+    public function indexRuntime(GridContext $context): array;
+
+    public function beforeIndexQueryParams(array $params, GridContext $context): array;
+
+    public function afterIndexRows(array $rows, GridContext $context): array;
+
+    public function mapIndexRow(array $row, GridContext $context): array;
+
     public function modifyIndexParams(array $params, GridContext $context): array;
 
     public function findItem(mixed $id): ?array;
