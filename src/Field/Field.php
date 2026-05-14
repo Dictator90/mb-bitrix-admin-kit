@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use Closure;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Field\Traits\HasFormat;
 use MB\Bitrix\AdminKit\Field\Traits\HasReactivity;
@@ -11,6 +12,7 @@ use MB\Bitrix\AdminKit\Field\Traits\HasValidation;
 use MB\Bitrix\AdminKit\Field\Traits\HasVisibility;
 use MB\Bitrix\AdminKit\Field\Traits\Makeable;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
+use MB\Bitrix\AdminKit\Support\AdminString;
 
 abstract class Field implements FieldContract
 {
@@ -31,11 +33,13 @@ abstract class Field implements FieldContract
     protected bool $multiple = false;
     protected ?string $help = null;
     protected ?string $placeholder = null;
+    protected ?Closure $computedCallback = null;
+    protected ?Closure $displayCallback = null;
 
     public function __construct(string $label, ?string $column = null)
     {
         $this->label = $label;
-        $this->column = $column ?? mb_strtoupper($label);
+        $this->column = $column ?? AdminString::safeKey($label);
     }
 
     public function getColumn(): string
@@ -130,9 +134,9 @@ abstract class Field implements FieldContract
     public function getGridColumnConfig(): array
     {
         return [
-            'id' => $this->column,
+            'id' => AdminString::safeKey($this->column),
             'name' => $this->label,
-            'sort' => $this->sortable ? $this->column : false,
+            'sort' => (!$this->isComputed() && $this->sortable) ? $this->column : false,
             'default' => true,
             'type' => $this->getGridColumnType(),
             'editable' => $this->editable,
@@ -142,6 +146,44 @@ abstract class Field implements FieldContract
     public function getFilterType(): ?string
     {
         return null;
+    }
+
+    public function computed(Closure $callback): static
+    {
+        $this->computedCallback = $callback;
+        $this->sortable(false);
+
+        return $this;
+    }
+
+    public function isComputed(): bool
+    {
+        return $this->computedCallback instanceof Closure;
+    }
+
+    public function computeValue(array $row): mixed
+    {
+        if (!$this->computedCallback instanceof Closure) {
+            return $row[$this->column] ?? null;
+        }
+
+        return ($this->computedCallback)($row);
+    }
+
+    public function displayUsing(Closure $callback): static
+    {
+        $this->displayCallback = $callback;
+
+        return $this;
+    }
+
+    public function displayValue(mixed $value, array $row = [], array $context = []): mixed
+    {
+        if (!$this->displayCallback instanceof Closure) {
+            return $value;
+        }
+
+        return ($this->displayCallback)($value, $row, $context);
     }
 
     public function getFieldAssembler(): ?FieldAssembler
@@ -176,7 +218,9 @@ abstract class Field implements FieldContract
 
     public function renderIndex(mixed $value, array $row = []): string
     {
-        return htmlspecialcharsbx((string)($this->previewValue($value) ?? ''));
+        $displayValue = $this->displayValue($value, $row, ['page' => 'index', 'field' => $this]);
+
+        return htmlspecialcharsbx((string)($this->previewValue($displayValue) ?? ''));
     }
 
     public function renderForm(mixed $value = null, array $context = []): string
@@ -186,7 +230,9 @@ abstract class Field implements FieldContract
 
     public function renderDetail(mixed $value, array $row = []): string
     {
-        return $this->renderIndex($value, $row);
+        $displayValue = $this->displayValue($value, $row, ['page' => 'detail', 'field' => $this]);
+
+        return htmlspecialcharsbx((string)($this->previewValue($displayValue) ?? ''));
     }
 
     public function normalize(mixed $value): mixed

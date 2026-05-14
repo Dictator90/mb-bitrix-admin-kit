@@ -119,7 +119,7 @@ class IndexPage extends Page
 
         $params = (new GridQueryBuilder())->build($this->resource, $context);
         $grid->setTotalCount($dataManagerClass::getCount($params['filter'] ?? []));
-        $grid->setRawRows($dataManagerClass::getList($params));
+        $grid->setRawRows($dataManagerClass::getList($params), $context);
     }
 
     protected function renderToolbar(Grid $grid): void

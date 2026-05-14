@@ -14,6 +14,7 @@ use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Grid\Row\RowAssembler;
+use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 class Grid
 {
@@ -84,13 +85,15 @@ class Grid
      * Feed an ORM result into the grid rows.
      * @param Result $result
      */
-    public function setRawRows($result): void
+    public function setRawRows($result, ?GridContext $context = null): void
     {
         $assembler = new RowAssembler(
             $this->fields,
             $this->rowActions,
             $this->baseUrl,
             $this->primaryKey,
+            $context?->resource,
+            $context,
         );
 
         $this->rows = $assembler->buildRows($result);
@@ -107,7 +110,7 @@ class Grid
             'vars' => ['by' => 'by', 'order' => 'order'],
         ]);
 
-        $select = array_map(fn(FieldContract $f) => $f->getColumn(), $this->fields);
+        $select = array_map(fn(FieldContract $f) => $f->getColumn(), AdminCollection::make($this->fields)->all());
 
         return [
             'select' => $select,
@@ -128,10 +131,11 @@ class Grid
         $rawValues = $filterOptions->getFilter();
 
         $result = [];
-        foreach ($this->filters as $filter) {
+        foreach (AdminCollection::make($this->filters)->all() as $filter) {
             $value = $rawValues[$filter->getColumn()] ?? null;
             if ($value !== null && $value !== '' && !(is_array($value) && empty($value))) {
-                $result = array_merge($result, $filter->apply($result, $value));
+                $applied = $filter->apply($result, $value);
+                $result = is_array($applied) ? $applied : $result;
             }
         }
 
@@ -146,7 +150,7 @@ class Grid
             'vars' => ['by' => 'by', 'order' => 'order'],
         ]);
 
-        $columns = array_map(fn(FieldContract $f) => $f->getGridColumnConfig(), $this->fields);
+        $columns = array_map(fn(FieldContract $f) => $f->getGridColumnConfig(), AdminCollection::make($this->fields)->all());
 
         $params = [
             'GRID_ID' => $this->id,
@@ -185,7 +189,7 @@ class Grid
             return null;
         }
 
-        $fields = array_map(fn(FilterContract $f) => $f->getFilterFieldConfig(), $this->filters);
+        $fields = array_map(fn(FilterContract $f) => $f->getFilterFieldConfig(), AdminCollection::make($this->filters)->all());
 
         return [
             'FILTER_ID' => $this->filterId,

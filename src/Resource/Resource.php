@@ -16,6 +16,7 @@ use MB\Bitrix\AdminKit\Page\IndexPage;
 use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
 use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
 use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
+use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Support\AdminString;
 use MB\Bitrix\AdminKit\Support\Tab;
 
@@ -116,7 +117,42 @@ abstract class Resource implements ResourceContract
         return [];
     }
 
-    public function modifyIndexParams(array $params, \MB\Bitrix\AdminKit\Grid\GridContext $context): array
+    public function indexSelect(GridContext $context): array
+    {
+        return [];
+    }
+
+    public function indexFilter(GridContext $context): array
+    {
+        return [];
+    }
+
+    public function indexOrder(GridContext $context): array
+    {
+        return [];
+    }
+
+    public function indexRuntime(GridContext $context): array
+    {
+        return [];
+    }
+
+    public function beforeIndexQueryParams(array $params, GridContext $context): array
+    {
+        return $params;
+    }
+
+    public function afterIndexRows(array $rows, GridContext $context): array
+    {
+        return $rows;
+    }
+
+    public function mapIndexRow(array $row, GridContext $context): array
+    {
+        return $row;
+    }
+
+    public function modifyIndexParams(array $params, GridContext $context): array
     {
         return $params;
     }

@@ -181,3 +181,109 @@ $visible = AdminCondition::evaluate(fn(array $ctx) => $ctx['canView'], ['canView
 ```
 
 Глобальные helper-функции `collect()`, `str()` и `condition()` внутри AdminKit не используются.
+
+## v0.2.0: ORM grid customization
+
+`CrudResource` can now customize every part of the index ORM query without replacing the grid layer. The v0.1.0 hooks (`defaultSelect()`, `defaultFilter()`, `defaultSort()`, `runtimeFields()`, and `modifyIndexParams()`) still work, and v0.2.0 adds context-aware hooks:
+
+```php
+public function indexSelect(GridContext $context): array;
+public function indexFilter(GridContext $context): array;
+public function indexOrder(GridContext $context): array;
+public function indexRuntime(GridContext $context): array;
+public function beforeIndexQueryParams(array $params, GridContext $context): array;
+public function afterIndexRows(array $rows, GridContext $context): array;
+public function mapIndexRow(array $row, GridContext $context): array;
+```
+
+The query builder assembles ORM params in this order: index fields, default/index select, UI/default/index filters, UI/default/index order, runtime fields, pagination, `beforeIndexQueryParams()`, then the legacy `modifyIndexParams()` hook.
+
+### Runtime fields and ReferenceField
+
+Runtime fields are passed directly to Bitrix D7 ORM `DataManager::getList()` through the `runtime` key. The grid layer does not know join business logic, so Bitrix runtime field objects such as `ReferenceField` can be returned as-is:
+
+```php
+use Bitrix\Main\ORM\Fields\Relations\Reference as ReferenceField;
+use Bitrix\Main\ORM\Query\Join;
+use Bitrix\Main\UserTable;
+use MB\Bitrix\AdminKit\Grid\GridContext;
+
+public function indexRuntime(GridContext $context): array
+{
+    return [
+        new ReferenceField(
+            'USER',
+            UserTable::class,
+            Join::on('this.USER_ID', 'ref.ID')
+        ),
+    ];
+}
+
+public function indexSelect(GridContext $context): array
+{
+    return ['USER_NAME' => 'USER.NAME', 'USER_LAST_NAME' => 'USER.LAST_NAME'];
+}
+```
+
+### Computed columns and displayUsing
+
+Computed fields are intended for values that are derived after rows are fetched. They are displayed in grid/detail pages, but they are not automatically added to ORM `select`, sorting, or filtering:
+
+```php
+use MB\Bitrix\AdminKit\Field\Text;
+
+Text::make('Пользователь', 'USER_FULL_NAME')
+    ->computed(function (array $row): string {
+        return trim(($row['USER_NAME'] ?? '') . ' ' . ($row['USER_LAST_NAME'] ?? ''));
+    })
+    ->displayUsing(function (mixed $value, array $row, array $context): string {
+        return $value ?: '—';
+    });
+```
+
+`displayUsing()` receives the raw value, the full row, and display context (`page` and `field`) and is used by grid/detail rendering.
+
+### Custom filters and CallbackFilter
+
+Filters implement `applyToOrmFilter(array $filter, mixed $value, GridContext $context): array`. Empty values (`null`, `''`, `[]`) are ignored, while `0`, `'0'`, and `false` are treated as intentional filter values.
+
+```php
+use MB\Bitrix\AdminKit\Filter\Types\CallbackFilter;
+use MB\Bitrix\AdminKit\Grid\GridContext;
+
+CallbackFilter::make('Поиск', 'SEARCH')
+    ->apply(function (array $filter, mixed $value, GridContext $context): array {
+        $filter[] = [
+            'LOGIC' => 'OR',
+            '%NAME' => $value,
+            '%CODE' => $value,
+        ];
+
+        return $filter;
+    });
+```
+
+Built-in filter operators:
+
+- `TextFilter`: `exact()`, `contains()`, `startsWith()`, `endsWith()`.
+- `NumberFilter`: `exact()`, `range()`, `greaterThan()`, `lessThan()`.
+- `SelectFilter`: `exact()`, `multiple()`.
+- `DateFilter`: `exact()`, `range()`.
+
+### Row mapping hooks
+
+Use `afterIndexRows()` to post-process the fetched row list and `mapIndexRow()` to transform each row before computed fields and `displayUsing()` are applied:
+
+```php
+public function afterIndexRows(array $rows, GridContext $context): array
+{
+    return array_values($rows);
+}
+
+public function mapIndexRow(array $row, GridContext $context): array
+{
+    $row['BADGE'] = $row['ACTIVE'] === 'Y' ? 'Active' : 'Inactive';
+
+    return $row;
+}
+```

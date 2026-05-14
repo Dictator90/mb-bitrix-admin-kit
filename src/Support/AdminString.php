@@ -10,7 +10,13 @@ final class AdminString
 {
     public static function slug(string $value, string $separator = '_'): string
     {
-        return Str::slug($value, $separator);
+        if (method_exists(Str::class, 'slug')) {
+            return Str::slug($value, $separator);
+        }
+
+        $value = preg_replace('/[^\pL\pN]+/u', $separator, $value) ?: '';
+
+        return trim(mb_strtolower($value), $separator);
     }
 
     public static function id(string $prefix, string $value): string
@@ -31,4 +37,14 @@ final class AdminString
     public static function formId(string $value): string { return self::id('adminkit_form', $value); }
     public static function fieldHtmlId(string $formId, string $field): string { return self::id($formId, $field); }
     public static function actionId(string $value): string { return self::id('adminkit_action', $value); }
+
+    public static function safeKey(string $value): string
+    {
+        return mb_strtoupper(str_replace('-', '_', self::slug($value)));
+    }
+
+    public static function htmlId(string $prefix, string $value): string
+    {
+        return self::id($prefix, $value);
+    }
 }
