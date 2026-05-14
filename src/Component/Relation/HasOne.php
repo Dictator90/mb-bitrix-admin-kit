@@ -64,11 +64,9 @@ class HasOne extends HasMany
                 <?php
                 if ($row === null): ?>
                     <div class="adminkit-hasmany__empty">Запись не найдена</div>
-                <?php
-                elseif (empty($this->columns)): ?>
+                <?php elseif (empty($this->columns)): ?>
                     <div class="adminkit-hasmany__empty">Столбцы не заданы — используйте ->columns([...])</div>
-                <?php
-                else: ?>
+                <?php else: ?>
                     <div class="ui-form">
                         <?php
                         foreach ($this->columns as $col): ?>

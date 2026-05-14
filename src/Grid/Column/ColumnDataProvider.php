@@ -16,6 +16,6 @@ class ColumnDataProvider
     /** @return array[] */
     public function getColumns(): array
     {
-        return array_map(fn(FieldContract $f) => $f->getGridColumnConfig(), $this->fields);
+        return array_map(fn (FieldContract $f) => $f->getGridColumnConfig(), $this->fields);
     }
 }

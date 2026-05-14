@@ -20,7 +20,8 @@ final class DbOperationContext
         public readonly array $validatedData = [],
         public readonly mixed $userId = null,
         public readonly ?HttpRequest $request = null,
-    ) {}
+    ) {
+    }
 
     /** @param array<string,mixed> $changes */
     public function with(array $changes): self

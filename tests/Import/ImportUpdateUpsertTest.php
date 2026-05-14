@@ -13,12 +13,18 @@ use PHPUnit\Framework\TestCase;
 
 final class ImportUpdateUpsertTest extends TestCase
 {
-    protected function setUp(): void { ProductTable::reset(); }
+    protected function setUp(): void
+    {
+        ProductTable::reset();
+    }
 
     public function testItUpdatesByConfigurableKeyField(): void
     {
-        $resource = new class extends ProductResource {
-            public function formFields(): iterable { return [Text::make('ID', 'ID'), Text::make('Name', 'NAME')->required()]; }
+        $resource = new class () extends ProductResource {
+            public function formFields(): iterable
+            {
+                return [Text::make('ID', 'ID'), Text::make('Name', 'NAME')->required()];
+            }
         };
 
         $result = (new CsvImporter())->importRows(new ImportContext($resource, mappedRows: [['ID' => 1, 'NAME' => 'Updated']], mode: 'update', keyField: 'ID'));
@@ -30,8 +36,11 @@ final class ImportUpdateUpsertTest extends TestCase
 
     public function testItCreatesMissingRowsInUpsertMode(): void
     {
-        $resource = new class extends ProductResource {
-            public function formFields(): iterable { return [Text::make('ID', 'ID'), Text::make('Name', 'NAME')->required()]; }
+        $resource = new class () extends ProductResource {
+            public function formFields(): iterable
+            {
+                return [Text::make('ID', 'ID'), Text::make('Name', 'NAME')->required()];
+            }
         };
 
         $result = (new CsvImporter())->importRows(new ImportContext($resource, mappedRows: [['ID' => 99, 'NAME' => 'New']], mode: 'upsert', keyField: 'ID'));

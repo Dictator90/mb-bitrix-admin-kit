@@ -18,7 +18,8 @@ final class QueryPerformanceContext
         public readonly int $rowCount = 0,
         public readonly bool $countQueryUsed = false,
         public readonly bool $cacheUsed = false,
-    ) {}
+    ) {
+    }
 
     /** @param array<string,mixed> $changes */
     public function with(array $changes): self

@@ -30,7 +30,15 @@ final class AdminKitV080Test extends TestCase
     public function testRouterResolvesStandalonePageBeforeResource(): void
     {
         $registry = (new AdminKitRegistry())->registerResource(EarlyResource::class)->registerPage(StandalonePage::class);
-        $router = new AdminKitRouter($registry, new class extends HttpRequest { public function get(string $key): mixed { return $key === 'page' ? 'standalone' : null; } public function getPost(string $key): mixed { return null; } });
+        $router = new AdminKitRouter($registry, new class () extends HttpRequest {
+            public function get(string $key): mixed
+            {
+                return $key === 'page' ? 'standalone' : null;
+            } public function getPost(string $key): mixed
+            {
+                return null;
+            }
+        });
 
         self::assertInstanceOf(StandalonePage::class, $router->currentPage());
     }
@@ -38,7 +46,15 @@ final class AdminKitV080Test extends TestCase
     public function testRouterResolvesResourcePage(): void
     {
         $registry = (new AdminKitRegistry())->registerResource(EarlyResource::class);
-        $router = new AdminKitRouter($registry, new class extends HttpRequest { public function get(string $key): mixed { return $key === 'page' ? 'early' : null; } public function getPost(string $key): mixed { return null; } });
+        $router = new AdminKitRouter($registry, new class () extends HttpRequest {
+            public function get(string $key): mixed
+            {
+                return $key === 'page' ? 'early' : null;
+            } public function getPost(string $key): mixed
+            {
+                return null;
+            }
+        });
 
         self::assertInstanceOf(ResourcePage::class, $router->currentPage());
     }
@@ -55,7 +71,7 @@ final class AdminKitV080Test extends TestCase
 
         self::assertContains('reports', $flatTexts);
         self::assertNotContains('Denied', $flatTexts);
-        $group = array_values(array_filter($menu, static fn(array $item): bool => $item['text'] === 'reports'))[0];
+        $group = array_values(array_filter($menu, static fn (array $item): bool => $item['text'] === 'reports'))[0];
         self::assertSame('Early', $group['items'][0]['text']);
         self::assertStringContainsString('page=early', $group['items'][0]['url']);
     }
@@ -64,36 +80,75 @@ final class AdminKitV080Test extends TestCase
 abstract class BaseTestResource extends Resource
 {
     protected string $title = 'Base';
-    public function indexFields(): iterable { return [Text::make('Name', 'NAME')]; }
-    public function formFields(): iterable { return [Text::make('Name', 'NAME')]; }
+    public function indexFields(): iterable
+    {
+        return [Text::make('Name', 'NAME')];
+    }
+    public function formFields(): iterable
+    {
+        return [Text::make('Name', 'NAME')];
+    }
 }
 
 final class EarlyResource extends BaseTestResource
 {
     protected string $title = 'Early';
-    public static function getId(): string { return 'early'; }
-    public static function getSort(): int { return 10; }
-    public static function getParentMenuId(): ?string { return 'reports'; }
+    public static function getId(): string
+    {
+        return 'early';
+    }
+    public static function getSort(): int
+    {
+        return 10;
+    }
+    public static function getParentMenuId(): ?string
+    {
+        return 'reports';
+    }
 }
 
 final class LateResource extends BaseTestResource
 {
     protected string $title = 'Late';
-    public static function getId(): string { return 'late'; }
-    public static function getSort(): int { return 20; }
+    public static function getId(): string
+    {
+        return 'late';
+    }
+    public static function getSort(): int
+    {
+        return 20;
+    }
 }
 
 final class DeniedResource extends BaseTestResource
 {
     protected string $title = 'Denied';
-    public static function getId(): string { return 'denied'; }
-    public function canView(?\MB\Bitrix\AdminKit\Security\PermissionContext $context = null): bool { return false; }
+    public static function getId(): string
+    {
+        return 'denied';
+    }
+    public function canView(?\MB\Bitrix\AdminKit\Security\PermissionContext $context = null): bool
+    {
+        return false;
+    }
 }
 
 final class StandalonePage extends CustomPage
 {
-    public static function getId(): string { return 'standalone'; }
-    public static function getTitle(): string { return 'Standalone'; }
-    public static function getSort(): int { return 15; }
-    protected function content(): string { return 'content'; }
+    public static function getId(): string
+    {
+        return 'standalone';
+    }
+    public static function getTitle(): string
+    {
+        return 'Standalone';
+    }
+    public static function getSort(): int
+    {
+        return 15;
+    }
+    protected function content(): string
+    {
+        return 'content';
+    }
 }

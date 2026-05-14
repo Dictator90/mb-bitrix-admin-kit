@@ -10,7 +10,9 @@ use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 final class SidePanelAdapter
 {
-    public function __construct(private ResourceContract $resource, private ?UrlGenerator $urls = null) {}
+    public function __construct(private ResourceContract $resource, private ?UrlGenerator $urls = null)
+    {
+    }
 
     public function shouldOpen(string $action): bool
     {

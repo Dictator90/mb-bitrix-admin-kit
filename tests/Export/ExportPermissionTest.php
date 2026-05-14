@@ -14,8 +14,11 @@ final class ExportPermissionTest extends TestCase
 {
     public function testItRequiresResourceViewPermission(): void
     {
-        $resource = new class extends ProductResource {
-            public function canView(?PermissionContext $context = null): bool { return false; }
+        $resource = new class () extends ProductResource {
+            public function canView(?PermissionContext $context = null): bool
+            {
+                return false;
+            }
         };
 
         $result = ExportAction::make()->execute(new ExportContext($resource, selectedIds: [1]));

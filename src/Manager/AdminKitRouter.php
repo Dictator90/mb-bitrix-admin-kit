@@ -13,7 +13,9 @@ final class AdminKitRouter
     public const PAGE_PARAM = 'page';
     public const ACTION_PARAM = 'action';
 
-    public function __construct(private AdminKitRegistry $registry, private HttpRequest $request) {}
+    public function __construct(private AdminKitRegistry $registry, private HttpRequest $request)
+    {
+    }
 
     public function currentPage(): ResourcePage|AbstractPage|NotFoundPage
     {

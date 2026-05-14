@@ -31,7 +31,7 @@ final class QueryGuard
     {
         $ids = array_values(array_filter(
             AdminCollection::make($context->selectedIds)->all(),
-            static fn(mixed $id): bool => $id !== null && $id !== ''
+            static fn (mixed $id): bool => $id !== null && $id !== ''
         ));
 
         $runByFilter = $ids === [] && $context->filter !== [];

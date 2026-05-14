@@ -139,7 +139,7 @@ final class ExportAction
         $rows = $resource->getList($params);
         if ($gridContext !== null) {
             $rows = $resource->afterIndexRows($rows, $gridContext);
-            $rows = array_map(static fn(array $row): array => $resource->mapIndexRow($row, $gridContext), $rows);
+            $rows = array_map(static fn (array $row): array => $resource->mapIndexRow($row, $gridContext), $rows);
         }
 
         return $rows;

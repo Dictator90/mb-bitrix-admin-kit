@@ -155,7 +155,7 @@ class EntitySelectorField extends Field
                 return [];
             }
 
-            return array_values(array_filter(AdminCollection::make(is_array($value) ? $value : [$value])->all(), static fn($id): bool => $id !== null && $id !== ''));
+            return array_values(array_filter(AdminCollection::make(is_array($value) ? $value : [$value])->all(), static fn ($id): bool => $id !== null && $id !== ''));
         }
 
         if (is_array($value)) {
@@ -202,7 +202,7 @@ class EntitySelectorField extends Field
         }
 
         if (is_array($value)) {
-            return array_values(array_filter(array_map('strval', AdminCollection::make($value)->all()), static fn(string $id): bool => $id !== ''));
+            return array_values(array_filter(array_map('strval', AdminCollection::make($value)->all()), static fn (string $id): bool => $id !== ''));
         }
 
         return [(string)$value];

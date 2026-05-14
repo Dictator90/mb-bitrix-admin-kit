@@ -16,7 +16,7 @@ final class EmptyFilterValueTest extends TestCase
 {
     public function testItSkipsOnlyEmptyValues(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function filters(): iterable
             {
                 return [

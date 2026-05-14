@@ -14,7 +14,9 @@ final class TableSchema
     /** @var array<string,array{name:string,columns:array<int,string>}> */
     private array $indexes = [];
 
-    private function __construct(private readonly string $tableName) {}
+    private function __construct(private readonly string $tableName)
+    {
+    }
 
     public static function make(string $tableName): self
     {
@@ -63,6 +65,6 @@ final class TableSchema
     /** @return array<string,array{name:string,type:string,required:bool}> */
     public function requiredColumns(): array
     {
-        return array_filter($this->columns, static fn(array $column): bool => $column['required']);
+        return array_filter($this->columns, static fn (array $column): bool => $column['required']);
     }
 }

@@ -14,19 +14,19 @@ use Bitrix\UI\Toolbar\Facade\Toolbar;
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\MassDeleteAction;
 use MB\Bitrix\AdminKit\Component\Notification;
+use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Database\Performance\QueryPerformanceContext;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
+use MB\Bitrix\AdminKit\Support\AdminString;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
-use MB\Bitrix\AdminKit\Support\AdminString;
 
 class IndexPage extends Page
 {
@@ -93,7 +93,7 @@ class IndexPage extends Page
 
         $bulkActions = array_filter(
             iterator_to_array($this->resource->bulkActions()),
-            fn($a) => $a instanceof BulkAction && $a->isVisible()
+            fn ($a) => $a instanceof BulkAction && $a->isVisible()
         );
 
         if (!empty($bulkActions)) {
@@ -270,7 +270,7 @@ class IndexPage extends Page
                 ? new MassDeleteAction($bulkAction->getId(), $bulkAction->getLabel())
                 : $bulkAction;
 
-            $ids = array_values(array_filter((array)$this->request->getPost('id'), static fn($id): bool => $id !== null && $id !== ''));
+            $ids = array_values(array_filter((array)$this->request->getPost('id'), static fn ($id): bool => $id !== null && $id !== ''));
             $context = new BulkOperationContext(
                 resource: $this->resource,
                 action: $action,

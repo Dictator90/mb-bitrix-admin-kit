@@ -14,5 +14,6 @@ final class PermissionContext
         public readonly ?ResourceContract $resource = null,
         public readonly string $operation = '',
         public readonly array|object|null $item = null,
-    ) {}
+    ) {
+    }
 }

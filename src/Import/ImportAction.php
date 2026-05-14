@@ -15,7 +15,8 @@ final class ImportAction
         private readonly string $id = 'import',
         private readonly string $label = 'Импорт',
         private readonly ImporterInterface $importer = new CsvImporter(),
-    ) {}
+    ) {
+    }
 
     public static function make(string $id = 'import', string $label = 'Импорт'): self
     {

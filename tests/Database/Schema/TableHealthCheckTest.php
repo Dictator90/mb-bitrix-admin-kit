@@ -13,10 +13,19 @@ final class TableHealthCheckTest extends TestCase
 {
     public function testReportsMissingSchemaParts(): void
     {
-        $inspector = new class extends DatabaseSchemaInspector {
-            public function tableExists(string $tableName): bool { return true; }
-            public function getColumns(string $tableName): array { return ['ID' => ['type' => 'int']]; }
-            public function getIndexes(string $tableName): array { return []; }
+        $inspector = new class () extends DatabaseSchemaInspector {
+            public function tableExists(string $tableName): bool
+            {
+                return true;
+            }
+            public function getColumns(string $tableName): array
+            {
+                return ['ID' => ['type' => 'int']];
+            }
+            public function getIndexes(string $tableName): array
+            {
+                return [];
+            }
         };
         $schema = TableSchema::make('vendor_product')
             ->column('ID', 'int', required: true)

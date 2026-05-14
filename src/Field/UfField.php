@@ -68,7 +68,7 @@ class UfField extends Field
                 return [];
             }
 
-            return array_values(array_filter(AdminCollection::make(is_array($value) ? $value : [$value])->all(), static fn($item): bool => $item !== null && $item !== ''));
+            return array_values(array_filter(AdminCollection::make(is_array($value) ? $value : [$value])->all(), static fn ($item): bool => $item !== null && $item !== ''));
         }
 
         if (is_array($value)) {
@@ -88,7 +88,7 @@ class UfField extends Field
     {
         $display = $this->displayValue($value, $row, ['page' => 'detail', 'field' => $this]);
         if (is_array($display)) {
-            return implode(', ', array_map(static fn($item): string => htmlspecialcharsbx((string)$item), $display));
+            return implode(', ', array_map(static fn ($item): string => htmlspecialcharsbx((string)$item), $display));
         }
 
         return htmlspecialcharsbx((string)($display ?? ''));

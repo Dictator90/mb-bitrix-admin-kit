@@ -17,7 +17,8 @@ final class ToolbarAction
         private string $label,
         private string $url = '#',
         private string $class = 'ui-btn ui-btn-light-border'
-    ) {}
+    ) {
+    }
 
     public static function make(string $label, string $id = ''): self
     {

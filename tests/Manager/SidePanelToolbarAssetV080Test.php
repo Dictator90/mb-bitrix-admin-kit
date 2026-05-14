@@ -27,7 +27,7 @@ final class SidePanelToolbarAssetV080Test extends TestCase
 
     public function testToolbarActionVisibilityUsesAdminCondition(): void
     {
-        $action = ToolbarAction::make('Export')->url('/export')->canSee(fn(array $context): bool => $context['allowed'] === true);
+        $action = ToolbarAction::make('Export')->url('/export')->canSee(fn (array $context): bool => $context['allowed'] === true);
 
         self::assertTrue($action->isVisible(['allowed' => true]));
         self::assertFalse($action->isVisible(['allowed' => false]));
@@ -46,8 +46,20 @@ final class SidePanelToolbarAssetV080Test extends TestCase
 final class SidePanelResource extends BaseTestResource
 {
     protected string $title = 'Side';
-    public static function getId(): string { return 'side'; }
-    public function useSidePanel(): bool { return true; }
-    public function detailInSidePanel(): bool { return false; }
-    public function sidePanelWidth(): int { return 900; }
+    public static function getId(): string
+    {
+        return 'side';
+    }
+    public function useSidePanel(): bool
+    {
+        return true;
+    }
+    public function detailInSidePanel(): bool
+    {
+        return false;
+    }
+    public function sidePanelWidth(): int
+    {
+        return 900;
+    }
 }

@@ -8,7 +8,9 @@ use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 final class TableHealthCheck
 {
-    public function __construct(private readonly DatabaseSchemaInspector $inspector) {}
+    public function __construct(private readonly DatabaseSchemaInspector $inspector)
+    {
+    }
 
     /** @return array{table:string,exists:bool,missingColumns:array<int,string>,missingIndexes:array<int,string>,typeMismatches:array<string,array{expected:string,actual:string}>,status:string} */
     public function check(TableSchema $schema): array

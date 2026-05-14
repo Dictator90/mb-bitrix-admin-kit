@@ -53,25 +53,61 @@ final class PageV080Test extends TestCase
 
 final class TestCustomPage extends CustomPage
 {
-    public static function getId(): string { return 'custom_stats'; }
-    public static function getTitle(): string { return 'Stats'; }
-    public static function getSort(): int { return 20; }
-    public static function getMenuIcon(): string { return 'adm-menu-stat'; }
-    public static function getParentMenuId(): ?string { return 'reports'; }
-    protected function content(): string { return '<strong>ok</strong>'; }
+    public static function getId(): string
+    {
+        return 'custom_stats';
+    }
+    public static function getTitle(): string
+    {
+        return 'Stats';
+    }
+    public static function getSort(): int
+    {
+        return 20;
+    }
+    public static function getMenuIcon(): string
+    {
+        return 'adm-menu-stat';
+    }
+    public static function getParentMenuId(): ?string
+    {
+        return 'reports';
+    }
+    protected function content(): string
+    {
+        return '<strong>ok</strong>';
+    }
 }
 
 final class TestDashboardPage extends DashboardPage
 {
-    public static function getId(): string { return 'dashboard'; }
-    public static function getTitle(): string { return 'Dashboard'; }
-    protected function widgets(): iterable { return ['Widget A']; }
+    public static function getId(): string
+    {
+        return 'dashboard';
+    }
+    public static function getTitle(): string
+    {
+        return 'Dashboard';
+    }
+    protected function widgets(): iterable
+    {
+        return ['Widget A'];
+    }
 }
 
 final class TestOptionsPage extends OptionsPage
 {
     protected string $moduleId = 'test.module';
-    public static function getId(): string { return 'options'; }
-    public static function getTitle(): string { return 'Options'; }
-    public function fields(): iterable { return [Text::make('API token', 'api_token')->required()]; }
+    public static function getId(): string
+    {
+        return 'options';
+    }
+    public static function getTitle(): string
+    {
+        return 'Options';
+    }
+    public function fields(): iterable
+    {
+        return [Text::make('API token', 'api_token')->required()];
+    }
 }

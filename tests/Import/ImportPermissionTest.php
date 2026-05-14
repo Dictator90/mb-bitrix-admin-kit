@@ -14,8 +14,11 @@ final class ImportPermissionTest extends TestCase
 {
     public function testItRequiresCreatePermissionForCreateImport(): void
     {
-        $resource = new class extends ProductResource {
-            public function canCreate(?PermissionContext $context = null): bool { return false; }
+        $resource = new class () extends ProductResource {
+            public function canCreate(?PermissionContext $context = null): bool
+            {
+                return false;
+            }
         };
 
         $result = ImportAction::make()->import(new ImportContext($resource, mappedRows: [['NAME' => 'One']], mode: 'create'));

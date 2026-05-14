@@ -1,7 +1,23 @@
 # Changelog
 
-## v0.8.0 - Pages, menu, routing, SidePanel
+## v0.9.0 - 2026-05-14
 
+### Added
+- Rewrote README as a complete DX guide covering installation, Bitrix module wiring, Resources, CRUD pages, fields, filters, actions, OptionsPage, CustomPage, SidePanel, permissions, ORM query customization, runtime fields, computed columns, import/export, and support adapters.
+- Added `docs/quick-start.md` with a minimal end-to-end Bitrix module flow: ORM table, ProductResource, admin file, menu, create, edit, and delete.
+- Added `examples/demo-module` with a realistic Bitrix module skeleton demonstrating Product CRUD, Text/Select/Switcher fields, TextFilter/SelectFilter, computed columns, runtime fields, row actions, bulk actions, OptionsPage, DashboardPage, and SidePanel create/edit.
+- Added cookbook recipes for fields, filters, row actions, bulk actions, SidePanel, runtime ReferenceField, computed columns, custom save, lifecycle hooks, permissions, settings pages, dashboards, EntitySelectorField, and import/export.
+- Added architecture and support-package documentation plus upgrade/deprecation notes.
+- Added PHPStan level 6 configuration, php-cs-fixer configuration, `composer cs-check`, and GitHub Actions CI for composer validate/install/test/analyse/code-style checks.
+- Added v0.9.0 agent notes to keep future DX work copy-paste friendly and backward compatible.
+
+### Changed
+- Stabilized Composer QA scripts around `composer test`, `composer analyse`, `composer cs-fix`, and dry-run `composer cs-check`.
+- Documented the deprecation policy: no public API removals without `@deprecated` phpdoc and migration notes.
+
+## v0.8.0 - 2026-05-14
+
+### Added
 - Added a backward-compatible manager split: `AdminKitRegistry`, `AdminKitRouter`, `AdminKitMenuBuilder`, and `AdminKitRenderer`.
 - Stabilized standalone page API with instance `id`, `title`, `sort`, `icon`, `group`, `canView`, `render`, and `url` methods while keeping legacy static methods.
 - Added centralized URL routing helpers for CRUD pages, standalone pages, action endpoints, bulk actions, and import/export endpoints.
@@ -96,3 +112,11 @@
 - Grid ORM query building now merges index field select, default/index select, UI/default/index filters, UI/default/index order, runtime fields, pagination, and resource parameter hooks in a deterministic order while preserving v0.1.0 hooks.
 - Grid rows are now post-processed through resource row hooks before computed/display values are assembled.
 - Empty filter values skip ORM filtering while preserving meaningful values like `0`, `'0'`, and `false`.
+
+
+## v0.1.0 - 2026-05-13
+
+### Added
+- Added the initial Resource/CRUD skeleton for Bitrix admin pages.
+- Added base Field, Filter, Action, Grid, and Page abstractions.
+- Added initial README and PHPUnit smoke coverage for early CRUD/grid behavior.

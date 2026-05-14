@@ -35,7 +35,7 @@ class RelationResolver
     {
         $normalizedIds = array_values(array_unique(array_filter(
             array_map('strval', AdminCollection::make($ids)->all()),
-            static fn(string $id): bool => $id !== ''
+            static fn (string $id): bool => $id !== ''
         )));
 
         if ($normalizedIds === []) {

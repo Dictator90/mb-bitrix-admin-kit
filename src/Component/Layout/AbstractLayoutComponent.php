@@ -11,7 +11,6 @@ use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 abstract class AbstractLayoutComponent implements ComponentContract
 {
-
     /** @var array<int, FieldContract|ComponentContract> */
     protected array $children = [];
     protected array $classes = [];

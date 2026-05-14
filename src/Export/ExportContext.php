@@ -33,7 +33,7 @@ final class ExportContext
         $this->filter = AdminCollection::make($filter)->all();
         $this->fields = array_values(array_filter(
             AdminCollection::make($fields)->all(),
-            static fn(mixed $field): bool => $field instanceof FieldContract,
+            static fn (mixed $field): bool => $field instanceof FieldContract,
         ));
     }
 

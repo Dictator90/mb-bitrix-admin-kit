@@ -62,13 +62,13 @@ class CsvExporter
         }
 
         // Header row
-        $headers = array_map(fn(FieldContract $f) => $this->encode($f->getLabel()), $fields);
+        $headers = array_map(fn (FieldContract $f) => $this->encode($f->getLabel()), $fields);
         fputcsv($out, $headers, $this->delimiter, $this->enclosure);
 
         // Data rows
         $dataManagerClass = $this->resource->getDataManagerClass();
         if ($dataManagerClass) {
-            $select = array_map(fn(FieldContract $f) => $f->getColumn(), $fields);
+            $select = array_map(fn (FieldContract $f) => $f->getColumn(), $fields);
             $result = $dataManagerClass::getList([
                 'select' => $select,
                 'filter' => $ormFilter,

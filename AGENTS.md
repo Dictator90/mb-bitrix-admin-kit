@@ -50,3 +50,9 @@
 - Standalone pages should preserve the legacy static API while also supporting the v0.8.0 instance API (`id`, `title`, `sort`, `icon`, `group`, `canView`, `render`, `url`).
 - Centralize Bitrix UI extension loading through `Manager\AssetManager` for new page-layer work.
 - Use `Manager\SidePanelAdapter` for create/edit/detail slider behavior and keep full-page mode working when `IFRAME=Y` is absent.
+
+## v0.9.0 DX/documentation notes
+- Keep examples and documentation copy-paste friendly for a standard Bitrix module layout.
+- Prefer small, realistic examples over introducing new framework abstractions in DX work.
+- Keep PHPStan, PHPUnit, php-cs-fixer, and CI commands documented and runnable through Composer scripts.
+- Public API removals must be preceded by `@deprecated` phpdoc and documented migration notes.

@@ -91,7 +91,7 @@ class Image extends File
         $thumbSrc = $thumb['src'] ?? $filePath;
 
         return '<img src="' . htmlspecialcharsbx(
-                $thumbSrc
-            ) . '" style="max-width:' . $this->previewWidth . 'px;max-height:' . $this->previewHeight . 'px;">';
+            $thumbSrc
+        ) . '" style="max-width:' . $this->previewWidth . 'px;max-height:' . $this->previewHeight . 'px;">';
     }
 }

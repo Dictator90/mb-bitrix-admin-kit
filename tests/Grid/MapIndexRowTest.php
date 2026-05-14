@@ -15,7 +15,7 @@ final class MapIndexRowTest extends TestCase
 {
     public function testItAppliesAfterRowsAndMapRowHooks(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function afterIndexRows(array $rows, GridContext $context): array
             {
                 $rows[0]['NAME'] = 'After';

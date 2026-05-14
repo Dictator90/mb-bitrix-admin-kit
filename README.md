@@ -1,12 +1,25 @@
 # MB Bitrix Admin Kit
 
-`mb4it/bitrix-admin-kit` — декларативный конструктор административных CRUD-интерфейсов для 1С-Битрикс поверх Bitrix D7 ORM. Пакет помогает описывать ресурсы, поля, фильтры, таблицы `main.ui.grid` и формы создания/редактирования без ручного дублирования типового admin-кода.
+`mb4it/bitrix-admin-kit` — декларативный набор классов для админских CRUD-разделов 1С-Битрикс на Bitrix D7 ORM. Пакет помогает описать Resource, Field, Filter, Action, OptionsPage и CustomPage в PHP-классах модуля, а затем вывести список, форму, меню, импорт/экспорт и SidePanel без копирования типового admin-кода.
+
+## Для каких задач нужен пакет
+
+- Быстро создать CRUD для ORM `DataManager` в админке модуля.
+- Описывать поля формы и колонки грида в одном Resource.
+- Добавлять фильтры `main.ui.filter`, row actions и безопасные bulk actions.
+- Открывать create/edit/detail формы в `BX.SidePanel`.
+- Делать страницы настроек модуля и произвольные dashboard/report страницы.
+- Кастомизировать ORM-запросы: select, filter, order, runtime fields, computed columns.
+- Использовать CSV import/export без XLSX-движков и без обхода валидации Field.
+
+Пакет не заменяет Bitrix D7 ORM и не скрывает его полностью: бизнес-специфичные связи, `ReferenceField` и сложные фильтры остаются на стороне Resource.
 
 ## Требования
 
-- PHP 8.2+
-- 1С-Битрикс с D7 ORM
-- Composer
+- PHP 8.2+.
+- 1С-Битрикс с D7 ORM и административной частью.
+- Composer в модуле или проекте.
+- Для разработки пакета: PHPUnit, PHPStan и php-cs-fixer из `require-dev`.
 
 ## Установка
 
@@ -14,63 +27,96 @@
 composer require mb4it/bitrix-admin-kit
 ```
 
-Пакет использует `mb4it/collections`, `mb4it/stringable` и `mb4it/conditionable` только через внутренние адаптеры:
-
-- `MB\Bitrix\AdminKit\Support\AdminCollection`
-- `MB\Bitrix\AdminKit\Support\AdminString`
-- `MB\Bitrix\AdminKit\Support\AdminCondition`
-
-Публичный API ресурсов, полей, фильтров и действий принимает стандартные `array`, `iterable`, `callable` и `Closure`; пользователю не нужно возвращать `Collection`.
-
-## Пример D7 ORM таблицы
+Если пакет ставится внутри Bitrix-модуля, подключайте Composer autoload в `include.php` модуля:
 
 ```php
 <?php
 
-namespace Local\Products;
-
-use Bitrix\Main\Entity;
-use Bitrix\Main\ORM\Data\DataManager;
-
-final class ProductTable extends DataManager
-{
-    public static function getTableName(): string
-    {
-        return 'local_product';
-    }
-
-    public static function getMap(): array
-    {
-        return [
-            (new Entity\IntegerField('ID'))->configurePrimary()->configureAutocomplete(),
-            new Entity\StringField('NAME', ['required' => true]),
-            new Entity\IntegerField('SORT'),
-            new Entity\StringField('ACTIVE'),
-        ];
-    }
+$autoload = __DIR__ . '/vendor/autoload.php';
+if (is_file($autoload)) {
+    require_once $autoload;
 }
 ```
 
-## Пример ресурса
+## Подключение в Bitrix-модуле
+
+Минимальная структура модуля:
+
+```text
+local/modules/vendor.demo/
+├── include.php
+├── admin/demo_admin.php
+├── admin/menu.php
+└── lib/Admin/ProductResource.php
+```
+
+`admin/demo_admin.php` должен подключить прологи Bitrix и отдать рендеринг менеджеру или конкретному Resource:
 
 ```php
 <?php
 
-namespace Local\Admin\Resource;
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/include.php';
 
-use Local\Products\ProductTable;
+use Vendor\Demo\Admin\ProductResource;
+
+$resource = new ProductResource();
+$action = (string)($_REQUEST['action'] ?? 'index');
+$id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : null;
+
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
+
+match ($action) {
+    'add' => $resource->formPage()->render(),
+    'edit' => $resource->formPage($id)->render(),
+    'detail' => $resource->detailPage($id)->render(),
+    default => $resource->indexPage()->render(),
+};
+
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
+```
+
+`admin/menu.php` возвращает стандартный массив меню Bitrix:
+
+```php
+<?php
+
+use Vendor\Demo\Admin\ProductResource;
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/include.php';
+
+return [[
+    'parent_menu' => 'global_menu_content',
+    'section' => ProductResource::getId(),
+    'sort' => ProductResource::getSort(),
+    'text' => 'Demo products',
+    'title' => 'Demo products',
+    'url' => 'demo_admin.php?page=' . ProductResource::getId(),
+    'icon' => ProductResource::getMenuIcon(),
+]];
+```
+
+Полный пример находится в `examples/demo-module`.
+
+## Первый Resource
+
+```php
+<?php
+
+namespace Vendor\Demo\Admin;
+
+use Vendor\Demo\Orm\ProductTable;
 use MB\Bitrix\AdminKit\Field\ID;
-use MB\Bitrix\AdminKit\Field\Number;
 use MB\Bitrix\AdminKit\Field\Select;
+use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Filter\Types\SelectFilter;
 use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
-use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Resource\CrudResource;
 
 final class ProductResource extends CrudResource
 {
-    protected string $title = 'Товары';
+    protected string $title = 'Products';
 
     public function dataManagerClass(): string
     {
@@ -81,209 +127,225 @@ final class ProductResource extends CrudResource
     {
         return [
             ID::make('ID'),
-            Text::make('Название', 'NAME'),
-            Number::make('Сортировка', 'SORT'),
-            Select::make('Активность', 'ACTIVE')->options(['Y' => 'Да', 'N' => 'Нет']),
+            Text::make('Name', 'NAME'),
+            Select::make('Type', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service']),
+            Switcher::make('Active', 'ACTIVE')->values('Y', 'N'),
         ];
     }
 
     public function formFields(): iterable
     {
         return [
-            Text::make('Название', 'NAME')->required()->placeholder('Название товара'),
-            Number::make('Сортировка', 'SORT')->default(500),
-            Select::make('Активность', 'ACTIVE')->options(['Y' => 'Да', 'N' => 'Нет'])->default('Y'),
+            Text::make('Name', 'NAME')->required(),
+            Select::make('Type', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service'])->default('simple'),
+            Switcher::make('Active', 'ACTIVE')->values('Y', 'N')->default('Y'),
         ];
     }
 
     public function filters(): iterable
     {
         return [
-            TextFilter::make('Название', 'NAME'),
-            SelectFilter::make('Активность', 'ACTIVE')->options(['Y' => 'Да', 'N' => 'Нет']),
+            TextFilter::make('Name', 'NAME'),
+            SelectFilter::make('Type', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service']),
         ];
-    }
-
-    public function defaultSort(): array
-    {
-        return ['SORT' => 'ASC', 'ID' => 'DESC'];
-    }
-
-    public function modifyIndexParams(array $params, GridContext $context): array
-    {
-        // Главная точка расширения для реальных D7 ORM-запросов:
-        // можно добавить runtime-поля, сложные фильтры или ограничения прав.
-        return $params;
     }
 }
 ```
 
-## Пример admin-файла
+## Как вывести CRUD
+
+Resource наследует методы `indexPage()`, `formPage($id = null)` и `detailPage($id)` из CRUD-слоя. В admin-файле выберите страницу по `action` и вызовите `render()`. Для нового раздела чаще всего достаточно `index`, `add`, `edit`, `detail` и `delete`.
+
+## Поля
+
+Field описывает колонку грида, поле формы, нормализацию и валидацию:
 
 ```php
-<?php
-
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
-
-use Local\Admin\Resource\ProductResource;
-
-$resource = new ProductResource();
-$action = $_REQUEST['action'] ?? 'index';
-$id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : null;
-
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
-
-match ($action) {
-    'add' => $resource->formPage()->render(),
-    'edit' => $resource->formPage($id)->render(),
-    default => $resource->indexPage()->render(),
-};
-
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
+Text::make('Name', 'NAME')->required()->placeholder('Product name');
+Select::make('Type', 'TYPE')->options(['simple' => 'Simple'])->default('simple');
+Switcher::make('Active', 'ACTIVE')->values('Y', 'N')->default('Y');
 ```
 
-## Пример меню
+Используйте существующие Field-классы (`Text`, `Number`, `Select`, `Switcher`, `Date`, `EntitySelectorField`, `UserSelectorField` и др.) и расширяйте их при необходимости.
+
+## Фильтры
 
 ```php
-<?php
-
-use Local\Admin\Resource\ProductResource;
-
-return [
-    'parent_menu' => 'global_menu_content',
-    'section' => ProductResource::getId(),
-    'sort' => ProductResource::getSort(),
-    'text' => 'Товары',
-    'title' => 'Товары',
-    'url' => 'local_product_admin.php?page=' . ProductResource::getId(),
-    'icon' => ProductResource::getMenuIcon(),
-];
+TextFilter::make('Name', 'NAME')->contains();
+SelectFilter::make('Active', 'ACTIVE')->options(['Y' => 'Yes', 'N' => 'No'])->exact();
 ```
 
-## Базовые сценарии
+Фильтры пропускают пустые значения, но сохраняют значимые `0`, `'0'` и `false`.
 
-- **Список**: `IndexPage` строит `GridContext`, передает его в `GridQueryBuilder`, получает параметры `select`, `filter`, `order`, `limit`, `offset`, `runtime` и вызывает `CrudResource::modifyIndexParams()`.
-- **Фильтр**: фильтры формируют описание для `main.ui.filter` и применяют непустые значения к ORM-фильтру. `0` и `'0'` считаются значимыми значениями.
-- **Создание**: `FormPage` проверяет sessid, собирает значения полей, вызывает `normalize()`, `runValidation()` и затем `CrudResource::createItem()`.
-- **Редактирование**: форма загружает запись через `findItem()`, нормализует POST и сохраняет через `CrudResource::updateItem()`.
-- **Удаление**: delete/action POST-операции проверяют `check_bitrix_sessid()`, а URL строятся централизованно через `UrlGenerator` и `http_build_query()`.
+## Actions
 
-## Support-адаптеры
+Row actions отображаются в меню строки:
 
 ```php
-use MB\Bitrix\AdminKit\Support\AdminCollection;
-use MB\Bitrix\AdminKit\Support\AdminCondition;
-use MB\Bitrix\AdminKit\Support\AdminString;
-
-$fields = AdminCollection::make([Text::make('Название', 'NAME')]);
-$gridId = AdminString::gridId(ProductResource::class);
-$visible = AdminCondition::evaluate(fn(array $ctx) => $ctx['canView'], ['canView' => true]);
+public function rowActions(): iterable
+{
+    return [
+        RowAction::edit(),
+        RowAction::view(),
+        RowAction::delete(),
+    ];
+}
 ```
 
-Глобальные helper-функции `collect()`, `str()` и `condition()` внутри AdminKit не используются.
-
-## v0.2.0: ORM grid customization
-
-`CrudResource` can now customize every part of the index ORM query without replacing the grid layer. The v0.1.0 hooks (`defaultSelect()`, `defaultFilter()`, `defaultSort()`, `runtimeFields()`, and `modifyIndexParams()`) still work, and v0.2.0 adds context-aware hooks:
+Bulk actions безопасны по умолчанию и требуют выбранные ID, если действие явно не разрешает запуск по фильтру:
 
 ```php
-public function indexSelect(GridContext $context): array;
-public function indexFilter(GridContext $context): array;
-public function indexOrder(GridContext $context): array;
-public function indexRuntime(GridContext $context): array;
-public function beforeIndexQueryParams(array $params, GridContext $context): array;
-public function afterIndexRows(array $rows, GridContext $context): array;
-public function mapIndexRow(array $row, GridContext $context): array;
+public function bulkActions(): iterable
+{
+    return [
+        BulkAction::make('activate', 'Activate')->update(['ACTIVE' => 'Y']),
+        BulkAction::delete(),
+    ];
+}
 ```
 
-The query builder assembles ORM params in this order: index fields, default/index select, UI/default/index filters, UI/default/index order, runtime fields, pagination, `beforeIndexQueryParams()`, then the legacy `modifyIndexParams()` hook.
-
-### Runtime fields and ReferenceField
-
-Runtime fields are passed directly to Bitrix D7 ORM `DataManager::getList()` through the `runtime` key. The grid layer does not know join business logic, so Bitrix runtime field objects such as `ReferenceField` can be returned as-is:
+## OptionsPage
 
 ```php
-use Bitrix\Main\ORM\Fields\Relations\Reference as ReferenceField;
-use Bitrix\Main\ORM\Query\Join;
-use Bitrix\Main\UserTable;
-use MB\Bitrix\AdminKit\Grid\GridContext;
+final class SettingsPage extends \MB\Bitrix\AdminKit\Pages\OptionsPage
+{
+    protected string $moduleId = 'vendor.demo';
 
+    public static function title(): string
+    {
+        return 'Demo settings';
+    }
+
+    protected function fields(): iterable
+    {
+        return [
+            Text::make('API token', 'api_token')->private(),
+            Switcher::make('Enabled', 'enabled')->values('Y', 'N'),
+        ];
+    }
+}
+```
+
+## CustomPage и Dashboard
+
+Для произвольных страниц наследуйте `CustomPage` или `DashboardPage` и верните HTML из `content()`/`widgets()`. Разметку пишите по BEM и без inline styles.
+
+## SidePanel
+
+Включите SidePanel на Resource:
+
+```php
+public function useSidePanel(): bool
+{
+    return true;
+}
+
+public function sidePanelWidth(): int
+{
+    return 960;
+}
+```
+
+`RowAction::edit()` и URL create/edit будут открываться через `BX.SidePanel`, но full-page режим сохранится, если `IFRAME=Y` отсутствует.
+
+## Права
+
+Опасные операции должны проверяться через `PermissionContext` и методы Resource:
+
+```php
+public function canCreate(?PermissionContext $context = null): bool
+{
+    return $context?->userId() === 1;
+}
+```
+
+Проверяйте `canUpdate`/`canDelete` на каждую запись в bulk operations: пакет пропускает запрещенные строки, не останавливая весь batch.
+
+## Кастомизация ORM-запроса
+
+Основная точка расширения — `modifyIndexParams(array $params, GridContext $context): array`:
+
+```php
+public function modifyIndexParams(array $params, GridContext $context): array
+{
+    $params['filter']['=ACTIVE'] = 'Y';
+    $params['select'][] = 'CATEGORY_NAME';
+
+    return $params;
+}
+```
+
+Для стабильного порядка используйте также `defaultSort()`, `defaultFilter()`, `indexSelect()`, `indexFilter()`, `indexOrder()` и `indexRuntime()`.
+
+## Runtime fields
+
+Передавайте Bitrix runtime-объекты в `indexRuntime()` или `modifyIndexParams()`:
+
+```php
 public function indexRuntime(GridContext $context): array
 {
     return [
-        new ReferenceField(
-            'USER',
-            UserTable::class,
-            Join::on('this.USER_ID', 'ref.ID')
+        new \Bitrix\Main\ORM\Fields\Relations\Reference(
+            'CATEGORY',
+            CategoryTable::class,
+            ['=this.CATEGORY_ID' => 'ref.ID']
         ),
     ];
 }
-
-public function indexSelect(GridContext $context): array
-{
-    return ['USER_NAME' => 'USER.NAME', 'USER_LAST_NAME' => 'USER.LAST_NAME'];
-}
 ```
 
-### Computed columns and displayUsing
+AdminKit не встраивает бизнес-join в grid layer: Resource сам решает, какие runtime поля нужны.
 
-Computed fields are intended for values that are derived after rows are fetched. They are displayed in grid/detail pages, but they are not automatically added to ORM `select`, sorting, or filtering:
+## Computed columns
+
+Computed column не выбирается из ORM автоматически и считается на PHP-строке:
 
 ```php
-use MB\Bitrix\AdminKit\Field\Text;
-
-Text::make('Пользователь', 'USER_FULL_NAME')
-    ->computed(function (array $row): string {
-        return trim(($row['USER_NAME'] ?? '') . ' ' . ($row['USER_LAST_NAME'] ?? ''));
-    })
-    ->displayUsing(function (mixed $value, array $row, array $context): string {
-        return $value ?: '—';
-    });
+Text::make('Status label', 'STATUS_LABEL')
+    ->computed(static fn(array $row): string => $row['ACTIVE'] === 'Y' ? 'Active' : 'Inactive');
 ```
 
-`displayUsing()` receives the raw value, the full row, and display context (`page` and `field`) and is used by grid/detail rendering.
+## Import/export
 
-### Custom filters and CallbackFilter
-
-Filters implement `applyToOrmFilter(array $filter, mixed $value, GridContext $context): array`. Empty values (`null`, `''`, `[]`) are ignored, while `0`, `'0'`, and `false` are treated as intentional filter values.
+Import/export CSV-first. Экспорт требует выбранные ID или разрешенный фильтр; полный экспорт выключен, пока Resource/action не включит его явно.
 
 ```php
-use MB\Bitrix\AdminKit\Filter\Types\CallbackFilter;
-use MB\Bitrix\AdminKit\Grid\GridContext;
-
-CallbackFilter::make('Поиск', 'SEARCH')
-    ->apply(function (array $filter, mixed $value, GridContext $context): array {
-        $filter[] = [
-            'LOGIC' => 'OR',
-            '%NAME' => $value,
-            '%CODE' => $value,
-        ];
-
-        return $filter;
-    });
+public function allowExportByFilter(): bool { return true; }
+public function allowExportAll(): bool { return false; }
+public function maxImportRows(): int { return 1000; }
 ```
 
-Built-in filter operators:
+Импорт использует `Form\DataPipeline`, поэтому нормализация и валидация совпадают с сохранением формы.
 
-- `TextFilter`: `exact()`, `contains()`, `startsWith()`, `endsWith()`.
-- `NumberFilter`: `exact()`, `range()`, `greaterThan()`, `lessThan()`.
-- `SelectFilter`: `exact()`, `multiple()`.
-- `DateFilter`: `exact()`, `range()`.
+## Support-пакеты
 
-### Row mapping hooks
+AdminKit использует `mb4it/collections`, `mb4it/stringable` и `mb4it/conditionable` через адаптеры:
 
-Use `afterIndexRows()` to post-process the fetched row list and `mapIndexRow()` to transform each row before computed fields and `displayUsing()` are applied:
+- `AdminCollection` для внутренних массивов и результатов.
+- `AdminString` для id, alias, HTML id и cache keys.
+- `AdminCondition` для условий видимости/доступности.
 
-```php
-public function afterIndexRows(array $rows, GridContext $context): array
-{
-    return array_values($rows);
-}
+Публичный API принимает обычные `array`, `iterable`, `callable` и `Closure`; разработчику модуля не нужно зависеть от конкретной Collection-реализации.
 
-public function mapIndexRow(array $row, GridContext $context): array
-{
-    $row['BADGE'] = $row['ACTIVE'] === 'Y' ? 'Active' : 'Inactive';
+## Документация
 
-    return $row;
-}
+- Quick start: `docs/quick-start.md`.
+- Cookbook: `docs/cookbook/`.
+- Architecture: `docs/architecture.md`.
+- Support packages: `docs/support-packages.md`.
+- Upgrade/deprecation: `docs/upgrade.md`.
+
+## Разработка пакета
+
+```bash
+composer install
+composer test
+composer analyse
+composer cs-fix
+```
+
+Для CI используется dry-run php-cs-fixer:
+
+```bash
+vendor/bin/php-cs-fixer fix --dry-run --diff
 ```

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Resource\Traits;
 
-use RuntimeException;
 use MB\Bitrix\AdminKit\Database\CrudPersister;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Database\DbResult;
@@ -12,6 +11,7 @@ use MB\Bitrix\AdminKit\Database\TransactionManager;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
+use RuntimeException;
 
 trait HasCrud
 {

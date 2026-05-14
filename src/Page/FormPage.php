@@ -11,9 +11,8 @@ use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
-use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
-use MB\Bitrix\AdminKit\Form\FormData;
+use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\Tab;
@@ -382,8 +381,8 @@ class FormPage extends Page
         echo '<div class="ui-button-panel adminkit-button-panel">';
         echo '<button type="submit" class="ui-btn ui-btn-success" name="save" value="Y">Сохранить</button>';
         echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialcharsbx(
-                $cancelAction
-            ) . '">Отмена</button>';
+            $cancelAction
+        ) . '">Отмена</button>';
         echo '</div>';
     }
 
@@ -793,6 +792,6 @@ class FormPage extends Page
             $fields = $this->getVisibleFields();
         }
 
-        return array_values(array_filter($fields, fn(FieldContract $f) => !$f->isReadOnly()));
+        return array_values(array_filter($fields, fn (FieldContract $f) => !$f->isReadOnly()));
     }
 }

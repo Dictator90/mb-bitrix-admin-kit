@@ -33,7 +33,7 @@ trait HasVisibility
         $allPages = PageType::cases();
         $this->hiddenOn = array_filter(
             $allPages,
-            fn(PageType $pt) => !in_array($pt, $pageTypes, true),
+            fn (PageType $pt) => !in_array($pt, $pageTypes, true),
         );
 
         return $this;

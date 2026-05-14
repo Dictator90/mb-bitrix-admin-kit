@@ -12,7 +12,10 @@ use PHPUnit\Framework\TestCase;
 
 final class CsvImporterTest extends TestCase
 {
-    protected function setUp(): void { ProductTable::reset(); }
+    protected function setUp(): void
+    {
+        ProductTable::reset();
+    }
 
     public function testItCreatesRowsFromMappedCsvData(): void
     {

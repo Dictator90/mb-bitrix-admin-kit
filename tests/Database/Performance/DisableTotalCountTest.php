@@ -16,11 +16,17 @@ final class DisableTotalCountTest extends TestCase
     public function testTotalCountCanBeDisabled(): void
     {
         ProductTable::reset();
-        $resource = new class extends ProductResource {
-            public function useTotalCount(GridContext $context): bool { return false; }
+        $resource = new class () extends ProductResource {
+            public function useTotalCount(GridContext $context): bool
+            {
+                return false;
+            }
         };
-        $page = new class($resource) extends IndexPage {
-            public function run(Grid $grid): void { $this->loadData($grid); }
+        $page = new class ($resource) extends IndexPage {
+            public function run(Grid $grid): void
+            {
+                $this->loadData($grid);
+            }
         };
         $grid = new Grid($resource->getGridId(), iterator_to_array($resource->indexFields()), [], [], '', 'ID');
 

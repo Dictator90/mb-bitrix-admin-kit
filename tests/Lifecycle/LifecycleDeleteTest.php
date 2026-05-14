@@ -12,10 +12,16 @@ final class LifecycleDeleteTest extends TestCase
 {
     public function testDeleteHooksAreCalled(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public array $calls = [];
-            public function beforeDelete(array $item, DbOperationContext $context): void { $this->calls[] = 'before:' . $item['NAME']; }
-            public function afterDelete(array $item, DbOperationContext $context): void { $this->calls[] = 'after:' . $item['NAME']; }
+            public function beforeDelete(array $item, DbOperationContext $context): void
+            {
+                $this->calls[] = 'before:' . $item['NAME'];
+            }
+            public function afterDelete(array $item, DbOperationContext $context): void
+            {
+                $this->calls[] = 'after:' . $item['NAME'];
+            }
         };
 
         $resource->deleteItem(1);

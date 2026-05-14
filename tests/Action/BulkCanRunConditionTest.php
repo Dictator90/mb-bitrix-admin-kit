@@ -42,7 +42,7 @@ final class BulkCanRunConditionTest extends TestCase
     public function testItAcceptsClosureAndConditionTree(): void
     {
         $closure = BulkUpdateAction::make('activate')
-            ->canRun(fn(array $context): bool => ($context['item']['ID'] ?? null) === 1)
+            ->canRun(fn (array $context): bool => ($context['item']['ID'] ?? null) === 1)
             ->update(['ACTIVE' => 'Y'])
             ->execute(new BulkOperationContext(new ProductResource(), 'activate', [1]));
 

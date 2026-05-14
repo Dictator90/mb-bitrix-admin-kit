@@ -8,8 +8,8 @@ use Closure;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
-use MB\Bitrix\AdminKit\Support\AdminCondition;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\AdminCondition;
 use MB\Support\Conditionable\ConditionTree;
 
 class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
@@ -192,7 +192,7 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
     {
         return array_values(array_filter(
             AdminCollection::make($context->selectedIds)->all(),
-            static fn(mixed $id): bool => $id !== null && $id !== ''
+            static fn (mixed $id): bool => $id !== null && $id !== ''
         ));
     }
 

@@ -96,7 +96,7 @@ class BelongsToMany extends BelongsTo
 
         if ($this->optionsCallback !== null) {
             $options = ($this->optionsCallback)();
-            $labels = array_map(fn($id) => $options[$id] ?? $id, $ids);
+            $labels = array_map(fn ($id) => $options[$id] ?? $id, $ids);
         } else {
             $labels = $this->loadLabels($ids);
         }
@@ -118,7 +118,7 @@ class BelongsToMany extends BelongsTo
             while ($row = $result->fetch()) {
                 $map[(string)$row[$this->valueColumn]] = (string)($row[$this->titleColumn] ?? '');
             }
-            return array_map(fn($id) => $map[$id] ?? $id, $ids);
+            return array_map(fn ($id) => $map[$id] ?? $id, $ids);
         } catch (Throwable) {
             return $ids;
         }

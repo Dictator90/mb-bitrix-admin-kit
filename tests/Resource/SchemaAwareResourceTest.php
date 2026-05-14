@@ -18,8 +18,11 @@ final class SchemaAwareResourceTest extends TestCase
 
     public function testSchemaAwareResourceReturnsExpectedSchema(): void
     {
-        $resource = new class extends ProductResource implements SchemaAwareResource {
-            public function expectedTableSchema(): TableSchema { return TableSchema::make('vendor_product')->column('ID', 'int', required: true); }
+        $resource = new class () extends ProductResource implements SchemaAwareResource {
+            public function expectedTableSchema(): TableSchema
+            {
+                return TableSchema::make('vendor_product')->column('ID', 'int', required: true);
+            }
         };
 
         self::assertSame('vendor_product', $resource->expectedTableSchema()->tableName());

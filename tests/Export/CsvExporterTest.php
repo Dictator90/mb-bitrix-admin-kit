@@ -15,12 +15,12 @@ final class CsvExporterTest extends TestCase
 {
     public function testItExportsIndexFieldsDisplayAndComputedValues(): void
     {
-        $resource = new class extends ProductResource {
+        $resource = new class () extends ProductResource {
             public function indexFields(): iterable
             {
                 return [
-                    Text::make('Name', 'NAME')->displayUsing(static fn(mixed $value): string => strtoupper((string)$value)),
-                    Text::make('Computed', 'COMPUTED')->computed(static fn(array $row): string => $row['NAME'] . '-computed'),
+                    Text::make('Name', 'NAME')->displayUsing(static fn (mixed $value): string => strtoupper((string)$value)),
+                    Text::make('Computed', 'COMPUTED')->computed(static fn (array $row): string => $row['NAME'] . '-computed'),
                     Hidden::make('Secret', 'SECRET'),
                     Text::make('Private', 'PRIVATE')->private(),
                 ];
@@ -38,7 +38,7 @@ final class CsvExporterTest extends TestCase
     public function testItEscapesCsvValuesSafely(): void
     {
         $result = (new CsvExporter(withBom: false))->export([
-            ['NAME' => "One, \"quoted\""],
+            ['NAME' => 'One, "quoted"'],
         ], new ExportContext(new ProductResource(), fields: [Text::make('Name', 'NAME')]));
 
         self::assertStringContainsString('"One, ""quoted"""', $result->content);

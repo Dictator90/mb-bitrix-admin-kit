@@ -19,7 +19,8 @@ final class GridContext
         public readonly int $offset = 0,
         public readonly int $limit = 20,
         public readonly mixed $request = null,
-    ) {}
+    ) {
+    }
 
     public static function make(ResourceContract $resource, mixed $request = null, array $overrides = []): self
     {
