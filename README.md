@@ -38,9 +38,61 @@ if (is_file($autoload)) {
 }
 ```
 
-## Public facade
+## Public facade and discovery
 
-`MB\Bitrix\AdminKit\AdminKit::manager($module)` creates an `AdminKitManager` for a module entity. The manager remains the primary facade for resource/page registration, menu building, routing, and rendering.
+AdminKit is module-first, but not module-only. Each manager is created for a `scopeId` — a unique AdminKit area identifier. In a Bitrix module this usually matches the module ID, for example `vendor.demo`; for project-level admin tools it can be `site.admin`, `catalog.admin`, or any other stable string.
+
+### Bitrix module
+
+```php
+use MB\Bitrix\AdminKit\AdminKit;
+
+$adminKit = AdminKit::forModule('vendor.demo')
+    ->discoverIn('/local/modules/vendor.demo/lib');
+```
+
+### Module object
+
+```php
+$adminKit = AdminKit::forModule($moduleObject);
+```
+
+If the object exposes `getModuleId()`, `getId()`, `id()`, public `moduleId`, or public `id`, AdminKit uses that value as the scope ID. If the object exposes `getLibPath()` or public `libPath`, that path is added to discovery automatically.
+
+### `local/php_interface` resources
+
+```php
+$adminKit = AdminKit::forScope('site.admin')
+    ->discoverIn('/local/php_interface/lib/Admin');
+```
+
+### Directory shortcut
+
+```php
+$adminKit = AdminKit::fromDirectory(
+    '/local/php_interface/lib/Admin',
+    scopeId: 'site.admin'
+);
+```
+
+Multiple directories can be discovered for one scope:
+
+```php
+$adminKit = AdminKit::fromDirectories([
+    '/local/php_interface/lib/Admin',
+    '/local/php_interface/lib/Tools',
+], scopeId: 'site.admin');
+```
+
+### Manual registration without discovery
+
+```php
+$adminKit = AdminKit::forScope('site.admin')
+    ->register(ProductResource::class)
+    ->registerPage(SettingsPage::class);
+```
+
+The manager remains the primary facade for resource/page registration, menu building, routing, and rendering. See `docs/discovery.md` for all discovery options and missing-path behavior.
 
 ## Подключение в Bitrix-модуле
 
