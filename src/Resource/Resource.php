@@ -77,6 +77,37 @@ abstract class Resource implements ResourceContract
 
     // ────────────────────────────────────────────────────────────────────
 
+
+    public function group(): ?string
+    {
+        return static::getParentMenuId();
+    }
+
+    public function useSidePanel(): bool
+    {
+        return false;
+    }
+
+    public function createInSidePanel(): bool
+    {
+        return $this->useSidePanel();
+    }
+
+    public function editInSidePanel(): bool
+    {
+        return $this->useSidePanel();
+    }
+
+    public function detailInSidePanel(): bool
+    {
+        return $this->useSidePanel();
+    }
+
+    public function sidePanelWidth(): int
+    {
+        return 1100;
+    }
+
     public function getTitle(): string
     {
         return $this->title;
