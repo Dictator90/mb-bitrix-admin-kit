@@ -36,8 +36,8 @@ class FormPage extends Page
     public function __construct(ResourceContract $resource, mixed $id = null, array $params = [])
     {
         parent::__construct($resource, $id, $params);
-        $this->id = $id !== null ? (int)$id : null;
-        $this->mode = (string)($params['mode'] ?? ($this->id ? 'edit' : 'create'));
+        $this->id = $id;
+        $this->mode = (string)($params['mode'] ?? ($this->id !== null ? 'edit' : 'create'));
     }
 
     public static function pageName(): string

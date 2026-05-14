@@ -127,9 +127,9 @@ interface ResourceContract
 
     public function indexPage(): IndexPage;
 
-    public function formPage(?int $id = null): FormPage;
+    public function formPage(mixed $id = null): FormPage;
 
-    public function detailPage(int $id): DetailPage;
+    public function detailPage(mixed $id): DetailPage;
 
     public function canCreate(?PermissionContext $context = null): bool;
 

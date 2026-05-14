@@ -37,7 +37,7 @@ final class AdminKitRegistry
     /** @param class-string<AbstractPage> $pageClass */
     public function registerPage(string $pageClass): self
     {
-        if ($this->canRegister($pageClass, AbstractPage::class)) {
+        if ($this->canRegisterPage($pageClass)) {
             $this->pages[$pageClass::getId()] = $pageClass;
             $this->sort();
         }
@@ -59,7 +59,7 @@ final class AdminKitRegistry
                 continue;
             }
 
-            if ($this->canRegister($class, AbstractPage::class) && !isset($this->pages[$class::getId()])) {
+            if ($this->canRegisterPage($class) && !isset($this->pages[$class::getId()])) {
                 $this->pages[$class::getId()] = $class;
             }
         }
@@ -217,6 +217,11 @@ final class AdminKitRegistry
         }
 
         return false;
+    }
+
+    private function canRegisterPage(string $class): bool
+    {
+        return $this->canRegister($class, AbstractPage::class) && $class::isStandalone();
     }
 
     private function canRegister(string $class, string $baseClass): bool

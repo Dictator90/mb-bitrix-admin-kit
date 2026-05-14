@@ -312,7 +312,7 @@ abstract class Resource implements ResourceContract
         return $page;
     }
 
-    public function formPage(?int $id = null): FormPage
+    public function formPage(mixed $id = null): FormPage
     {
         $page = (new ResourcePageResolver())->resolve(
             $this,
@@ -328,7 +328,7 @@ abstract class Resource implements ResourceContract
         return $page;
     }
 
-    public function detailPage(int $id): DetailPage
+    public function detailPage(mixed $id): DetailPage
     {
         $page = (new ResourcePageResolver())->resolve($this, DetailPage::pageName(), $id);
 
