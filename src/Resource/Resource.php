@@ -198,6 +198,22 @@ abstract class Resource implements ResourceContract
         return 200;
     }
 
+    public function allowExportByFilter(): bool
+    {
+        return true;
+    }
+
+    public function allowExportAll(): bool
+    {
+        return false;
+    }
+
+    public function maxImportRows(): int
+    {
+        return 1000;
+    }
+
+
     // ── Field / Filter / Action definitions ──────────────────────────────
 
     /** @return iterable<FieldContract> */

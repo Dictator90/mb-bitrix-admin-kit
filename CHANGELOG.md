@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.7.0 - 2026-05-14
+
+### Added
+- Added CSV-first resource export with `ExportAction`, `ExportContext`, `ExportResult`, `ExporterInterface`, and `CsvExporter`.
+- Added selected-record export and filter-based export while keeping full export disabled by default.
+- Added export permission checks and field visibility/private/system guards so hidden or private fields are not exported.
+- Added CSV import with `ImportAction`, `ImportContext`, `ImportResult`, `ImporterInterface`, and `CsvImporter`.
+- Added import preview/validate-only support, column mapping, create/update/upsert modes, configurable key field, and row limits.
+- Added shared `Form\DataPipeline` so form saves and imports use the same Field normalization and validation pipeline.
+- Added documentation for CSV import/export formats, permissions, limits, selected exports, filter exports, preview, validate-only, and import modes.
+
+### Changed
+- Form saves now route Field normalization and validation through the shared data pipeline used by CSV imports.
+
 ## v0.6.0 - 2026-05-14
 
 ### Added

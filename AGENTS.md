@@ -37,3 +37,9 @@
 - Prefer `Database\Schema\TableSchema` and `SchemaAwareResource` for expected schemas instead of adding migration abstractions.
 - Keep query-performance features conservative: `useTotalCount()`, count/options/lookup cache, `QueryGuard`, and `maxPageSize()` should be opt-in or safe by default.
 - Generate cache keys through `AdminString::cacheKey()` and use `AdminCollection` for diagnostic, preload, debug, and batch result arrays.
+
+## v0.7.0 import/export notes
+- Keep resource import/export CSV-first; do not introduce XLSX/Excel engines without an explicit task.
+- Export actions must require either explicit selected IDs or an allowed filter; full export remains disabled unless a resource/action opts in.
+- Import must reuse `Form\DataPipeline` so form saves and CSV imports share Field `normalize()` and validation behavior.
+- Keep import/export row sets, mappings, chunks, selected IDs, and errors on `AdminCollection` rather than global helper functions.
