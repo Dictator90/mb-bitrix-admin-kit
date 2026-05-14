@@ -438,3 +438,25 @@ composer cs-fix
 ```bash
 vendor/bin/php-cs-fixer fix --dry-run --diff
 ```
+
+## Resource pages: custom IndexPage/FormPage/DetailPage
+
+`Resource` describes the entity; `Page` describes a concrete admin view. Use `pages()` to register custom CRUD pages:
+
+```php
+final class ProductResource extends CrudResource
+{
+    public function pages(): iterable
+    {
+        return [
+            ProductIndexPage::class,
+            ProductFormPage::class,
+            ProductDetailPage::class,
+        ];
+    }
+}
+```
+
+The shortcuts `indexFields()`, `formFields()`, and `detailFields()` still work for simple resources. For complex views, override `fields()`, `filters()`, `rowActions()`, `bulkActions()`, query hooks, tabs, and save hooks on the appropriate page class. Do not introduce `indexResource()`, `formResource()`, `detailResource()`, `IndexResource`, `FormResource`, or `DetailResource`; page classes are the extension point.
+
+See `docs/pages.md` for full custom page examples and the `admin_resource` / `admin_page` routing parameters.

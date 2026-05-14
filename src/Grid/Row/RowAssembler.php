@@ -8,7 +8,9 @@ use Bitrix\Main\ORM\Query\Result;
 use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
@@ -25,6 +27,7 @@ class RowAssembler
         protected string $primaryKey = 'ID',
         protected ?ResourceContract $resource = null,
         protected ?GridContext $context = null,
+        protected ?IndexPageDefinitionContract $indexPage = null,
     ) {
     }
 
@@ -40,7 +43,7 @@ class RowAssembler
         }
 
         if ($this->resource instanceof ResourceContract && $this->context instanceof GridContext) {
-            $dataRows = $this->resource->afterIndexRows($dataRows, $this->context);
+            $dataRows = ($this->indexPage ?? $this->resource)->afterIndexRows($dataRows, $this->context);
         }
 
         $rows = [];
@@ -57,7 +60,7 @@ class RowAssembler
     protected function prepareRow(array $data): array
     {
         if ($this->resource instanceof ResourceContract && $this->context instanceof GridContext) {
-            $data = $this->resource->mapIndexRow($data, $this->context);
+            $data = ($this->indexPage ?? $this->resource)->mapIndexRow($data, $this->context);
         }
 
         foreach (AdminCollection::make($this->fields)->all() as $field) {
@@ -75,7 +78,17 @@ class RowAssembler
             if (!$field instanceof FieldContract) {
                 continue;
             }
-            $row['columns'][$field->getColumn()] = $field->renderIndex($data[$field->getColumn()] ?? null, $data);
+            $value = $field->resolveValue($data, $data);
+            $row['columns'][$field->getColumn()] = $this->resource instanceof ResourceContract
+                ? $field->renderIndex(new FieldRenderContext(
+                    field: $field,
+                    resource: $this->resource,
+                    item: $data,
+                    value: $value,
+                    page: 'index',
+                    row: $data,
+                ))
+                : $field->renderIndex($value, $data);
             $assembler = $field->getFieldAssembler();
             if ($assembler instanceof FieldAssembler) {
                 $row = $assembler->processRow($row);

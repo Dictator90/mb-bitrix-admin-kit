@@ -72,6 +72,11 @@ abstract class Field implements FieldContract
         return $this;
     }
 
+    public function fill(mixed $value): static
+    {
+        return $this->setValue($value);
+    }
+
     public function getDefault(): mixed
     {
         return $this->default;
@@ -256,9 +261,17 @@ abstract class Field implements FieldContract
 
     abstract public function renderFormField(mixed $value = null): string;
 
-    protected function resolveValue(mixed $value = null): mixed
+    public function resolveValue(mixed $item, array $row = []): mixed
     {
-        return $value ?? $this->value ?? $this->default;
+        if (is_array($item)) {
+            return $item[$this->column] ?? $row[$this->column] ?? $this->value ?? $this->default;
+        }
+
+        if (is_object($item) && method_exists($item, 'get')) {
+            return $item->get($this->column) ?? $row[$this->column] ?? $this->value ?? $this->default;
+        }
+
+        return $item ?? $row[$this->column] ?? $this->value ?? $this->default;
     }
 
     protected function renderReactiveAttrs(): string
@@ -294,21 +307,41 @@ abstract class Field implements FieldContract
         return false;
     }
 
-    public function renderIndex(mixed $value, array $row = []): string
+    public function renderIndex(mixed $context, array $row = []): string
     {
-        $displayValue = $this->displayValue($value, $row, ['page' => 'index', 'field' => $this]);
+        if ($context instanceof FieldRenderContext) {
+            $row = $context->row;
+            $value = $context->value;
+            $meta = array_merge($context->meta, ['page' => $context->page, 'field' => $this, 'context' => $context]);
+        } else {
+            $value = $context;
+            $meta = ['page' => 'index', 'field' => $this];
+        }
+
+        $displayValue = $this->displayValue($value, $row, $meta);
 
         return htmlspecialcharsbx((string)($this->previewValue($displayValue) ?? ''));
     }
 
-    public function renderForm(mixed $value = null, array $context = []): string
+    public function renderForm(mixed $context = null, array $data = []): string
     {
+        $value = $context instanceof FieldRenderContext ? $context->value : $context;
+
         return $this->renderFormField($value);
     }
 
-    public function renderDetail(mixed $value, array $row = []): string
+    public function renderDetail(mixed $context, array $row = []): string
     {
-        $displayValue = $this->displayValue($value, $row, ['page' => 'detail', 'field' => $this]);
+        if ($context instanceof FieldRenderContext) {
+            $row = $context->row;
+            $value = $context->value;
+            $meta = array_merge($context->meta, ['page' => $context->page, 'field' => $this, 'context' => $context]);
+        } else {
+            $value = $context;
+            $meta = ['page' => 'detail', 'field' => $this];
+        }
+
+        $displayValue = $this->displayValue($value, $row, $meta);
 
         return htmlspecialcharsbx((string)($this->previewValue($displayValue) ?? ''));
     }

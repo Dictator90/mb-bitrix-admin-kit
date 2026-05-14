@@ -10,12 +10,14 @@ use MB\Bitrix\AdminKit\Action\MassDeleteAction;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Grid\Grid;
+use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\GridDataLoader;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
@@ -25,9 +27,36 @@ class IndexPage extends Page
 {
     protected ?Grid $grid = null;
 
-    public function __construct(ResourceContract $resource)
+    public function __construct(ResourceContract $resource, mixed $id = null, array $params = [])
     {
-        parent::__construct($resource);
+        parent::__construct($resource, $id, $params);
+    }
+
+    public static function pageName(): string
+    {
+        return 'index';
+    }
+
+    public function definition(): IndexPageDefinitionContract
+    {
+        return new IndexPageDefinition([
+            'fields' => fn (): iterable => $this->fields(),
+            'filters' => fn (): iterable => $this->filters(),
+            'rowActions' => fn (): iterable => $this->rowActions(),
+            'bulkActions' => fn (): iterable => $this->bulkActions(),
+            'defaultSort' => fn (): array => $this->defaultSort(),
+            'defaultFilter' => fn (): array => $this->defaultFilter(),
+            'defaultSelect' => fn (): array => $this->defaultSelect(),
+            'runtimeFields' => fn (): array => $this->runtimeFields(),
+            'indexSelect' => fn (GridContext $context): array => $this->indexSelect($context),
+            'indexFilter' => fn (GridContext $context): array => $this->indexFilter($context),
+            'indexOrder' => fn (GridContext $context): array => $this->indexOrder($context),
+            'indexRuntime' => fn (GridContext $context): array => $this->indexRuntime($context),
+            'beforeIndexQueryParams' => fn (array $params, GridContext $context): array => $this->beforeIndexQueryParams($params, $context),
+            'afterIndexRows' => fn (array $rows, GridContext $context): array => $this->afterIndexRows($rows, $context),
+            'mapIndexRow' => fn (array $row, GridContext $context): array => $this->mapIndexRow($row, $context),
+            'modifyIndexParams' => fn (array $params, GridContext $context): array => $this->modifyIndexParams($params, $context),
+        ]);
     }
 
     public function render(): void
@@ -87,8 +116,8 @@ class IndexPage extends Page
         }
 
         $fields = $this->getVisibleFields();
-        $filters = iterator_to_array($this->resource->filters());
-        $rowActions = iterator_to_array($this->resource->rowActions());
+        $filters = iterator_to_array($this->filters());
+        $rowActions = iterator_to_array($this->rowActions());
 
         $this->grid = new Grid(
             $this->resource->getGridId(),
@@ -101,7 +130,7 @@ class IndexPage extends Page
         $this->grid->limitPageSize($this->resource->maxPageSize());
 
         $bulkActions = array_filter(
-            iterator_to_array($this->resource->bulkActions()),
+            iterator_to_array($this->bulkActions()),
             fn ($a) => $a instanceof BulkAction && $a->isVisible()
         );
 
@@ -114,7 +143,7 @@ class IndexPage extends Page
 
     protected function loadData(Grid $grid): void
     {
-        (new GridDataLoader())->load($this->resource, $grid, $this->request);
+        (new GridDataLoader())->load($this->resource, $grid, $this->request, null, $this->definition());
     }
 
     protected function renderToolbar(Grid $grid): void
@@ -141,7 +170,7 @@ class IndexPage extends Page
     /** @return array{success:bool,message:string}|null */
     protected function handleBulkAction(string $actionId): ?array
     {
-        foreach ($this->resource->bulkActions() as $bulkAction) {
+        foreach ($this->bulkActions() as $bulkAction) {
             if (!$bulkAction instanceof BulkAction || $bulkAction->getId() !== $actionId) {
                 continue;
             }
@@ -182,11 +211,120 @@ class IndexPage extends Page
         return null;
     }
 
+
+    /** @return iterable<FieldContract> */
+    protected function fields(): iterable
+    {
+        return $this->resource->indexFields();
+    }
+
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FilterContract> */
+    protected function filters(): iterable
+    {
+        return $this->resource->filters();
+    }
+
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\ActionContract> */
+    protected function rowActions(): iterable
+    {
+        return $this->resource->rowActions();
+    }
+
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\ActionContract> */
+    protected function bulkActions(): iterable
+    {
+        return $this->resource->bulkActions();
+    }
+
+    /** @return array<string,string> */
+    protected function defaultSort(): array
+    {
+        return $this->resource->defaultSort();
+    }
+
+    /** @return array<string,mixed> */
+    protected function defaultFilter(): array
+    {
+        return $this->resource->defaultFilter();
+    }
+
+    /** @return array<int,string> */
+    protected function defaultSelect(): array
+    {
+        return $this->resource->defaultSelect();
+    }
+
+    /** @return array<int,mixed> */
+    protected function runtimeFields(): array
+    {
+        return $this->resource->runtimeFields();
+    }
+
+    /** @return array<int,string> */
+    protected function indexSelect(GridContext $context): array
+    {
+        return $this->resource->indexSelect($context);
+    }
+
+    /** @return array<string,mixed> */
+    protected function indexFilter(GridContext $context): array
+    {
+        return $this->resource->indexFilter($context);
+    }
+
+    /** @return array<string,string> */
+    protected function indexOrder(GridContext $context): array
+    {
+        return $this->resource->indexOrder($context);
+    }
+
+    /** @return array<int,mixed> */
+    protected function indexRuntime(GridContext $context): array
+    {
+        return $this->resource->indexRuntime($context);
+    }
+
+    /**
+     * @param array<string,mixed> $params
+     * @return array<string,mixed>
+     */
+    protected function beforeIndexQueryParams(array $params, GridContext $context): array
+    {
+        return $this->resource->beforeIndexQueryParams($params, $context);
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $rows
+     * @return array<int,array<string,mixed>>
+     */
+    protected function afterIndexRows(array $rows, GridContext $context): array
+    {
+        return $this->resource->afterIndexRows($rows, $context);
+    }
+
+    /**
+     * @param array<string,mixed> $row
+     * @return array<string,mixed>
+     */
+    protected function mapIndexRow(array $row, GridContext $context): array
+    {
+        return $this->resource->mapIndexRow($row, $context);
+    }
+
+    /**
+     * @param array<string,mixed> $params
+     * @return array<string,mixed>
+     */
+    protected function modifyIndexParams(array $params, GridContext $context): array
+    {
+        return $this->resource->modifyIndexParams($params, $context);
+    }
+
     /** @return FieldContract[] */
     protected function getVisibleFields(): array
     {
         $fields = [];
-        foreach ($this->resource->indexFields() as $field) {
+        foreach ($this->fields() as $field) {
             if ($field instanceof FieldContract && $field->isVisibleOn(PageType::INDEX)) {
                 $fields[] = $field;
             }
@@ -365,7 +503,7 @@ class IndexPage extends Page
             $known[$field->getColumn()] = $field;
         }
 
-        foreach ($this->resource->indexFields() as $field) {
+        foreach ($this->fields() as $field) {
             if (!$field instanceof FieldContract) {
                 continue;
             }

@@ -13,6 +13,7 @@ use MB\Bitrix\AdminKit\Bitrix\Grid\BitrixGridAdapter;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
+use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Grid\Row\RowAssembler;
 
 class Grid
@@ -92,8 +93,11 @@ class Grid
      * Feed an ORM result into the grid rows.
      * @param Result $result
      */
-    public function setRawRows($result, ?GridContext $context = null): void
-    {
+    public function setRawRows(
+        $result,
+        ?GridContext $context = null,
+        ?IndexPageDefinitionContract $indexPage = null,
+    ): void {
         $assembler = new RowAssembler(
             $this->fields,
             $this->rowActions,
@@ -101,6 +105,7 @@ class Grid
             $this->primaryKey,
             $context?->resource,
             $context,
+            $indexPage,
         );
 
         $this->rows = $assembler->buildRows($result);

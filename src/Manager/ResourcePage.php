@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Manager;
 
 use Bitrix\Main\Context;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Page\ResourcePageResolver;
 
 /**
  * Routes the current HTTP request to the appropriate Resource page:
@@ -25,13 +26,25 @@ final class ResourcePage
     {
         $request = Context::getCurrent()->getRequest();
         $action = (string)($request->get('action') ?: $request->getPost('action') ?: 'list');
-        $id = (int)($request->get('id') ?: 0);
+        $pageName = (string)($request->get('admin_page') ?: $request->getPost('admin_page') ?: '');
+        $mode = (string)($request->get('mode') ?: $request->getPost('mode') ?: '');
+        $id = $request->get('id') ?: null;
 
-        match ($action) {
-            'add' => $this->resource->formPage()->render(),
-            'edit' => $this->resource->formPage($id ?: null)->render(),
-            'view', 'detail' => $this->resource->detailPage($id)->render(),
-            default => $this->resource->indexPage()->render(),
-        };
+        if ($pageName === '') {
+            $pageName = match ($action) {
+                'add', 'edit' => 'form',
+                'view', 'detail' => 'detail',
+                default => 'index',
+            };
+        }
+
+        if ($mode === '') {
+            $mode = $action === 'add' ? 'create' : ($action === 'edit' || $id !== null ? 'edit' : 'create');
+        }
+
+        (new ResourcePageResolver())->resolve($this->resource, $pageName, $id, [
+            'mode' => $mode,
+            'action' => $action,
+        ])->render();
     }
 }

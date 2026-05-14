@@ -1842,7 +1842,7 @@ parameters:
 
 		-
 			message: "#^Call to method get\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 4
+			count: 7
 			path: src/Manager/AdminKitRouter.php
 
 		-
@@ -1852,7 +1852,7 @@ parameters:
 
 		-
 			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
+			count: 2
 			path: src/Manager/AdminKitRouter.php
 
 		-

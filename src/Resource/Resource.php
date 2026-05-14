@@ -14,6 +14,7 @@ use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Page\DetailPage;
 use MB\Bitrix\AdminKit\Page\FormPage;
 use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\ResourcePageResolver;
 use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
 use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
 use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
@@ -290,19 +291,52 @@ abstract class Resource implements ResourceContract
 
     // ── Pages ────────────────────────────────────────────────────────────
 
+    /** @return iterable<class-string<\MB\Bitrix\AdminKit\Contracts\PageContract>> */
+    public function pages(): iterable
+    {
+        return [
+            IndexPage::class,
+            FormPage::class,
+            DetailPage::class,
+        ];
+    }
+
     public function indexPage(): IndexPage
     {
-        return new IndexPage($this);
+        $page = (new ResourcePageResolver())->resolve($this, IndexPage::pageName());
+
+        if (!$page instanceof IndexPage) {
+            throw new \LogicException('The index page must extend ' . IndexPage::class . '.');
+        }
+
+        return $page;
     }
 
     public function formPage(?int $id = null): FormPage
     {
-        return new FormPage($this, $id);
+        $page = (new ResourcePageResolver())->resolve(
+            $this,
+            FormPage::pageName(),
+            $id,
+            ['mode' => $id === null ? 'create' : 'edit'],
+        );
+
+        if (!$page instanceof FormPage) {
+            throw new \LogicException('The form page must extend ' . FormPage::class . '.');
+        }
+
+        return $page;
     }
 
     public function detailPage(int $id): DetailPage
     {
-        return new DetailPage($this, $id);
+        $page = (new ResourcePageResolver())->resolve($this, DetailPage::pageName(), $id);
+
+        if (!$page instanceof DetailPage) {
+            throw new \LogicException('The detail page must extend ' . DetailPage::class . '.');
+        }
+
+        return $page;
     }
 
     // ── Grid identity ────────────────────────────────────────────────────
