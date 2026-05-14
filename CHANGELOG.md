@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.0 - 2026-05-14
+
+### Added
+- Added `DbOperationContext`, `DbResult`, `CrudPersister`, and `TransactionManager` for centralized ORM persistence and transactional CRUD operations.
+- Added explicit `FormData` stages, field-level validation errors, conditional field helpers, lifecycle hooks, Bitrix CRUD events, and permission contexts.
+- Added documentation for the saving pipeline, FormData stages, CrudPersister, transactions, lifecycle hooks, permissions, conditional validation, and ORM errors.
+- Added PHPUnit coverage for persistence results, CRUD persisting, transactions, lifecycle hooks, FormData stages, conditional validation, and permissions.
+
+### Changed
+- CRUD create, update, delete, and mass delete now use the shared persister and transaction flow while preserving legacy lifecycle hook methods.
+- Form saves now surface Bitrix ORM errors without treating failed `Result` objects as successful operations.
+
 ## v0.2.0 - 2026-05-13
 
 ### Added

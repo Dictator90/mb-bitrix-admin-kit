@@ -13,6 +13,7 @@ use MB\Bitrix\AdminKit\Field\Traits\HasVisibility;
 use MB\Bitrix\AdminKit\Field\Traits\Makeable;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 use MB\Bitrix\AdminKit\Support\AdminString;
+use MB\Support\Conditionable\ConditionTree;
 
 abstract class Field implements FieldContract
 {
@@ -30,6 +31,9 @@ abstract class Field implements FieldContract
     protected bool $editable = false;
     protected ?string $hint = null;
     protected bool $readonly = false;
+
+    /** @var array<int, \Closure|ConditionTree|array<string,mixed>> */
+    protected array $readonlyWhen = [];
     protected bool $multiple = false;
     protected ?string $help = null;
     protected ?string $placeholder = null;
@@ -115,6 +119,13 @@ abstract class Field implements FieldContract
     public function readonly(bool $readonly = true): static
     {
         $this->readonly = $readonly;
+
+        return $this;
+    }
+
+    public function readonlyWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static
+    {
+        $this->readonlyWhen[] = $this->normalizeCondition($condition, $operator, $value);
 
         return $this;
     }
@@ -216,6 +227,21 @@ abstract class Field implements FieldContract
         return $this->readonly;
     }
 
+    public function isReadOnlyFor(array $data = []): bool
+    {
+        if ($this->readonly) {
+            return true;
+        }
+
+        foreach ($this->readonlyWhen as $condition) {
+            if ($this->evaluateFieldCondition($condition, $data)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function renderIndex(mixed $value, array $row = []): string
     {
         $displayValue = $this->displayValue($value, $row, ['page' => 'index', 'field' => $this]);
@@ -257,15 +283,18 @@ abstract class Field implements FieldContract
     protected ?array $visibleWhenRule = null;
 
     /**
-     * Show this field only when another field has the given value.
-     * $value may be a single scalar or an array of accepted values.
-     * The check is pure JS (display:none toggle) — no AJAX needed.
+     * Show this field only when another field satisfies a condition.
      */
-    public function visibleWhen(string $column, mixed $value): static
+    public function visibleWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static
     {
-        $this->visibleWhenRule = is_array($value)
-            ? ['column' => $column, 'values' => array_map('strval', $value)]
-            : ['column' => $column, 'value' => (string)$value];
+        $normalized = $this->normalizeCondition($condition, $operator, $value);
+        if (is_array($normalized)) {
+            $this->visibleWhenRule = is_array($normalized['value'])
+                ? ['column' => $normalized['column'], 'operator' => $normalized['operator'], 'values' => array_map('strval', $normalized['value'])]
+                : ['column' => $normalized['column'], 'operator' => $normalized['operator'], 'value' => (string)$normalized['value']];
+        } else {
+            $this->visibleWhenRule = null;
+        }
 
         return $this;
     }

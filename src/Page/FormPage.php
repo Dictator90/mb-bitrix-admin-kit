@@ -8,6 +8,10 @@ use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Database\DbOperationContext;
+use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
+use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
+use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
@@ -18,6 +22,9 @@ class FormPage extends Page
     protected ?int $id;
     protected ?DataWrapper $item = null;
     protected array $errors = [];
+
+    /** @var array<string,string[]> */
+    protected array $fieldErrors = [];
 
     /** Set to true after a successful save inside a SidePanel (skips redirect, closes panel). */
     protected bool $savedInSidePanel = false;
@@ -52,6 +59,14 @@ class FormPage extends Page
         if ($this->id) {
             $row = $this->resource->findItem($this->id);
             $this->item = $row ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey()) : null;
+            if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
+                $this->errors[] = 'Недостаточно прав для просмотра записи.';
+            }
+            if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
+                $this->errors[] = 'Недостаточно прав для редактирования записи.';
+            }
+        } elseif (!$this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
+            $this->errors[] = 'Недостаточно прав для создания записи.';
         }
 
         if ($this->isPost() && check_bitrix_sessid()) {
@@ -106,34 +121,67 @@ class FormPage extends Page
         $formData = new FormData();
 
         foreach ($fields as $field) {
-            if ($field->isReadOnly()) {
-                continue;
-            }
-
             $column = $field->getColumn();
             $raw[$column] = $this->request->getPost($column);
             $value = $field->normalize($raw[$column]);
             $normalized[$column] = $value;
+        }
 
-            foreach ($field->runValidation($value) as $message) {
+        foreach ($fields as $field) {
+            if (method_exists($field, 'isReadOnlyFor') ? $field->isReadOnlyFor($normalized) : $field->isReadOnly()) {
+                continue;
+            }
+
+            $column = $field->getColumn();
+            foreach ($field->runValidation($normalized[$column] ?? null, $normalized) as $message) {
                 $formData->addError($column, $message);
+                $this->fieldErrors[$column][] = $message;
                 $this->errors[] = $message;
             }
 
-            $validated[$column] = $value;
+            $validated[$column] = $normalized[$column] ?? null;
         }
 
         $formData = $formData->withRaw($raw)->withNormalized($normalized)->withValidated($validated);
+        $context = new DbOperationContext(
+            resource: $this->resource,
+            operation: $this->id ? 'update' : 'create',
+            itemId: $this->id,
+            oldData: $this->item?->toArray() ?? [],
+            newData: $validated,
+            rawData: $raw,
+            normalizedData: $normalized,
+            validatedData: $validated,
+            request: $this->request,
+        );
 
-        if ($formData->hasErrors()) {
+        try {
+            $this->assertSavePermission($context);
+            $this->resource->beforeValidate($formData, $context);
+
+            if ($formData->hasErrors()) {
+                return;
+            }
+
+            $this->resource->afterValidate($formData, $context);
+
+            if ($this->id) {
+                $result = $this->resource->updateItemResult($this->id, $formData, $context);
+                $savedId = $result->isSuccess() ? $this->id : null;
+            } else {
+                $result = $this->resource->createItemResult($formData, $context);
+                $savedId = $result->isSuccess() ? $result->id() : null;
+            }
+        } catch (AdminKitException $exception) {
+            $this->errors[] = $exception->getMessage();
             return;
         }
 
-        if ($this->id) {
-            $saved = $this->resource->updateItem($this->id, $formData->validated());
-            $savedId = $saved ? $this->id : null;
-        } else {
-            $savedId = $this->resource->createItem($formData->validated());
+        if (!$result->isSuccess()) {
+            foreach ($result->errors() as $error) {
+                $this->errors[] = $error;
+            }
+            return;
         }
 
         if ($savedId) {
@@ -145,6 +193,23 @@ class FormPage extends Page
                 $sep = str_contains($backUrl, '?') ? '&' : '?';
                 $this->redirect($backUrl . $sep . 'saved=1');
             }
+        }
+    }
+
+    protected function assertSavePermission(DbOperationContext $context): void
+    {
+        $permission = new PermissionContext(
+            resource: $this->resource,
+            operation: $context->operation,
+            item: $context->oldData ?: null,
+        );
+
+        if ($this->id && !$this->resource->canUpdate($permission)) {
+            throw new PermissionDeniedException('Недостаточно прав для сохранения записи.');
+        }
+
+        if (!$this->id && !$this->resource->canCreate($permission)) {
+            throw new PermissionDeniedException('Недостаточно прав для создания записи.');
         }
     }
 
@@ -280,6 +345,9 @@ class FormPage extends Page
         echo '<div class="ui-form-label"><div class="ui-ctl-label-text">' . $label . $requiredMark . $hint . '</div></div>';
         echo '<div class="ui-form-content">';
         echo $field->renderFormField($value);
+        foreach ($this->fieldErrors[$field->getColumn()] ?? [] as $message) {
+            echo '<div class="ui-alert ui-alert-danger adminkit-field-error"><span class="ui-alert-message">' . htmlspecialcharsbx($message) . '</span></div>';
+        }
         echo '</div>';
         echo '</div>';
     }
@@ -290,7 +358,14 @@ class FormPage extends Page
         if (isset($rule['values'])) {
             return in_array($str, $rule['values'], true);
         }
-        return $str === ($rule['value'] ?? '');
+        $operator = $rule['operator'] ?? '=';
+        $expected = (string)($rule['value'] ?? '');
+
+        return match ($operator) {
+            '=', '==', '===' => $str === $expected,
+            '!=', '<>', '!==' => $str !== $expected,
+            default => $str === $expected,
+        };
     }
 
     protected function wrapComponentWithVisibility(ComponentContract $component, string $inner): string

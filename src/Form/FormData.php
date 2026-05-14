@@ -26,4 +26,5 @@ final class FormData
     public function withRaw(array $raw): self { $clone = clone $this; $clone->raw = $raw; return $clone; }
     public function withNormalized(array $normalized): self { $clone = clone $this; $clone->normalized = $normalized; return $clone; }
     public function withValidated(array $validated): self { $clone = clone $this; $clone->validated = $validated; return $clone; }
+    public function withErrors(array $errors): self { $clone = clone $this; $clone->errors = $errors; return $clone; }
 }

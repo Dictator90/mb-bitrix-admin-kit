@@ -4,10 +4,60 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Resource\Traits;
 
+use MB\Bitrix\AdminKit\Database\DbOperationContext;
+use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 
 trait HasLifecycleEvents
 {
+    public function beforeValidate(FormData $data, DbOperationContext $context): void
+    {
+    }
+
+    public function afterValidate(FormData $data, DbOperationContext $context): void
+    {
+    }
+
+    public function beforeCreate(FormData $data, DbOperationContext $context): void
+    {
+        $this->beforeCreating(DataWrapper::fromArray($data->validated(), $this->getPrimaryKey()));
+    }
+
+    public function afterCreate(mixed $id, FormData $data, DbOperationContext $context): void
+    {
+        $this->afterCreated(DataWrapper::fromArray($data->validated(), $this->getPrimaryKey())->setId($id));
+    }
+
+    public function beforeUpdate(array $oldItem, FormData $data, DbOperationContext $context): void
+    {
+        $this->beforeUpdating(DataWrapper::fromArray($data->validated(), $this->getPrimaryKey())->setId($context->itemId));
+    }
+
+    public function afterUpdate(array $item, FormData $data, DbOperationContext $context): void
+    {
+        $this->afterUpdated(DataWrapper::fromArray($item, $this->getPrimaryKey())->setId($context->itemId));
+    }
+
+    public function beforeDelete(array $item, DbOperationContext $context): void
+    {
+        $this->beforeDeleting(DataWrapper::fromArray($item, $this->getPrimaryKey()));
+    }
+
+    public function afterDelete(array $item, DbOperationContext $context): void
+    {
+        $this->afterDeleted(DataWrapper::fromArray($item, $this->getPrimaryKey()));
+    }
+
+    public function beforeMassDelete(array $ids, DbOperationContext $context): void
+    {
+        $this->beforeMassDeleting($ids);
+    }
+
+    public function afterMassDelete(array $ids, DbOperationContext $context): void
+    {
+        $this->afterMassDeleted($ids);
+    }
+
     protected function beforeCreating(DataWrapper $item): DataWrapper
     {
         return $item;
