@@ -1,5 +1,30 @@
 # Changelog
 
+## v1.0.0 - 2026-05-14
+
+### Added
+- Added the `MB\Bitrix\AdminKit\AdminKit` facade for creating per-module managers.
+- Documented the v1.0.0 stable public API review scope for Resources, CRUD resources, grid/form contexts, database result objects, fields, filters, actions, support adapters, URL generation, and import/export.
+- Added a backward-compatibility policy for v1.x covering public/protected method signatures, class names, namespaces, CRUD behavior, `FormData`, `GridContext`, `DbResult`, `BulkResult`, and base Field/Filter/Action APIs.
+- Added v1.0.0 documentation pages for installation, resources, CRUD resources, database integration, grid, filters, forms, actions, lifecycle, import/export, and backward compatibility.
+- Added compatibility coverage for stable public class loading and avoiding direct global support helper declarations/calls.
+- Added focused v1.0.0 examples for simple CRUD, product resources, runtime fields, computed columns, bulk actions, Bitrix field adapters, database health, and CSV import/export.
+- Added a root `phpstan.neon` entrypoint and pointed the Composer analysis script at it while keeping the level 6 configuration in `phpstan.neon.dist`.
+- Added v1.0.0 agent notes to preserve stable public APIs, support package adapter boundaries, and migration documentation.
+
+### Changed
+- Expanded the README with stable API, lifecycle, transaction, permission, database health, performance, Bitrix UI adapter, documentation, and examples guidance for v1.0.0.
+- Confirmed Composer runtime requirements stay on PHP `^8.2` and support packages `mb4it/collections`, `mb4it/stringable`, and `mb4it/conditionable` `^1.0`.
+
+### Migration notes
+- v1.0.0 is a stabilization release, not a feature expansion release. Existing v0.1.0-v0.9.0 Resource, Field, Filter, Action, persistence, bulk action, import/export, and page-layer extension points remain the migration path.
+- Userland code should depend on `MB\Bitrix\AdminKit\Support\AdminCollection`, `AdminString`, and `AdminCondition` only when an adapter is actually needed; public Resource APIs should continue to expose plain PHP values.
+
+### Known limitations
+- Import/export remains CSV-first.
+- Database health pages are diagnostic/read-only by default and do not replace migrations.
+- Bitrix UI selector fields wrap Bitrix selector assets and providers; they do not provide a custom selector engine.
+
 ## v0.9.0 - 2026-05-14
 
 ### Added

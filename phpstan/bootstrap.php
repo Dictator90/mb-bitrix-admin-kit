@@ -16,3 +16,12 @@ if (!class_exists(ServiceProvider::class)) {
         }
     }
 }
+
+namespace MB\Bitrix\Contracts\Module;
+
+if (!interface_exists(Entity::class)) {
+    interface Entity
+    {
+        public function getLibPath(): string;
+    }
+}

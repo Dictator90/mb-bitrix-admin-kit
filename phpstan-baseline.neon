@@ -1736,11 +1736,6 @@ parameters:
 			path: src/Import/ImporterInterface.php
 
 		-
-			message: "#^Call to method getLibPath\\(\\) on an unknown class MB\\\\Bitrix\\\\Contracts\\\\Module\\\\Entity\\.$#"
-			count: 1
-			path: src/Manager/AdminKitManager.php
-
-		-
 			message: "#^Call to method getRequestUri\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
 			count: 1
 			path: src/Manager/AdminKitManager.php
@@ -1757,16 +1752,6 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitManager\\:\\:register\\(\\) has parameter \\$resourceClass with generic class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource but does not specify its types\\: T$#"
-			count: 1
-			path: src/Manager/AdminKitManager.php
-
-		-
-			message: "#^Parameter \\$module of method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitManager\\:\\:__construct\\(\\) has invalid type MB\\\\Bitrix\\\\Contracts\\\\Module\\\\Entity\\.$#"
-			count: 1
-			path: src/Manager/AdminKitManager.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitManager\\:\\:\\$module has unknown class MB\\\\Bitrix\\\\Contracts\\\\Module\\\\Entity as its type\\.$#"
 			count: 1
 			path: src/Manager/AdminKitManager.php
 
