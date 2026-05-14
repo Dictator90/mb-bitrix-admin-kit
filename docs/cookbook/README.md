@@ -13,6 +13,6 @@
 - [Как добавить beforeCreate/afterUpdate](lifecycle-hooks.md)
 - [Как проверить права](permissions.md)
 - [Как сделать страницу настроек](options-page.md)
-- [Как сделать dashboard](dashboard.md)
-- [Как подключить EntitySelectorField](entity-selector.md)
+- [Как сделать dashboard (CountWidget, GraphWidget, Layout)](dashboard.md)
+- [Entity selector fields (UserSelect, IblockSelect, DialogSelect, …)](entity-selector.md)
 - [Как сделать import/export](import-export.md)

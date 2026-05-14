@@ -27,7 +27,7 @@ abstract class CustomPage extends AbstractPage
 
     abstract protected function content(): string;
 
-    public function render()
+    public function render(): void
     {
         global $APPLICATION;
 
@@ -37,13 +37,11 @@ abstract class CustomPage extends AbstractPage
             $APPLICATION->SetTitle($this->title());
         }
 
-        $html = '<div class="adminkit-page adminkit-page--custom">';
-        $html .= '<h1 class="adminkit-page__title">' . htmlspecialcharsbx($this->pageTitle()) . '</h1>';
-        $html .= $this->renderToolbar();
-        $html .= '<div class="adminkit-page__content">' . $this->content() . '</div>';
-        $html .= '</div>';
-
-        return $html;
+        echo '<div class="adminkit-page adminkit-page--custom">';
+        echo '<h1 class="adminkit-page__title">' . htmlspecialcharsbx($this->pageTitle()) . '</h1>';
+        echo $this->renderToolbar();
+        echo '<div class="adminkit-page__content">' . $this->content() . '</div>';
+        echo '</div>';
     }
 
     protected function renderToolbar(): string

@@ -286,6 +286,21 @@ parameters:
 			path: src/Component/Layout/LineBreak.php
 
 		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tab\\:\\:getHeadOptions\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Component/Layout/Tab.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tab\\:\\:with\\(\\) has parameter \\$items with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Component/Layout/Tab.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: src/Component/Layout/Tab.php
+
+		-
 			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
 			count: 1
 			path: src/Component/Layout/Tabs.php
@@ -487,6 +502,11 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:findItem\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contracts/ResourceContract.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:formTabs\\(\\) has invalid return type MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Tab\\.$#"
 			count: 1
 			path: src/Contracts/ResourceContract.php
 
@@ -826,44 +846,69 @@ parameters:
 			path: src/Field/DateTime.php
 
 		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\DialogSelect\\:\\:preparedItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/DialogSelect.php
+
+		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 2
 			path: src/Field/Email.php
 
 		-
+			message: "#^Call to method getId\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/Field/EntitySelect.php
+
+		-
+			message: "#^Call to method getTitle\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/Field/EntitySelect.php
+
+		-
+			message: "#^Class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
+			count: 1
+			path: src/Field/EntitySelect.php
+
+		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 7
-			path: src/Field/EntitySelectorField.php
+			path: src/Field/EntitySelect.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelectorField\\:\\:entity\\(\\) has parameter \\$entityOptions with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:entity\\(\\) has parameter \\$entityOptions with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Field/EntitySelectorField.php
+			path: src/Field/EntitySelect.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelectorField\\:\\:entityId\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:entityId\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Field/EntitySelectorField.php
+			path: src/Field/EntitySelect.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelectorField\\:\\:parseIds\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:parseIds\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Field/EntitySelectorField.php
+			path: src/Field/EntitySelect.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelectorField\\:\\:renderDetail\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:renderDetail\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Field/EntitySelectorField.php
+			path: src/Field/EntitySelect.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelectorField\\:\\:renderIndex\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:renderIndex\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Field/EntitySelectorField.php
+			path: src/Field/EntitySelect.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelectorField\\:\\:resolveTitles\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:resolveTitles\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Field/EntitySelectorField.php
+			path: src/Field/EntitySelect.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:resolveTitlesFromProvider\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/EntitySelect.php
 
 		-
 			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
@@ -1043,27 +1088,32 @@ parameters:
 		-
 			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlockElement\\.$#"
 			count: 1
-			path: src/Field/IblockElementSelectorField.php
+			path: src/Field/IblockElementSelect.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\IblockElementSelectorField\\:\\:dependsOn\\(\\) has parameter \\$sourceColumns with no value type specified in iterable type array\\.$#"
+			message: "#^Call to static method includeModule\\(\\) on an unknown class Bitrix\\\\Main\\\\Loader\\.$#"
 			count: 1
-			path: src/Field/IblockElementSelectorField.php
+			path: src/Field/IblockElementSelect.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\IblockElementSelect\\:\\:dependsOn\\(\\) has parameter \\$sourceColumns with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/IblockElementSelect.php
 
 		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
-			path: src/Field/IblockElementSelectorField.php
+			path: src/Field/IblockElementSelect.php
 
 		-
 			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlockSection\\.$#"
 			count: 1
-			path: src/Field/IblockSectionSelectorField.php
+			path: src/Field/IblockSectionSelect.php
 
 		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
-			path: src/Field/IblockSectionSelectorField.php
+			path: src/Field/IblockSectionSelect.php
 
 		-
 			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlock\\.$#"
@@ -1401,6 +1451,11 @@ parameters:
 			path: src/Grid/Grid.php
 
 		-
+			message: "#^Call to method getEditButton\\(\\) on an unknown class Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Snippet\\.$#"
+			count: 1
+			path: src/Grid/Grid.php
+
+		-
 			message: "#^Call to method getFilter\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Filter\\\\Options\\.$#"
 			count: 1
 			path: src/Grid/Grid.php
@@ -1447,6 +1502,11 @@ parameters:
 
 		-
 			message: "#^Instantiated class Bitrix\\\\Main\\\\Grid\\\\Options not found\\.$#"
+			count: 1
+			path: src/Grid/Grid.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Snippet not found\\.$#"
 			count: 1
 			path: src/Grid/Grid.php
 
@@ -1871,7 +1931,27 @@ parameters:
 			path: src/Page/FormPage.php
 
 		-
+			message: "#^Call to method active\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
+			count: 1
+			path: src/Page/FormPage.php
+
+		-
 			message: "#^Call to method get\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			count: 2
+			path: src/Page/FormPage.php
+
+		-
+			message: "#^Call to method getId\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
+			count: 2
+			path: src/Page/FormPage.php
+
+		-
+			message: "#^Call to method getItems\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Tab\\.$#"
+			count: 1
+			path: src/Page/FormPage.php
+
+		-
+			message: "#^Call to method getItems\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
 			count: 2
 			path: src/Page/FormPage.php
 
@@ -1882,6 +1962,16 @@ parameters:
 
 		-
 			message: "#^Call to method getRequestUri\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			count: 3
+			path: src/Page/FormPage.php
+
+		-
+			message: "#^Call to method getTitle\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
+			count: 1
+			path: src/Page/FormPage.php
+
+		-
+			message: "#^Call to method isActive\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
 			count: 3
 			path: src/Page/FormPage.php
 
@@ -1907,6 +1997,16 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\FormPage\\:\\:checkVisibilityRule\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Page/FormPage.php
+
+		-
+			message: "#^Parameter \\#1 \\$tabs of method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\FormPage\\:\\:renderTabbedForm\\(\\) expects array\\<MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\>, array\\<MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Tab\\> given\\.$#"
+			count: 1
+			path: src/Page/FormPage.php
+
+		-
+			message: "#^Parameter \\$tabs of method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\FormPage\\:\\:renderTabbedForm\\(\\) has invalid type MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
 			count: 1
 			path: src/Page/FormPage.php
 
@@ -2051,11 +2151,6 @@ parameters:
 			path: src/Pages/CustomPage.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\CustomPage\\:\\:render\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Pages/CustomPage.php
-
-		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:applyDependency\\(\\)\\.$#"
 			count: 2
 			path: src/Pages/OptionsPage.php
@@ -2077,6 +2172,11 @@ parameters:
 
 		-
 			message: "#^Call to method get\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			count: 1
+			path: src/Pages/OptionsPage.php
+
+		-
+			message: "#^Call to method getItems\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
 			count: 1
 			path: src/Pages/OptionsPage.php
 
@@ -2121,6 +2221,11 @@ parameters:
 			path: src/Pages/OptionsPage.php
 
 		-
+			message: "#^Class MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab not found\\.$#"
+			count: 2
+			path: src/Pages/OptionsPage.php
+
+		-
 			message: "#^Function LocalRedirect not found\\.$#"
 			count: 1
 			path: src/Pages/OptionsPage.php
@@ -2147,6 +2252,21 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:components\\(\\) return type has no value type specified in iterable type iterable\\.$#"
+			count: 1
+			path: src/Pages/OptionsPage.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:fields\\(\\) has invalid return type MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
+			count: 1
+			path: src/Pages/OptionsPage.php
+
+		-
+			message: "#^Parameter \\$components of method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:buildOptionsWrapper\\(\\) has invalid type MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
+			count: 1
+			path: src/Pages/OptionsPage.php
+
+		-
+			message: "#^Parameter \\$components of method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:extractAllFields\\(\\) has invalid type MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
 			count: 1
 			path: src/Pages/OptionsPage.php
 
@@ -2277,6 +2397,11 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:findItem\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Resource/Resource.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:formTabs\\(\\) has invalid return type MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Tab\\.$#"
 			count: 1
 			path: src/Resource/Resource.php
 
@@ -2446,21 +2571,6 @@ parameters:
 			path: src/Support/Export/CsvExporter.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\Tab\\:\\:getHeadOptions\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/Tab.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\Tab\\:\\:with\\(\\) has parameter \\$items with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/Tab.php
-
-		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: src/Support/Tab.php
-
-		-
 			message: "#^Call to an undefined static method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getId\\(\\)\\.$#"
 			count: 2
 			path: src/Support/UrlGenerator.php
@@ -2574,3 +2684,1053 @@ parameters:
 			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\Validation\\\\Validator\\:\\:\\$errors type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Support/Validation/Validator.php
+
+		-
+			message: "#^Access to an undefined property MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:\\$options\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Access to constant CODE_MORE_PHOTO on an unknown class CIBlockPropertyTools\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getOption\\(\\)\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to method addItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to method addRecentItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to method getItemCollection\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to method getRecentItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to method loadPreselectedItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to method setCacheable\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to static method GetFileArray\\(\\) on an unknown class CFile\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlockElement\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to static method GetProperty\\(\\) on an unknown class CIBlockElement\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to static method getImageSrc\\(\\) on an unknown class Bitrix\\\\Iblock\\\\Component\\\\Tools\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to static method getList\\(\\) on an unknown class Bitrix\\\\Iblock\\\\PropertyTable\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Call to static method includeModule\\(\\) on an unknown class Bitrix\\\\Main\\\\Loader\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider does not extend any class\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:__construct\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getDefaultFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getElementImage\\(\\) has parameter \\$element with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getElements\\(\\) has parameter \\$additionalFilter with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getElements\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getItems\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getPreselectedItems\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getPreselectedItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:getQueryFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:makeItem\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:makeItem\\(\\) has parameter \\$element with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^PHPDoc tag @throws with type Bitrix\\\\Main\\\\LoaderException is not subtype of Throwable$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:fillDialog\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Parameter \\$searchQuery of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockElementListProvider.php
+
+		-
+			message: "#^Access to an undefined property MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:\\$options\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to method addItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to method addRecentItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to method getItemCollection\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to method getRecentItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to method logic\\(\\) on an unknown class Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to method setCacheable\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to static method getCurrent\\(\\) on an unknown class Bitrix\\\\Main\\\\Context\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to static method includeModule\\(\\) on an unknown class Bitrix\\\\Main\\\\Loader\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Call to static method query\\(\\) on an unknown class Bitrix\\\\Iblock\\\\IblockTable\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider does not extend any class\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:__construct\\(\\) has parameter \\$options with no type specified\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:getElements\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:getItems\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:getItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:getQueryFilter\\(\\) has invalid return type Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:makeItem\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:makeItem\\(\\) has parameter \\$element with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Parameter \\$conditionTree of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:getElements\\(\\) has invalid type Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:fillDialog\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Parameter \\$searchQuery of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockListProvider.php
+
+		-
+			message: "#^Access to an undefined property MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:\\$options\\.$#"
+			count: 5
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to method addItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to method addRecentItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to method getItemCollection\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to method getRecentItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to method logic\\(\\) on an unknown class Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to method setCacheable\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to static method includeModule\\(\\) on an unknown class Bitrix\\\\Main\\\\Loader\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Call to static method query\\(\\) on an unknown class Bitrix\\\\Iblock\\\\PropertyTable\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider does not extend any class\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:__construct\\(\\) has parameter \\$options with no type specified\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:getElements\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:getItems\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:getItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:getQueryFilter\\(\\) has invalid return type Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:makeItem\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:makeItem\\(\\) has parameter \\$element with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Parameter \\$conditionTree of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:getElements\\(\\) has invalid type Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\ConditionTree\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:fillDialog\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Parameter \\$searchQuery of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockPropertyListProvider.php
+
+		-
+			message: "#^Access to an undefined property MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:\\$options\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to method addItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to method addTab\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to method getEntityType\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to method setCacheable\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to method setSaveable\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to static method get\\(\\) on an unknown class Bitrix\\\\Main\\\\Engine\\\\CurrentUser\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Call to static method getList\\(\\) on an unknown class Bitrix\\\\Main\\\\GroupTable\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Tab not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider does not extend any class\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:__construct\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:getItems\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:getItems\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:getRecentItemIds\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:prepareOptions\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:fillDialog\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Parameter \\$item of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:handleBeforeItemSave\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Parameter \\$searchQuery of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserGroupListProvider.php
+
+		-
+			message: "#^Access to an undefined property MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:\\$options\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getOption\\(\\)\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getOptions\\(\\)\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method add\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method addItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method addRecentItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method addTab\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method collectValues\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method count\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 4
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method exec\\(\\) on an unknown class Bitrix\\\\Main\\\\Entity\\\\Query\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getActive\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getAll\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getByPrimary\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getConfirmCode\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getEmail\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getEntity\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getEntityType\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getExternalAuthId\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getGlobalRecentItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getId\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getId\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getIdList\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getLastName\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getLogin\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class Bitrix\\\\Main\\\\ORM\\\\Fields\\\\ExpressionField\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getPersonalGender\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getPersonalPhoto\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getRecentItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getSecondName\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getTitle\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method getWorkPosition\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to method setCacheable\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method formatName\\(\\) on an unknown class CUser\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method getById\\(\\) on an unknown class Bitrix\\\\Main\\\\UserTable\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method getConnection\\(\\) on an unknown class Bitrix\\\\Main\\\\Application\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method getCountryValue\\(\\) on an unknown class Bitrix\\\\Main\\\\UserUtils\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method getExternalUserTypes\\(\\) on an unknown class Bitrix\\\\Main\\\\UserTable\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method getInstance\\(\\) on an unknown class Bitrix\\\\Main\\\\Application\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method getList\\(\\) on an unknown class Bitrix\\\\Main\\\\UserTable\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method getNameFormat\\(\\) on an unknown class CSite\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method includeModule\\(\\) on an unknown class Bitrix\\\\Main\\\\Loader\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method invite\\(\\) on an unknown class Bitrix\\\\Intranet\\\\Integration\\\\Mail\\\\EmailUser\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method isCurrentUserModuleAdmin\\(\\) on an unknown class CSocNetUser\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method isModuleInstalled\\(\\) on an unknown class Bitrix\\\\Main\\\\ModuleManager\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method matchAgainstWildcard\\(\\) on an unknown class Bitrix\\\\Main\\\\ORM\\\\Query\\\\Filter\\\\Helper\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method on\\(\\) on an unknown class Bitrix\\\\Main\\\\ORM\\\\Query\\\\Join\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method prepareStringToken\\(\\) on an unknown class Bitrix\\\\Main\\\\Search\\\\Content\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method query\\(\\) on an unknown class Bitrix\\\\Main\\\\UserTable\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Call to static method resizeImageGet\\(\\) on an unknown class CFile\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Class Bitrix\\\\Main\\\\UserIndexTable not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Constant BX_RESIZE_IMAGE_EXACT not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\Main\\\\EO_User_Collection not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\Main\\\\ORM\\\\Fields\\\\ExpressionField not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\Main\\\\ORM\\\\Fields\\\\Relations\\\\Reference not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Tab not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Iterating over an object of an unknown class Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 3
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider does not extend any class\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:__construct\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:fillRecentUsers\\(\\) has parameter \\$recentIds with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:formatUserName\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getAllowedFields\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getItems\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getPreloadedUsersCollection\\(\\) has invalid return type Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getQuery\\(\\) has invalid return type Bitrix\\\\Main\\\\Entity\\\\Query\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getQuery\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getSelectedItems\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getSelectedItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getTabsNames\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUser\\(\\) has invalid return type Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUser\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUserCollection\\(\\) has invalid return type Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUserCollection\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUserItems\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUserItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUsers\\(\\) has invalid return type Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUsers\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeItem\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeItem\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeItems\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeUserItems\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeUserItems\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:prepareOptions\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:prepareUserIds\\(\\) has parameter \\$items with no type specified\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:prepareUserIds\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function md5 expects string, int given\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:fillDialog\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$item of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:handleBeforeItemSave\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$preloadedUsers of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:fillRecentUsers\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$recentUsers of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:fillRecentUsers\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$searchQuery of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$user of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:formatUserName\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$user of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:getUserType\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$user of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeItem\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$user of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeUserAvatar\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$users of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeItems\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Parameter \\$users of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:makeUserItems\\(\\) has invalid type Bitrix\\\\Main\\\\EO_User_Collection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Unsafe call to private method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:prepareUserIds\\(\\) through static\\:\\:\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/UserListProvider.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 5
+			path: src/Widget/CountWidget.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 1
+			path: src/Widget/GraphWidget.php

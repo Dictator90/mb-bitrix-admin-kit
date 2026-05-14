@@ -72,8 +72,7 @@ class IblockPropertyListProvider extends BaseProvider
             $searchQuery->setCacheable(false);
         }
 
-        foreach ($elements as $element)
-        {
+        foreach ($elements as $element) {
             $dialog->addItem(
                 $this->makeItem($element)
             );
@@ -98,7 +97,7 @@ class IblockPropertyListProvider extends BaseProvider
                 'CODE',
                 'NAME',
                 'IBLOCK_TYPE_ID' => 'IBLOCK.IBLOCK_TYPE_ID',
-                'IBLOCK_TYPE_NAME' =>'IBLOCK.NAME',
+                'IBLOCK_TYPE_NAME' => 'IBLOCK.NAME',
             ])
             ->addOrder('ID')
             ->setLimit($limit);

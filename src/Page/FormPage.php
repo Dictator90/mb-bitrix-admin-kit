@@ -15,7 +15,6 @@ use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
-use MB\Bitrix\AdminKit\Component\Layout;
 
 class FormPage extends Page
 {

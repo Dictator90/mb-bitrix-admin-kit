@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Pages\AbstractPage;
 use MB\Bitrix\AdminKit\Pages\CustomPage;
 use MB\Bitrix\AdminKit\Pages\DashboardPage;

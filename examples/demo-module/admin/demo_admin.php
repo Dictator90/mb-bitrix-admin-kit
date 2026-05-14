@@ -16,9 +16,9 @@ $id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : null;
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
 
 if ($page === SettingsPage::getId()) {
-    echo (new SettingsPage())->render();
+    (new SettingsPage())->render();
 } elseif ($page === DashboardPage::getId()) {
-    echo (new DashboardPage())->render();
+    (new DashboardPage())->render();
 } else {
     $resource = new ProductResource();
 

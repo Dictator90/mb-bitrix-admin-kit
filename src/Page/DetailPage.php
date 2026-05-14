@@ -55,13 +55,13 @@ class DetailPage extends Page
 
         echo '</div>';
 
-        $backAction = "(function(){" .
-            "var topWindow=window.top||window;" .
-            "var sidePanel=topWindow.BX&&topWindow.BX.SidePanel&&topWindow.BX.SidePanel.Instance;" .
+        $backAction = '(function(){' .
+            'var topWindow=window.top||window;' .
+            'var sidePanel=topWindow.BX&&topWindow.BX.SidePanel&&topWindow.BX.SidePanel.Instance;' .
             "var slider=sidePanel&&typeof sidePanel.getTopSlider==='function'?sidePanel.getTopSlider():null;" .
             "if(slider&&typeof slider.close==='function'){slider.close();return;}" .
-            "window.history.back();" .
-        "})();";
+            'window.history.back();' .
+        '})();';
 
         echo '<div class="ui-button-panel">';
         echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialchars($backAction, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">&#1053;&#1072;&#1079;&#1072;&#1076;</button>';

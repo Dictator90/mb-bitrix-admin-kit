@@ -269,31 +269,31 @@ class Grid
         $forAllKeyJs = 'action_all_rows_' . $gridIdJs;
 
         return
-            "(function(){" .
+            '(function(){' .
                 "var manager=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
-                "var grid=manager&&(manager.instance||manager.grid);" .
-                "if(!grid){return;}" .
+                'var grid=manager&&(manager.instance||manager.grid);' .
+                'if(!grid){return;}' .
                 "var rows=(typeof grid.getRows==='function')?grid.getRows():null;" .
                 "var ids=(rows&&typeof rows.getSelectedIds==='function')?rows.getSelectedIds():[];" .
                 "var panel=(typeof grid.getActionsPanel==='function')?grid.getActionsPanel():null;" .
                 "var values=(panel&&typeof panel.getValues==='function')?panel.getValues():{};" .
                 "var forAll=(values&&values['{$forAllKeyJs}']==='Y')?'Y':'N';" .
                 "if((!ids||ids.length===0)&&forAll!=='Y'){" .
-                    "if(BX.UI&&BX.UI.Notification&&BX.UI.Notification.Center){" .
+                    'if(BX.UI&&BX.UI.Notification&&BX.UI.Notification.Center){' .
                         "BX.UI.Notification.Center.notify({content:'Select at least one row'});" .
-                    "}" .
-                    "return;" .
-                "}" .
-                "var data={};" .
+                    '}' .
+                    'return;' .
+                '}' .
+                'var data={};' .
                 "data['{$actionButtonKeyJs}']='{$actionIdJs}';" .
                 "data['{$forAllKeyJs}']=forAll;" .
-                "data.ID=ids;" .
-                "data.id=ids;" .
-                "data.rows=ids;" .
+                'data.ID=ids;' .
+                'data.id=ids;' .
+                'data.rows=ids;' .
                 "if(typeof grid.reloadTable==='function'){" .
                     "grid.reloadTable('POST',data);" .
-                "}" .
-            "})();";
+                '}' .
+            '})();';
     }
 
     protected function hasEditableFields(): bool

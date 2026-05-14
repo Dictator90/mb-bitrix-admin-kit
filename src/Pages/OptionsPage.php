@@ -8,12 +8,12 @@ use Bitrix\Main\Config\Option;
 use Bitrix\Main\Context;
 use Bitrix\Main\HttpRequest;
 use Bitrix\Main\SiteTable;
+use MB\Bitrix\AdminKit\Component\Layout;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
-use MB\Bitrix\AdminKit\Component\Layout;
 
 /**
  * Standalone options page — saves values to `b_option` / `b_option_site`.

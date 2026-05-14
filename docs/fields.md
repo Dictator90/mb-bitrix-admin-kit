@@ -1,6 +1,6 @@
 # Fields
 
-AdminKit v0.5.0 keeps the existing field layer and makes its public API consistent across form, grid, and detail pages. Existing classes such as `Text`, `Textarea`, `Number`, `Select`, `Switcher`, `EntitySelect`, `UserSelect`, and `IblockElementSelect` remain available; new `*SelectorField` names are additive adapters over Bitrix UI selectors.
+AdminKit fields are declarative PHP objects that handle rendering, normalization, validation, and conditional behaviour across list, form, and detail pages. All fields extend the abstract `Field` base class and are created with the static `make()` factory.
 
 ## Common Field API
 
@@ -42,7 +42,7 @@ The base field no longer joins arrays with commas. Each concrete field owns its 
 
 - Scalar fields (`Text`, `Textarea`, `Number`, `Switcher`) return scalar values or `null`.
 - `Select::multiple()` returns an array.
-- `EntitySelectorField::multiple()` returns an array of IDs.
+- `EntitySelect` / `DialogSelect` (and their subclasses) with `multiple()` store values as comma-separated IDs via `serializePostValue()`.
 - `File`, `Image`, and UF multiple fields keep multiple values as arrays.
 
 ## Text
@@ -108,60 +108,111 @@ Switcher::make('Active', 'ACTIVE')
 
 `Switcher` wraps Bitrix `ui.switcher` and keeps checked/unchecked scalar values.
 
-## EntitySelectorField
+## Entity selector fields
 
-`EntitySelectorField` is an adapter over Bitrix `ui.entity-selector` and `BX.UI.EntitySelector.TagSelector`; AdminKit does not implement its own selector engine.
+AdminKit ships two rendering backends and a set of pre-configured concrete fields built on top of them:
 
-```php
-EntitySelectorField::make('Entity', 'ENTITY_ID')
-    ->entityId('user')
-    ->multiple(false);
+```
+EntitySelect   — Bitrix ui.entity-selector / BX.UI.EntitySelector.TagSelector
+    TagSelect  — thin alias for EntitySelect
+    DialogSelect — MB.UI.DialogSelector (mb.ui.dialog-selector; static item lists)
+        UserSelect          — pre-wired for Bitrix users
+        IblockSelect        — pre-wired for iblocks
+        IblockElementSelect — pre-wired for iblock elements; supports dependsOn()
+        IblockSectionSelect — pre-wired for iblock sections
 ```
 
-The field:
+All selector fields share the same `Field` base API and normalize values the same way:
 
-- loads the Bitrix `ui.entity-selector` extension when Bitrix is present;
-- renders a TagSelector container and hidden inputs;
-- passes selected items to the Bitrix dialog;
-- normalizes single values to one ID and multiple values to an ID array;
-- supports `required`, `readonly`, `visibleWhen`, `dependsOn`, and `displayUsing`.
+- **Single mode**: one ID string or `null`.
+- **Multiple mode**: comma-separated IDs stored in a single column (`"1,42,7"`); `parseIds()` splits them back automatically.
 
-Use `resolveLabels()` to render human-readable grid/detail values:
+### UserSelect
 
 ```php
-EntitySelectorField::make('Responsible', 'RESPONSIBLE_ID')
-    ->entityId('user')
-    ->resolveLabels(static fn (array $ids): array => UserDirectory::names($ids));
+UserSelect::make('Responsible', 'RESPONSIBLE_ID');          // single (default)
+UserSelect::make('Executors', 'EXECUTOR_IDS')->multiple();  // multi
 ```
 
-## UserSelectorField
+Labels are resolved automatically from `Bitrix\Main\UserTable` (name/last name or login).
+
+### IblockSelect
 
 ```php
-UserSelectorField::make('Responsible', 'RESPONSIBLE_ID')
-    ->multiple(false);
+IblockSelect::make('Catalog', 'IBLOCK_ID');
 ```
 
-`UserSelectorField` is a narrow user adapter over `EntitySelectorField` with Bitrix user entity configuration and optional Bitrix `UserTable` label resolution. Legacy `UserSelect` remains available.
-
-## IblockElementSelectorField
+### IblockElementSelect
 
 ```php
-IblockElementSelectorField::make('Product', 'PRODUCT_ID')
-    ->iblockId(5)
-    ->multiple(false);
+IblockElementSelect::make('Product', 'PRODUCT_ID')->iblockId(5);
+
+// Dynamic — re-renders when IBLOCK_ID changes
+IblockElementSelect::make('Element', 'ELEMENT_ID')->dependsOn('IBLOCK_ID');
 ```
 
-This field configures the Bitrix entity selector for iblock elements and resolves labels through the Bitrix iblock module when it is available. Legacy `IblockElementSelect` remains available.
-
-## IblockSectionSelectorField
+### IblockSectionSelect
 
 ```php
-IblockSectionSelectorField::make('Section', 'SECTION_ID')
-    ->iblockId(5)
-    ->multiple(false);
+IblockSectionSelect::make('Section', 'SECTION_ID')->iblockId(5)->multiple();
 ```
 
-This field configures the Bitrix entity selector for iblock sections and resolves labels through the Bitrix iblock module when it is available.
+### EntitySelect / TagSelect — generic Bitrix entity selector
+
+```php
+EntitySelect::make('Department', 'DEPARTMENT_ID')->entityId('department');
+
+// Multiple Bitrix entities in one dialog
+EntitySelect::make('Participant', 'PARTICIPANT_IDS')
+    ->entity('user')
+    ->entity('department')
+    ->multiple();
+```
+
+Built-in label resolution (no `resolveLabels()` call needed): `user`, `user-list`,
+`user-group`, `iblock`, `iblock-list`, `iblock-element`, `iblock-property`.
+
+Custom resolver for other entities:
+
+```php
+EntitySelect::make('Warehouse', 'WAREHOUSE_ID')
+    ->entityId('warehouse')
+    ->resolveLabels(static fn (array $ids): array =>
+        array_column(
+            WarehouseTable::getList(['filter' => ['@ID' => $ids], 'select' => ['ID', 'NAME']])->fetchAll(),
+            'NAME', 'ID'
+        )
+    );
+```
+
+### DialogSelect — static item list
+
+`DialogSelect` renders with `MB.UI.DialogSelector` (requires the `mb.ui.dialog-selector`
+Bitrix extension from `mb.core`). Use it for a known, finite set of items:
+
+```php
+DialogSelect::make('Role', 'ROLE_ID')
+    ->tabsContent([
+        'active' => [
+            'title' => 'Active roles',
+            'items' => [
+                ['id' => '1', 'title' => 'Manager'],
+                ['id' => '2', 'title' => 'Developer'],
+            ],
+        ],
+    ])
+    ->multiple();
+```
+
+Or with the lower-level fluent API:
+
+```php
+DialogSelect::make('Status', 'STATUS')
+    ->addTab(['id' => 'open',   'title' => 'Open'])
+    ->addTab(['id' => 'closed', 'title' => 'Closed'])
+    ->addItem(['id' => 'new',  'entityId' => 'mbDialogEntity', 'title' => 'New',  'tabs' => ['open']])
+    ->addItem(['id' => 'done', 'entityId' => 'mbDialogEntity', 'title' => 'Done', 'tabs' => ['closed']]);
+```
 
 ## UfField
 
@@ -189,16 +240,61 @@ UfField::make('Tags', 'UF_TAGS')
     ]);
 ```
 
+## BelongsTo / BelongsToMany
+
+Select a related record directly from a Bitrix ORM `DataManager` table.
+These fields do not require a Bitrix entity-selector entity — the options are
+loaded at render time via `getList()`.
+
+### BelongsTo — single foreign-key select
+
+```php
+use MB\Bitrix\AdminKit\Field\BelongsTo;
+
+BelongsTo::make('Category', 'CATEGORY_ID', CategoryTable::class)
+    ->titleColumn('NAME')           // column shown in the dropdown (default: 'NAME')
+    ->valueColumn('ID')             // column used as the option value (default: 'ID')
+    ->emptyOption('— select —')     // placeholder option (empty string by default)
+    ->filter(['ACTIVE' => 'Y'])     // additional ORM filter
+    ->orderBy('SORT');              // ORM order (string → ASC, array → ORM order array)
+```
+
+### BelongsToMany — multi-select from a table
+
+```php
+use MB\Bitrix\AdminKit\Field\BelongsToMany;
+
+BelongsToMany::make('Tags', 'TAG_IDS', TagTable::class)
+    ->titleColumn('NAME')
+    ->filter(['ACTIVE' => 'Y'])
+    ->orderBy('NAME');
+
+// Render as a vertical checkbox list instead of a multi-<select>
+BelongsToMany::make('Permissions', 'PERMISSION_IDS', PermissionTable::class)
+    ->titleColumn('TITLE')
+    ->asCheckboxes();
+```
+
+Values are stored as comma-separated IDs (`"1,5,12"`).
+
+---
+
 ## Conditional display and validation
+
+`visibleWhen` supports a 2-argument shorthand (column + expected value) or the
+full 3-argument form (column, operator, value):
 
 ```php
 Text::make('External URL', 'EXTERNAL_URL')
-    ->visibleWhen('TYPE', '=', 'external')
+    ->visibleWhen('TYPE', 'external')          // shorthand — equals 'external'
+    ->visibleWhen('TYPE', '=', 'external')     // same, explicit operator
+    ->visibleWhen('MODE', 'in', ['a', 'b'])    // in-array check
     ->requiredWhen('TYPE', '=', 'external')
     ->readonlyWhen('LOCKED', '=', 'Y');
 ```
 
-Conditions can be short-form field/operator/value triples, closures, or `AdminCondition` trees. `requiredWhen()` participates in validation, and `readonlyWhen()` is checked through `isReadOnlyFor($data)`.
+Conditions can also be closures or `ConditionTree` objects. `requiredWhen()`
+participates in validation; `readonlyWhen()` is checked via `isReadOnlyFor($data)`.
 
 ## Dependencies
 
@@ -206,11 +302,21 @@ Conditions can be short-form field/operator/value triples, closures, or `AdminCo
 Select::make('Category', 'CATEGORY_ID')
     ->onChange('SUBCATEGORY_ID', static fn ($categoryId): array => SubcategoryTable::options($categoryId));
 
-IblockElementSelectorField::make('Element', 'ELEMENT_ID')
+IblockElementSelect::make('Element', 'ELEMENT_ID')
     ->dependsOn('IBLOCK_ID');
 ```
 
-`dependsOn()` marks fields that must be reconfigured from another form value; `onChange()` marks source fields that trigger dependent field refreshes.
+`dependsOn()` marks a field that must be reconfigured from another field's value.
+`onChange()` marks the source field that triggers dependent field refreshes (AJAX re-render).
+
+A custom modifier lets you mutate the dependent field freely:
+
+```php
+Select::make('Sub', 'SUB_ID')
+    ->dependsOn('CAT_ID', function (Select $field, mixed $val, array $data): void {
+        $field->options(SubcategoryRepo::optionsFor((int)$val));
+    });
+```
 
 ## Lookup preloading
 
@@ -224,19 +330,26 @@ Text::make('Product', 'PRODUCT_ID')
     ->displayUsing(static fn (mixed $value): string => $rows[(string)$value]['NAME'] ?? (string)$value);
 ```
 
-## Existing field inventory reviewed for v0.5.0
+## Field inventory
 
-The v0.5.0 review covered the existing `src/Field` classes rather than replacing them:
+| Class | Purpose | Normalization | Grid/detail |
+| --- | --- | --- | --- |
+| `Text`, `Textarea`, `Email`, `Password`, `Hidden`, `Html`, `Color`, `Preview`, `ID` | Scalar text-like controls and helpers | Scalar or `null` | Escaped or specialized preview |
+| `Number` | Numeric input | Empty→`null`; numeric string→`int`/`float` | Numeric grid column |
+| `Select` | Single/multiple choice | Single: scalar/null; multiple: array | Option labels |
+| `Checkbox`, `Switcher` | Boolean checked/unchecked | Checked or unchecked scalar value | Checkbox/switcher adapter |
+| `Date`, `DateTime` | Bitrix calendar inputs | Scalar date string | Date assembler formatting |
+| `File`, `Image` | Bitrix file/image IDs | File strategy (delete/upload companion) | File name / image preview |
+| `BelongsTo` | Foreign-key select from a DataManager | Single scalar or `null` | Title column value |
+| `BelongsToMany` | Multi-select from a DataManager | Comma-separated IDs | Title column values |
+| `EntitySelect` / `TagSelect` | Generic Bitrix entity selector (TagSelector UI) | Single ID or comma-separated IDs | Label chips via resolver |
+| `DialogSelect` | Static item list selector (mb.ui.dialog-selector) | Single ID or comma-separated IDs | Label chips via resolver |
+| `UserSelect` | Bitrix user selector | Single ID or comma-separated IDs | User name chips |
+| `IblockSelect` | Iblock selector | Single ID | Iblock name chip |
+| `IblockElementSelect` | Iblock element selector; auto-reloads on `dependsOn()` | Single ID or comma-separated IDs | Element name chips |
+| `IblockSectionSelect` | Iblock section selector | Single ID or comma-separated IDs | Section name chips |
+| `UfField` | Bitrix user-field adapter | Bitrix UF POST shape | Scalar/array display |
 
-| Class | Purpose | Value source/normalization | Grid/detail | Multiple/required/readonly/conditions |
-| --- | --- | --- | --- | --- |
-| `Field` | Base API for render/normalize/validate/display | Resolves explicit value, stored value, then default; scalar fields return scalar/null and do not implode arrays | Escaped preview with `displayUsing()` hook | Common `required`, `readonly`, `visibleWhen`, `requiredWhen`, `readonlyWhen`, `dependsOn` |
-| `Text`, `Textarea`, `Email`, `Password`, `Hidden`, `Html`, `Color`, `Preview`, `ID` | Scalar text-like controls and presentation helpers | Scalar POST values | Escaped or specialized preview | Required/readonly where applicable; conditional API inherited |
-| `Number` | Numeric input | Empty to `null`, numeric string to `int`/`float` | Numeric grid type | Required/readonly/placeholder inherited |
-| `Select` | Single/multiple choice | Single scalar/null; multiple array | Option labels | Multiple, required, callable options, conditions |
-| `Checkbox`, `Switcher` | Boolean-like checked/unchecked scalar values | Checked/unchecked value | Checkbox/switcher grid adapters | Required/readonly behavior inherited where form adapter supports it |
-| `Date`, `DateTime` | Bitrix calendar text inputs | Scalar date strings | Date assembler formatting | Required and inherited conditions |
-| `File`, `Image` | Bitrix file/image IDs | Concrete file strategy, including delete/upload companion fields | File name/image preview | Multiple support is concrete-field responsibility |
-| `EntitySelect`, `UserSelect`, `IblockElementSelect`, `IblockSelect` | Legacy selector names | Kept as compatible adapters over the new selector layer where possible | Label resolver chips | Multiple/required/readonly/dependsOn inherited |
-| `EntitySelectorField`, `UserSelectorField`, `IblockElementSelectorField`, `IblockSectionSelectorField` | Bitrix UI EntitySelector adapters | Hidden input POST values, preserving arrays for multiple | Label chips via resolver | Single/multiple, required, readonly, visible/dependent conditions |
-| `UfField` | Bitrix user-field adapter | Bitrix UF metadata and POST shape | Scalar/array display | Respects UF `MULTIPLE` and `MANDATORY` metadata |
+All classes inherit `required()`, `readonly()`, `multiple()`, `default()`, `help()`,
+`placeholder()`, `visibleWhen()`, `requiredWhen()`, `readonlyWhen()`, `dependsOn()`,
+`onChange()`, and `displayUsing()` from `Field`.

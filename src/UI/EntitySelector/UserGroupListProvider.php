@@ -71,8 +71,8 @@ class UserGroupListProvider extends BaseProvider
         if ($searchQuery->getQuery()) {
             $filter = [
                 'LOGIC' => 'OR',
-                "%NAME" => $searchQuery->getQuery(),
-                "%STRING_ID" => $searchQuery->getQuery()
+                '%NAME' => $searchQuery->getQuery(),
+                '%STRING_ID' => $searchQuery->getQuery()
             ];
         }
 

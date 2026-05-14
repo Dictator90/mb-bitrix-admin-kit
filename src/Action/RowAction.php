@@ -128,18 +128,18 @@ class RowAction implements ActionContract
 
         return
             "BX.SidePanel.Instance.open('{$urlJs}',{" .
-                "events:{" .
-                    "onCloseComplete:function(){" .
-                        "var manager=BX.Main&&BX.Main.gridManager?BX.Main.gridManager:null;" .
-                        "if(!manager){return;}" .
+                'events:{' .
+                    'onCloseComplete:function(){' .
+                        'var manager=BX.Main&&BX.Main.gridManager?BX.Main.gridManager:null;' .
+                        'if(!manager){return;}' .
                         "var grid=manager.getInstanceById?manager.getInstanceById({$gridIdJson}):null;" .
-                        "if(!grid&&manager.getById){" .
+                        'if(!grid&&manager.getById){' .
                             "var pair=manager.getById({$gridIdJson});" .
-                            "grid=pair&&(pair.instance||pair.grid)?(pair.instance||pair.grid):null;" .
-                        "}" .
+                            'grid=pair&&(pair.instance||pair.grid)?(pair.instance||pair.grid):null;' .
+                        '}' .
                         "if(grid&&typeof grid.reload==='function'){grid.reload();}" .
-                    "}" .
-                "}" .
-            "})";
+                    '}' .
+                '}' .
+            '})';
     }
 }

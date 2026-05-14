@@ -4,7 +4,6 @@ namespace MB\Bitrix\AdminKit\UI\EntitySelector;
 
 use Bitrix\Iblock\Component\Tools;
 use Bitrix\Iblock\PropertyTable;
-use Bitrix\Main\Diag\Debug;
 use Bitrix\Main\Loader;
 use Bitrix\Main\LoaderException;
 use Bitrix\UI\EntitySelector\BaseProvider;

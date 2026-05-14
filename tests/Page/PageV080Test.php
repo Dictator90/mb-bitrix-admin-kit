@@ -29,7 +29,9 @@ final class PageV080Test extends TestCase
 
     public function testCustomPageRendersInsideAdminKitLayout(): void
     {
-        $html = (new TestCustomPage())->render();
+        ob_start();
+        (new TestCustomPage())->render();
+        $html = (string)ob_get_clean();
 
         self::assertStringContainsString('adminkit-page--custom', $html);
         self::assertStringContainsString('<strong>ok</strong>', $html);
@@ -37,7 +39,9 @@ final class PageV080Test extends TestCase
 
     public function testDashboardPageWrapsWidgets(): void
     {
-        $html = (new TestDashboardPage())->render();
+        ob_start();
+        (new TestDashboardPage())->render();
+        $html = (string)ob_get_clean();
 
         self::assertStringContainsString('adminkit-dashboard', $html);
         self::assertStringContainsString('Widget A', $html);

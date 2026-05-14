@@ -26,6 +26,7 @@ class Alert extends AbstractLayoutComponent
     protected string $type;
     protected bool $closable = false;
     protected ?string $icon = null;
+    protected bool $rawHtml = false;
 
     public function __construct(string $message = '', string $type = self::INFO)
     {
@@ -57,6 +58,17 @@ class Alert extends AbstractLayoutComponent
     public static function info(string $message): static
     {
         return new static($message, static::INFO);
+    }
+
+    /**
+     * Allow the message to contain raw HTML (links, bold, etc.).
+     * Only use this with developer-controlled strings, never with user input.
+     */
+    public function html(bool $raw = true): static
+    {
+        $this->rawHtml = $raw;
+
+        return $this;
     }
 
     public function closable(bool $closable = true): static
@@ -91,7 +103,7 @@ class Alert extends AbstractLayoutComponent
         $style = $this->buildStyleAttr();
         $attrs = $this->buildExtraAttrs();
 
-        $message = htmlspecialcharsbx($this->message);
+        $message = $this->rawHtml ? $this->message : htmlspecialcharsbx($this->message);
 
         $iconHtml = '';
         if ($this->icon) {

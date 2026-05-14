@@ -13,7 +13,6 @@ use Bitrix\UI\EntitySelector\SearchQuery;
 
 class IblockListProvider extends BaseProvider
 {
-
     public const ENTITY_ID = 'iblock-list';
     protected const ELEMENTS_LIMIT = 100;
 
@@ -43,10 +42,8 @@ class IblockListProvider extends BaseProvider
 
     public function fillDialog(Dialog $dialog): void
     {
-        if ($dialog->getItemCollection()->count() > 0)
-        {
-            foreach ($dialog->getItemCollection() as $item)
-            {
+        if ($dialog->getItemCollection()->count() > 0) {
+            foreach ($dialog->getItemCollection() as $item) {
                 $dialog->addRecentItem($item);
             }
         }
@@ -54,11 +51,9 @@ class IblockListProvider extends BaseProvider
         $recentItems = $dialog->getRecentItems()->getEntityItems(self::ENTITY_ID);
         $recentItemsCount = count($recentItems);
 
-        if ($recentItemsCount < self::ELEMENTS_LIMIT)
-        {
+        if ($recentItemsCount < self::ELEMENTS_LIMIT) {
             $elements = $this->getElements(null, self::ELEMENTS_LIMIT);
-            foreach ($elements as $element)
-            {
+            foreach ($elements as $element) {
                 $dialog->addRecentItem($this->makeItem($element));
             }
         }
@@ -78,8 +73,7 @@ class IblockListProvider extends BaseProvider
             $searchQuery->setCacheable(false);
         }
 
-        foreach ($elements as $element)
-        {
+        foreach ($elements as $element) {
             $dialog->addItem(
                 $this->makeItem($element)
             );
