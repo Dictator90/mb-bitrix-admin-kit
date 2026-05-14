@@ -39,4 +39,9 @@ final class ProductResource extends CrudResource
             new Reference('CATEGORY', CategoryTable::class, ['=this.CATEGORY_ID' => 'ref.ID']),
         ];
     }
+
+    public function formFields(): iterable
+    {
+        // TODO: Implement formFields() method.
+    }
 }

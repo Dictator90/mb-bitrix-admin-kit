@@ -49,7 +49,36 @@ class EntitySelectorField extends Field
             $this->entityOptions = $entityOptions;
         }
 
+        if ($this->labelResolver === null) {
+            $resolver = $this->defaultResolverForEntity($id);
+            if ($resolver !== null) {
+                $this->labelResolver = $resolver;
+            }
+        }
+
         return $this;
+    }
+
+    protected function defaultResolverForEntity(string $entityId): ?Closure
+    {
+        return match ($entityId) {
+            'user', 'user-list' => static function (array $ids): array {
+                if (!class_exists(\Bitrix\Main\UserTable::class)) {
+                    return [];
+                }
+                $result = [];
+                $rs = \Bitrix\Main\UserTable::getList([
+                    'filter' => ['@ID' => $ids],
+                    'select' => ['ID', 'NAME', 'LAST_NAME', 'LOGIN'],
+                ]);
+                while ($row = $rs->fetch()) {
+                    $display = trim(($row['NAME'] ?? '') . ' ' . ($row['LAST_NAME'] ?? ''));
+                    $result[(string)$row['ID']] = $display !== '' ? $display : ($row['LOGIN'] ?? (string)$row['ID']);
+                }
+                return $result;
+            },
+            default => null,
+        };
     }
 
     public function resetEntities(): static
@@ -103,7 +132,7 @@ class EntitySelectorField extends Field
         $placeholder = htmlspecialcharsbx((string)($this->placeholder ?? ''));
 
         return <<<HTML
-        <div class="adminkit-entity-selector" data-bitrix-extension="ui.entity-selector" data-field="{$baseName}">
+        <div class="adminkit-entity-selector" data-field="{$baseName}">
             <div id="{$containerId}" class="adminkit-entity-selector__container"></div>
             <div class="adminkit-entity-selector__values" data-role="adminkit-entity-selector-values">{$hiddenInputs}</div>
         </div>
@@ -125,6 +154,7 @@ class EntitySelectorField extends Field
             };
             var {$jsVariable} = new BX.UI.EntitySelector.TagSelector({
                 id: '{$dialogId}',
+                tags: {$selectedJson},
                 dialogOptions: {
                     id: '{$dialogId}',
                     context: '{$dialogId}',
@@ -146,6 +176,16 @@ class EntitySelectorField extends Field
         });
         </script>
         HTML;
+    }
+
+    public function serializePostValue(mixed $value): mixed
+    {
+        $normalized = $this->normalize($value);
+        if (is_array($normalized)) {
+            return implode(',', $normalized);
+        }
+
+        return $normalized;
     }
 
     public function normalize(mixed $value): mixed
@@ -205,7 +245,12 @@ class EntitySelectorField extends Field
             return array_values(array_filter(array_map('strval', AdminCollection::make($value)->all()), static fn (string $id): bool => $id !== ''));
         }
 
-        return [(string)$value];
+        $str = (string)$value;
+        if (str_contains($str, ',')) {
+            return array_values(array_filter(array_map('trim', explode(',', $str)), static fn (string $id): bool => $id !== ''));
+        }
+
+        return [$str];
     }
 
     /** @param string[] $ids @return array<string,string> */

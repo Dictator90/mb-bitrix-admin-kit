@@ -288,7 +288,20 @@ abstract class OptionsPage extends AbstractPage
         $this->renderAjaxScript($formId);
         $this->renderDependencyScript($formId);
         $this->renderConditionalVisibilityScript($formId);
+        $this->renderInlineCss();
         $this->renderHintInit();
+    }
+
+    protected function renderInlineCss(): void
+    {
+        echo <<<'CSS'
+        <style>
+        .adminkit-conditional-hidden { display: none !important; }
+        .adminkit-visibility-wrapper.adminkit-conditional-hidden { display: none !important; }
+        .adminkit-field-disabled { pointer-events: none; opacity: 0.42; filter: grayscale(20%); }
+        .adminkit-field-loading { position: relative; pointer-events: none; min-height: 36px; }
+        </style>
+        CSS;
     }
 
     protected function renderHintInit(): void
@@ -499,7 +512,9 @@ abstract class OptionsPage extends AbstractPage
                 continue;
             }
             $field->applyDependency($formData);
-            $result[$field->getColumn()] = ['html' => $field->renderFormField($formData[$field->getColumn()] ?? null)];
+            // Pass null so the dependent field re-renders empty after its source changes;
+            // the previously selected value is invalid for the new source value.
+            $result[$field->getColumn()] = ['html' => $field->renderFormField(null)];
         }
 
         while (ob_get_level() > 0) {

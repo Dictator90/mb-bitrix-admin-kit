@@ -336,9 +336,26 @@ abstract class Field implements FieldContract
 
     /**
      * Show this field only when another field satisfies a condition.
+     *
+     * Shorthand (matches Box::visibleWhen API):
+     *   ->visibleWhen('COLUMN', 'Y')         — equals Y
+     *   ->visibleWhen('COLUMN', ['a', 'b'])  — in array
+     *
+     * Full form with explicit operator:
+     *   ->visibleWhen('COLUMN', '=', 'Y')
+     *   ->visibleWhen('COLUMN', '!=', 'Y')
+     *   ->visibleWhen('COLUMN', 'in', ['a', 'b'])
      */
     public function visibleWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static
     {
+        // Support 2-arg shorthand: visibleWhen('column', 'value') — same as Box::visibleWhen().
+        // Detect when the second arg is a value (not a recognised operator keyword) and shift args.
+        if (is_string($condition) && $value === null && $operator !== null
+                && !in_array($operator, ['=', '!=', 'in', 'not in'], true)) {
+            $value    = $operator;
+            $operator = '=';
+        }
+
         $normalized = $this->normalizeCondition($condition, $operator, $value);
         if (is_array($normalized)) {
             $this->visibleWhenRule = is_array($normalized['value'])

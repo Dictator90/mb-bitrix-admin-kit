@@ -28,4 +28,14 @@ final class ProductResource extends CrudResource
     {
         return 100;
     }
+
+    public function indexFields(): iterable
+    {
+        // TODO: Implement indexFields() method.
+    }
+
+    public function formFields(): iterable
+    {
+        // TODO: Implement formFields() method.
+    }
 }

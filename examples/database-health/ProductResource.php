@@ -29,4 +29,14 @@ final class ProductResource extends CrudResource implements SchemaAwareResource
             ->column('ACTIVE', 'char', false)
             ->index('PRIMARY', ['ID']);
     }
+
+    public function indexFields(): iterable
+    {
+        // TODO: Implement indexFields() method.
+    }
+
+    public function formFields(): iterable
+    {
+        // TODO: Implement formFields() method.
+    }
 }

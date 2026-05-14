@@ -12,7 +12,7 @@ use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\Tab;
 
 /**
- * Tabs container — wraps Tab instances and renders using the mb.core:ui.tabs JS extension.
+ * Tabs container — wraps Tab instances and renders using the mb.ui.tabs JS extension.
  *
  * Tab cannot render standalone; it must be inside Tabs.
  *

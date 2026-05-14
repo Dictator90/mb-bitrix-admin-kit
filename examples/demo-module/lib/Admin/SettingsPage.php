@@ -28,7 +28,7 @@ final class SettingsPage extends OptionsPage
         return 300;
     }
 
-    protected function fields(): iterable
+    public function fields(): iterable
     {
         return [
             Switcher::make('Enable demo integration', 'enabled')->values('Y', 'N')->default('Y'),

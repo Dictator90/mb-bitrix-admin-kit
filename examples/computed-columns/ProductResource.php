@@ -25,4 +25,9 @@ final class ProductResource extends CrudResource
                 ->computed(static fn (array $row): string => ($row['ACTIVE'] ?? 'N') === 'Y' ? 'Active' : 'Inactive'),
         ];
     }
+
+    public function formFields(): iterable
+    {
+        // TODO: Implement formFields() method.
+    }
 }

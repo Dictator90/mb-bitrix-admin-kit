@@ -25,4 +25,9 @@ final class ProductResource extends CrudResource
             IblockElementSelectorField::make('Related element', 'ELEMENT_ID')->iblockId(5),
         ];
     }
+
+    public function indexFields(): iterable
+    {
+        // TODO: Implement indexFields() method.
+    }
 }
