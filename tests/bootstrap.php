@@ -54,7 +54,8 @@ namespace Bitrix\Main {
             public function rollbackTransaction(): void { $this->calls[] = 'rollback'; }
         }; }
     }
-    class HttpRequest {}
+    class HttpRequest { public function isPost(): bool { return false; } public function get(string $key): mixed { return null; } public function getPost(string $key): mixed { return null; } }
+    class Context { public static function getCurrent(): object { return new class { public function getRequest(): HttpRequest { return new HttpRequest(); } }; } }
 }
 
 namespace Bitrix\Main\Grid { class Options { public function __construct(private string $id) {} public function getSorting(array $params): array { return $params; } public function getNavParams(array $params): array { return $params; } } }
@@ -63,7 +64,7 @@ namespace Bitrix\Main\UI\Filter { class Options { public static array $filters =
 namespace Bitrix\Main\ORM\Fields\Relations { class Reference { public function __construct(public string $name) {} } }
 namespace Bitrix\Main\ORM\Fields { class ExpressionField { public function __construct(public string $name) {} } }
 
-namespace Bitrix\Main\UI { class PageNavigation { public function __construct(private string $id) {} public function allowAllRecords(bool $v): static { return $this; } public function setPageSize(int $s): static { $this->size=$s; return $this; } public function initFromUri(): static { return $this; } public function getLimit(): int { return $this->size ?? 20; } public function getOffset(): int { return 0; } public function getPageSize(): int { return $this->size ?? 20; } public function getCurrentPage(): int { return 1; } public function setRecordCount(int $c): void {} } }
+namespace Bitrix\Main\UI { class PageNavigation { private int $size = 20; public function __construct(private string $id) {} public function allowAllRecords(bool $v): static { return $this; } public function setPageSize(int $s): static { $this->size=$s; return $this; } public function initFromUri(): static { return $this; } public function getLimit(): int { return $this->size; } public function getOffset(): int { return 0; } public function getPageSize(): int { return $this->size; } public function getCurrentPage(): int { return 1; } public function setRecordCount(int $c): void {} } }
 
 namespace {
     function htmlspecialcharsbx($string, $flags = ENT_QUOTES | ENT_SUBSTITUTE, $encoding = 'UTF-8'): string { return htmlspecialchars((string)$string, $flags, $encoding); }

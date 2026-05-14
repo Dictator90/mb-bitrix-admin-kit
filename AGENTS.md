@@ -31,3 +31,9 @@
 - Do not implement custom EntitySelector/UserSelector/iblock selector engines; wrap Bitrix `ui.entity-selector`, `BX.UI.EntitySelector.TagSelector`, and documented Bitrix providers/mechanisms.
 - Keep array normalization explicit per concrete field: base/scalar fields must not implode arrays, and multiple fields should preserve arrays.
 - Prefer `displayUsing()` or request-level `Database\RelationResolver` preloading for related labels to avoid N+1 queries.
+
+## v0.6.0 diagnostics and performance notes
+- Database diagnostics must stay read-only by default; do not create or alter tables from admin pages.
+- Prefer `Database\Schema\TableSchema` and `SchemaAwareResource` for expected schemas instead of adding migration abstractions.
+- Keep query-performance features conservative: `useTotalCount()`, count/options/lookup cache, `QueryGuard`, and `maxPageSize()` should be opt-in or safe by default.
+- Generate cache keys through `AdminString::cacheKey()` and use `AdminCollection` for diagnostic, preload, debug, and batch result arrays.

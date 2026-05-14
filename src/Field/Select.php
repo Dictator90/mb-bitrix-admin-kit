@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use Closure;
+use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\AdminString;
 
 class Select extends Field
 {
     /** @var array<mixed>|Closure */
     protected array|Closure $options = [];
+
+    protected int $cacheTtl = 0;
 
     /** @param array<mixed>|Closure $options */
     public function options(array|Closure $options): static
@@ -20,8 +24,43 @@ class Select extends Field
         return $this;
     }
 
+    public function cache(int $ttl): static
+    {
+        $this->cacheTtl = max(0, $ttl);
+
+        return $this;
+    }
+
+    public function getCacheTtl(): int
+    {
+        return $this->cacheTtl;
+    }
+
     /** @return array<mixed> */
     public function getOptions(array $context = []): array
+    {
+        if ($this->cacheTtl <= 0) {
+            return $this->resolveOptions($context);
+        }
+
+        $key = AdminString::cacheKey('adminkit_select_options', [
+            'field' => static::class,
+            'column' => $this->column,
+            'context' => $context,
+        ]);
+        $cached = ArrayTtlCache::get($key);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $options = $this->resolveOptions($context);
+        ArrayTtlCache::set($key, $options, $this->cacheTtl);
+
+        return $options;
+    }
+
+    /** @return array<mixed> */
+    protected function resolveOptions(array $context = []): array
     {
         $options = $this->options instanceof Closure ? ($this->options)($context, $this) : $this->options;
 

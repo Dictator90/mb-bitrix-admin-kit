@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.6.0 - 2026-05-14
+
+### Added
+- Added read-only database schema diagnostics with `DatabaseSchemaInspector`, `TableSchema`, `TableHealthCheck`, and optional `DatabaseHealthPage`.
+- Added `SchemaAwareResource` and `CrudResource::databaseTableName()` for declaring and discovering expected resource tables.
+- Added query performance controls with `QueryPerformanceContext`, `QueryGuard`, `useTotalCount()`, `countCacheTtl()`, and `maxPageSize()`.
+- Added TTL caching for grid counts, `Select` options, and relation lookups through request-level and optional persistent caches.
+- Added documentation for database health, schema diagnostics, disabling count, count/options/lookup cache, query guard, and max page size.
+- Added PHPUnit coverage for v0.6.0 schema diagnostics, health page diagnostics, count disabling/cache, options cache, lookup cache, query guard, max page size, and cache key generation.
+
+### Changed
+- Grid loading now caps requested page size using the resource `maxPageSize()` before ORM parameters are executed.
+- Bulk action execution now validates selected IDs and run-by-filter safety through `QueryGuard`.
+
 ## v0.5.0 - 2026-05-14
 
 ### Added

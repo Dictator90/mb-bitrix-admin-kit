@@ -37,6 +37,7 @@ final class AdminString
     public static function formId(string $value): string { return self::id('adminkit_form', $value); }
     public static function fieldHtmlId(string $formId, string $field): string { return self::id($formId, $field); }
     public static function actionId(string $value): string { return self::id('adminkit_action', $value); }
+    public static function cacheKey(string $prefix, array $parts): string { return self::id($prefix, hash('sha256', json_encode($parts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '')); }
 
     public static function safeKey(string $value): string
     {

@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Action;
 use Closure;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
+use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Support\AdminCondition;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Support\Conditionable\ConditionTree;
@@ -157,6 +158,11 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
         }
 
         $ids = $this->selectedIds($context);
+        $guardErrors = (new QueryGuard())->validateBulkOperation($context);
+        if ($guardErrors !== []) {
+            return BulkResult::failure(implode(' ', $guardErrors));
+        }
+
         if ($ids === []) {
             return BulkResult::failure('Не выбраны элементы');
         }
