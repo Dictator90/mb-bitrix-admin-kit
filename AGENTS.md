@@ -79,3 +79,5 @@
 - Keep `indexFields()`, `formFields()`, and `detailFields()` as simple fallback shortcuts; do not add `indexResource()`, `formResource()`, `detailResource()`, or split Resource abstractions.
 - Keep grid query/data/row layers fed by `IndexPage` definitions rather than direct `resource->indexFields()` calls when rendering an index page.
 - Use `FieldRenderContext` for page-aware field rendering on index, form, and detail pages while preserving backward-compatible raw-value rendering.
+- Keep standalone pages (`Pages\DashboardPage`, `Pages\OptionsPage`, `Pages\CustomPage`) registered/discovered separately from resource pages (`Page\IndexPage`, `Page\FormPage`, `Page\DetailPage`); resource page subclasses must not become standalone menu entries unless they explicitly use the standalone page API.
+- Preserve the existing Field API surface and keep `renderFormField()` as the fallback used by context-aware `renderForm()` implementations.

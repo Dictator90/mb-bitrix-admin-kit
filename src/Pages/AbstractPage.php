@@ -27,6 +27,11 @@ abstract class AbstractPage
         return '';
     }
 
+    public static function isStandalone(): bool
+    {
+        return true;
+    }
+
     public static function isVisibleInMenu(): bool
     {
         return true;
