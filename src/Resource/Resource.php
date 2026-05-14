@@ -168,6 +168,11 @@ abstract class Resource implements ResourceContract
         return $this->getDataManagerClass() !== null;
     }
 
+    public function bulkChunkSize(): int
+    {
+        return 100;
+    }
+
     // ── Field / Filter / Action definitions ──────────────────────────────
 
     /** @return iterable<FieldContract> */

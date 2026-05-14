@@ -211,13 +211,22 @@ class Grid
                 'TEXT' => $action->getLabel(),
             ];
 
-            if ($action->isDelete()) {
+            $gridIdJs = CUtil::JSEscape($this->id);
+            $actionIdJs = CUtil::JSEscape($action->getId());
+            $onclick = '';
+
+            if ($action->needsConfirm()) {
                 $confirm = CUtil::JSEscape($action->getConfirmText() ?? 'Вы уверены?');
-                $gridIdJs = CUtil::JSEscape($this->id);
-                $item['ONCLICK'] =
-                    "if(!confirm('{$confirm}'))return;" .
-                    "var g=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
-                    "if(g&&g.grid){g.grid.getForm().submit('delete_bulk');}";
+                $onclick .= "if(!confirm('{$confirm}'))return;";
+            }
+
+            $onclick .=
+                "var g=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
+                "if(g&&g.grid){g.grid.getForm().submit('{$actionIdJs}');}";
+            $item['ONCLICK'] = $onclick;
+
+            if ($action->isDanger()) {
+                $item['CLASS'] = 'adm-btn-danger';
             }
 
             $items[] = $item;

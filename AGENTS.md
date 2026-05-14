@@ -20,3 +20,8 @@
 - Route CRUD persistence through `MB\Bitrix\AdminKit\Database\CrudPersister` and return `DbResult` for low-level ORM errors.
 - Keep `FormData` stage-aware (`raw`, `normalized`, `validated`, `errors`) when changing form save behavior.
 - Permission checks should use `MB\Bitrix\AdminKit\Security\PermissionContext` for dangerous actions.
+
+## v0.4.0 bulk action notes
+- Keep bulk operations safe by default: require explicit selected IDs unless an action opts into `allowRunByFilter()`.
+- Bulk actions should return `MB\Bitrix\AdminKit\Database\BulkResult` and process records in `CrudResource::bulkChunkSize()` chunks.
+- Check action `canRun()` and resource permissions (`canUpdate` / `canDelete`) per record; skipped records should not abort the whole operation.

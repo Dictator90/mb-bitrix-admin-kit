@@ -38,6 +38,11 @@ abstract class CrudResource extends Resource
         return $this->primaryKey();
     }
 
+    public function bulkChunkSize(): int
+    {
+        return 100;
+    }
+
     /** @return iterable<FieldContract> */
     abstract public function indexFields(): iterable;
 
