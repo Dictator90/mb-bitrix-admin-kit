@@ -2,6 +2,11 @@
 
 ## v1.0.0 - 2026-05-14
 
+### Changed
+- Split Bitrix grid architecture into `GridQueryBuilder` for ORM params, `GridDataLoader` for DataManager loading/count/cache, `Grid` for state, Bitrix grid/filter/action-panel adapters for component params, and `ToolbarRenderer` for toolbar/filter/create integration.
+- Removed ORM query construction from `Grid` and made `IndexPage` delegate data loading and toolbar rendering to dedicated services.
+- Documented the new grid layering in `docs/grid.md` and added coverage for the new query/data/UI boundaries.
+
 ### Added
 - Added scoped AdminKit creation with `AdminKitScope`, `forModule()`, `forScope()`, `fromDirectory()`, and `fromDirectories()` for module, `local/php_interface`, custom-directory, and manual-registration workflows.
 - Added multi-path discovery configuration and registry discovery that safely ignores missing paths and skips abstract classes.

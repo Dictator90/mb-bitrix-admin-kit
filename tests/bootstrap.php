@@ -292,3 +292,78 @@ namespace { if (!function_exists('bitrix_sessid_post')) {
         $this->js[] = $path;
     }
 }; }
+
+namespace Bitrix\Main\Grid\Panel { if (!class_exists(Snippet::class)) {
+    class Snippet
+    {
+        public function getEditButton(): array
+        {
+            return ['TYPE' => 'BUTTON', 'ID' => 'edit_button', 'TEXT' => 'Edit'];
+        }
+    }
+} }
+
+namespace { if (!class_exists(CUtil::class)) {
+    class CUtil
+    {
+        public static function JSEscape(string $value): string
+        {
+            return addslashes($value);
+        }
+    }
+} }
+
+namespace Bitrix\UI\Buttons { if (!class_exists(Button::class)) {
+    class Button
+    {
+        public function __construct(public array $params)
+        {
+        }
+    }
+    final class Color
+    {
+        public const SUCCESS = 'success';
+    }
+    final class Icon
+    {
+        public const ADD = 'add';
+    }
+    class JsCode
+    {
+        public function __construct(public string $code)
+        {
+        }
+        public function __toString(): string
+        {
+            return $this->code;
+        }
+    }
+} }
+
+namespace Bitrix\UI\Toolbar { if (!class_exists(ButtonLocation::class)) {
+    final class ButtonLocation
+    {
+        public const AFTER_TITLE = 'after_title';
+    }
+} }
+
+namespace Bitrix\UI\Toolbar\Facade { if (!class_exists(Toolbar::class)) {
+    final class Toolbar
+    {
+        public static array $filters = [];
+        public static array $buttons = [];
+        public static function addFilter(array $params): void
+        {
+            self::$filters[] = $params;
+        }
+        public static function addButton(object $button, string $location): void
+        {
+            self::$buttons[] = [$button, $location];
+        }
+        public static function reset(): void
+        {
+            self::$filters = [];
+            self::$buttons = [];
+        }
+    }
+} }

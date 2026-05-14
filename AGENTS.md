@@ -66,3 +66,9 @@
 - Treat `scopeId` as the AdminKit area identifier; it may be a Bitrix module ID, but code must not assume it is an installed module.
 - Keep `AdminKit::forModule()` module-first while supporting `forScope()`, directory shortcuts, and manual registration without discovery.
 - Discovery paths must remain optional and safe: missing directories should not break manually registered resources or pages.
+
+## v1.2.0 grid architecture notes
+- Keep `GridQueryBuilder` as the only source of Bitrix ORM query params (`select`, `filter`, `order`, `runtime`, `limit`, `offset`).
+- Keep `GridDataLoader` responsible for GridContext creation, QueryGuard, total count/cache, DataManager calls, and QueryPerformanceContext.
+- Keep `Grid` and `src/Bitrix/Grid/*Adapter.php` focused on UI state and Bitrix component/action-panel params; do not reintroduce ORM query building into `Grid` or `IndexPage`.
+- Keep toolbar/filter/create button integration in `Bitrix\Toolbar\ToolbarRenderer` when changing index-page toolbar behavior.

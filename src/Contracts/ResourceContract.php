@@ -17,6 +17,8 @@ use MB\Bitrix\AdminKit\Support\DataWrapper;
 
 interface ResourceContract
 {
+    public static function getId(): string;
+
     public function getTitle(): string;
 
     public function getDataManagerClass(): ?string;
