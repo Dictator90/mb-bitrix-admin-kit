@@ -9,14 +9,15 @@ use Bitrix\Main\UI\Filter\Options as FilterOptions;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
+use MB\Bitrix\AdminKit\Contracts\OrmResourceContract;
 use MB\Bitrix\AdminKit\Page\ResourceBackedIndexPageDefinition;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 final class GridQueryBuilder
 {
     public function build(
-        ResourceContract $resource,
+        IndexResourceContract&OrmResourceContract $resource,
         GridContext $context,
         ?IndexPageDefinitionContract $indexPage = null,
     ): array {
@@ -41,7 +42,7 @@ final class GridQueryBuilder
     }
 
     private function buildSelect(
-        ResourceContract $resource,
+        OrmResourceContract $resource,
         GridContext $context,
         IndexPageDefinitionContract $indexPage,
     ): array {
@@ -69,9 +70,12 @@ final class GridQueryBuilder
     private function buildOrder(GridContext $context, IndexPageDefinitionContract $indexPage): array
     {
         $uiOrder = $context->sort ?: $this->readGridSort($context);
-        $baseOrder = $uiOrder !== [] ? $uiOrder : $indexPage->defaultSort();
 
-        return array_replace($baseOrder, $indexPage->indexOrder($context));
+        return array_replace(
+            $indexPage->defaultSort(),
+            $uiOrder,
+            $indexPage->indexOrder($context),
+        );
     }
 
     private function readGridSort(GridContext $context): array
@@ -121,7 +125,7 @@ final class GridQueryBuilder
         ));
     }
 
-    private function resourceBackedDefinition(ResourceContract $resource): IndexPageDefinitionContract
+    private function resourceBackedDefinition(IndexResourceContract $resource): IndexPageDefinitionContract
     {
         return new ResourceBackedIndexPageDefinition($resource);
     }

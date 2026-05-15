@@ -37,7 +37,7 @@ final class AssetManager
 
     public function forForm(): self
     {
-        return $this->addExtensions(['ui', 'ui.buttons', 'ui.toolbar']);
+        return $this->addExtensions(['ui', 'ui.buttons', 'ui.toolbar', 'mb.admin.kit']);
     }
 
     public function forSidePanel(): self

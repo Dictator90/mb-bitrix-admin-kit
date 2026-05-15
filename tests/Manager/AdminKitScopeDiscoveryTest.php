@@ -143,7 +143,10 @@ final class AdminKitScopeDiscoveryTest extends TestCase
         $config = (new DiscoveryConfig())->addPath('')->addPath('/missing/path')->addPath($dir)->addPath($dir . '/');
 
         self::assertFalse($config->isEmpty());
-        self::assertSame([$dir], $config->paths());
+        self::assertSame([str_replace('\\', '/', $dir)], array_map(
+            static fn (string $path): string => str_replace('\\', '/', $path),
+            $config->paths(),
+        ));
     }
 
     public function testAdminKitManagerDiscoverInTest(): void

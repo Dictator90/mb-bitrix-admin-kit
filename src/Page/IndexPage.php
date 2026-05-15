@@ -69,16 +69,6 @@ class IndexPage extends Page
 
         $action = $this->request->get('action') ?: $this->request->getPost('action');
 
-        if ($action === 'export') {
-            $this->handleExportAction();
-            return;
-        }
-
-        if ($action === 'export_selected') {
-            $this->handleExportAction($this->resolveSelectedIds());
-            return;
-        }
-
         if ($this->isPost() && !check_bitrix_sessid()) {
             $this->rejectPostWithoutSessid();
 
@@ -118,13 +108,17 @@ class IndexPage extends Page
             }
         }
 
-        if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view'))) {
-            Extension::load(['ui.alerts']);
-            echo Notification::alert(
-                $this->message('MB_ADMIN_KIT_INDEX_ERR_CANNOT_VIEW', 'Недостаточно прав для просмотра раздела.'),
-                Notification::TYPE_WARNING,
-            );
+        if (!$this->canViewIndex()) {
+            return;
+        }
 
+        if ($action === 'export') {
+            $this->handleExportAction();
+            return;
+        }
+
+        if ($action === 'export_selected') {
+            $this->handleExportAction($this->resolveSelectedIds());
             return;
         }
 
@@ -465,7 +459,7 @@ class IndexPage extends Page
                 continue;
             }
 
-            $messages = array_merge($messages, $this->saveInlineRow((string)$id, $this->sanitizeInlinePayload($payload)));
+            $messages = array_merge($messages, $this->saveInlineRow($id, $this->sanitizeInlinePayload($payload)));
         }
 
         if ($messages !== []) {
@@ -478,21 +472,21 @@ class IndexPage extends Page
         return true;
     }
 
-    /** @param array<string,mixed> $payload @return array<int,string> */
     /**
      * @param array<string,mixed> $payload
      * @return array<int,string>
      */
-    protected function saveInlineRow(string $id, array $payload): array
+    protected function saveInlineRow(mixed $id, array $payload): array
     {
+        $idLabel = (string)$id;
         $oldRow = $this->resource->findItem($id);
         if (!is_array($oldRow)) {
-            return ["Row {$id}: item was not found."];
+            return ["Row {$idLabel}: item was not found."];
         }
 
         $permission = new PermissionContext(resource: $this->resource, operation: 'update', item: $oldRow);
         if (!$this->resource->canUpdate($permission)) {
-            return ["Row {$id}: update permission denied."];
+            return ["Row {$idLabel}: update permission denied."];
         }
 
         $merged = array_merge($oldRow, $payload);
@@ -521,16 +515,15 @@ class IndexPage extends Page
         if (!$result->isSuccess()) {
             $errors = $result->errors();
             if ($errors === []) {
-                return ["Row {$id}: update failed."];
+                return ["Row {$idLabel}: update failed."];
             }
 
-            return array_map(static fn (string $error): string => "Row {$id}: {$error}", $errors);
+            return array_map(static fn (string $error): string => "Row {$idLabel}: {$error}", $errors);
         }
 
         return [];
     }
 
-    /** @param array<int,string> $editedColumns @return array<int,FieldContract> */
     /**
      * @param array<int,string> $editedColumns
      * @return array<int,FieldContract>
@@ -568,7 +561,6 @@ class IndexPage extends Page
         return $result;
     }
 
-    /** @param array<string,mixed> $payload @return array<string,mixed> */
     /**
      * @param array<string,mixed> $payload
      * @return array<string,mixed>
@@ -587,18 +579,18 @@ class IndexPage extends Page
         return $result;
     }
 
-    /** @param array<string,array<int,string>> $errors @return array<int,string> */
     /**
      * @param array<string,array<int,string>> $errors
      * @return array<int,string>
      */
-    protected function flattenInlineErrors(string $id, array $errors): array
+    protected function flattenInlineErrors(mixed $id, array $errors): array
     {
+        $idLabel = (string)$id;
         $messages = [];
         foreach ($errors as $column => $columnMessages) {
             foreach ($columnMessages as $message) {
                 $template = $this->message('MB_ADMIN_KIT_INDEX_ROW_ERROR_TEMPLATE', 'Row #ID#, #COLUMN#: #MESSAGE#');
-                $messages[] = str_replace(['#ID#', '#COLUMN#', '#MESSAGE#'], [$id, (string)$column, (string)$message], $template);
+                $messages[] = str_replace(['#ID#', '#COLUMN#', '#MESSAGE#'], [$idLabel, (string)$column, (string)$message], $template);
             }
         }
 
@@ -655,6 +647,21 @@ class IndexPage extends Page
         die();
     }
 
+
+    protected function canViewIndex(): bool
+    {
+        if ($this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view'))) {
+            return true;
+        }
+
+        Extension::load(['ui.alerts']);
+        echo Notification::alert(
+            $this->message('MB_ADMIN_KIT_INDEX_ERR_CANNOT_VIEW', 'Недостаточно прав для просмотра раздела.'),
+            Notification::TYPE_WARNING,
+        );
+
+        return false;
+    }
 
     protected function currentUserId(): mixed
     {

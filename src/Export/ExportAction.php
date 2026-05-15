@@ -75,7 +75,7 @@ final class ExportAction
             !$context->hasSelectedIds()
             && !$context->hasFilter()
             && !$this->allowRunAll
-            && !(method_exists($context->resource, 'allowExportAll') && $context->resource->allowExportAll())
+            && !$context->resource->allowExportAll()
         ) {
             return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_ALL_DISABLED', 'Exporting all records is disabled by default. Select records or pass an explicit filter.'));
         }
@@ -85,10 +85,20 @@ final class ExportAction
             && $context->hasFilter()
             && (
                 !$this->allowRunByFilter
-                || (method_exists($context->resource, 'allowExportByFilter') && !$context->resource->allowExportByFilter())
+                || !$context->resource->allowExportByFilter()
             )
         ) {
             return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_FILTER_DISABLED', 'Export by filter is disabled for this action.'));
+        }
+
+        $maxRows = $this->maxExportRows($context);
+        if ($maxRows <= 0) {
+            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export is disabled for this resource.'));
+        }
+
+        $rowCount = $this->countExportRows($context);
+        if ($rowCount > $maxRows) {
+            return ExportResult::failure($this->tooManyRowsMessage($maxRows));
         }
 
         $exporter = $this->resolveExporter($context->format);
@@ -106,6 +116,32 @@ final class ExportAction
         }
 
         return (bool)($this->canRunCondition)($context);
+    }
+
+    private function maxExportRows(ExportContext $context): int
+    {
+        return $context->resource->maxExportRows();
+    }
+
+    private function countExportRows(ExportContext $context): int
+    {
+        if ($context->hasSelectedIds()) {
+            return count($context->selectedIds);
+        }
+
+        $filter = $this->buildQueryParams($context)['filter'] ?? [];
+
+        return $context->resource->getCount($filter);
+    }
+
+    private function tooManyRowsMessage(int $maxRows): string
+    {
+        $template = $this->message(
+            'MB_ADMIN_KIT_EXPORT_TOO_MANY_ROWS',
+            'Too many rows to export. Maximum: #MAX#.',
+        );
+
+        return str_replace('#MAX#', (string)$maxRows, $template);
     }
 
     private function message(string $key, string $fallback): string
@@ -128,15 +164,16 @@ final class ExportAction
         return null;
     }
 
-    /** @return array<int,array<string,mixed>> */
-    private function rows(ExportContext $context): array
+    /**
+     * @return array<string,mixed>
+     */
+    private function buildQueryParams(ExportContext $context): array
     {
         $resource = $context->resource;
-        $gridContext = $context->gridContext;
         $params = [];
 
-        if ($gridContext !== null) {
-            $params = (new GridQueryBuilder())->build($resource, $gridContext);
+        if ($context->gridContext !== null) {
+            $params = (new GridQueryBuilder())->build($resource, $context->gridContext);
             unset($params['limit'], $params['offset']);
         }
 
@@ -147,6 +184,16 @@ final class ExportAction
         } elseif ($context->hasFilter()) {
             $params['filter'] = array_replace($params['filter'] ?? [], $context->filter);
         }
+
+        return $params;
+    }
+
+    /** @return array<int,array<string,mixed>> */
+    private function rows(ExportContext $context): array
+    {
+        $resource = $context->resource;
+        $gridContext = $context->gridContext;
+        $params = $this->buildQueryParams($context);
 
         $rows = $resource->getList($params);
         if ($gridContext !== null) {

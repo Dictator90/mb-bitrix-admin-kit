@@ -5,113 +5,37 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Resource;
 
 use Bitrix\Main\ORM\Data\DataManager;
-use MB\Bitrix\AdminKit\Contracts\ActionContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\FilterContract;
-use MB\Bitrix\AdminKit\Grid\GridContext;
+use LogicException;
 
 /**
  * Explicit base class for Bitrix D7 ORM-backed CRUD resources.
+ *
+ * New ORM CRUD sections should extend this class. {@see Resource} remains the
+ * backward-compatible base and still exposes CRUD helpers for legacy resources
+ * that extend Resource directly.
  *
  * @template T of DataManager
  * @extends Resource<T>
  */
 abstract class CrudResource extends Resource
 {
-    /** @return class-string<T> */
     public function dataManagerClass(): string
     {
-        return parent::dataManagerClass();
+        $class = parent::dataManagerClass();
+        if ($class === '') {
+            throw new LogicException(static::class . ' must declare a non-empty dataManagerClass().');
+        }
+
+        return $class;
     }
 
     public function getDataManagerClass(): ?string
     {
-        return $this->dataManagerClass ?: $this->dataManagerClass();
+        return $this->dataManagerClass();
     }
 
-    public function primaryKey(): string
-    {
-        return $this->primaryKey;
-    }
-
-    public function getPrimaryKey(): string
-    {
-        return $this->primaryKey();
-    }
-
-    public function bulkChunkSize(): int
-    {
-        return 100;
-    }
-
-    public function databaseTableName(): string
-    {
-        $class = $this->getDataManagerClass();
-        if ($class && method_exists($class, 'getTableName')) {
-            return (string)$class::getTableName();
-        }
-
-        return '';
-    }
-
-    public function useTotalCount(GridContext $context): bool
+    public function hasCrud(): bool
     {
         return true;
-    }
-
-    public function countCacheTtl(GridContext $context): int
-    {
-        return 0;
-    }
-
-    public function maxPageSize(): int
-    {
-        return 200;
-    }
-
-    public function allowExportByFilter(): bool
-    {
-        return true;
-    }
-
-    public function allowExportAll(): bool
-    {
-        return false;
-    }
-
-    public function maxImportRows(): int
-    {
-        return 1000;
-    }
-
-
-    /** @return iterable<FieldContract> */
-    abstract public function indexFields(): iterable;
-
-    /** @return iterable<FieldContract> */
-    abstract public function formFields(): iterable;
-
-    /** @return iterable<FieldContract> */
-    public function detailFields(): iterable
-    {
-        return $this->formFields();
-    }
-
-    /** @return iterable<FilterContract> */
-    public function filters(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<ActionContract> */
-    public function rowActions(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<ActionContract> */
-    public function bulkActions(): iterable
-    {
-        return [];
     }
 }

@@ -1,42 +1,32 @@
-# Resource import
+# Resource import (library only — UI disabled)
 
-v0.7.0 adds a CSV-first import layer for CRUD resources. XLSX/Excel import is intentionally out of scope for this version.
+> **Import UI and index-page flow are temporarily disabled.** Do not expect toolbar import buttons, SidePanel import wizards, or `action=import` handling on `IndexPage` in the current branch. The notes below describe the **library layer** kept for a future re-enable.
 
-## Components
+v0.7.0 added a CSV-first import layer for CRUD resources. XLSX/Excel import is out of scope.
 
-- `ImportAction` exposes parse, preview, validate-only, and import flows.
-- `ImportContext` carries the resource, raw rows, mapped rows, user ID, mode, request, key field, row limit, and validate-only flag.
-- `CsvImporter` parses header-based CSV files, maps columns to resource fields, validates rows, and persists rows.
+## Components (not active on IndexPage)
+
+- `ImportAction` — parse, preview, validate-only, and import flows.
+- `ImportContext` — resource, rows, mapping, mode, key field, limits.
+- `CsvImporter` — parses CSV, maps columns, validates via `Form\DataPipeline`, persists rows.
 
 ## CSV format
 
-The first row is treated as headers. Values are mapped to resource field columns before validation/import.
+The first row is headers. Values map to resource field columns before validation.
 
-```csv
-Name,Email
-Product 1,owner@example.com
-```
+## Modes (when re-enabled)
 
-## Preview and validate-only
-
-Use `preview()` to parse, map, and validate without writing data. Use `validateOnly` on `ImportContext` or `validateOnly()` on the action to run validation without persistence.
-
-## Modes
-
-- `create`: creates every valid row.
-- `update`: updates rows by the configured `keyField`.
-- `upsert`: updates when `keyField` exists and creates otherwise.
-
-For `update` and `upsert`, provide a key field such as `ID` or an external code.
+- `create` — create every valid row.
+- `update` — update by `keyField`.
+- `upsert` — update or create by `keyField`.
 
 ## Field pipeline
 
-Import uses `Form\DataPipeline`, which calls each Field's `normalize()` and validation rules. This keeps form saves and CSV imports consistent.
+Import is designed to use `Form\DataPipeline` so CSV rows share Field `normalize()` and validation with form saves.
 
 ## Permissions and limits
 
-- Create imports require `canCreate()`.
-- Update imports require `canUpdate()`.
-- Each row is checked before persistence.
-- Imports are limited to `ImportContext::$maxRows`; resources can further cap this with `maxImportRows()`.
-- Fields hidden from forms, marked `importable(false)`, `private()`, or `system()` are ignored.
+- Create imports require `canCreate()`; update imports require `canUpdate()` per row.
+- Row limits via `maxImportRows()` on Resource (when import is restored).
+
+For export, see `docs/import-export.md`.

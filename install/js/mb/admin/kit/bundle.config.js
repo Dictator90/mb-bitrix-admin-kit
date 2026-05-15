@@ -4,5 +4,5 @@ module.exports = {
 		js: 'dist/kit.bundle.js',
 		css: 'dist/kit.bundle.css',
 	},
-	namespace: 'MB.Admin.Kit',
+	namespace: 'MB.AdminKit',
 };

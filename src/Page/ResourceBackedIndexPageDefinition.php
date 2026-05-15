@@ -8,12 +8,12 @@ use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 
 final class ResourceBackedIndexPageDefinition implements IndexPageDefinitionContract
 {
-    public function __construct(private readonly ResourceContract $resource)
+    public function __construct(private readonly IndexResourceContract $resource)
     {
     }
 

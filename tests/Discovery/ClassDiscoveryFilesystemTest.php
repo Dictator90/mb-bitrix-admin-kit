@@ -125,7 +125,14 @@ PHP_CODE);
 
         (new AdminKitRegistry(new ClassDiscovery($finder)))->discoverPath($directory);
 
-        self::assertSame([[$directory, Resource::class, true], [$directory, \MB\Bitrix\AdminKit\Pages\AbstractPage::class, true]], $finder->extendsCalls);
+        $expectedCalls = [
+            [$directory, Resource::class, true],
+            [$directory, \MB\Bitrix\AdminKit\Pages\AbstractPage::class, true],
+        ];
+        self::assertSame(
+            array_map(static fn (array $call): array => [str_replace('\\', '/', $call[0]), $call[1], $call[2]], $expectedCalls),
+            array_map(static fn (array $call): array => [str_replace('\\', '/', $call[0]), $call[1], $call[2]], $finder->extendsCalls),
+        );
     }
 
     public function testAdminKitRegistryDiscoverPathWithFilesystemTest(): void

@@ -23,9 +23,12 @@ use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
 use MB\Bitrix\AdminKit\Support\AdminString;
 
 /**
- * Base for ORM-backed CRUD resources (Grid + Form + Detail pages).
+ * Base administrative resource: identity, menu, permissions, pages, and optional CRUD.
  *
- * For settings/options pages, use Pages\OptionsPage instead.
+ * Legacy and custom resources may extend this class directly. New Bitrix D7 ORM CRUD
+ * sections should extend {@see CrudResource} instead.
+ *
+ * For module settings, use {@see \MB\Bitrix\AdminKit\Pages\OptionsPage}.
  *
  * @template T of DataManager
  */
@@ -241,6 +244,14 @@ abstract class Resource implements ResourceContract
         return false;
     }
 
+    public function maxExportRows(): int
+    {
+        return 5000;
+    }
+
+    /**
+     * @deprecated Import is not enabled in the current release. Reserved for backward compatibility.
+     */
     public function maxImportRows(): int
     {
         return 1000;

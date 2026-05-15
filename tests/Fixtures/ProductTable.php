@@ -71,7 +71,19 @@ final class ProductTable
     public static function getCount(array $filter = []): int
     {
         self::$countCalls++;
-        return count(self::getList(['filter' => $filter])->fetchAll());
+        $rows = self::$rows;
+
+        foreach ($filter as $field => $value) {
+            $rows = array_values(array_filter($rows, static function (array $row) use ($field, $value): bool {
+                if (is_array($value)) {
+                    return in_array($row[$field] ?? null, $value, true);
+                }
+
+                return (string)($row[$field] ?? '') === (string)$value;
+            }));
+        }
+
+        return count($rows);
     }
 
     public static function add(array $data): FakeOrmResult

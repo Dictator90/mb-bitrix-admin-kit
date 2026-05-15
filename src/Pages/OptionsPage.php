@@ -7,12 +7,15 @@ namespace MB\Bitrix\AdminKit\Pages;
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Context;
 use Bitrix\Main\HttpRequest;
+use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\SiteTable;
+use JsonException;
 use MB\Bitrix\AdminKit\Component\Alert;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
+use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
@@ -60,9 +63,13 @@ abstract class OptionsPage extends AbstractPage
 
     protected HttpRequest $request;
     protected array $errors = [];
+    private bool $sessidRejected = false;
 
     public function __construct()
     {
+        if (class_exists(Loc::class)) {
+            Loc::loadMessages(__FILE__);
+        }
         $this->request = Context::getCurrent()->getRequest();
     }
 
@@ -105,18 +112,23 @@ abstract class OptionsPage extends AbstractPage
         $this->renderToolbar();
 
         if (!$this->moduleId) {
-            echo Alert::make('moduleId не задан в ' . static::class, Alert::DANGER)->render();
+            echo Alert::make($this->message('MB_ADMIN_KIT_OPTIONS_MODULE_ID_MISSING', 'moduleId is not configured.', [
+                '#CLASS#' => static::class,
+            ]), Alert::DANGER)->render();
             return;
         }
 
-        if ($this->isPost() && check_bitrix_sessid()) {
-            if ($this->request->getPost('adminkit_action') === 'reactive') {
+        if ($this->isPost()) {
+            if (!check_bitrix_sessid()) {
+                $this->rejectInvalidSessid();
+            } elseif ($this->request->getPost('adminkit_action') === 'reactive') {
                 $this->handleReactivePost($this->moduleId);
                 return;
-            }
-            if ($this->request->getPost('adminkit_ajax') === 'Y') {
+            } elseif ($this->isAjaxRequest()) {
                 $this->handleAjaxPost($this->moduleId);
                 return;
+            } else {
+                $this->handlePost($this->moduleId);
             }
         }
 
@@ -142,25 +154,9 @@ abstract class OptionsPage extends AbstractPage
     protected function handlePost(string $moduleId): void
     {
         $siteId = $this->request->getPost('site_id') ?: '';
-        $fields = $this->collectAllFields();
+        $this->errors = $this->persistOptions($moduleId, $siteId);
 
-        foreach ($fields as $field) {
-            $value = $field->serializePostValue($this->request->getPost($field->getColumn()));
-            $fieldErrors = $field->runValidation($value);
-
-            if (!empty($fieldErrors)) {
-                $this->errors = array_merge($this->errors, $fieldErrors);
-                continue;
-            }
-
-            if ($value !== null && $value !== '') {
-                Option::set($moduleId, $field->getColumn(), (string)$value, $siteId);
-            } else {
-                Option::delete($moduleId, ['name' => $field->getColumn(), 'site_id' => $siteId]);
-            }
-        }
-
-        if (empty($this->errors)) {
+        if ($this->errors === []) {
             $uri = $this->request->getRequestUri();
             $sep = str_contains($uri, '?') ? '&' : '?';
             LocalRedirect($uri . $sep . 'saved=1');
@@ -174,39 +170,20 @@ abstract class OptionsPage extends AbstractPage
     protected function handleAjaxPost(string $moduleId): void
     {
         $siteId = $this->request->getPost('site_id') ?: '';
-        $fields = $this->collectAllFields();
-        $errors = [];
+        $errors = $this->persistOptions($moduleId, $siteId);
 
-        foreach ($fields as $field) {
-            $value = $field->serializePostValue($this->request->getPost($field->getColumn()));
-            $fieldErrors = $field->runValidation($value);
-
-            if (!empty($fieldErrors)) {
-                $errors = array_merge($errors, $fieldErrors);
-                continue;
-            }
-
-            if ($value !== null && $value !== '') {
-                Option::set($moduleId, $field->getColumn(), (string)$value, $siteId);
-            } else {
-                Option::delete($moduleId, ['name' => $field->getColumn(), 'site_id' => $siteId]);
-            }
+        if ($errors === []) {
+            $this->sendJsonAndExit([
+                'status' => 'success',
+                'message' => $this->message('MB_ADMIN_KIT_OPTIONS_SAVED', 'Settings saved'),
+            ]);
         }
 
-        // Discard any admin-prolog output buffers so only our JSON is sent
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
-
-        header('Content-Type: application/json; charset=utf-8');
-
-        if (empty($errors)) {
-            echo json_encode(['status' => 'success', 'message' => 'Настройки сохранены']);
-        } else {
-            echo json_encode(['status' => 'error', 'errors' => $errors]);
-        }
-
-        die();
+        $this->sendJsonAndExit([
+            'status' => 'error',
+            'message' => $this->message('MB_ADMIN_KIT_OPTIONS_SAVE_ERROR', 'Save failed'),
+            'errors' => $errors,
+        ]);
     }
 
     // ── Multi-site ───────────────────────────────────────────────────────
@@ -246,6 +223,13 @@ abstract class OptionsPage extends AbstractPage
         $wrapper = $this->buildOptionsWrapper($moduleId, $siteId, $components);
         $formId = 'adminkit-options-' . md5(static::class . $siteId);
 
+        if ($this->sessidRejected) {
+            echo Alert::make(
+                $this->message('MB_ADMIN_KIT_OPTIONS_SESSION_EXPIRED', 'Session expired. Refresh the page and try again.'),
+                Alert::DANGER,
+            )->render();
+        }
+
         // Apply field dependencies using current saved values so dependent fields
         // are rendered with the correct state (e.g. correct iblockId) on first load.
         $allFields = $this->extractAllFields($components);
@@ -282,7 +266,9 @@ abstract class OptionsPage extends AbstractPage
         echo '</div>';
 
         echo '<div class="ui-button-panel adminkit-button-panel">';
-        echo '<button type="submit" class="ui-btn ui-btn-success" id="' . $formId . '-submit">Сохранить</button>';
+        echo '<button type="submit" class="ui-btn ui-btn-success" id="' . $formId . '-submit">'
+            . htmlspecialcharsbx($this->message('MB_ADMIN_KIT_OPTIONS_SAVE_BUTTON', 'Save'))
+            . '</button>';
         echo '</div>';
         echo '</form>';
 
@@ -324,53 +310,13 @@ abstract class OptionsPage extends AbstractPage
      */
     protected function renderAjaxScript(string $formId): void
     {
-        $formIdJs = json_encode($formId);
-        echo <<<HTML
-        <script>
-        BX.ready(function() {
-            var form = document.getElementById({$formIdJs})
-            if (!form) return;
-            var submitBtn = document.getElementById({$formIdJs} + '-submit')
-
-            function notify(content, isError) {
-                BX.UI.Notification.Center.notify({
-                    content: content,
-                    autoHideDelay: isError ? 6000 : 4000,
-                });
-            }
-
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                submitBtn.disabled = true;
-                submitBtn.classList.add('ui-btn-wait');
-
-                fetch(form.action, {
-                    method: 'POST',
-                    body: new FormData(form),
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(resp) {
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('ui-btn-wait');
-
-                    if (resp.status === 'success') {
-                        notify(resp.message || 'Настройки сохранены', false);
-                    } else {
-                        var errors = resp.errors || [resp.message || 'Ошибка сохранения'];
-                        notify(errors.join('<br>'), true);
-                    }
-                })
-                .catch(function(err) {
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('ui-btn-wait');
-                    notify('Ошибка запроса: ' + err.message, true);
-                });
-            });
-        });
-        </script>
-        HTML;
+        AdminKitJs::renderInit('OptionsPage', [
+            'formId' => $formId,
+            'messages' => [
+                'saved' => $this->message('MB_ADMIN_KIT_OPTIONS_SAVED', 'Settings saved'),
+                'error' => $this->message('MB_ADMIN_KIT_OPTIONS_SAVE_ERROR', 'Save failed'),
+            ],
+        ]);
     }
 
     /**
@@ -379,63 +325,9 @@ abstract class OptionsPage extends AbstractPage
      */
     protected function renderConditionalVisibilityScript(string $formId): void
     {
-        $formIdJs = json_encode($formId);
-
-        echo <<<HTML
-        <script>
-        BX.ready(function() {
-            var form = document.getElementById({$formIdJs})
-            if (!form) return;
-
-            function getFieldValue(col) {
-                var inputs = form.querySelectorAll('[name="' + col + '"]');
-                var fallback = '';
-                for (var i = 0; i < inputs.length; i++) {
-                    var el = inputs[i];
-                    if (el.type === 'checkbox' || el.type === 'radio') {
-                        if (el.checked) return el.value;
-                    } else if (el.type === 'hidden') {
-                        if (fallback === '') fallback = el.value;
-                    } else if (el.value !== '') {
-                        return el.value;
-                    }
-                }
-                if (fallback !== '') return fallback;
-                // DialogSelector hidden inputs for multiple: name="col[]"
-                var multi = form.querySelectorAll('[name="' + col + '[]"]');
-                if (multi.length > 0) return multi[0].value;
-                return '';
-            }
-
-            function matchesRule(rule, val) {
-                if (rule.values) return rule.values.indexOf(val) !== -1;
-                return val === rule.value;
-            }
-
-            function updateVisibility() {
-                var els = form.querySelectorAll('[data-visible-when]');
-                for (var i = 0; i < els.length; i++) {
-                    var el = els[i];
-                    var rule = JSON.parse(el.getAttribute('data-visible-when'));
-                    var val  = getFieldValue(rule.column);
-                    if (matchesRule(rule, val)) {
-                        el.classList.remove('adminkit-conditional-hidden');
-                    } else {
-                        el.classList.add('adminkit-conditional-hidden');
-                    }
-                }
-            }
-
-            form.addEventListener('change', function() { updateVisibility(); });
-
-            var visObserver = new MutationObserver(function() { updateVisibility(); });
-            visObserver.observe(form, {childList: true, subtree: true});
-
-            updateVisibility();
-            setTimeout(updateVisibility, 900);
-        });
-        </script>
-        HTML;
+        AdminKitJs::renderInit('Visibility', [
+            'formId' => $formId,
+        ]);
     }
 
     protected function renderFieldRow(FieldContract $field, mixed $value, mixed $sourceValResolver = null): void
@@ -463,11 +355,39 @@ abstract class OptionsPage extends AbstractPage
 
     protected function checkVisibilityRule(array $rule, mixed $currentValue): bool
     {
-        $str = (string)($currentValue ?? '');
         if (isset($rule['values'])) {
+            $str = (string)($currentValue ?? '');
+
             return in_array($str, $rule['values'], true);
         }
-        return $str === ($rule['value'] ?? '');
+
+        $operator = $rule['operator'] ?? '=';
+        $expected = $rule['value'] ?? null;
+
+        if ($operator === 'in') {
+            if (!is_array($expected)) {
+                return false;
+            }
+
+            return in_array((string)($currentValue ?? ''), array_map('strval', $expected), true);
+        }
+
+        if ($operator === 'not in') {
+            if (!is_array($expected)) {
+                return true;
+            }
+
+            return !in_array((string)($currentValue ?? ''), array_map('strval', $expected), true);
+        }
+
+        $str = (string)($currentValue ?? '');
+        $expectedStr = (string)($expected ?? '');
+
+        return match ($operator) {
+            '=', '==', '===' => $str === $expectedStr,
+            '!=', '<>', '!==' => $str !== $expectedStr,
+            default => $str === $expectedStr,
+        };
     }
 
     protected function wrapComponentWithVisibility(
@@ -502,9 +422,15 @@ abstract class OptionsPage extends AbstractPage
 
         foreach ($fields as $field) {
             $raw = $this->request->getPost($field->getColumn());
-            $formData[$field->getColumn()] = $raw !== null
-                ? $field->serializePostValue($raw)
-                : Option::get($moduleId, $field->getColumn(), (string)($field->getDefault() ?? ''), $siteId);
+            if ($raw !== null) {
+                $formData[$field->getColumn()] = $field->serializePostValue($raw);
+                continue;
+            }
+
+            $stored = (string)Option::get($moduleId, $field->getColumn(), (string)($field->getDefault() ?? ''), $siteId);
+            $formData[$field->getColumn()] = $stored !== ''
+                ? $this->unserializeOptionValue($field, $stored)
+                : $field->serializePostValue($field->getDefault());
         }
 
         $result = [];
@@ -532,11 +458,10 @@ abstract class OptionsPage extends AbstractPage
      */
     protected function renderDependencyScript(string $formId): void
     {
-        $allFields = $this->collectAllFields();
         $sourceCols = [];
         $dependsMap = [];
 
-        foreach ($allFields as $field) {
+        foreach ($this->collectAllFields() as $field) {
             if (method_exists($field, 'hasDependency') && $field->hasDependency()) {
                 $dependsMap[$field->getColumn()] = $field->getDependsOn();
                 foreach ($field->getDependsOn() as $col) {
@@ -545,133 +470,16 @@ abstract class OptionsPage extends AbstractPage
             }
         }
 
-        if (empty($sourceCols)) {
+        if ($sourceCols === []) {
             return;
         }
 
-        $sourceColsJson = json_encode(array_keys($sourceCols));
-        $dependsMapJson = json_encode($dependsMap);
-        $formIdJs = json_encode($formId);
-
-        echo <<<HTML
-        <script>
-        BX.ready(function() {
-            var form = document.getElementById({$formIdJs})
-            var sourceCols = {$sourceColsJson};
-            var dependsMap = {$dependsMapJson};
-            if (!form || !sourceCols.length) return;
-
-            var initPhase = true;
-            setTimeout(function() { initPhase = false; }, 800);
-
-            function getSourceValue(srcCol) {
-                var els = form.querySelectorAll('[name="' + srcCol + '"]');
-                for (var i = 0; i < els.length; i++) {
-                    if (els[i].value !== '') return els[i].value;
-                }
-                return '';
-            }
-
-            function sourcesHaveValues(col) {
-                return (dependsMap[col] || []).every(function(s) {
-                    return getSourceValue(s) !== '';
-                });
-            }
-
-            function updateDisabledStates() {
-                Object.keys(dependsMap).forEach(function(col) {
-                    var row = form.querySelector('[data-field-column="' + col + '"]');
-                    if (!row) return;
-                    var content = row.querySelector('.ui-form-content');
-                    if (!content || content.classList.contains('adminkit-field-loading')) return;
-                    if (sourcesHaveValues(col)) {
-                        content.classList.remove('adminkit-field-disabled');
-                    } else {
-                        content.classList.add('adminkit-field-disabled');
-                    }
-                });
-            }
-
-            updateDisabledStates();
-            setTimeout(updateDisabledStates, 600);
-
-            var debounceTimer = null;
-            function triggerReactive() {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(function() {
-                    Object.keys(dependsMap).forEach(function(col) {
-                        var row = form.querySelector('[data-field-column="' + col + '"]');
-                        if (!row) return;
-                        var content = row.querySelector('.ui-form-content');
-                        if (content) {
-                            content.classList.remove('adminkit-field-disabled');
-                            content.classList.add('adminkit-field-loading');
-                        }
-                    });
-
-                    var fd = new FormData(form);
-                    fd.set('adminkit_action', 'reactive');
-
-                    fetch(form.action || window.location.href, {
-                        method: 'POST',
-                        body: fd,
-                        headers: {'X-Requested-With': 'XMLHttpRequest'},
-                    })
-                    .then(function(r) { return r.json(); })
-                    .then(function(resp) {
-                        if (resp.status === 'success') {
-                            Object.keys(resp.fields || {}).forEach(function(col) {
-                                var row = form.querySelector('[data-field-column="' + col + '"]');
-                                if (!row) return;
-                                var content = row.querySelector('.ui-form-content');
-                                if (!content) return;
-                                content.classList.remove('adminkit-field-loading');
-                                content.innerHTML = resp.fields[col].html;
-                                content.querySelectorAll('script').forEach(function(s) {
-                                    var ns = document.createElement('script');
-                                    ns.textContent = s.textContent;
-                                    document.head.appendChild(ns).parentNode.removeChild(ns);
-                                });
-                            });
-                        }
-                        updateDisabledStates();
-                    })
-                    .catch(function() { updateDisabledStates(); });
-                }, 200);
-            }
-
-            sourceCols.forEach(function(col) {
-                form.querySelectorAll('[name="' + col + '"]').forEach(function(el) {
-                    el.addEventListener('change', triggerReactive);
-                });
-            });
-
-            var observer = new MutationObserver(function(mutations) {
-                for (var i = 0; i < mutations.length; i++) {
-                    var nodes = Array.prototype.slice.call(mutations[i].addedNodes)
-                        .concat(Array.prototype.slice.call(mutations[i].removedNodes));
-                    for (var j = 0; j < nodes.length; j++) {
-                        var node = nodes[j];
-                        if (node.nodeType === 1 && node.tagName === 'INPUT'
-                                && node.type === 'hidden'
-                                && sourceCols.indexOf(node.name) !== -1) {
-                            if (initPhase) {
-                                updateDisabledStates();
-                            } else {
-                                triggerReactive();
-                            }
-                            return;
-                        }
-                    }
-                }
-            });
-            observer.observe(form, {childList: true, subtree: true});
-        });
-        </script>
-        HTML;
+        AdminKitJs::renderInit('Dependencies', [
+            'formId' => $formId,
+            'sourceCols' => array_keys($sourceCols),
+            'dependsMap' => $dependsMap,
+        ]);
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────
 
     /**
      * Pre-load all option values into a DataWrapper so components can resolve them.
@@ -681,15 +489,145 @@ abstract class OptionsPage extends AbstractPage
     {
         $data = [];
         foreach ($this->extractAllFields($components) as $field) {
-            $data[$field->getColumn()] = Option::get(
+            $stored = (string)Option::get(
                 $moduleId,
                 $field->getColumn(),
                 (string)($field->getDefault() ?? ''),
-                $siteId
+                $siteId,
             );
+            $data[$field->getColumn()] = $stored !== ''
+                ? $this->unserializeOptionValue($field, $stored)
+                : $field->getDefault();
         }
 
         return new DataWrapper($data);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function persistOptions(string $moduleId, string $siteId): array
+    {
+        $errors = [];
+
+        foreach ($this->collectAllFields() as $field) {
+            $value = $field->serializePostValue($this->request->getPost($field->getColumn()));
+            $fieldErrors = $field->runValidation($value);
+
+            if ($fieldErrors !== []) {
+                $errors = array_merge($errors, $fieldErrors);
+                continue;
+            }
+
+            $this->persistOptionValue($moduleId, $field, $value, $siteId);
+        }
+
+        return $errors;
+    }
+
+    protected function persistOptionValue(string $moduleId, FieldContract $field, mixed $value, string $siteId): void
+    {
+        if (!$this->shouldPersistOptionValue($value)) {
+            Option::delete($moduleId, ['name' => $field->getColumn(), 'site_id' => $siteId]);
+
+            return;
+        }
+
+        Option::set($moduleId, $field->getColumn(), $this->serializeOptionValue($field, $value), $siteId);
+    }
+
+    protected function shouldPersistOptionValue(mixed $value): bool
+    {
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        return !(is_array($value) && $value === []);
+    }
+
+    protected function serializeOptionValue(FieldContract $field, mixed $value): string
+    {
+        if (method_exists($field, 'serializeOptionValue')) {
+            return (string)$field->serializeOptionValue($value);
+        }
+
+        if (is_array($value)) {
+            try {
+                return (string)json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } catch (JsonException) {
+                return '[]';
+            }
+        }
+
+        return (string)$value;
+    }
+
+    protected function unserializeOptionValue(FieldContract $field, string $value): mixed
+    {
+        if (method_exists($field, 'unserializeOptionValue')) {
+            return $field->unserializeOptionValue($value);
+        }
+
+        if ($value !== '' && ($value[0] === '[' || $value[0] === '{')) {
+            try {
+                $decoded = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+                if (is_array($decoded)) {
+                    return $decoded;
+                }
+            } catch (JsonException) {
+                // Keep scalar string when stored value is not valid JSON.
+            }
+        }
+
+        return $value;
+    }
+
+    protected function rejectInvalidSessid(): void
+    {
+        $this->sessidRejected = true;
+
+        if ($this->isAjaxRequest()) {
+            $this->sendJsonAndExit([
+                'status' => 'error',
+                'message' => $this->message(
+                    'MB_ADMIN_KIT_OPTIONS_SESSION_EXPIRED',
+                    'Session expired. Refresh the page and try again.',
+                ),
+            ]);
+        }
+    }
+
+    protected function isAjaxRequest(): bool
+    {
+        if ($this->request->getPost('adminkit_ajax') === 'Y') {
+            return true;
+        }
+
+        return strtolower((string)$this->request->getHeader('X-Requested-With')) === 'xmlhttprequest';
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     */
+    protected function sendJsonAndExit(array $payload): never
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        die();
+    }
+
+    /**
+     * @param array<string,string> $replace
+     */
+    protected function message(string $code, string $fallback, array $replace = []): string
+    {
+        $message = class_exists(Loc::class) ? (string)(Loc::getMessage($code) ?: $fallback) : $fallback;
+
+        return $replace === [] ? $message : str_replace(array_keys($replace), array_values($replace), $message);
     }
 
     /**

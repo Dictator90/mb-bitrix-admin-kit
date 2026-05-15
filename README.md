@@ -1,6 +1,6 @@
 # MB Bitrix Admin Kit
 
-`mb4it/bitrix-admin-kit` — декларативный набор классов для админских CRUD-разделов 1С-Битрикс на Bitrix D7 ORM. Пакет помогает описать Resource, Field, Filter, Action, OptionsPage и CustomPage в PHP-классах модуля, а затем вывести список, форму, меню, импорт/экспорт и SidePanel без копирования типового admin-кода.
+`mb4it/bitrix-admin-kit` — декларативный набор классов для админских CRUD-разделов 1С-Битрикс на Bitrix D7 ORM. Пакет помогает описать Resource, Field, Filter, Action, OptionsPage, DashboardPage и CustomPage в PHP-классах модуля, а затем вывести список, форму, меню, CSV-экспорт и SidePanel без копирования типового admin-кода.
 
 ## Для каких задач нужен пакет
 
@@ -10,7 +10,8 @@
 - Открывать create/edit/detail формы в `BX.SidePanel`.
 - Делать страницы настроек модуля и произвольные dashboard/report страницы.
 - Кастомизировать ORM-запросы: select, filter, order, runtime fields, computed columns.
-- Использовать CSV import/export без XLSX-движков и без обхода валидации Field.
+- Экспортировать данные в CSV (без XLSX) с лимитами и проверкой прав.
+- Строить страницы настроек (`Pages\OptionsPage`) и dashboard-страницы (`Pages\DashboardPage`) отдельно от ORM CRUD.
 
 Пакет не заменяет Bitrix D7 ORM и не скрывает его полностью: бизнес-специфичные связи, `ReferenceField` и сложные фильтры остаются на стороне Resource.
 
@@ -156,6 +157,8 @@ return [[
 
 ## Первый Resource
 
+Новые ORM CRUD-разделы наследуйте от `CrudResource`. `Resource` остаётся совместимой базой для существующих классов. Настройки модуля оформляйте через `Pages\OptionsPage`.
+
 ```php
 <?php
 
@@ -212,6 +215,23 @@ final class ProductResource extends CrudResource
 
 Resource наследует методы `indexPage()`, `formPage($id = null)` и `detailPage($id)` из CRUD-слоя. В admin-файле выберите страницу по `action` и вызовите `render()`. Для нового раздела чаще всего достаточно `index`, `add`, `edit`, `detail` и `delete`.
 
+## Resource::pages() и кастомные CRUD-страницы
+
+По умолчанию Resource регистрирует `IndexPage`, `FormPage` и `DetailPage`. Для кастомизации UI переопределите `pages()`:
+
+```php
+public function pages(): iterable
+{
+    return [
+        ProductIndexPage::class,
+        ProductFormPage::class,
+        ProductDetailPage::class,
+    ];
+}
+```
+
+`indexFields()`, `formFields()` и `detailFields()` остаются shortcuts для простых ресурсов. Кастомные page-классы получают поля через `fields()`/`tabs()` на уровне страницы. Подробности — в `docs/pages.md`.
+
 ## Поля
 
 Field описывает колонку грида, поле формы, нормализацию и валидацию:
@@ -260,7 +280,9 @@ public function bulkActions(): iterable
 }
 ```
 
-## OptionsPage
+## OptionsPage (настройки модуля)
+
+Standalone-страница для `b_option` / `b_option_site`. Не наследуйте ORM `CrudResource` для настроек — используйте `Pages\OptionsPage`. Deprecated-обёртка `Page\OptionsPage` сохранена для обратной совместимости.
 
 ```php
 final class SettingsPage extends \MB\Bitrix\AdminKit\Pages\OptionsPage
@@ -282,9 +304,12 @@ final class SettingsPage extends \MB\Bitrix\AdminKit\Pages\OptionsPage
 }
 ```
 
-## CustomPage и Dashboard
+## DashboardPage и CustomPage
 
-Для произвольных страниц наследуйте `CustomPage` или `DashboardPage` и верните HTML из `content()`/`widgets()`. Разметку пишите по BEM и без inline styles.
+- `Pages\DashboardPage` — dashboard/report-страницы с виджетами (`CountWidget`, `GraphWidget`, layout-компоненты).
+- `Pages\CustomPage` — произвольный HTML-контент через `content()`.
+
+Обе страницы регистрируются как standalone (`registerPage()` / discovery) и не смешиваются с resource pages (`IndexPage`/`FormPage`/`DetailPage` не попадают в меню как отдельные пункты сами по себе).
 
 ## SidePanel
 
@@ -304,9 +329,13 @@ public function sidePanelWidth(): int
 
 `RowAction::edit()` и URL create/edit будут открываться через `BX.SidePanel`, но full-page режим сохранится, если `IFRAME=Y` отсутствует.
 
-## Права
+## Безопасность (POST, permissions, export)
 
-Опасные операции должны проверяться через `PermissionContext` и методы Resource:
+- Все POST-действия на страницах требуют валидный `check_bitrix_sessid()`; при невалидной сессии сохранение не выполняется (AJAX → JSON-ошибка, обычный POST → alert).
+- `IndexPage` проверяет `canView` перед grid/export, `canDelete`/`canUpdate` для inline/bulk, CSRF для bulk/inline/delete.
+- `FormPage` проверяет `canView`/`canCreate`/`canUpdate` перед render/save; async save возвращает JSON.
+- `DetailPage` проверяет `canView` перед отображением записи.
+- CSV export (`ExportAction`) требует `canView` и лимит `maxExportRows()` (по умолчанию 5000).
 
 ```php
 public function canCreate(?PermissionContext $context = null): bool
@@ -316,6 +345,10 @@ public function canCreate(?PermissionContext $context = null): bool
 ```
 
 Проверяйте `canUpdate`/`canDelete` на каждую запись в bulk operations: пакет пропускает запрещенные строки, не останавливая весь batch.
+
+## Импорт (временно отключён)
+
+UI и flow импорта на `IndexPage` временно удалены. Классы `MB\Bitrix\AdminKit\Import\*` остаются в кодовой базе для будущего включения, но примеры с `ImportAction` / `ImportContext` / `CsvImporter` в документации не актуальны для текущей ветки.
 
 ## Кастомизация ORM-запроса
 
@@ -361,17 +394,17 @@ Text::make('Status label', 'STATUS_LABEL')
     ->computed(static fn(array $row): string => $row['ACTIVE'] === 'Y' ? 'Active' : 'Inactive');
 ```
 
-## Import/export
+## CSV export
 
-Import/export CSV-first. Экспорт требует выбранные ID или разрешенный фильтр; полный экспорт выключен, пока Resource/action не включит его явно.
+Экспорт CSV-first через `ExportAction` / `ExportContext` / `MB\Bitrix\AdminKit\Export\CsvExporter`:
 
 ```php
 public function allowExportByFilter(): bool { return true; }
 public function allowExportAll(): bool { return false; }
-public function maxImportRows(): int { return 1000; }
+public function maxExportRows(): int { return 5000; }
 ```
 
-Импорт использует `Form\DataPipeline`, поэтому нормализация и валидация совпадают с сохранением формы.
+Экспорт требует выбранные ID или разрешённый фильтр; полный export all выключен, пока Resource не включит `allowExportAll()`. Перед `getList()` выполняется pre-flight count по лимиту `maxExportRows()`.
 
 ## Support-пакеты
 
@@ -391,7 +424,7 @@ v1.0.0 фиксирует публичный API AdminKit для реальны�
 
 ## Lifecycle, transactions и permissions
 
-CRUD операции проходят через единый pipeline: Field normalization/validation, `FormData`, lifecycle hooks, `PermissionContext`, `CrudPersister` и при необходимости `TransactionManager`. Опасные операции (`delete`, row action, bulk action, import/export) должны проверять CSRF и права на уровне Resource/action.
+CRUD операции проходят через единый pipeline: Field normalization/validation, `FormData`, lifecycle hooks, `PermissionContext`, `CrudPersister` и при необходимости `TransactionManager`. Опасные операции (`delete`, row action, bulk action, export) должны проверять CSRF и права на уровне Resource/action.
 
 ## Database health и performance
 
@@ -419,7 +452,8 @@ CRUD операции проходят через единый pipeline: Field n
 - Permissions: `docs/permissions.md`.
 - Performance: `docs/performance.md`.
 - Database health: `docs/database-health.md`.
-- Import/export: `docs/import-export.md`.
+- Export (import UI disabled): `docs/import-export.md`.
+- Pages and security: `docs/pages.md`.
 - Support packages: `docs/support-packages.md`.
 - Backward compatibility: `docs/backward-compatibility.md`.
 - Cookbook: `docs/cookbook/`.

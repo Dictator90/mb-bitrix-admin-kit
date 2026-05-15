@@ -3,23 +3,36 @@
 ## Unreleased
 
 ### Added
-- Added `Discovery\ClassDiscovery` so registry class discovery is isolated from AdminKitRegistry and backed by `mb4it/filesystem` ClassFinder.
-- Added stabilization coverage for standalone `DashboardPage` registration/discovery, resource-page menu isolation, Field API compatibility, FieldRenderContext fallbacks, resource field shortcuts, string resource page IDs, and agent notes for preserving page/field boundaries.
-- Added the `Resource::pages()` model with default `IndexPage`, `FormPage`, and `DetailPage` registrations, plus `PageContract`, `PageFactory`, `ResourcePageResolver`, and `PageNotFoundException` for resolving custom page classes.
-- Added `FieldRenderContext` and wired index, form, and detail field rendering through page-aware render contexts while keeping raw-value field rendering backward compatible.
+- `Discovery\ClassDiscovery` — registry discovery isolated from `AdminKitRegistry`, backed by `mb4it/filesystem` `ClassFinder` and Reflection-based final-class checks.
+- `Resource::pages()` with default `IndexPage`, `FormPage`, `DetailPage`; `PageContract`, `PageFactory`, `ResourcePageResolver`, `PageNotFoundException`.
+- `FieldRenderContext` for page-aware index/form/detail field rendering with backward-compatible raw-value rendering.
+- `Resource::maxExportRows()` (default `5000`) and pre-flight export row counting in `ExportAction`.
+- Narrow resource contracts (`ResourceIdentityContract`, `ResourceMenuContract`, `ResourcePermissionContract`, `OrmResourceContract`, `IndexResourceContract`, `FormResourceContract`, `DetailResourceContract`, `ExportableResourceContract`, `ExportResourceContract`); aggregate `ResourceContract` unchanged for BC.
+- `mb.admin.kit` Bitrix extension: `MB.AdminKit.Form`, `.Dependencies`, `.Visibility`, `.OptionsPage` (form save, field dependencies, visibility, options page).
+- Page/security/export tests: `PageFactoryTest`, `ResourcePageResolverStrictTest`, `IndexPageSecurityTest`, `DetailPagePermissionTest`, `FormPageValidationLifecycleTest`, `FormPageSidePanelAsyncTest`, `ImportRemovedFromIndexPageTest`, `OptionsPageBackwardCompatibilityTest`, `FormPageJsExtensionTest`, `OptionsPageStabilizationTest`, grid and discovery coverage.
 
 ### Changed
-- Reworked AdminKit discovery to find resources and standalone pages through `mb4it/filesystem` ClassFinder with Reflection-based deep descendant checks and duplicate-id preservation.
-- Kept standalone page discovery explicit through `AbstractPage::isStandalone()` and preserved non-integer resource page IDs in `Resource::formPage()`, `Resource::detailPage()`, and `FormPage`.
-- Adapted the refactored grid architecture so `IndexPage` supplies fields, filters, actions, and query customization to `GridDataLoader`, `GridQueryBuilder`, and `RowAssembler`.
-- Updated `FormPage` and `DetailPage` so page-level `fields()`/`tabs()` overrides are the primary customization points with resource shortcuts as defaults.
-- Extended routing to distinguish resource ids from page names through `admin_resource` and `admin_page` while preserving legacy action routing.
-- Fixed mojibake in Form and toolbar/index localized labels by moving Form page user-facing strings to `Loc` keys and restoring broken RU language files in UTF-8.
-- Fixed `FormPage` async save flow: async submit script is now rendered on form pages and async POST now returns JSON via `sendAsyncSaveResponse()` instead of falling back to full-page submit/redirect behavior.
+- `Resource` — BC base (identity, menu, permissions, pages, export defaults); `CrudResource` — thin ORM layer (`dataManagerClass()`, `hasCrud(): true`) without duplicated defaults.
+- Grid split: `GridQueryBuilder` (ORM params only), `GridDataLoader` (load/count/cache), `Grid` + Bitrix adapters (UI); `IndexPage` delegates to these services.
+- `FormPage` / `DetailPage` — page-level `fields()` / `tabs()` are primary; resource shortcuts are fallbacks.
+- `Pages\OptionsPage` stabilized (sessid, JSON array options, `visibleWhen` aligned with `FormPage`); `Page\OptionsPage` deprecated wrapper retained.
+- Routing: `admin_resource` + `admin_page` alongside legacy `page` / `action`.
+- Export: removed legacy `Support\Export\CsvExporter`; use `Export\CsvExporter` + `ExportAction`.
+- Discovery: multi-path, safe missing directories, duplicate-id preservation; standalone pages via `AbstractPage::isStandalone()`.
+- Documentation: README, `docs/pages.md`, `docs/grid.md`, `docs/discovery.md`, `docs/architecture.md`, `docs/upgrade.md`, export-only `docs/import-export.md`, import-disabled `docs/import.md`.
 
-### Documentation
-- Documented `mb4it/filesystem` as the support package used for ClassFinder-based resource and standalone page discovery.
-- Documented custom Resource pages in README and `docs/pages.md`, including IndexPage/FormPage/DetailPage examples and guidance against `indexResource()`-style abstractions.
+### Removed / disabled
+- Import UI and toolbar entrypoints removed from `IndexPage` (no `action=import`, no import SidePanel flow on index). Library `Import\*` classes remain for future re-enable.
+
+### Fixed
+- CSRF: POST saves and options updates require valid sessid; AJAX returns JSON errors, normal POST shows alert.
+- `DetailPage` enforces `canView` before rendering a record.
+- `FormPage` validation/save lifecycle and permission checks (`canCreate` / `canUpdate`) on render and save.
+- `FormPage` async SidePanel save returns JSON via `sendAsyncSaveResponse()` instead of full-page redirect.
+- String primary-key delete on index grid.
+- `GridQueryBuilder::buildOrder()` three-layer sort merge.
+- Export guard messages localized; export failures use `ui.alerts` on index.
+- Form/toolbar RU label mojibake (UTF-8 `Loc` files).
 
 ## v1.0.0 - 2026-05-14
 

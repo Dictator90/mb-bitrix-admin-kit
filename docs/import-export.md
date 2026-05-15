@@ -1,15 +1,31 @@
-# Import/export
+# Export (CSV)
 
-AdminKit import/export is CSV-first for v1.0.0. XLSX/Excel engines are intentionally out of scope unless a future task explicitly adds them.
+> **Import UI is temporarily disabled** on resource index pages and toolbars. Classes under `MB\Bitrix\AdminKit\Import\*` remain in the codebase for a future release, but `ImportAction`, `ImportContext`, and `CsvImporter` are not wired into `IndexPage` in the current branch. See `docs/import.md` for library-level notes only.
+
+AdminKit export is **CSV-first**. XLSX/Excel engines are out of scope unless a future task explicitly adds them.
 
 ## Export safety
 
-Export actions require explicit selected IDs or an allowed filter. Full export remains disabled unless a Resource/action opts in. Export must respect Resource permissions and field visibility.
+- `ExportAction` requires explicit selected IDs or an allowed filter (`allowExportByFilter()`).
+- Full export (`allowExportAll()`) stays disabled unless the Resource opts in.
+- Export checks `canView()` on the Resource.
+- Hidden, private, and system fields are not exported.
+- Pre-flight row count runs before `getList()`; exceeding `maxExportRows()` (default `5000`) aborts with a localized error.
 
-## Import safety
+## Implementation
 
-Import validates upload input, parses CSV rows in chunks, maps columns to fields, and reuses `Form\DataPipeline` so CSV imports share Field normalization and validation with forms.
+- `ExportAction` — HTTP/action entry point.
+- `ExportContext` — resource, field set, filter/IDs, user context.
+- `MB\Bitrix\AdminKit\Export\CsvExporter` — CSV writer (legacy `Support\Export\CsvExporter` was removed).
+
+## Resource hooks
+
+```php
+public function allowExportByFilter(): bool { return true; }
+public function allowExportAll(): bool { return false; }
+public function maxExportRows(): int { return 5000; }
+```
 
 ## Results
 
-Import/export row sets, mappings, chunks, selected IDs, and errors should be stored in `AdminCollection` internally while public APIs expose simple arrays and iterables.
+Export row sets, selected IDs, and errors use `AdminCollection` internally; public APIs expose plain arrays and iterables.

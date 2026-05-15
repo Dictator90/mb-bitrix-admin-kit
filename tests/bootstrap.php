@@ -133,6 +133,13 @@ namespace Bitrix\Main {
         {
             return (string)($GLOBALS['MB_ADMIN_KIT_TEST_REQUEST_URI'] ?? '/bitrix/admin/test.php');
         }
+
+        public function getHeader(string $name): ?string
+        {
+            $headers = $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] ?? [];
+
+            return $headers[$name] ?? $headers[strtolower($name)] ?? null;
+        }
     }
     class Context
     {
@@ -237,6 +244,7 @@ namespace {
     $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [];
     $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
     $GLOBALS['MB_ADMIN_KIT_TEST_REQUEST_URI'] = '/bitrix/admin/test.php';
+    $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] = [];
 }
 
 namespace Bitrix\Main\Localization {
@@ -251,7 +259,8 @@ namespace Bitrix\Main\Localization {
                 $base = dirname(__DIR__);
                 $relative = str_replace('\\', '/', $file);
                 foreach (['ru'] as $lang) {
-                    $langFile = $base . '/lang/' . $lang . '/src/Page/' . basename($file);
+                    $relativeFromSrc = str_replace('\\', '/', preg_replace('#^.*/src/#', 'src/', $relative) ?? $relative);
+                    $langFile = $base . '/lang/' . $lang . '/' . $relativeFromSrc;
                     if (!is_file($langFile)) {
                         continue;
                     }
@@ -293,13 +302,27 @@ namespace Bitrix\Main\Config { if (!class_exists(Option::class)) {
     class Option
     {
         public static array $values = [];
+
+        public static int $setCalls = 0;
+
+        public static function reset(): void
+        {
+            self::$values = [];
+            self::$setCalls = 0;
+        }
+
         public static function get(string $moduleId, string $name, mixed $default = '', string $siteId = ''): mixed
         {
             return self::$values[$moduleId][$siteId][$name] ?? $default;
-        } public static function set(string $moduleId, string $name, string $value, string $siteId = ''): void
+        }
+
+        public static function set(string $moduleId, string $name, string $value, string $siteId = ''): void
         {
+            self::$setCalls++;
             self::$values[$moduleId][$siteId][$name] = $value;
-        } public static function delete(string $moduleId, array $filter): void
+        }
+
+        public static function delete(string $moduleId, array $filter): void
         {
             unset(self::$values[$moduleId][$filter['site_id'] ?? ''][$filter['name'] ?? '']);
         }

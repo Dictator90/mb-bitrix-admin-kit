@@ -6,7 +6,7 @@
 
 ## Registry
 
-`Manager\AdminKitRegistry` хранит зарегистрированные Resource/Page и может выполнять discovery по `lib/Admin`. Registry не рендерит и не строит URL.
+`Manager\AdminKitRegistry` хранит зарегистрированные Resource/Page и выполняет discovery через `Discovery\ClassDiscovery` и `mb4it/filesystem` `ClassFinder` (Reflection-based checks for final Resource/standalone Page classes). Registry не рендерит и не строит URL.
 
 ## Router
 
@@ -14,11 +14,13 @@
 
 ## Resource
 
-`Resource` — базовое описание административного раздела: id, title, menu, permissions, default select/filter/sort, runtime fields, hooks и SidePanel настройки.
+`Resource` — базовое описание административного раздела: id, title, menu, permissions, pages, SidePanel-настройки и совместимые CRUD-хелперы. Существующие ресурсы могут продолжать наследовать `Resource` напрямую.
+
+`ResourceContract` остаётся агрегатным контрактом для обратной совместимости. Узкие контракты (`ResourceIdentityContract`, `IndexResourceContract`, `FormResourceContract`, `ExportResourceContract` и др.) позволяют постепенно сужать зависимости внутренних классов без поломки публичного API.
 
 ## CrudResource
 
-`CrudResource` — Resource для Bitrix D7 ORM `DataManager`. Он требует `dataManagerClass()`, `indexFields()` и `formFields()`, добавляет CRUD defaults, bulk chunk size, import/export лимиты и параметры производительности.
+`CrudResource` extends `Resource` и является рекомендуемой базой для новых Bitrix D7 ORM CRUD-разделов. Он требует `dataManagerClass()` и наследует defaults (`defaultSort`, `maxPageSize`, export limits, bulk chunk size и т.д.) из `Resource` без дублирования.
 
 ## Page
 
@@ -46,7 +48,7 @@ Row actions формируют меню строки. Bulk actions исполн�
 
 ## FormData
 
-Stage-aware контейнер формы: `raw`, `normalized`, `validated`, `errors`. Используется формой и import pipeline, чтобы CSV-import и ручное сохранение имели одинаковую нормализацию.
+Stage-aware контейнер формы: `raw`, `normalized`, `validated`, `errors`. Используется формой (и import pipeline, когда импорт будет снова включён), чтобы CSV-import и ручное сохранение имели одинаковую нормализацию.
 
 ## UrlGenerator
 

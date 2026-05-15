@@ -1,5 +1,36 @@
 # Upgrade notes and deprecation policy
 
+## Unreleased (features branch) — merge prep
+
+### Import temporarily disabled
+
+- Index-page import toolbar, SidePanel import wizard, and `action=import` handling are removed from `IndexPage`.
+- Export remains CSV-first via `ExportAction` / `Export\CsvExporter`.
+- Library classes under `Import\*` are unchanged; do not document or ship import UI until it is re-enabled.
+
+### Security hardening
+
+- POST saves and options updates require valid `check_bitrix_sessid()`.
+- `IndexPage`, `FormPage`, and `DetailPage` enforce Resource permission methods before render/save/export.
+- Export requires `canView` and respects `maxExportRows()` (default `5000`).
+
+### Resource / pages
+
+- New ORM sections: extend `CrudResource`. Legacy code may keep `extends Resource`.
+- Customize UI via `Resource::pages()` and page subclasses; `indexFields()` / `formFields()` / `detailFields()` remain shortcuts.
+- Standalone: `Pages\OptionsPage` (settings), `Pages\DashboardPage` (widgets). Deprecated: `Page\OptionsPage` wrapper.
+
+### Grid and JS
+
+- ORM query building: `GridQueryBuilder` only; loading: `GridDataLoader`; Bitrix UI: `Grid` + adapters.
+- Form/options client scripts live in `mb.admin.kit` extension (`MB.AdminKit.Form`, `.Visibility`, `.OptionsPage`).
+
+### Contracts
+
+- `ResourceContract` is aggregate; narrow contracts (`IndexResourceContract`, `ExportResourceContract`, etc.) are for internal typing.
+
+---
+
 ## Что изменилось в v0.10.0 — Widget System
 
 ### Новое

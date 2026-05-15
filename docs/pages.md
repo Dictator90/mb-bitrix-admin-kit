@@ -159,3 +159,25 @@ Internally, `ResourcePageResolver` resolves `admin_page` through `Resource::page
 ### FieldRenderContext
 
 Index, form, and detail rendering now pass `FieldRenderContext` into field render methods. The context contains the field, resource, item, value, page name (`index`, `form`, or `detail`), row data, validation errors, and metadata. Existing fields that accept raw values remain backward compatible.
+
+## Security
+
+| Page | Checks |
+|------|--------|
+| `IndexPage` | `canView` before grid/export; `canUpdate`/`canDelete` for inline/bulk; CSRF on POST actions |
+| `FormPage` | `canView`; `canCreate` (create) / `canUpdate` (edit); sessid on save; async save → JSON |
+| `DetailPage` | `canView` before rendering a record |
+| `Pages\OptionsPage` | `canView`; invalid sessid blocks `Option::set` (AJAX → JSON, normal POST → alert) |
+
+## Export on index
+
+CSV export is available when the Resource registers an export action and the user has `canView`. Import toolbar/flow on `IndexPage` is **temporarily removed**; export uses `ExportAction` with `maxExportRows()` pre-flight.
+
+## Standalone vs resource pages
+
+| Type | Classes | Menu |
+|------|---------|------|
+| Resource CRUD | `Page\IndexPage`, `FormPage`, `DetailPage` (via `Resource::pages()`) | Under resource menu item |
+| Standalone | `Pages\OptionsPage`, `DashboardPage`, `CustomPage` | Registered/discovered separately |
+
+Do not register resource page subclasses as standalone menu entries unless they implement the standalone page API explicitly.

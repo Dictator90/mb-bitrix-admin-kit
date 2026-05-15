@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Export;
 
+use MB\Bitrix\AdminKit\Contracts\ExportResourceContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
@@ -21,7 +21,7 @@ final class ExportContext
     public array $fields;
 
     public function __construct(
-        public readonly ResourceContract $resource,
+        public readonly ExportResourceContract $resource,
         iterable $selectedIds = [],
         array $filter = [],
         iterable $fields = [],

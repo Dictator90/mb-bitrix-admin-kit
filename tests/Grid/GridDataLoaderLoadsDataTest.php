@@ -24,7 +24,8 @@ final class GridDataLoaderLoadsDataTest extends TestCase
 
         $performance = (new GridDataLoader())->load($resource, $grid);
 
-        self::assertSame(2, ProductTable::$listCalls);
+        self::assertSame(1, ProductTable::$listCalls);
+        self::assertSame(1, ProductTable::$countCalls);
         self::assertSame(1, $grid->getTotalCount());
         self::assertCount(1, $grid->getRows());
         self::assertSame(1, $performance?->rowCount);

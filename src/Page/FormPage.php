@@ -17,6 +17,7 @@ use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
+use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use Throwable;
@@ -76,25 +77,37 @@ class FormPage extends Page
 
         (new ToolbarRenderer())->renderForm($this->resource, $this->formId, $this->cancelActionJs());
 
-        if ($this->id) {
+        if ($this->id !== null && $this->id !== '') {
             $row = $this->resource->findItem($this->id);
-            $this->item = $row ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey()) : null;
-            if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
-                $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW');
-            }
-            if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
-                $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT');
+            if ($row === null) {
+                $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_NOT_FOUND');
+            } else {
+                $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+                if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
+                    $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW');
+                }
+                if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
+                    $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT');
+                }
             }
         } elseif (!$this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
             $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_CREATE');
         }
 
-        if ($this->isPost() && check_bitrix_sessid()) {
+        if ($this->isPost() && !check_bitrix_sessid()) {
+            $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_SESSION_EXPIRED');
+            if ($this->isAsyncSaveRequest()) {
+                $this->sendAsyncSaveResponse();
+                return;
+            }
+        } elseif ($this->isPost() && check_bitrix_sessid()) {
             if ($this->request->getPost('adminkit_action') === 'reactive') {
                 $this->handleReactivePost();
                 return;
             }
-            $this->handlePost();
+            if (!$this->isEditNotFound()) {
+                $this->handlePost();
+            }
 
             if ($this->isAsyncSaveRequest()) {
                 $this->sendAsyncSaveResponse();
@@ -109,11 +122,13 @@ class FormPage extends Page
         }
 
         $this->renderAlerts();
-        $this->renderForm();
-        $this->renderDependencyScript($this->formId);
-        $this->renderConditionalVisibilityScript($this->formId);
-        if ($this->isAsync()) {
-            $this->renderAsyncSaveScript();
+        if (!$this->isEditNotFound()) {
+            $this->renderForm();
+            $this->renderDependencyScript($this->formId);
+            $this->renderConditionalVisibilityScript($this->formId);
+            if ($this->isAsync()) {
+                $this->renderAsyncSaveScript();
+            }
         }
         $this->renderHintInit();
     }
@@ -142,8 +157,17 @@ class FormPage extends Page
         return $this->request->get('IFRAME') === 'Y';
     }
 
+    protected function isEditNotFound(): bool
+    {
+        return $this->id !== null && $this->id !== '' && $this->item === null;
+    }
+
     protected function handlePost(): void
     {
+        if ($this->isEditNotFound()) {
+            return;
+        }
+
         $fields = $this->collectAllFields();
         $raw = [];
 
@@ -588,11 +612,10 @@ class FormPage extends Page
      */
     protected function renderDependencyScript(string $formId): void
     {
-        $allFields = $this->collectAllFields();
         $sourceCols = [];
         $dependsMap = [];
 
-        foreach ($allFields as $field) {
+        foreach ($this->collectAllFields() as $field) {
             if (method_exists($field, 'hasDependency') && $field->hasDependency()) {
                 $dependsMap[$field->getColumn()] = $field->getDependsOn();
                 foreach ($field->getDependsOn() as $col) {
@@ -601,221 +624,22 @@ class FormPage extends Page
             }
         }
 
-        if (empty($sourceCols)) {
+        if ($sourceCols === []) {
             return;
         }
 
-        $sourceColsJson = json_encode(array_keys($sourceCols));
-        $dependsMapJson = json_encode($dependsMap);
-        $formIdJs = json_encode($formId);
-
-        echo <<<HTML
-        <script>
-        BX.ready(function() {
-            var form = document.getElementById({$formIdJs})
-            var sourceCols = {$sourceColsJson};
-            var dependsMap = {$dependsMapJson};
-            if (!form || !sourceCols.length) return;
-
-            // During the first 800 ms the DialogSelector may be creating hidden inputs
-            // for pre-selected values — treat those mutations as init, not user input.
-            var initPhase = true;
-            setTimeout(function() { initPhase = false; }, 800);
-
-            function getSourceValue(srcCol) {
-                var els = form.querySelectorAll('[name="' + srcCol + '"]');
-                for (var i = 0; i < els.length; i++) {
-                    if (els[i].value !== '') return els[i].value;
-                }
-                return '';
-            }
-
-            function sourcesHaveValues(col) {
-                return (dependsMap[col] || []).every(function(s) {
-                    return getSourceValue(s) !== '';
-                });
-            }
-
-            function updateDisabledStates() {
-                Object.keys(dependsMap).forEach(function(col) {
-                    var row = form.querySelector('[data-field-column="' + col + '"]');
-                    if (!row) return;
-                    var content = row.querySelector('.ui-form-content');
-                    if (!content || content.classList.contains('adminkit-field-loading')) return;
-                    if (sourcesHaveValues(col)) {
-                        content.classList.remove('adminkit-field-disabled');
-                    } else {
-                        content.classList.add('adminkit-field-disabled');
-                    }
-                });
-            }
-
-            updateDisabledStates();
-            setTimeout(updateDisabledStates, 600);
-
-            var debounceTimer = null;
-            function triggerReactive() {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(function() {
-                    Object.keys(dependsMap).forEach(function(col) {
-                        var row = form.querySelector('[data-field-column="' + col + '"]');
-                        if (!row) return;
-                        var content = row.querySelector('.ui-form-content');
-                        if (content) {
-                            content.classList.remove('adminkit-field-disabled');
-                            content.classList.add('adminkit-field-loading');
-                        }
-                    });
-
-                    var fd = new FormData(form);
-                    fd.set('adminkit_action', 'reactive');
-
-                    fetch(form.action || window.location.href, {
-                        method: 'POST',
-                        body: fd,
-                        headers: {'X-Requested-With': 'XMLHttpRequest'},
-                    })
-                    .then(function(r) { return r.json(); })
-                    .then(function(resp) {
-                        if (resp.status === 'success') {
-                            Object.keys(resp.fields || {}).forEach(function(col) {
-                                var row = form.querySelector('[data-field-column="' + col + '"]');
-                                if (!row) return;
-                                var content = row.querySelector('.ui-form-content');
-                                if (!content) return;
-                                content.classList.remove('adminkit-field-loading');
-                                content.innerHTML = resp.fields[col].html;
-                                content.querySelectorAll('script').forEach(function(s) {
-                                    var ns = document.createElement('script');
-                                    ns.textContent = s.textContent;
-                                    document.head.appendChild(ns).parentNode.removeChild(ns);
-                                });
-                            });
-                        }
-                        updateDisabledStates();
-                    })
-                    .catch(function() { updateDisabledStates(); });
-                }, 200);
-            }
-
-            sourceCols.forEach(function(col) {
-                form.querySelectorAll('[name="' + col + '"]').forEach(function(el) {
-                    el.addEventListener('change', triggerReactive);
-                });
-            });
-
-            var observer = new MutationObserver(function(mutations) {
-                for (var i = 0; i < mutations.length; i++) {
-                    var nodes = Array.prototype.slice.call(mutations[i].addedNodes)
-                        .concat(Array.prototype.slice.call(mutations[i].removedNodes));
-                    for (var j = 0; j < nodes.length; j++) {
-                        var node = nodes[j];
-                        if (node.nodeType === 1 && node.tagName === 'INPUT'
-                                && node.type === 'hidden'
-                                && sourceCols.indexOf(node.name) !== -1) {
-                            if (initPhase) {
-                                updateDisabledStates();
-                            } else {
-                                triggerReactive();
-                            }
-                            return;
-                        }
-                    }
-                }
-            });
-            observer.observe(form, {childList: true, subtree: true});
-        });
-        </script>
-        HTML;
+        AdminKitJs::renderInit('Dependencies', [
+            'formId' => $formId,
+            'sourceCols' => array_keys($sourceCols),
+            'dependsMap' => $dependsMap,
+        ]);
     }
 
-    /**
-     * Render JS that watches source columns and toggles display of fields/components
-     * that have visibleWhen() rules — pure CSS show/hide, no AJAX.
-     */
     protected function renderConditionalVisibilityScript(string $formId): void
     {
-        $formIdJs = json_encode($formId);
-
-        echo <<<HTML
-        <script>
-        BX.ready(function() {
-            var form = document.getElementById({$formIdJs})
-            if (!form) return;
-           
-
-            function getFieldValue(col) {
-                var inputs = form.querySelectorAll('[name="' + col + '"]');
-                var fallback = '';
-                for (var i = 0; i < inputs.length; i++) {
-                    var el = inputs[i];
-                    if (el.type === 'checkbox' || el.type === 'radio') {
-                        if (el.checked) return el.value;
-                    } else if (el.type === 'hidden') {
-                        if (fallback === '') fallback = el.value;
-                    } else if (el.value !== '') {
-                        return el.value;
-                    }
-                }
-                if (fallback !== '') return fallback;
-                // DialogSelector hidden inputs for multiple: name="col[]"
-                var multi = form.querySelectorAll('[name="' + col + '[]"]');
-                if (multi.length > 0) return multi[0].value;
-                return '';
-            }
-
-            function matchesRule(rule, val) {
-                if (rule.values) {
-                    return rule.values.indexOf(val) !== -1;
-                }
-                var operator = rule.operator || '=';
-                var expected = rule.value != null ? String(rule.value) : '';
-                if (operator === 'in') {
-                    return Array.isArray(rule.value) && rule.value.map(String).indexOf(val) !== -1;
-                }
-                if (operator === 'not in') {
-                    return !Array.isArray(rule.value) || rule.value.map(String).indexOf(val) === -1;
-                }
-                if (operator === '=' || operator === '==' || operator === '===') {
-                    return val === expected;
-                }
-                if (operator === '!=' || operator === '<>' || operator === '!==') {
-                    return val !== expected;
-                }
-                return val === expected;
-            }
-
-            function updateVisibility() {
-                var els = form.querySelectorAll('[data-visible-when]');
-                for (var i = 0; i < els.length; i++) {
-                    var el = els[i];
-                    var rule = JSON.parse(el.getAttribute('data-visible-when'));
-                    var val  = getFieldValue(rule.column);
-                    if (matchesRule(rule, val)) {
-                        el.classList.remove('adminkit-conditional-hidden');
-                    } else {
-                        el.classList.add('adminkit-conditional-hidden');
-                    }
-                }
-            }
-
-            // Delegate change events on the whole form
-            form.addEventListener('change', function(e) {
-                updateVisibility();
-            });
-
-            // Watch hidden inputs added by DialogSelector
-            var visObserver = new MutationObserver(function() {
-                updateVisibility();
-            });
-            visObserver.observe(form, {childList: true, subtree: true});
-
-            // Initial evaluation (after a tick to let DialogSelector init)
-            updateVisibility();
-            setTimeout(updateVisibility, 900);
-        });
-        </script>
-        HTML;
+        AdminKitJs::renderInit('Visibility', [
+            'formId' => $formId,
+        ]);
     }
 
     /** @return FieldContract[] all writable fields from both flat form and tabs */
@@ -868,82 +692,12 @@ class FormPage extends Page
 
     protected function renderAsyncSaveScript(): void
     {
-        $formIdJs = json_encode($this->formId);
-        $validationErrorMessageJs = json_encode((string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR'));
-        $savedMessageJs = json_encode((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED'));
-
-        echo <<<HTML
-        <script>
-        BX.ready(function() {
-            var form = document.getElementById({$formIdJs});
-            if (!form) { return; }
-            var submitBtn = document.getElementById({$formIdJs} + '-submit')
-
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                submitBtn.disabled = true;
-                submitBtn.classList.add('ui-btn-wait');
-                
-                var data = new FormData(form);
-                data.set('adminkit_async_save', 'Y');
-
-                fetch(form.action || window.location.href, {
-                    method: 'POST',
-                    body: data,
-                    headers: {'X-Requested-With': 'XMLHttpRequest'}
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(resp) {
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('ui-btn-wait');
-                    
-                    form.querySelectorAll('.adminkit-field-error').forEach(function(node) { node.remove(); });
-                    form.parentNode.querySelectorAll('.adminkit-alert').forEach(function(node) { node.remove(); });
-
-                    if (resp.validationError) {
-                        var top = document.createElement('div');
-                        top.className = 'ui-alert ui-alert-danger adminkit-alert';
-                        top.innerHTML = '<span class="ui-alert-message">' + {$validationErrorMessageJs} + '</span>';
-                        form.parentNode.insertBefore(top, form);
-                    }
-
-                    (resp.globalErrors || []).forEach(function(message) {
-                        var top = document.createElement('div');
-                        top.className = 'ui-alert ui-alert-danger adminkit-alert';
-                        top.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(String(message)) + '</span>';
-                        form.parentNode.insertBefore(top, form);
-                    });
-
-                    Object.keys(resp.fieldErrors || {}).forEach(function(column) {
-                        var content = form.querySelector('[data-field-column="' + column + '"] .ui-form-content');
-                        if (!content) { return; }
-                        (resp.fieldErrors[column] || []).forEach(function(message) {
-                            var box = document.createElement('div');
-                            box.className = 'ui-alert ui-alert-inline ui-alert-xs ui-alert-danger adminkit-field-error';
-                            box.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(String(message)) + '</span>';
-                            content.appendChild(box);
-                        });
-                    });
-
-                    if (resp.success) {
-                        if (resp.closeSidePanel && window.top && window.top.BX && window.top.BX.SidePanel) {
-                            window.top.BX.SidePanel.Instance.getTopSlider().close();
-                        } else if (BX.UI && BX.UI.Notification && BX.UI.Notification.Center) {
-                            BX.UI.Notification.Center.notify({content: {$savedMessageJs}});
-                        }
-                    }
-                })
-                .catch(function(err) {
-                    console.log(err);
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('ui-btn-wait');
-                    BX.UI.Notification.Center.notify({content: 'Ошибка запроса: ' + err.message});
-                 
-                });;
-            });
-        });
-        </script>
-        HTML;
+        AdminKitJs::renderInit('Form', [
+            'formId' => $this->formId,
+            'messages' => [
+                'validationError' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR'),
+                'saved' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED'),
+            ],
+        ]);
     }
 }

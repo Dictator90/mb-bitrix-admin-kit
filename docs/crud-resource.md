@@ -1,6 +1,8 @@
 # CrudResource
 
-`CrudResource` connects a Resource to a Bitrix D7 ORM `DataManager` and provides list, create, edit, detail, delete, bulk action, import, and export flows.
+`CrudResource` is the recommended base class for new Bitrix D7 ORM CRUD sections. It extends `Resource`, requires `dataManagerClass()`, and inherits grid, export, and performance defaults from `Resource` without duplicating them.
+
+`Resource` remains the backward-compatible base for legacy resources that extend it directly. For module settings, use `Pages\OptionsPage`.
 
 ## Minimal resource
 
@@ -26,7 +28,7 @@ final class ProductResource extends CrudResource
 
 ## Persistence
 
-Create, update, delete, import upsert, and bulk update/delete operations should route through `Database\CrudPersister` and return `DbResult`/`BulkResult` for low-level ORM errors. This keeps form saves, import rows, lifecycle hooks, permission checks, and transactions aligned.
+Create, update, delete, and bulk update/delete operations should route through `Database\CrudPersister` and return `DbResult`/`BulkResult` for low-level ORM errors. This keeps form saves, lifecycle hooks, permission checks, and transactions aligned. (CSV import persistence will use the same path when import UI is re-enabled.)
 
 ## Query hooks
 

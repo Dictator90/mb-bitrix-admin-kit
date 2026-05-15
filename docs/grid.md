@@ -28,6 +28,10 @@ The builder accounts for:
 - `indexSelect()`, `indexFilter()`, `indexOrder()`, and `indexRuntime()`;
 - `beforeIndexQueryParams()` and `modifyIndexParams()`.
 
+## IndexPage integration
+
+`Page\IndexPage` supplies fields, filters, row/bulk actions, and query hooks to `GridDataLoader`, `GridQueryBuilder`, and `RowAssembler`. It does not build ORM params itself. CSV export on the index is handled by `ExportAction` (not in the grid layer); import UI on index is temporarily disabled.
+
 ## Data loading
 
 Index pages should delegate reads to `GridDataLoader` instead of calling ORM methods directly. The loader keeps performance behavior centralized:

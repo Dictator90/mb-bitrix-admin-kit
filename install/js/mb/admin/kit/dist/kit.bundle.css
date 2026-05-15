@@ -729,3 +729,8 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
     color: var(--ui-color-base-40, #aab5c0);
     font: 400 13px/1.4 var(--ui-font-family-primary, var(--ui-font-family-helvetica));
 }
+
+.adminkit-field-error {
+    --ui-alert-padding: 8px 18px 8px 18px;
+    margin-top: 3px;
+}
