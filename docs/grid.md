@@ -62,3 +62,70 @@ $APPLICATION->IncludeComponent('bitrix:main.ui.grid', '', (new BitrixGridAdapter
 ## Computed columns
 
 Computed columns are calculated after ORM rows are loaded and are not selected automatically from the database.
+
+## Grouped index rows
+
+AdminKit supports grouped index grids through the existing `IndexPage` flow. The resource still describes **only the main item table** in `indexFields()`, while grouping is declared separately with `Grid\Grouping\IndexGrouping`.
+
+```php
+use MB\Bitrix\AdminKit\Field\HasMany;
+use MB\Bitrix\AdminKit\Field\Text;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
+
+public function indexFields(): iterable
+{
+    return [
+        Text::make('Наименование', 'NAME')->asEditLink(),
+
+        HasMany::make('Сайты', 'SITES')
+            ->table(SiteCookieTable::class)
+            ->foreignKey('COOKIE_ID')
+            ->localKey('ID')
+            ->value('SITE_ID')
+            ->displayUsing(fn (array $sites): string => implode(', ', $sites)),
+    ];
+}
+
+public function indexGrouping(): ?IndexGrouping
+{
+    return IndexGrouping::make()
+        ->resource(CookieGroupResource::class)
+        ->foreignKey('GROUP_ID')
+        ->ownerKey('ID')
+        ->parentKey('PARENT_ID')
+        ->label('NAME')
+        ->labelColumn('NAME')
+        ->order(['SORT' => 'ASC', 'ID' => 'ASC'])
+        ->expand(false)
+        ->ungroupedLabel('Без группы');
+}
+```
+
+`IndexPage::grouping()` proxies `Resource::indexGrouping()` by default. A custom index page may override `grouping()` to change grouping for that page or return `null` to disable resource-level grouping.
+
+When grouping is enabled, AdminKit passes `ENABLE_COLLAPSIBLE_ROWS` to `main.ui.grid` and emits synthetic row IDs:
+
+- `group:{id}` for group rows;
+- `item:{id}` for item rows;
+- `group:__ungrouped` for the optional ungrouped bucket.
+
+Bulk actions and inline editing ignore `group:*` IDs and normalize `item:*` back to the original item ID before calling item-resource CRUD methods.
+
+Group labels are rendered as edit links for the grouped resource. If the grouped resource enables `editInSidePanel()`, the link opens through Bitrix SidePanel; otherwise it is a normal edit URL. Item labels can be turned into edit links with `Field::asEditLink()` or its alias `Field::linkToEdit()`.
+
+## HasMany / HasOne relation fields
+
+`HasMany` and `HasOne` are index fields for related labels or values. They do not add JOINs to the main grid query, and therefore do not multiply base rows. `GridQueryBuilder` excludes relation field columns from the ORM `select` but ensures each relation `localKey()` is selected. After item rows are fetched and `afterIndexRows()` runs, AdminKit performs one relation query per relation field and writes the loaded value into the row before rendering.
+
+```php
+HasOne::make('Группа', 'GROUP_NAME')
+    ->table(CookieGroupTable::class)
+    ->foreignKey('ID')
+    ->localKey('GROUP_ID')
+    ->value('NAME')
+    ->default('—');
+```
+
+`HasMany` returns an array of values; `HasOne` returns the first ordered value or its default/null. Both support `filter()`, `order()`, and `value()` as a column name or closure.
+
+Current limitations: pagination is still applied to item rows before grouping, groups without matching items are not loaded by the grouping flow, lazy loading of children is not implemented, and the index import flow remains disabled.

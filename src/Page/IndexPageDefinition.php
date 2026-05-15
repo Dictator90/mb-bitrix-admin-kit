@@ -11,6 +11,7 @@ use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 
 final class IndexPageDefinition implements IndexPageDefinitionContract
 {
@@ -33,9 +34,14 @@ final class IndexPageDefinition implements IndexPageDefinitionContract
         'modifyIndexParams',
     ];
 
+    /** @var array<string,Closure> */
+    private array $callbacks;
+
     /** @param array<string,Closure> $callbacks */
-    public function __construct(private readonly array $callbacks)
+    public function __construct(array $callbacks)
     {
+        $callbacks['grouping'] ??= static fn (): null => null;
+        $this->callbacks = $callbacks;
         foreach (self::REQUIRED_CALLBACKS as $name) {
             if (!isset($this->callbacks[$name])) {
                 throw new InvalidArgumentException(sprintf('IndexPageDefinition callback "%s" is required.', $name));
@@ -50,6 +56,13 @@ final class IndexPageDefinition implements IndexPageDefinitionContract
     public function fields(): iterable
     {
         return ($this->callbacks['fields'])();
+    }
+
+    public function grouping(): ?IndexGrouping
+    {
+        $grouping = ($this->callbacks['grouping'])();
+
+        return $grouping instanceof IndexGrouping ? $grouping : null;
     }
 
     /** @return iterable<FilterContract> */

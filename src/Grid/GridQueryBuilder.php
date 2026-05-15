@@ -11,6 +11,7 @@ use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
 use MB\Bitrix\AdminKit\Contracts\OrmResourceContract;
+use MB\Bitrix\AdminKit\Grid\Relations\RelationFieldContract;
 use MB\Bitrix\AdminKit\Page\ResourceBackedIndexPageDefinition;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
@@ -49,6 +50,10 @@ final class GridQueryBuilder
         $select = [];
         foreach (AdminCollection::make($indexPage->fields())->all() as $field) {
             if (!$field instanceof FieldContract) {
+                continue;
+            }
+            if ($field instanceof RelationFieldContract) {
+                $select[] = $field->relationLocalKey();
                 continue;
             }
             if (method_exists($field, 'isComputed') && $field->isComputed()) {

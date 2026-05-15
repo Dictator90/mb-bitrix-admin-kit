@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Contracts;
 
 use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 
 interface IndexResourceContract
 {
     /** @return iterable<FieldContract> */
     public function indexFields(): iterable;
+
+    public function indexGrouping(): ?IndexGrouping;
 
     /** @return iterable<FilterContract> */
     public function filters(): iterable;

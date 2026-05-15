@@ -23,6 +23,8 @@ use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\GridDataLoader;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
+use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
@@ -45,6 +47,7 @@ class IndexPage extends Page
     {
         return new IndexPageDefinition([
             'fields' => fn (): iterable => $this->fields(),
+            'grouping' => fn (): ?IndexGrouping => $this->grouping(),
             'filters' => fn (): iterable => $this->filters(),
             'rowActions' => fn (): iterable => $this->rowActions(),
             'bulkActions' => fn (): iterable => $this->bulkActions(),
@@ -76,7 +79,7 @@ class IndexPage extends Page
         }
 
         if ($action === 'delete' && check_bitrix_sessid()) {
-            $id = $this->request->get('id');
+            $id = GridRowId::normalizeItemId($this->request->get('id'));
             if ($id !== null && $id !== '') {
                 $item = $this->resource->findItem($id);
                 if ($item !== null && $this->resource->canDelete(new PermissionContext(resource: $this->resource, operation: 'delete', item: $item))) {
@@ -163,6 +166,10 @@ class IndexPage extends Page
             $this->grid->setBulkActions(array_values($bulkActions));
         }
 
+        if ($this->definition()->grouping() instanceof IndexGrouping) {
+            $this->grid->enableCollapsibleRows(true);
+        }
+
         return $this->grid;
     }
 
@@ -246,6 +253,11 @@ class IndexPage extends Page
     protected function fields(): iterable
     {
         return $this->resource->indexFields();
+    }
+
+    protected function grouping(): ?IndexGrouping
+    {
+        return method_exists($this->resource, 'indexGrouping') ? $this->resource->indexGrouping() : null;
     }
 
     /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FilterContract> */
@@ -425,11 +437,29 @@ class IndexPage extends Page
         foreach ($sources as $candidate) {
             $ids = array_values(array_filter((array)$candidate, static fn ($id): bool => $id !== null && $id !== ''));
             if ($ids !== []) {
-                return $ids;
+                return $this->normalizeSelectedIds($ids);
             }
         }
 
         return [];
+    }
+
+    /**
+     * @param array<int,mixed> $ids
+     * @return array<int,mixed>
+     */
+    protected function normalizeSelectedIds(array $ids): array
+    {
+        $result = [];
+        foreach ($ids as $id) {
+            $normalized = GridRowId::normalizeItemId($id);
+            if ($normalized === null || $normalized === '') {
+                continue;
+            }
+            $result[] = $normalized;
+        }
+
+        return $result;
     }
 
     protected function isAjaxRequest(): bool
@@ -478,6 +508,13 @@ class IndexPage extends Page
      */
     protected function saveInlineRow(mixed $id, array $payload): array
     {
+        if (GridRowId::isGroupId($id)) {
+            return [];
+        }
+        $id = GridRowId::normalizeItemId($id);
+        if ($id === null || $id === '') {
+            return [];
+        }
         $idLabel = (string)$id;
         $oldRow = $this->resource->findItem($id);
         if (!is_array($oldRow)) {
