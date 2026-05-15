@@ -12,7 +12,7 @@
 composer require mb4it/bitrix-admin-kit
 ```
 
-The package requires `mb4it/collections`, `mb4it/stringable`, and `mb4it/conditionable` through Composer. AdminKit wraps them with `AdminCollection`, `AdminString`, and `AdminCondition`, so module code can keep using plain PHP arrays, strings, booleans, and callables.
+The package requires `mb4it/collections`, `mb4it/stringable`, `mb4it/conditionable`, and `mb4it/filesystem` through Composer. AdminKit wraps support behavior with `AdminCollection`, `AdminString`, `AdminCondition`, and `Discovery\ClassDiscovery`; module code can keep using plain PHP arrays, strings, booleans, callables, and regular PHP classes while class discovery is delegated to `MB\Filesystem\Finder\ClassFinder`.
 
 ## Bitrix module bootstrap
 

@@ -375,11 +375,12 @@ public function maxImportRows(): int { return 1000; }
 
 ## Support-пакеты
 
-AdminKit использует `mb4it/collections`, `mb4it/stringable` и `mb4it/conditionable` через адаптеры:
+AdminKit использует `mb4it/collections`, `mb4it/stringable`, `mb4it/conditionable` и `mb4it/filesystem` через адаптеры/сервисы:
 
 - `AdminCollection` для внутренних массивов и результатов.
 - `AdminString` для id, alias, HTML id и cache keys.
 - `AdminCondition` для условий видимости/доступности.
+- `Discovery\ClassDiscovery` для поиска потомков `Resource` и standalone-страниц через `MB\Filesystem\Finder\ClassFinder`.
 
 Публичный API принимает обычные `array`, `iterable`, `callable` и `Closure`; разработчику модуля не нужно зависеть от конкретной Collection-реализации.
 
