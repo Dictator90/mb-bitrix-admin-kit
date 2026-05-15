@@ -74,6 +74,10 @@
 - Keep toolbar/filter/create button integration in `Bitrix\Toolbar\ToolbarRenderer` when changing index-page toolbar behavior.
 
 
+## Discovery notes
+- Keep class discovery in `MB\Bitrix\AdminKit\Discovery\ClassDiscovery`; `Manager\AdminKitRegistry` must not parse PHP tokens or walk directories directly.
+- Use `mb4it/filesystem` `MB\Filesystem\Finder\ClassFinder` as the shared class lookup engine and keep final Resource/standalone Page checks Reflection-based.
+
 ## v1.3.0 resource pages notes
 - Treat `Resource::pages()` plus `IndexPage`, `FormPage`, and `DetailPage` subclasses as the primary view customization mechanism.
 - Keep `indexFields()`, `formFields()`, and `detailFields()` as simple fallback shortcuts; do not add `indexResource()`, `formResource()`, `detailResource()`, or split Resource abstractions.

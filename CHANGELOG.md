@@ -3,17 +3,20 @@
 ## Unreleased
 
 ### Added
+- Added `Discovery\ClassDiscovery` so registry class discovery is isolated from AdminKitRegistry and backed by `mb4it/filesystem` ClassFinder.
 - Added stabilization coverage for standalone `DashboardPage` registration/discovery, resource-page menu isolation, Field API compatibility, FieldRenderContext fallbacks, resource field shortcuts, string resource page IDs, and agent notes for preserving page/field boundaries.
 - Added the `Resource::pages()` model with default `IndexPage`, `FormPage`, and `DetailPage` registrations, plus `PageContract`, `PageFactory`, `ResourcePageResolver`, and `PageNotFoundException` for resolving custom page classes.
 - Added `FieldRenderContext` and wired index, form, and detail field rendering through page-aware render contexts while keeping raw-value field rendering backward compatible.
 
 ### Changed
+- Reworked AdminKit discovery to find resources and standalone pages through `mb4it/filesystem` ClassFinder with Reflection-based deep descendant checks and duplicate-id preservation.
 - Kept standalone page discovery explicit through `AbstractPage::isStandalone()` and preserved non-integer resource page IDs in `Resource::formPage()`, `Resource::detailPage()`, and `FormPage`.
 - Adapted the refactored grid architecture so `IndexPage` supplies fields, filters, actions, and query customization to `GridDataLoader`, `GridQueryBuilder`, and `RowAssembler`.
 - Updated `FormPage` and `DetailPage` so page-level `fields()`/`tabs()` overrides are the primary customization points with resource shortcuts as defaults.
 - Extended routing to distinguish resource ids from page names through `admin_resource` and `admin_page` while preserving legacy action routing.
 
 ### Documentation
+- Documented `mb4it/filesystem` as the support package used for ClassFinder-based resource and standalone page discovery.
 - Documented custom Resource pages in README and `docs/pages.md`, including IndexPage/FormPage/DetailPage examples and guidance against `indexResource()`-style abstractions.
 
 ## v1.0.0 - 2026-05-14

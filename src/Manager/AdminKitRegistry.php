@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
+use MB\Bitrix\AdminKit\Discovery\ClassDiscovery;
 use MB\Bitrix\AdminKit\Pages\AbstractPage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use ReflectionClass;
-use SplFileInfo;
 
 final class AdminKitRegistry
 {
+    private ClassDiscovery $discovery;
+
     /** @var array<string, class-string<Resource>> */
     private array $resources = [];
 
@@ -23,10 +22,15 @@ final class AdminKitRegistry
     /** @var array<string, bool> */
     private array $discoveredPaths = [];
 
+    public function __construct(?ClassDiscovery $discovery = null)
+    {
+        $this->discovery = $discovery ?? new ClassDiscovery();
+    }
+
     /** @param class-string<Resource> $resourceClass */
     public function registerResource(string $resourceClass): self
     {
-        if ($this->canRegister($resourceClass, Resource::class)) {
+        if ($this->canRegister($resourceClass, Resource::class) && !isset($this->resources[$resourceClass::getId()])) {
             $this->resources[$resourceClass::getId()] = $resourceClass;
             $this->sort();
         }
@@ -37,7 +41,7 @@ final class AdminKitRegistry
     /** @param class-string<AbstractPage> $pageClass */
     public function registerPage(string $pageClass): self
     {
-        if ($this->canRegisterPage($pageClass)) {
+        if ($this->canRegisterPage($pageClass) && !isset($this->pages[$pageClass::getId()])) {
             $this->pages[$pageClass::getId()] = $pageClass;
             $this->sort();
         }
@@ -53,16 +57,19 @@ final class AdminKitRegistry
         }
 
         $this->discoveredPaths[$path] = true;
-        foreach ($this->classesInPath($path) as $class) {
-            if ($this->canRegister($class, Resource::class) && !isset($this->resources[$class::getId()])) {
-                $this->resources[$class::getId()] = $class;
-                continue;
-            }
 
-            if ($this->canRegisterPage($class) && !isset($this->pages[$class::getId()])) {
+        foreach ($this->discovery->resourcesIn($path) as $class) {
+            if (!isset($this->resources[$class::getId()])) {
+                $this->resources[$class::getId()] = $class;
+            }
+        }
+
+        foreach ($this->discovery->standalonePagesIn($path) as $class) {
+            if (!isset($this->pages[$class::getId()])) {
                 $this->pages[$class::getId()] = $class;
             }
         }
+
         $this->sort();
 
         return $this;
@@ -128,97 +135,6 @@ final class AdminKitRegistry
         return rtrim($path, '/');
     }
 
-    /**
-     * @return class-string[]
-     */
-    private function classesInPath(string $path): array
-    {
-        $classes = [];
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path));
-        foreach ($iterator as $file) {
-            if (!$file instanceof SplFileInfo || !$file->isFile() || $file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $class = $this->classFromFile($file->getPathname());
-            if ($class === null) {
-                continue;
-            }
-
-            if (!class_exists($class)) {
-                require_once $file->getPathname();
-            }
-
-            if (class_exists($class)) {
-                $classes[] = $class;
-            }
-        }
-
-        return array_values(array_unique($classes));
-    }
-
-    private function classFromFile(string $file): ?string
-    {
-        $tokens = token_get_all((string)file_get_contents($file));
-        $namespace = '';
-        $count = count($tokens);
-
-        for ($i = 0; $i < $count; $i++) {
-            if (is_array($tokens[$i]) && $tokens[$i][0] === T_NAMESPACE) {
-                $namespace = $this->readName($tokens, $i + 1);
-                continue;
-            }
-
-            if (is_array($tokens[$i]) && $tokens[$i][0] === T_CLASS && !$this->isAnonymousClass($tokens, $i)) {
-                $class = $this->readName($tokens, $i + 1);
-
-                return $class !== '' ? ltrim($namespace . '\\' . $class, '\\') : null;
-            }
-        }
-
-        return null;
-    }
-
-    /** @param array<int, mixed> $tokens */
-    private function readName(array $tokens, int $index): string
-    {
-        $name = '';
-        $count = count($tokens);
-        for ($i = $index; $i < $count; $i++) {
-            $token = $tokens[$i];
-            if (is_array($token) && in_array($token[0], [T_STRING, T_NAME_QUALIFIED], true)) {
-                $name .= $token[1];
-                continue;
-            }
-            if ($token === '\\') {
-                $name .= '\\';
-                continue;
-            }
-            if ($name === '' && is_array($token) && in_array($token[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
-                continue;
-            }
-
-            break;
-        }
-
-        return $name;
-    }
-
-    /** @param array<int, mixed> $tokens */
-    private function isAnonymousClass(array $tokens, int $index): bool
-    {
-        for ($i = $index - 1; $i >= 0; $i--) {
-            $token = $tokens[$i];
-            if (is_array($token) && in_array($token[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
-                continue;
-            }
-
-            return is_array($token) && $token[0] === T_NEW;
-        }
-
-        return false;
-    }
-
     private function canRegisterPage(string $class): bool
     {
         return $this->canRegister($class, AbstractPage::class) && $class::isStandalone();
@@ -230,7 +146,7 @@ final class AdminKitRegistry
             return false;
         }
 
-        return !(new ReflectionClass($class))->isAbstract();
+        return !(new \ReflectionClass($class))->isAbstract();
     }
 
     private function sort(): void

@@ -38,6 +38,15 @@ if (!class_exists(BaseProvider::class)) {
 }
 
 
+
+namespace Bitrix\Main\ORM\Data;
+
+if (!class_exists(DataManager::class)) {
+    abstract class DataManager
+    {
+    }
+}
+
 namespace Bitrix\Main\Grid;
 
 if (!class_exists(Options::class)) {
