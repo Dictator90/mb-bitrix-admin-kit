@@ -78,4 +78,10 @@ interface FieldContract
     public function dependsOn(string|array $sourceColumns, ?Closure $modifier = null): static;
 
     public function displayUsing(Closure $callback): static;
+
+    public function asEditLink(bool $enabled = true): static;
+
+    public function linkToEdit(bool $enabled = true): static;
+
+    public function shouldRenderAsEditLink(): bool;
 }

@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Added
+- Grouped index rows via `Grid\Grouping\IndexGrouping`, `IndexPage::grouping()`, resource `indexGrouping()`, Bitrix collapsible grid row metadata, and synthetic group/item row IDs.
+- Relation index fields `Field\HasMany` and `Field\HasOne` that batch-load related values without joining or duplicating base grid rows.
+- Field edit links for index columns through `asEditLink()` / `linkToEdit()` with SidePanel-aware edit URLs.
 - `Discovery\ClassDiscovery` — registry discovery isolated from `AdminKitRegistry`, backed by `mb4it/filesystem` `ClassFinder` and Reflection-based final-class checks.
 - `Resource::pages()` with default `IndexPage`, `FormPage`, `DetailPage`; `PageContract`, `PageFactory`, `ResourcePageResolver`, `PageNotFoundException`.
 - `FieldRenderContext` for page-aware index/form/detail field rendering with backward-compatible raw-value rendering.

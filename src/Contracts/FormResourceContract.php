@@ -23,6 +23,7 @@ interface FormResourceContract
      */
     public function createItem(array $data): mixed;
 
+    /** @param FormData|array<string,mixed> $data */
     public function createItemResult(FormData|array $data, ?DbOperationContext $context = null): DbResult;
 
     /**
@@ -30,6 +31,7 @@ interface FormResourceContract
      */
     public function updateItem(mixed $id, array $data): bool;
 
+    /** @param FormData|array<string,mixed> $data */
     public function updateItemResult(mixed $id, FormData|array $data, ?DbOperationContext $context = null): DbResult;
 
     public function save(DataWrapper $item): DataWrapper;

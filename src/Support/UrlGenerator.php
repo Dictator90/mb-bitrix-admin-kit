@@ -51,6 +51,14 @@ final class UrlGenerator
     {
         return $this->withQuery(['action' => 'edit', 'id' => $id] + $extra);
     }
+
+    /** @param array<string,mixed> $extra */
+    public function editResourceUrl(ResourceContract|string $resource, mixed $id, array $extra = []): string
+    {
+        $pageId = $resource instanceof ResourceContract ? $resource::getId() : $resource;
+
+        return $this->withQuery(['page' => $pageId, 'action' => 'edit', 'id' => $id] + $extra, ['saved', 'IFRAME']);
+    }
     public function detailUrl(mixed $id, array $extra = []): string
     {
         return $this->withQuery(['action' => 'detail', 'id' => $id] + $extra);
@@ -84,10 +92,17 @@ final class UrlGenerator
         return $this->withQuery($params);
     }
 
-    private function withQuery(array $params): string
+    /**
+     * @param array<string,mixed> $params
+     * @param array<int,string> $remove
+     */
+    private function withQuery(array $params, array $remove = []): string
     {
         $parsed = parse_url($this->baseUrl);
         parse_str($parsed['query'] ?? '', $query);
+        foreach ($remove as $key) {
+            unset($query[$key]);
+        }
         $query = array_replace($query, $params);
         $path = $parsed['path'] ?? $this->baseUrl;
         return $path . ($query === [] ? '' : '?' . http_build_query($query));

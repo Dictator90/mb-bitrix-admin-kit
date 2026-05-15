@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+
+
 namespace MB\Bitrix\Foundation;
 
 if (!class_exists(ServiceProvider::class)) {
@@ -179,6 +181,61 @@ if (!class_exists(Toolbar::class)) {
 
         public static function addButton(object $button, string $location): void
         {
+        }
+    }
+}
+
+namespace Bitrix\Main\Localization;
+
+if (!class_exists(Loc::class)) {
+    final class Loc
+    {
+        public static function loadMessages(string $file): void
+        {
+        }
+
+        /** @param array<string,string>|null $replace */
+        public static function getMessage(string $code, ?array $replace = null): ?string
+        {
+            return null;
+        }
+    }
+}
+
+namespace Bitrix\Main;
+
+if (!class_exists(HttpRequest::class)) {
+    class HttpRequest
+    {
+        public function isPost(): bool
+        {
+            return false;
+        }
+
+        public function get(string $key): mixed
+        {
+            return null;
+        }
+
+        public function getPost(string $key): mixed
+        {
+            return null;
+        }
+
+        public function getRequestUri(): string
+        {
+            return '';
+        }
+
+        /** @return array<string,mixed> */
+        public function toArray(): array
+        {
+            return [];
+        }
+
+        public function getHeader(string $name): ?string
+        {
+            return null;
         }
     }
 }

@@ -35,6 +35,7 @@ abstract class Field implements FieldContract
     protected bool $importable = true;
     protected bool $private = false;
     protected bool $system = false;
+    protected bool $asEditLink = false;
 
     /** @var array<int, \Closure|ConditionTree|array<string,mixed>> */
     protected array $readonlyWhen = [];
@@ -214,6 +215,23 @@ abstract class Field implements FieldContract
     public function getFilterType(): ?string
     {
         return null;
+    }
+
+    public function asEditLink(bool $enabled = true): static
+    {
+        $this->asEditLink = $enabled;
+
+        return $this;
+    }
+
+    public function linkToEdit(bool $enabled = true): static
+    {
+        return $this->asEditLink($enabled);
+    }
+
+    public function shouldRenderAsEditLink(): bool
+    {
+        return $this->asEditLink;
     }
 
     public function computed(Closure $callback): static
