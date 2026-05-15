@@ -8,7 +8,8 @@ use Bitrix\Main\Config\Option;
 use Bitrix\Main\Context;
 use Bitrix\Main\HttpRequest;
 use Bitrix\Main\SiteTable;
-use MB\Bitrix\AdminKit\Component\Layout;
+use MB\Bitrix\AdminKit\Component\Alert;
+use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
@@ -68,7 +69,7 @@ abstract class OptionsPage extends AbstractPage
     /**
      * Return the page's components: fields, layout components, and/or tabs.
      *
-     * @return iterable<FieldContract|ComponentContract|Tab>
+     * @return iterable<FieldContract|ComponentContract>
      */
     public function fields(): iterable
     {
@@ -104,7 +105,7 @@ abstract class OptionsPage extends AbstractPage
         $this->renderToolbar();
 
         if (!$this->moduleId) {
-            echo '<div class="ui-alert ui-alert-danger"><span class="ui-alert-message">moduleId не задан в ' . static::class . '</span></div>';
+            echo Alert::make('moduleId не задан в ' . static::class, Alert::DANGER)->render();
             return;
         }
 

@@ -121,13 +121,15 @@ class RowAction implements ActionContract
     {
         $urlJs = CUtil::JSEscape($url);
         if ($gridId === null || $gridId === '') {
-            return "BX.SidePanel.Instance.open('{$urlJs}')";
+            return "BX.SidePanel.Instance.open('{$urlJs}',{cacheable:false,allowChangeHistory:false})";
         }
 
         $gridIdJson = json_encode($gridId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '""';
 
         return
             "BX.SidePanel.Instance.open('{$urlJs}',{" .
+                'cacheable:false,' .
+                'allowChangeHistory:false,' .
                 'events:{' .
                     'onCloseComplete:function(){' .
                         'var manager=BX.Main&&BX.Main.gridManager?BX.Main.gridManager:null;' .

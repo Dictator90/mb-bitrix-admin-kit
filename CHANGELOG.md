@@ -14,6 +14,8 @@
 - Adapted the refactored grid architecture so `IndexPage` supplies fields, filters, actions, and query customization to `GridDataLoader`, `GridQueryBuilder`, and `RowAssembler`.
 - Updated `FormPage` and `DetailPage` so page-level `fields()`/`tabs()` overrides are the primary customization points with resource shortcuts as defaults.
 - Extended routing to distinguish resource ids from page names through `admin_resource` and `admin_page` while preserving legacy action routing.
+- Fixed mojibake in Form and toolbar/index localized labels by moving Form page user-facing strings to `Loc` keys and restoring broken RU language files in UTF-8.
+- Fixed `FormPage` async save flow: async submit script is now rendered on form pages and async POST now returns JSON via `sendAsyncSaveResponse()` instead of falling back to full-page submit/redirect behavior.
 
 ### Documentation
 - Documented `mb4it/filesystem` as the support package used for ClassFinder-based resource and standalone page discovery.
@@ -54,6 +56,13 @@
 - Updated `EntitySelect` label resolution to use `src/UI/EntitySelector` providers by default; `resolveLabels()` now serves as an optional custom-label override.
 - Improved `IblockElementListProvider` avatar resolution for selector items: now uses `PREVIEW_PICTURE`, then `DETAIL_PICTURE`, then `MORE_PHOTO` fallback.
 - Restored legacy `IblockElementSelect` entity binding to `iblock-element-list` and legacy label resolution behavior from previous support package implementation.
+- Added toolbar buttons for CSV export/import and wired `action=export`/`action=import` handling in `IndexPage` to execute `ExportAction` and `ImportAction`.
+- Updated import UX: `action=import` now opens in SidePanel and uses AdminKit `ui-form`/Field-based layout instead of a raw standalone markup block.
+- Reworked CSV import UI to a staged flow using Bitrix `ui.stepprocessing` (`parse` -> `validate` -> `import`) inside SidePanel and removed the `К списку` action from the import form.
+- Temporarily removed import entrypoints from resource index pages and toolbar, and added configurable resource toolbar actions with built-in `export` action support.
+- Localized export guard/error messages via Bitrix `Loc` and ensured export failures render with styled `ui.alerts` notifications on index pages.
+- Localized index and toolbar user-facing labels/messages (create/export button labels, inline row error template, and export fallback message) via Bitrix `Loc` keys.
+- Unified toolbar management across `IndexPage`, `FormPage`, and `DetailPage` using Bitrix `Toolbar` facade patterns (top save/cancel on form, back/edit on detail, and localized toolbar labels).
 
 ### Migration notes
 - v1.0.0 is a stabilization release, not a feature expansion release. Existing v0.1.0-v0.9.0 Resource, Field, Filter, Action, persistence, bulk action, import/export, and page-layer extension points remain the migration path.

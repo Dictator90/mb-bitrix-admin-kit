@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page;
 
 use Bitrix\Main\UI\Extension;
+use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
@@ -30,7 +31,7 @@ class DetailPage extends Page
     {
         global $APPLICATION;
 
-        Extension::load(['ui', 'ui.layout-form', 'ui.buttons']);
+        Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.toolbar']);
 
         $row = $this->resource->findItem($this->id);
         $this->item = is_array($row)
@@ -75,9 +76,26 @@ class DetailPage extends Page
             'window.history.back();' .
         '})();';
 
+        (new ToolbarRenderer())->renderDetail($this->resource, $backAction, $this->editUrl());
+
         echo '<div class="ui-button-panel">';
         echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialchars($backAction, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">&#1053;&#1072;&#1079;&#1072;&#1076;</button>';
         echo '</div>';
+    }
+
+    protected function editUrl(): ?string
+    {
+        $requestUri = (string)($_SERVER['REQUEST_URI'] ?? '');
+        $parsed = parse_url($requestUri);
+        parse_str((string)($parsed['query'] ?? ''), $query);
+        $query['action'] = 'edit';
+        $query['id'] = (string)$this->id;
+        $path = (string)($parsed['path'] ?? '');
+        if ($path === '') {
+            return null;
+        }
+
+        return $path . '?' . http_build_query($query);
     }
 
 

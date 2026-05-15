@@ -69,8 +69,9 @@ final class GridQueryBuilder
     private function buildOrder(GridContext $context, IndexPageDefinitionContract $indexPage): array
     {
         $uiOrder = $context->sort ?: $this->readGridSort($context);
+        $baseOrder = $uiOrder !== [] ? $uiOrder : $indexPage->defaultSort();
 
-        return array_replace($indexPage->defaultSort(), $uiOrder, $indexPage->indexOrder($context));
+        return array_replace($baseOrder, $indexPage->indexOrder($context));
     }
 
     private function readGridSort(GridContext $context): array

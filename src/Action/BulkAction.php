@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Action;
 
 use Closure;
+use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
@@ -12,7 +13,7 @@ use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\AdminCondition;
 use MB\Support\Conditionable\ConditionTree;
 
-class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
+class BulkAction implements ActionContract
 {
     protected string $id;
     protected string $label;

@@ -22,6 +22,9 @@ final class ExportAction
         private readonly string $label = 'Экспорт',
         ?ExporterInterface $exporter = null,
     ) {
+        if (class_exists(\Bitrix\Main\Localization\Loc::class)) {
+            \Bitrix\Main\Localization\Loc::loadMessages(__FILE__);
+        }
         $this->exporters = [$exporter ?? new CsvExporter()];
     }
 
@@ -61,11 +64,11 @@ final class ExportAction
     public function execute(ExportContext $context): ExportResult
     {
         if (!$context->resource->canView(new PermissionContext($context->userId, null, $context->resource, 'export'))) {
-            return ExportResult::failure('Export permission denied.');
+            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_PERMISSION_DENIED', 'Export permission denied.'));
         }
 
         if (!$this->isRunnable($context)) {
-            return ExportResult::failure('Export action is not allowed.');
+            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export action is not allowed.'));
         }
 
         if (
@@ -74,7 +77,7 @@ final class ExportAction
             && !$this->allowRunAll
             && !(method_exists($context->resource, 'allowExportAll') && $context->resource->allowExportAll())
         ) {
-            return ExportResult::failure('Exporting all records is disabled by default. Select records or pass an explicit filter.');
+            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_ALL_DISABLED', 'Exporting all records is disabled by default. Select records or pass an explicit filter.'));
         }
 
         if (
@@ -85,12 +88,12 @@ final class ExportAction
                 || (method_exists($context->resource, 'allowExportByFilter') && !$context->resource->allowExportByFilter())
             )
         ) {
-            return ExportResult::failure('Export by filter is disabled for this action.');
+            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_FILTER_DISABLED', 'Export by filter is disabled for this action.'));
         }
 
         $exporter = $this->resolveExporter($context->format);
         if ($exporter === null) {
-            return ExportResult::failure('Unsupported export format.');
+            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_UNSUPPORTED_FORMAT', 'Unsupported export format.'));
         }
 
         return $exporter->export($this->rows($context), $context);
@@ -103,6 +106,15 @@ final class ExportAction
         }
 
         return (bool)($this->canRunCondition)($context);
+    }
+
+    private function message(string $key, string $fallback): string
+    {
+        if (class_exists(\Bitrix\Main\Localization\Loc::class)) {
+            return (string)(\Bitrix\Main\Localization\Loc::getMessage($key) ?: $fallback);
+        }
+
+        return $fallback;
     }
 
     private function resolveExporter(string $format): ?ExporterInterface

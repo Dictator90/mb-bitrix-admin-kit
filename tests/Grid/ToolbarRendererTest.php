@@ -28,7 +28,7 @@ final class ToolbarRendererTest extends TestCase
         (new ToolbarRenderer())->render(new ProductResource(), $grid, '/admin/products.php?action=add');
 
         self::assertCount(1, Toolbar::$filters);
-        self::assertCount(1, Toolbar::$buttons);
+        self::assertCount(2, Toolbar::$buttons);
         self::assertSame('products_filter', Toolbar::$filters[0]['FILTER_ID']);
         self::assertSame('bitrix:ui.toolbar', $GLOBALS['APPLICATION']->components[0][0]);
     }

@@ -1,0 +1,7 @@
+<?php
+$MESS['MB_ADMIN_KIT_TOOLBAR_CREATE'] = 'Создать';
+$MESS['MB_ADMIN_KIT_TOOLBAR_EXPORT_CSV'] = 'Экспорт CSV';
+$MESS['MB_ADMIN_KIT_TOOLBAR_SAVE'] = 'Сохранить';
+$MESS['MB_ADMIN_KIT_TOOLBAR_CANCEL'] = 'Отмена';
+$MESS['MB_ADMIN_KIT_TOOLBAR_EDIT'] = 'Редактировать';
+$MESS['MB_ADMIN_KIT_TOOLBAR_BACK'] = 'Назад';

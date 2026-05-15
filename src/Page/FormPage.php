@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page;
 
+use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UI\Extension;
+use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
@@ -14,14 +16,18 @@ use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
+use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use Throwable;
 
 class FormPage extends Page
 {
     protected ?DataWrapper $item = null;
-    protected array $errors = [];
+    protected array $globalErrors = [];
+    protected bool $hasValidationErrors = false;
+    protected array $submittedValues = [];
 
     /** @var array<string,string[]> */
     protected array $fieldErrors = [];
@@ -32,6 +38,7 @@ class FormPage extends Page
     protected string $formId = '';
 
     protected string $mode = 'create';
+    protected bool $isAsync = true;
 
     public function __construct(ResourceContract $resource, mixed $id = null, array $params = [])
     {
@@ -48,33 +55,39 @@ class FormPage extends Page
     public function render(): void
     {
         global $APPLICATION;
+        Loc::loadMessages(__FILE__);
 
         $inPanel = $this->isSidePanelMode();
 
-        Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.hint', 'mb.ui.tabs']);
+        $assetManager = (new AssetManager())->forForm();
+        $assetManager->addExtensions(['ui', 'ui.layout-form', 'ui.buttons', 'ui.hint', 'mb.ui.tabs', 'ui.toolbar', 'ui.alerts', 'ui.notification']);
 
         if ($inPanel) {
-            Extension::load(['sidepanel']);
+            $assetManager->addExtensions('sidepanel');
         }
 
+        $assetManager->load();
+
         $title = $this->id
-            ? $this->resource->getTitle() . ' — Редактирование #' . $this->id
-            : $this->resource->getTitle() . ' — Создание';
+            ? $this->resource->getTitle() . ' - ' . Loc::getMessage('MB_ADMIN_KIT_FORM_TITLE_EDIT', ['#ID#' => (string)$this->id])
+            : $this->resource->getTitle() . ' - ' . Loc::getMessage('MB_ADMIN_KIT_FORM_TITLE_CREATE');
         $APPLICATION->SetTitle($title);
 
         $this->formId = 'adminkit-form-' . md5(static::class . ($this->id ?? ''));
+
+        (new ToolbarRenderer())->renderForm($this->resource, $this->formId, $this->cancelActionJs());
 
         if ($this->id) {
             $row = $this->resource->findItem($this->id);
             $this->item = $row ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey()) : null;
             if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
-                $this->errors[] = 'Недостаточно прав для просмотра записи.';
+                $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW');
             }
             if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
-                $this->errors[] = 'Недостаточно прав для редактирования записи.';
+                $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT');
             }
         } elseif (!$this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
-            $this->errors[] = 'Недостаточно прав для создания записи.';
+            $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_CREATE');
         }
 
         if ($this->isPost() && check_bitrix_sessid()) {
@@ -83,10 +96,15 @@ class FormPage extends Page
                 return;
             }
             $this->handlePost();
+
+            if ($this->isAsyncSaveRequest()) {
+                $this->sendAsyncSaveResponse();
+                return;
+            }
         }
 
         // Successful save inside SidePanel: close the slider from the iframe context.
-        // window.top.BX is used because BX inside an iframe is the iframe's own context —
+        // window.top.BX is used because BX inside an iframe is the iframe's own context Р В Р’В Р В РІР‚В Р В Р’В Р Р†Р вЂљРЎв„ўР В Р вЂ Р В РІР‚С™Р РЋРЎС™
         // the SidePanel instance lives in the parent (top) window.
         if ($this->savedInSidePanel) {
             echo '<script>window.top.BX.SidePanel.Instance.getTopSlider().close();</script>';
@@ -98,7 +116,15 @@ class FormPage extends Page
         $this->renderReactiveScript();
         $this->renderDependencyScript($this->formId);
         $this->renderConditionalVisibilityScript($this->formId);
+        if ($this->isAsync()) {
+            $this->renderAsyncSaveScript();
+        }
         $this->renderHintInit();
+    }
+
+    public function isAsync(): bool
+    {
+        return $this->isAsync;
     }
 
     protected function renderHintInit(): void
@@ -129,12 +155,14 @@ class FormPage extends Page
             $column = $field->getColumn();
             $raw[$column] = $this->request->getPost($column);
         }
+        $this->submittedValues = $raw;
 
         $formData = (new DataPipeline())->process($fields, $raw);
+
         foreach ($formData->errors() as $column => $messages) {
             foreach ($messages as $message) {
                 $this->fieldErrors[$column][] = $message;
-                $this->errors[] = $message;
+                $this->hasValidationErrors = true;
             }
         }
 
@@ -173,21 +201,28 @@ class FormPage extends Page
                 $this->afterSave($formData, $context, $savedId);
             }
         } catch (AdminKitException $exception) {
-            $this->errors[] = $exception->getMessage();
+            $this->globalErrors[] = $exception->getMessage();
+            return;
+        } catch (Throwable $exception) {
+            $message = trim($exception->getMessage());
+            if ($message === '') {
+                $message = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
+            }
+            $this->globalErrors[] = $message;
             return;
         }
 
         if (!$result->isSuccess()) {
             foreach ($result->errors() as $error) {
-                $this->errors[] = $error;
+                $this->globalErrors[] = $error;
             }
             return;
         }
 
         if ($savedId) {
             if ($this->isSidePanelMode()) {
-                // Don't redirect — signal the slider to close; grid reload happens in onCloseComplete
-                $this->savedInSidePanel = true;
+                // Don't redirect signal the slider to close; grid reload happens in onCloseComplete
+                $this->savedInSidePanel = !$this->isAsyncSaveRequest();
             } else {
                 $redirectUrl = $this->redirectAfterSave($savedId);
                 if ($redirectUrl === null) {
@@ -235,29 +270,34 @@ class FormPage extends Page
         );
 
         if ($this->id && !$this->resource->canUpdate($permission)) {
-            throw new PermissionDeniedException('Недостаточно прав для сохранения записи.');
+            throw new PermissionDeniedException((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT'));
         }
 
         if (!$this->id && !$this->resource->canCreate($permission)) {
-            throw new PermissionDeniedException('Недостаточно прав для создания записи.');
+            throw new PermissionDeniedException((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_CREATE'));
         }
     }
 
     protected function renderAlerts(): void
     {
-        if (!empty($this->errors)) {
+        if ($this->hasValidationErrors) {
             echo '<div class="ui-alert ui-alert-danger adminkit-alert">';
-            foreach ($this->errors as $error) {
-                echo '<span class="ui-alert-message">' . htmlspecialcharsbx($error) . '</span><br>';
+            echo '<span class="ui-alert-message">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR')) . '</span>';
+            echo '</div>';
+        }
+
+        if (!empty($this->globalErrors)) {
+            echo '<div class="ui-alert ui-alert-danger adminkit-alert">';
+            foreach ($this->globalErrors as $error) {
+                echo '<span class="ui-alert-message">' . htmlspecialcharsbx((string)$error) . '</span><br>';
             }
             echo '</div>';
         }
 
         if ($this->request->get('saved') === '1') {
-            echo '<div class="ui-alert ui-alert-success adminkit-alert"><span class="ui-alert-message">Данные сохранены</span></div>';
+            echo '<div class="ui-alert ui-alert-success adminkit-alert"><span class="ui-alert-message">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED')) . '</span></div>';
         }
     }
-
     protected function renderForm(): void
     {
         $action = $this->request->getRequestUri();
@@ -289,7 +329,7 @@ class FormPage extends Page
                 $inner = $item->withPageType(PageType::FORM)->withItem($this->item)->render();
                 echo $this->wrapComponentWithVisibility($item, $inner);
             } elseif ($item instanceof FieldContract) {
-                $value = $this->item?->get($item->getColumn());
+                $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
                 $this->renderFormRow($item, $value);
             }
         }
@@ -341,7 +381,7 @@ class FormPage extends Page
                     $inner = $item->withPageType(PageType::FORM)->withItem($this->item)->render();
                     echo $this->wrapComponentWithVisibility($item, $inner);
                 } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
-                    $value = $this->item?->get($item->getColumn());
+                    $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
                     $this->renderFormRow($item, $value);
                 }
             }
@@ -385,7 +425,7 @@ class FormPage extends Page
             meta: ['mode' => $this->mode],
         ));
         foreach ($this->fieldErrors[$field->getColumn()] ?? [] as $message) {
-            echo '<div class="ui-alert ui-alert-danger adminkit-field-error"><span class="ui-alert-message">' . htmlspecialcharsbx($message) . '</span></div>';
+            echo '<div class="ui-alert ui-alert-inline ui-alert-xs ui-alert-danger adminkit-field-error"><span class="ui-alert-message">' . htmlspecialcharsbx($message) . '</span></div>';
         }
         echo '</div>';
         echo '</div>';
@@ -426,16 +466,21 @@ class FormPage extends Page
 
     protected function renderButtons(): void
     {
-        $cancelAction = $this->isSidePanelMode()
-            ? 'window.top.BX.SidePanel.Instance.getTopSlider().close()'
-            : 'window.history.back()';
+        $cancelAction = $this->cancelActionJs();
 
         echo '<div class="ui-button-panel adminkit-button-panel">';
-        echo '<button type="submit" class="ui-btn ui-btn-success" name="save" value="Y">Сохранить</button>';
+        echo '<button type="submit" class="ui-btn ui-btn-success" id="'.$this->formId.'-submit" name="save" value="Y">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVE')) . '</button>';
         echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialcharsbx(
             $cancelAction
-        ) . '">Отмена</button>';
+        ) . '">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_CANCEL')) . '</button>';
         echo '</div>';
+    }
+
+    protected function cancelActionJs(): string
+    {
+        return $this->isSidePanelMode()
+            ? 'window.top.BX.SidePanel.Instance.getTopSlider().close()'
+            : 'window.history.back()';
     }
 
     /** @return array<int, FieldContract|ComponentContract> */
@@ -485,7 +530,8 @@ class FormPage extends Page
 
         $formData = [];
         foreach ($allFields as $field) {
-            $formData[$field->getColumn()] = $this->item?->get($field->getColumn());
+            $column = $field->getColumn();
+            $formData[$column] = $this->resolveFieldValue($column, $this->item?->get($column));
         }
 
         foreach ($allFields as $field) {
@@ -766,6 +812,7 @@ class FormPage extends Page
         BX.ready(function() {
             var form = document.getElementById({$formIdJs})
             if (!form) return;
+           
 
             function getFieldValue(col) {
                 var inputs = form.querySelectorAll('[name="' + col + '"]');
@@ -825,7 +872,7 @@ class FormPage extends Page
         HTML;
     }
 
-    /** @return FieldContract[] — all writable fields from both flat form and tabs */
+    /** @return FieldContract[] all writable fields from both flat form and tabs */
     protected function collectAllFields(): array
     {
         $tabs = iterator_to_array($this->tabs());
@@ -846,4 +893,112 @@ class FormPage extends Page
 
         return array_values(array_filter($fields, fn (FieldContract $f) => !$f->isReadOnly()));
     }
+    protected function resolveFieldValue(string $column, mixed $fallback): mixed
+    {
+        return array_key_exists($column, $this->submittedValues) ? $this->submittedValues[$column] : $fallback;
+    }
+
+    protected function isAsyncSaveRequest(): bool
+    {
+        return (string)$this->request->getPost('adminkit_async_save') === 'Y';
+    }
+
+    protected function sendAsyncSaveResponse(): void
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => !$this->hasValidationErrors && $this->globalErrors === [],
+            'validationError' => $this->hasValidationErrors,
+            'globalErrors' => $this->globalErrors,
+            'fieldErrors' => $this->fieldErrors,
+            'closeSidePanel' => $this->savedInSidePanel,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        die();
+    }
+
+    protected function renderAsyncSaveScript(): void
+    {
+        $formIdJs = json_encode($this->formId);
+        $validationErrorMessageJs = json_encode((string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR'));
+        $savedMessageJs = json_encode((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED'));
+
+        echo <<<HTML
+        <script>
+        BX.ready(function() {
+            var form = document.getElementById({$formIdJs});
+            if (!form) { return; }
+            var submitBtn = document.getElementById({$formIdJs} + '-submit')
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                submitBtn.disabled = true;
+                submitBtn.classList.add('ui-btn-wait');
+                
+                var data = new FormData(form);
+                data.set('adminkit_async_save', 'Y');
+
+                fetch(form.action || window.location.href, {
+                    method: 'POST',
+                    body: data,
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(resp) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('ui-btn-wait');
+                    
+                    form.querySelectorAll('.adminkit-field-error').forEach(function(node) { node.remove(); });
+                    form.parentNode.querySelectorAll('.adminkit-alert').forEach(function(node) { node.remove(); });
+
+                    if (resp.validationError) {
+                        var top = document.createElement('div');
+                        top.className = 'ui-alert ui-alert-danger adminkit-alert';
+                        top.innerHTML = '<span class="ui-alert-message">' + {$validationErrorMessageJs} + '</span>';
+                        form.parentNode.insertBefore(top, form);
+                    }
+
+                    (resp.globalErrors || []).forEach(function(message) {
+                        var top = document.createElement('div');
+                        top.className = 'ui-alert ui-alert-danger adminkit-alert';
+                        top.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(String(message)) + '</span>';
+                        form.parentNode.insertBefore(top, form);
+                    });
+
+                    Object.keys(resp.fieldErrors || {}).forEach(function(column) {
+                        var content = form.querySelector('[data-field-column="' + column + '"] .ui-form-content');
+                        if (!content) { return; }
+                        (resp.fieldErrors[column] || []).forEach(function(message) {
+                            var box = document.createElement('div');
+                            box.className = 'ui-alert ui-alert-inline ui-alert-xs ui-alert-danger adminkit-field-error';
+                            box.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(String(message)) + '</span>';
+                            content.appendChild(box);
+                        });
+                    });
+
+                    if (resp.success) {
+                        if (resp.closeSidePanel && window.top && window.top.BX && window.top.BX.SidePanel) {
+                            window.top.BX.SidePanel.Instance.getTopSlider().close();
+                        } else if (BX.UI && BX.UI.Notification && BX.UI.Notification.Center) {
+                            BX.UI.Notification.Center.notify({content: {$savedMessageJs}});
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    console.log(err);
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('ui-btn-wait');
+                    BX.UI.Notification.Center.notify({content: 'Ошибка запроса: ' + err.message});
+                 
+                });;
+            });
+        });
+        </script>
+        HTML;
+    }
 }
+

@@ -66,6 +66,10 @@ final class BitrixGridActionPanelAdapter
 
     public function buildBulkActionCallbackJs(Grid $grid, string $actionId): string
     {
+        if ($actionId === 'export_selected') {
+            return $this->buildBulkExportCallbackJs($grid, $actionId);
+        }
+
         $gridIdJs = $this->jsEscape($grid->getId());
         $actionIdJs = $this->jsEscape($actionId);
         $actionButtonKeyJs = $this->jsEscape('action_button_' . $grid->getId());
@@ -96,6 +100,45 @@ final class BitrixGridActionPanelAdapter
                 "if(typeof grid.reloadTable==='function'){" .
                     "grid.reloadTable('POST',data);" .
                 '}' .
+            '})();';
+    }
+
+    private function buildBulkExportCallbackJs(Grid $grid, string $actionId): string
+    {
+        $gridIdJs = $this->jsEscape($grid->getId());
+        $actionIdJs = $this->jsEscape($actionId);
+        $forAllKeyJs = 'action_all_rows_' . $gridIdJs;
+
+        return
+            '(function(){' .
+                "var manager=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
+                'var grid=manager&&(manager.instance||manager.grid);' .
+                'if(!grid){return;}' .
+                "var rows=(typeof grid.getRows==='function')?grid.getRows():null;" .
+                "var ids=(rows&&typeof rows.getSelectedIds==='function')?rows.getSelectedIds():[];" .
+                "if(!ids||ids.length===0){" .
+                    'if(BX.UI&&BX.UI.Notification&&BX.UI.Notification.Center){' .
+                        "BX.UI.Notification.Center.notify({content:'Select at least one row'});" .
+                    '}' .
+                    'return;' .
+                '}' .
+                "var form=document.createElement('form');" .
+                "form.method='POST';" .
+                "form.action=window.location.pathname+window.location.search;" .
+                "var action=document.createElement('input');" .
+                "action.type='hidden';action.name='action';action.value='{$actionIdJs}';form.appendChild(action);" .
+                "var forAll=document.createElement('input');" .
+                "forAll.type='hidden';forAll.name='{$forAllKeyJs}';forAll.value='N';form.appendChild(forAll);" .
+                "if(BX&&typeof BX.bitrix_sessid==='function'){" .
+                    "var sessid=document.createElement('input');" .
+                    "sessid.type='hidden';sessid.name='sessid';sessid.value=BX.bitrix_sessid();form.appendChild(sessid);" .
+                '}' .
+                'for(var i=0;i<ids.length;i++){' .
+                    "var id=document.createElement('input');" .
+                    "id.type='hidden';id.name='ID[]';id.value=ids[i];form.appendChild(id);" .
+                '}' .
+                'document.body.appendChild(form);' .
+                'form.submit();' .
             '})();';
     }
 }

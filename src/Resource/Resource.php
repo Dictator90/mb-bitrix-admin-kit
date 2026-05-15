@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Resource;
 
 use Bitrix\Main\ORM\Data\DataManager;
 use MB\Bitrix\AdminKit\Action\AsyncAction;
+use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
@@ -18,6 +19,7 @@ use MB\Bitrix\AdminKit\Page\ResourcePageResolver;
 use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
 use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
 use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
+use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Support\AdminString;
 
 /**
@@ -281,6 +283,12 @@ abstract class Resource implements ResourceContract
     public function asyncActions(): iterable
     {
         return [];
+    }
+
+    /** @return iterable<ToolbarAction|string> */
+    public function toolbarActions(): iterable
+    {
+        return ['export'];
     }
 
     /** @return iterable<Tab> */
