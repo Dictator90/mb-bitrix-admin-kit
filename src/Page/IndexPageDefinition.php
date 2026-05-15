@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page;
 
 use Closure;
+use InvalidArgumentException;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
@@ -13,9 +14,36 @@ use MB\Bitrix\AdminKit\Grid\GridContext;
 
 final class IndexPageDefinition implements IndexPageDefinitionContract
 {
+    private const REQUIRED_CALLBACKS = [
+        'fields',
+        'filters',
+        'rowActions',
+        'bulkActions',
+        'defaultSort',
+        'defaultFilter',
+        'defaultSelect',
+        'runtimeFields',
+        'indexSelect',
+        'indexFilter',
+        'indexOrder',
+        'indexRuntime',
+        'beforeIndexQueryParams',
+        'afterIndexRows',
+        'mapIndexRow',
+        'modifyIndexParams',
+    ];
+
     /** @param array<string,Closure> $callbacks */
     public function __construct(private readonly array $callbacks)
     {
+        foreach (self::REQUIRED_CALLBACKS as $name) {
+            if (!isset($this->callbacks[$name])) {
+                throw new InvalidArgumentException(sprintf('IndexPageDefinition callback "%s" is required.', $name));
+            }
+            if (!$this->callbacks[$name] instanceof Closure) {
+                throw new InvalidArgumentException(sprintf('IndexPageDefinition callback "%s" must be a Closure.', $name));
+            }
+        }
     }
 
     /** @return iterable<FieldContract> */

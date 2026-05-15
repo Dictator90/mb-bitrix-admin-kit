@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page;
 
 use Bitrix\Main\Localization\Loc;
-use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
@@ -103,9 +102,7 @@ class FormPage extends Page
             }
         }
 
-        // Successful save inside SidePanel: close the slider from the iframe context.
-        // window.top.BX is used because BX inside an iframe is the iframe's own context Р В Р’В Р В РІР‚В Р В Р’В Р Р†Р вЂљРЎв„ўР В Р вЂ Р В РІР‚С™Р РЋРЎС™
-        // the SidePanel instance lives in the parent (top) window.
+        // Successful non-async save inside SidePanel: close the slider from the iframe context.
         if ($this->savedInSidePanel) {
             echo '<script>window.top.BX.SidePanel.Instance.getTopSlider().close();</script>';
             return;
@@ -113,7 +110,6 @@ class FormPage extends Page
 
         $this->renderAlerts();
         $this->renderForm();
-        $this->renderReactiveScript();
         $this->renderDependencyScript($this->formId);
         $this->renderConditionalVisibilityScript($this->formId);
         if ($this->isAsync()) {
@@ -158,13 +154,7 @@ class FormPage extends Page
         $this->submittedValues = $raw;
 
         $formData = (new DataPipeline())->process($fields, $raw);
-
-        foreach ($formData->errors() as $column => $messages) {
-            foreach ($messages as $message) {
-                $this->fieldErrors[$column][] = $message;
-                $this->hasValidationErrors = true;
-            }
-        }
+        $this->syncFormErrors($formData);
 
         $context = new DbOperationContext(
             resource: $this->resource,
@@ -181,9 +171,11 @@ class FormPage extends Page
         try {
             $this->assertSavePermission($context);
             $this->resource->beforeValidate($formData, $context);
+            $this->syncFormErrors($formData);
             $this->beforeSave($formData, $context);
+            $this->syncFormErrors($formData);
 
-            if ($formData->hasErrors()) {
+            if ($formData->hasErrors() || $this->hasValidationErrors) {
                 return;
             }
 
@@ -221,8 +213,7 @@ class FormPage extends Page
 
         if ($savedId) {
             if ($this->isSidePanelMode()) {
-                // Don't redirect signal the slider to close; grid reload happens in onCloseComplete
-                $this->savedInSidePanel = !$this->isAsyncSaveRequest();
+                $this->savedInSidePanel = true;
             } else {
                 $redirectUrl = $this->redirectAfterSave($savedId);
                 if ($redirectUrl === null) {
@@ -246,6 +237,19 @@ class FormPage extends Page
     protected function tabs(): iterable
     {
         return $this->resource->formTabs();
+    }
+
+    protected function syncFormErrors(\MB\Bitrix\AdminKit\Form\FormData $formData): void
+    {
+        foreach ($formData->errors() as $column => $messages) {
+            foreach ($messages as $message) {
+                $existing = $this->fieldErrors[$column] ?? [];
+                if (!in_array($message, $existing, true)) {
+                    $this->fieldErrors[$column][] = $message;
+                }
+                $this->hasValidationErrors = true;
+            }
+        }
     }
 
     protected function beforeSave(\MB\Bitrix\AdminKit\Form\FormData $data, DbOperationContext $context): void
@@ -541,80 +545,6 @@ class FormPage extends Page
         }
     }
 
-    protected function renderReactiveScript(): void
-    {
-        $allFields = $this->collectAllFields();
-        $hasReactive = false;
-
-        foreach ($allFields as $field) {
-            if (method_exists($field, 'isReactive') && $field->isReactive()) {
-                $hasReactive = true;
-                break;
-            }
-        }
-
-        if (!$hasReactive) {
-            return;
-        }
-
-        $uri = $this->request->getRequestUri();
-        $path = ($pos = strpos($uri, '?')) !== false ? substr($uri, 0, $pos) : $uri;
-        $reactiveUrl = htmlspecialcharsbx($path . '?action=adminkit_reactive');
-
-        echo <<<HTML
-        <script>
-        BX.ready(function() {
-            document.querySelectorAll('[data-reactive="1"]').forEach(function(el) {
-                el.addEventListener('change', function() {
-                    var field = el.dataset.reactiveField;
-                    var targets = JSON.parse(el.dataset.reactiveTargets || '[]');
-                    var url = el.dataset.reactiveUrl || '{$reactiveUrl}';
-                    var formEl = el.closest('form');
-                    var formData = formEl ? new FormData(formEl) : new FormData();
-                    var allData = {};
-                    formData.forEach(function(v, k) { allData[k] = v; });
-
-                    BX.ajax.runAction && BX.ajax || fetch(url, {
-                        method: 'POST',
-                        headers: {'X-Requested-With': 'XMLHttpRequest'},
-                        body: new URLSearchParams({
-                            action: 'adminkit_reactive',
-                            field: field,
-                            value: el.value,
-                            sessid: BX.bitrix_sessid ? BX.bitrix_sessid() : '',
-                            data: JSON.stringify(allData),
-                        })
-                    }).then(function(r) { return r.json(); })
-                      .then(function(resp) {
-                        if (resp.status !== 'success') return;
-                        targets.forEach(function(targetCol) {
-                            if (resp.data[targetCol] === undefined) return;
-                            var targetEl = document.querySelector('[name="' + targetCol + '"]');
-                            if (!targetEl) return;
-                            var newVal = resp.data[targetCol];
-                            if (Array.isArray(newVal)) {
-                                if (targetEl.tagName === 'SELECT') {
-                                    var prevVal = targetEl.value;
-                                    targetEl.innerHTML = '';
-                                    newVal.forEach(function(opt) {
-                                        var o = document.createElement('option');
-                                        o.value = typeof opt === 'object' ? opt.value : opt;
-                                        o.textContent = typeof opt === 'object' ? opt.label : opt;
-                                        if (o.value == prevVal) o.selected = true;
-                                        targetEl.appendChild(o);
-                                    });
-                                }
-                            } else {
-                                targetEl.value = newVal;
-                            }
-                        });
-                    });
-                });
-            });
-        });
-        </script>
-        HTML;
-    }
 
     /**
      * AJAX handler for dependsOn() field dependencies.
@@ -835,8 +765,24 @@ class FormPage extends Page
             }
 
             function matchesRule(rule, val) {
-                if (rule.values) return rule.values.indexOf(val) !== -1;
-                return val === rule.value;
+                if (rule.values) {
+                    return rule.values.indexOf(val) !== -1;
+                }
+                var operator = rule.operator || '=';
+                var expected = rule.value != null ? String(rule.value) : '';
+                if (operator === 'in') {
+                    return Array.isArray(rule.value) && rule.value.map(String).indexOf(val) !== -1;
+                }
+                if (operator === 'not in') {
+                    return !Array.isArray(rule.value) || rule.value.map(String).indexOf(val) === -1;
+                }
+                if (operator === '=' || operator === '==' || operator === '===') {
+                    return val === expected;
+                }
+                if (operator === '!=' || operator === '<>' || operator === '!==') {
+                    return val !== expected;
+                }
+                return val === expected;
             }
 
             function updateVisibility() {
@@ -1001,4 +947,3 @@ class FormPage extends Page
         HTML;
     }
 }
-

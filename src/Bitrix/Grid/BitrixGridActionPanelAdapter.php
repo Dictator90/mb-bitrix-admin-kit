@@ -116,7 +116,7 @@ final class BitrixGridActionPanelAdapter
                 'if(!grid){return;}' .
                 "var rows=(typeof grid.getRows==='function')?grid.getRows():null;" .
                 "var ids=(rows&&typeof rows.getSelectedIds==='function')?rows.getSelectedIds():[];" .
-                "if(!ids||ids.length===0){" .
+                'if(!ids||ids.length===0){' .
                     'if(BX.UI&&BX.UI.Notification&&BX.UI.Notification.Center){' .
                         "BX.UI.Notification.Center.notify({content:'Select at least one row'});" .
                     '}' .
@@ -124,7 +124,7 @@ final class BitrixGridActionPanelAdapter
                 '}' .
                 "var form=document.createElement('form');" .
                 "form.method='POST';" .
-                "form.action=window.location.pathname+window.location.search;" .
+                'form.action=window.location.pathname+window.location.search;' .
                 "var action=document.createElement('input');" .
                 "action.type='hidden';action.name='action';action.value='{$actionIdJs}';form.appendChild(action);" .
                 "var forAll=document.createElement('input');" .

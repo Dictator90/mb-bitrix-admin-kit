@@ -12,6 +12,7 @@ use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Page\DetailPage;
 use MB\Bitrix\AdminKit\Page\FormPage;
 use MB\Bitrix\AdminKit\Page\IndexPage;
@@ -19,7 +20,6 @@ use MB\Bitrix\AdminKit\Page\ResourcePageResolver;
 use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
 use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
 use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
-use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Support\AdminString;
 
 /**

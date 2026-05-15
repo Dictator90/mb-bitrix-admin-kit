@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page;
 
+use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
+use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
+use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
@@ -31,14 +34,30 @@ class DetailPage extends Page
     {
         global $APPLICATION;
 
+        Loc::loadMessages(__FILE__);
+
         Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.toolbar']);
 
         $row = $this->resource->findItem($this->id);
         $this->item = is_array($row)
             ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey())
             : null;
+
         if (!$this->item) {
-            echo '<div class="ui-alert ui-alert-danger"><span class="ui-alert-message">&#1069;&#1083;&#1077;&#1084;&#1077;&#1085;&#1090; &#1085;&#1077; &#1085;&#1072;&#1081;&#1076;&#1077;&#1085;</span></div>';
+            echo Notification::alert(
+                $this->message('MB_ADMIN_KIT_DETAIL_NOT_FOUND', 'Элемент не найден.'),
+                Notification::TYPE_WARNING,
+            );
+
+            return;
+        }
+
+        if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
+            echo Notification::alert(
+                $this->message('MB_ADMIN_KIT_DETAIL_ERR_CANNOT_VIEW', 'Недостаточно прав для просмотра записи.'),
+                Notification::TYPE_WARNING,
+            );
+
             return;
         }
 
@@ -78,8 +97,9 @@ class DetailPage extends Page
 
         (new ToolbarRenderer())->renderDetail($this->resource, $backAction, $this->editUrl());
 
+        $backLabel = htmlspecialcharsbx($this->message('MB_ADMIN_KIT_DETAIL_BACK', 'Назад'));
         echo '<div class="ui-button-panel">';
-        echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialchars($backAction, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">&#1053;&#1072;&#1079;&#1072;&#1076;</button>';
+        echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialchars($backAction, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">' . $backLabel . '</button>';
         echo '</div>';
     }
 
@@ -97,7 +117,6 @@ class DetailPage extends Page
 
         return $path . '?' . http_build_query($query);
     }
-
 
     /** @return iterable<FieldContract> */
     protected function fields(): iterable
@@ -118,5 +137,16 @@ class DetailPage extends Page
         }
 
         return $fields;
+    }
+
+    private function message(string $key, string $fallback): string
+    {
+        if (class_exists(Loc::class)) {
+            Loc::loadMessages(__FILE__);
+
+            return (string)(Loc::getMessage($key) ?: $fallback);
+        }
+
+        return $fallback;
     }
 }

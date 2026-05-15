@@ -116,13 +116,22 @@ namespace Bitrix\Main {
     {
         public function isPost(): bool
         {
-            return false;
-        } public function get(string $key): mixed
+            return (bool)($GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] ?? false);
+        }
+
+        public function get(string $key): mixed
         {
-            return null;
-        } public function getPost(string $key): mixed
+            return $GLOBALS['MB_ADMIN_KIT_TEST_GET'][$key] ?? null;
+        }
+
+        public function getPost(string $key): mixed
         {
-            return null;
+            return $GLOBALS['MB_ADMIN_KIT_TEST_POST'][$key] ?? null;
+        }
+
+        public function getRequestUri(): string
+        {
+            return (string)($GLOBALS['MB_ADMIN_KIT_TEST_REQUEST_URI'] ?? '/bitrix/admin/test.php');
         }
     }
     class Context
@@ -220,7 +229,52 @@ namespace {
     }
     function check_bitrix_sessid(): bool
     {
-        return true;
+        return (bool)($GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] ?? true);
+    }
+
+    $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = false;
+    $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = [];
+    $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [];
+    $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
+    $GLOBALS['MB_ADMIN_KIT_TEST_REQUEST_URI'] = '/bitrix/admin/test.php';
+}
+
+namespace Bitrix\Main\Localization {
+    if (!class_exists(Loc::class)) {
+        class Loc
+        {
+            /** @var array<string,string> */
+            private static array $messages = [];
+
+            public static function loadMessages(string $file): void
+            {
+                $base = dirname(__DIR__);
+                $relative = str_replace('\\', '/', $file);
+                foreach (['ru'] as $lang) {
+                    $langFile = $base . '/lang/' . $lang . '/src/Page/' . basename($file);
+                    if (!is_file($langFile)) {
+                        continue;
+                    }
+                    $MESS = [];
+                    include $langFile;
+                    if (is_array($MESS)) {
+                        foreach ($MESS as $key => $value) {
+                            self::$messages[(string)$key] = (string)$value;
+                        }
+                    }
+                }
+            }
+
+            public static function getMessage(string $code, ?array $replace = null): ?string
+            {
+                $message = self::$messages[$code] ?? null;
+                if ($message === null || $replace === null) {
+                    return $message;
+                }
+
+                return str_replace(array_keys($replace), array_values($replace), $message);
+            }
+        }
     }
 }
 
@@ -277,21 +331,40 @@ namespace { if (!function_exists('bitrix_sessid_post')) {
     {
         $GLOBALS['last_redirect'] = $url;
     }
-} $GLOBALS['APPLICATION'] = new class () {
-    public string $title = '';
-    public array $css = [];
-    public array $js = [];
-    public function SetTitle(string $title): void
+} if (!function_exists('mb_admin_kit_application_mock')) {
+    function mb_admin_kit_application_mock(): object
     {
-        $this->title = $title;
-    } public function SetAdditionalCSS(string $path): void
-    {
-        $this->css[] = $path;
-    } public function AddHeadScript(string $path): void
-    {
-        $this->js[] = $path;
+        return new class () {
+            public string $title = '';
+            public array $css = [];
+            public array $js = [];
+            public array $components = [];
+
+            public function SetTitle(string $title): void
+            {
+                $this->title = $title;
+            }
+
+            public function SetAdditionalCSS(string $path): void
+            {
+                $this->css[] = $path;
+            }
+
+            public function AddHeadScript(string $path): void
+            {
+                $this->js[] = $path;
+            }
+
+            public function IncludeComponent(string $name, string $template, array $params = [], $parent = null, array $exParams = []): void
+            {
+                $this->components[] = [$name, $template, $params];
+            }
+        };
     }
-}; }
+}
+
+    $GLOBALS['APPLICATION'] = mb_admin_kit_application_mock();
+}
 
 namespace Bitrix\Main\Grid\Panel { if (!class_exists(Snippet::class)) {
     class Snippet

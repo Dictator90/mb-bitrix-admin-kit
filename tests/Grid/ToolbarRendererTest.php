@@ -13,6 +13,12 @@ use PHPUnit\Framework\TestCase;
 
 final class ToolbarRendererTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        $GLOBALS['APPLICATION'] = mb_admin_kit_application_mock();
+        parent::tearDown();
+    }
+
     public function testItRegistersFilterAndCreateButton(): void
     {
         Toolbar::reset();
