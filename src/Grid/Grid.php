@@ -24,6 +24,7 @@ class Grid
 
     protected array $rows = [];
     protected int $totalCount = 0;
+    protected bool $collapsibleRows = false;
 
     /** @var BulkAction[] */
     protected array $bulkActions = [];
@@ -121,6 +122,16 @@ class Grid
     public function getFilterComponentParams(): ?array
     {
         return (new BitrixFilterAdapter())->componentParams($this);
+    }
+
+    public function enableCollapsibleRows(bool $enabled = true): void
+    {
+        $this->collapsibleRows = $enabled;
+    }
+
+    public function hasCollapsibleRows(): bool
+    {
+        return $this->collapsibleRows;
     }
 
     /** @return FieldContract[] */

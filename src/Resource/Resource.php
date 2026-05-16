@@ -12,6 +12,7 @@ use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Page\DetailPage;
 use MB\Bitrix\AdminKit\Page\FormPage;
@@ -142,6 +143,11 @@ abstract class Resource implements ResourceContract
     public function defaultSort(): array
     {
         return [$this->getPrimaryKey() => 'DESC'];
+    }
+
+    public function indexGrouping(): ?IndexGrouping
+    {
+        return null;
     }
 
     public function defaultFilter(): array

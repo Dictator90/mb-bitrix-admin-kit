@@ -25,8 +25,10 @@ use Throwable;
 class FormPage extends Page
 {
     protected ?DataWrapper $item = null;
+    /** @var array<int,string> */
     protected array $globalErrors = [];
     protected bool $hasValidationErrors = false;
+    /** @var array<string,mixed> */
     protected array $submittedValues = [];
 
     /** @var array<string,string[]> */

@@ -53,6 +53,10 @@ final class BitrixGridAdapter
             'AJAX_OPTION_JUMP' => 'N',
         ];
 
+        if ($grid->hasCollapsibleRows()) {
+            $params['ENABLE_COLLAPSIBLE_ROWS'] = true;
+        }
+
         if (!$hasActions) {
             unset($params['ACTION_PANEL']);
         }

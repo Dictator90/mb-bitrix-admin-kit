@@ -10,6 +10,7 @@ use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 
 final class ResourceBackedIndexPageDefinition implements IndexPageDefinitionContract
 {
@@ -21,6 +22,11 @@ final class ResourceBackedIndexPageDefinition implements IndexPageDefinitionCont
     public function fields(): iterable
     {
         return $this->resource->indexFields();
+    }
+
+    public function grouping(): ?IndexGrouping
+    {
+        return $this->resource->indexGrouping();
     }
 
     /** @return iterable<FilterContract> */
