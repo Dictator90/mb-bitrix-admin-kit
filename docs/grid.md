@@ -97,13 +97,18 @@ public function indexGrouping(): ?IndexGrouping
         ->labelColumn('NAME')
         ->order(['SORT' => 'ASC', 'ID' => 'ASC'])
         ->expand(false)
+        ->fullWidth(true)
         ->ungroupedLabel('Без группы');
 }
 ```
 
+`IndexGrouping::fullWidth(true)` renders group headers as Bitrix `custom` rows (`main-grid-row-custom`) spanning the full grid width. Nested group headers receive a left indent via `adminkit-grid-group-label--depth-*` classes.
+
+Use `->align('left'|'center'|'right')` (default `left`) — the same key as `COLUMNS[].align` in `main.ui.grid` (`main-grid-cell-left|center|right`). For `fullWidth()` Bitrix still renders `main-grid-cell-center` on the custom `<td>`; AdminKit sets `data-align` on the row and overrides via CSS.
+
 `IndexPage::grouping()` proxies `Resource::indexGrouping()` by default. A custom index page may override `grouping()` to change grouping for that page or return `null` to disable resource-level grouping.
 
-When grouping is enabled, AdminKit passes `ENABLE_COLLAPSIBLE_ROWS` to `main.ui.grid` and emits synthetic row IDs:
+When grouping is enabled, AdminKit passes `ENABLE_COLLAPSIBLE_ROWS` to `main.ui.grid`, sets `shift => true` on the grouping label column (required for the Bitrix +/- control), marks group rows as preloaded (`data-child-loaded`) so Bitrix uses `showChildRows()` instead of `GRID_GET_CHILD_ROWS`, hides descendants while any ancestor group is collapsed (Bitrix renders all rows in HTML on first paint), and emits synthetic row IDs:
 
 - `group:{id}` for group rows;
 - `item:{id}` for item rows;

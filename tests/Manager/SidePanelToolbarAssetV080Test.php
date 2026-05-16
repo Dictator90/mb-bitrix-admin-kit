@@ -38,7 +38,7 @@ final class SidePanelToolbarAssetV080Test extends TestCase
     {
         $assets = (new AssetManager())->forGrid()->forGrid()->forSidePanel()->addCss('/a.css')->addCss('/a.css')->all();
 
-        self::assertSame(['main.ui.grid', 'main.ui.filter', 'ui.buttons', 'ui.toolbar', 'sidepanel'], $assets['extensions']);
+        self::assertSame(['main.ui.grid', 'main.ui.filter', 'ui.buttons', 'ui.toolbar', 'mb.admin.kit', 'sidepanel'], $assets['extensions']);
         self::assertSame(['/a.css'], $assets['css']);
     }
 }

@@ -5,6 +5,7 @@
 .adm-workarea input[type="text"].ui-ctl-element,
 .adm-workarea input[type="password"].ui-ctl-element,
 .adm-workarea input[type="email"].ui-ctl-element,
+.adm-workarea input[type="number"].ui-ctl-element,
 .adm-workarea select.ui-ctl-element
 {
     z-index: 1;
@@ -16,7 +17,7 @@
     height: var(--ui-field-size);
     outline: none;
     border: 1px solid rgb(var(--ui-field-color-border-default));
-    border-radius: var(--ui-border-radius-2xs);
+    border-radius: var(--ui-border-radius-xs);
     background-color: var(--ui-color-palette-white-base);
     color: var(--ui-color-palette-black-base);
     vertical-align: middle;
@@ -42,7 +43,7 @@
     white-space: pre-wrap;
     outline: none;
     border: 1px solid rgb(var(--ui-field-color-border-default));
-    border-radius: var(--ui-border-radius-2xs);
+    border-radius: var(--ui-border-radius-xs);
     background-color: var(--ui-color-palette-white-base);
     color: var(--ui-color-palette-black-base);
     vertical-align: middle;
@@ -113,6 +114,16 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
 
 .ui-ctl-icon-crossed-eye {
     background-image: url("svg/crossed-eye.svg");
+}
+
+
+.main-grid {
+    border-radius: var(--ui-border-radius-lg);
+    overflow: clip;
+}
+
+.main-grid .main-grid-row-body[data-group] .main-grid-cell {
+    background: #f1f5f7;
 }
 
 .mb-core-settings-container {
@@ -605,3 +616,36 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
     --ui-alert-padding: 8px 18px 8px 18px;
     margin-top: 3px;
 }
+
+/* main.ui.grid custom rows hard-code main-grid-cell-center; honor row data-align like COLUMNS[].align */
+.main-grid-row-custom[data-align="left"] > .main-grid-cell.main-grid-cell-center,
+.main-grid-row-custom[data-align="left"] .main-grid-cell-content {
+    text-align: left;
+}
+
+.main-grid-row-custom[data-align="right"] > .main-grid-cell.main-grid-cell-center,
+.main-grid-row-custom[data-align="right"] .main-grid-cell-content {
+    text-align: right;
+}
+
+.main-grid-row-custom[data-align="center"] > .main-grid-cell.main-grid-cell-center,
+.main-grid-row-custom[data-align="center"] .main-grid-cell-content {
+    text-align: center;
+}
+
+.adminkit-grid-group-label {
+    display: block;
+    box-sizing: border-box;
+}
+
+.adminkit-grid-group-label--depth-0 { padding-left: 0; }
+.adminkit-grid-group-label--depth-1 { padding-left: 20px; }
+.adminkit-grid-group-label--depth-2 { padding-left: 40px; }
+.adminkit-grid-group-label--depth-3 { padding-left: 60px; }
+.adminkit-grid-group-label--depth-4 { padding-left: 80px; }
+.adminkit-grid-group-label--depth-5 { padding-left: 100px; }
+.adminkit-grid-group-label--depth-6 { padding-left: 120px; }
+.adminkit-grid-group-label--depth-7 { padding-left: 140px; }
+.adminkit-grid-group-label--depth-8 { padding-left: 160px; }
+.adminkit-grid-group-label--depth-9 { padding-left: 180px; }
+.adminkit-grid-group-label--depth-10 { padding-left: 200px; }

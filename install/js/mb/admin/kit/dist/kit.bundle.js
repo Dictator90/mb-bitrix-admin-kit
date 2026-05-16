@@ -405,10 +405,107 @@ this.MB = this.MB || {};
         init: init$3
     });
 
+    /**
+     * Collapsible grid with preloaded rows (AdminKit grouped index).
+     *
+     * Bitrix sets data-child-loaded from row.expand. When expand is false, clicking +
+     * triggers GRID_GET_CHILD_ROWS instead of showChildRows(). We mark parents as
+     * preloaded and hide descendants while any ancestor group is collapsed.
+     */
+    function patchCustomGroupRowChildren(grid) {
+      var rows = grid.getRows();
+      rows.getBodyChild().forEach(function (row) {
+        if (!row.isCustom() || row.__adminkitChildrenPatched) {
+          return;
+        }
+        row.__adminkitChildrenPatched = true;
+        var originalGetChildren = row.getChildren.bind(row);
+        row.getChildren = function () {
+          var byParent = rows.getRowsByParentId(this.getId(), true);
+          if (byParent.length > 0) {
+            return byParent;
+          }
+          return originalGetChildren();
+        };
+      });
+    }
+    function markPreloadedParents(grid) {
+      var rows = grid.getRows();
+      rows.getBodyChild().forEach(function (row) {
+        if (!row.getCollapseButton()) {
+          return;
+        }
+        BX.data(row.getNode(), 'child-loaded', 'true');
+        row.childsLoaded = true;
+      });
+    }
+    function isUnderCollapsedParent(row, rows) {
+      var parentId = row.getParentId();
+      while (parentId && parentId !== '0') {
+        var parent = rows.getById(parentId);
+        if (!parent) {
+          break;
+        }
+        if (parent.getCollapseButton() && !parent.isExpand()) {
+          return true;
+        }
+        parentId = parent.getParentId();
+      }
+      return false;
+    }
+    function applyCollapsedChildVisibility(grid) {
+      if (!grid || !grid.getParam('ENABLE_COLLAPSIBLE_ROWS')) {
+        return;
+      }
+      markPreloadedParents(grid);
+      patchCustomGroupRowChildren(grid);
+      var rows = grid.getRows();
+      rows.getBodyChild().forEach(function (child) {
+        var parentId = child.getParentId();
+        if (!parentId || parentId === '0') {
+          return;
+        }
+        if (isUnderCollapsedParent(child, rows)) {
+          child.hide();
+        } else {
+          child.show();
+        }
+      });
+    }
+    function applyAllCollapsibleGrids() {
+      var manager = BX.Main && BX.Main.gridManager;
+      if (!manager || !Array.isArray(manager.data)) {
+        return;
+      }
+      manager.data.forEach(function (entry) {
+        if (entry && entry.instance) {
+          applyCollapsedChildVisibility(entry.instance);
+        }
+      });
+    }
+    function init$4() {
+      var onUpdated = function onUpdated(grid) {
+        if (grid) {
+          applyCollapsedChildVisibility(grid);
+        }
+      };
+      BX.addCustomEvent(window, 'Grid::updated', onUpdated);
+      BX.ready(function () {
+        applyAllCollapsibleGrids();
+      });
+    }
+
+    var gridCollapsible = /*#__PURE__*/Object.freeze({
+        init: init$4,
+        applyCollapsedChildVisibility: applyCollapsedChildVisibility,
+        applyAllCollapsibleGrids: applyAllCollapsibleGrids
+    });
+
     exports.Form = formSave;
     exports.Dependencies = dependencies;
     exports.Visibility = visibility;
     exports.OptionsPage = optionsPage;
+    exports.GridCollapsible = gridCollapsible;
 
 }((this.MB.AdminKit = this.MB.AdminKit || {})));
 //# sourceMappingURL=kit.bundle.js.map

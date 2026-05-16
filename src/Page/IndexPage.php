@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Page;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Action\BulkAction;
+use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Action\MassDeleteAction;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
@@ -26,6 +27,7 @@ use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
+use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
@@ -125,7 +127,11 @@ class IndexPage extends Page
             return;
         }
 
-        Extension::load(['ui.buttons', 'sidepanel', 'ui.notification', 'ui.alerts']);
+        (new AssetManager())
+            ->forGrid()
+            ->forSidePanel()
+            ->addExtensions(['ui.notification', 'ui.alerts'])
+            ->load();
 
         $APPLICATION->SetTitle($this->resource->getTitle());
 
@@ -135,6 +141,10 @@ class IndexPage extends Page
         $this->renderBulkResult();
 
         $APPLICATION->IncludeComponent('bitrix:main.ui.grid', '', $grid->getGridComponentParams());
+
+        if ($this->definition()->grouping() instanceof IndexGrouping) {
+            AdminKitJs::renderInit('GridCollapsible', []);
+        }
     }
 
     protected function buildGrid(): Grid
@@ -166,8 +176,10 @@ class IndexPage extends Page
             $this->grid->setBulkActions(array_values($bulkActions));
         }
 
-        if ($this->definition()->grouping() instanceof IndexGrouping) {
-            $this->grid->enableCollapsibleRows(true);
+        $grouping = $this->definition()->grouping();
+        if ($grouping instanceof IndexGrouping) {
+            $this->grid->enableCollapsibleRows(true, $this->resolveCollapsibleShiftColumn($grouping, $fields));
+            $this->grid->setGroupingAlign($grouping->align());
         }
 
         return $this->grid;
@@ -258,6 +270,30 @@ class IndexPage extends Page
     protected function grouping(): ?IndexGrouping
     {
         return method_exists($this->resource, 'indexGrouping') ? $this->resource->indexGrouping() : null;
+    }
+
+    /**
+     * @param FieldContract[] $fields
+     */
+    protected function resolveCollapsibleShiftColumn(IndexGrouping $grouping, array $fields): ?string
+    {
+        $labelColumn = $grouping->labelColumn();
+        if ($labelColumn !== null && $labelColumn !== '') {
+            return $labelColumn;
+        }
+
+        foreach ($fields as $field) {
+            if (!$field instanceof FieldContract) {
+                continue;
+            }
+            if (method_exists($field, 'isComputed') && $field->isComputed()) {
+                continue;
+            }
+
+            return $field->getColumn();
+        }
+
+        return null;
     }
 
     /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FilterContract> */

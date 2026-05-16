@@ -67,7 +67,7 @@ final class GroupedRowsBuilder
             if ($grouping->showUngrouped()) {
                 $rows[] = $this->makeUngroupedRow($grouping, $fields, $labelColumn, $ungroupedRows !== []);
                 foreach ($ungroupedRows as $row) {
-                    $rows[] = $this->makeItemRow($row, 1, GridRowId::group(self::UNGROUPED_ID), $primaryKey);
+                    $rows[] = $this->makeItemRow($row, $grouping, 1, GridRowId::group(self::UNGROUPED_ID), $primaryKey);
                 }
             } else {
                 foreach ($ungroupedRows as $row) {
@@ -90,7 +90,7 @@ final class GroupedRowsBuilder
         $ungrouped = [];
         foreach ($rows as $row) {
             $groupId = $row[$foreignKey] ?? null;
-            if ($groupId === null || $groupId === '') {
+            if ($groupId === null || $groupId === '' || $groupId === 0 || $groupId === '0') {
                 $ungrouped[] = $row;
                 continue;
             }
@@ -246,7 +246,7 @@ final class GroupedRowsBuilder
             $this->appendGroupTree($rows, $emitted, (string)$childId, $groups, $childrenByParent, $itemsByGroup, $grouping, $fields, $labelColumn, $depth + 1, $gridRowId);
         }
         foreach ($items as $itemRow) {
-            $rows[] = $this->makeItemRow($itemRow, $depth + 1, $gridRowId, $this->currentPrimaryKey);
+            $rows[] = $this->makeItemRow($itemRow, $grouping, $depth + 1, $gridRowId, $this->currentPrimaryKey);
         }
     }
 
@@ -267,13 +267,17 @@ final class GroupedRowsBuilder
         $row['__GROUP_RESOURCE'] = $grouping->resourceClass();
         $row['__GROUP_DATA'] = $groupRow;
         $row['__GRID_ROW_ID'] = GridRowId::group($id);
-        $row['__adminkit_grid_row'] = array_filter([
-            'shift' => true,
+        $meta = [
             'has_child' => $hasChildren,
             'expand' => $grouping->expand(),
             'depth' => $depth > 0 ? $depth : null,
-            'parent_id' => $parentGridId,
-        ], static fn (mixed $value): bool => $value !== null);
+            'parent_id' => $parentGridId ?? 0,
+        ];
+        if (!$grouping->fullWidth()) {
+            $meta['shift'] = true;
+        }
+
+        $row['__adminkit_grid_row'] = array_filter($meta, static fn (mixed $value): bool => $value !== null);
 
         return $row;
     }
@@ -297,11 +301,15 @@ final class GroupedRowsBuilder
         $row['__GROUP_RESOURCE'] = $grouping->resourceClass();
         $row['__GROUP_DATA'] = [];
         $row['__GRID_ROW_ID'] = GridRowId::group(self::UNGROUPED_ID);
-        $row['__adminkit_grid_row'] = [
-            'shift' => true,
+        $meta = [
             'has_child' => $hasChildren,
             'expand' => $grouping->expand(),
         ];
+        if (!$grouping->fullWidth()) {
+            $meta['shift'] = true;
+        }
+
+        $row['__adminkit_grid_row'] = $meta;
 
         return $row;
     }
@@ -310,7 +318,7 @@ final class GroupedRowsBuilder
      * @param array<string,mixed> $row
      * @return array<string,mixed>
      */
-    private function makeItemRow(array $row, int $depth, string $parentGridId, string $primaryKey): array
+    private function makeItemRow(array $row, IndexGrouping $grouping, int $depth, string $parentGridId, string $primaryKey): array
     {
         $id = $row['__REAL_ID'] ?? $row[$primaryKey] ?? null;
         $row['__ROW_TYPE'] = 'item';
@@ -318,11 +326,17 @@ final class GroupedRowsBuilder
         if ($id !== null && $id !== '') {
             $row['__GRID_ROW_ID'] = GridRowId::item($id);
         }
-        $row['__adminkit_grid_row'] = [
+        $meta = [
             'shift' => true,
             'depth' => $depth,
             'parent_id' => $parentGridId,
         ];
+        if ($grouping->fullWidth()) {
+            $meta['group_id'] = GridRowId::rawId($parentGridId);
+            $meta['parent_group_id'] = GridRowId::rawId($parentGridId);
+        }
+
+        $row['__adminkit_grid_row'] = $meta;
 
         return $row;
     }

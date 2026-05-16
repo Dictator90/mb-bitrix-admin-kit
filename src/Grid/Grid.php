@@ -25,6 +25,8 @@ class Grid
     protected array $rows = [];
     protected int $totalCount = 0;
     protected bool $collapsibleRows = false;
+    protected ?string $collapsibleShiftColumnId = null;
+    protected ?string $groupingAlign = null;
 
     /** @var BulkAction[] */
     protected array $bulkActions = [];
@@ -124,14 +126,30 @@ class Grid
         return (new BitrixFilterAdapter())->componentParams($this);
     }
 
-    public function enableCollapsibleRows(bool $enabled = true): void
+    public function enableCollapsibleRows(bool $enabled = true, ?string $shiftColumnId = null): void
     {
         $this->collapsibleRows = $enabled;
+        $this->collapsibleShiftColumnId = $enabled ? $shiftColumnId : null;
     }
 
     public function hasCollapsibleRows(): bool
     {
         return $this->collapsibleRows;
+    }
+
+    public function collapsibleShiftColumnId(): ?string
+    {
+        return $this->collapsibleShiftColumnId;
+    }
+
+    public function setGroupingAlign(?string $align): void
+    {
+        $this->groupingAlign = $align;
+    }
+
+    public function groupingAlign(): ?string
+    {
+        return $this->groupingAlign;
     }
 
     /** @return FieldContract[] */

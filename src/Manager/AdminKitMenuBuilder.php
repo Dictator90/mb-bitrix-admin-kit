@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
+use MB\Bitrix\AdminKit\Page\Page;
+use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\AdminString;

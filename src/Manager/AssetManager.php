@@ -32,7 +32,7 @@ final class AssetManager
 
     public function forGrid(): self
     {
-        return $this->addExtensions(['main.ui.grid', 'main.ui.filter', 'ui.buttons', 'ui.toolbar']);
+        return $this->addExtensions(['main.ui.grid', 'main.ui.filter', 'ui.buttons', 'ui.toolbar', 'mb.admin.kit']);
     }
 
     public function forForm(): self

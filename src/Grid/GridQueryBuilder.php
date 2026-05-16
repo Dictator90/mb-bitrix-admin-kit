@@ -12,6 +12,7 @@ use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
 use MB\Bitrix\AdminKit\Contracts\OrmResourceContract;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Grid\Relations\RelationFieldContract;
 use MB\Bitrix\AdminKit\Page\ResourceBackedIndexPageDefinition;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
@@ -68,6 +69,14 @@ final class GridQueryBuilder
         $primaryKey = $resource->getPrimaryKey();
         if (!in_array($primaryKey, $select, true)) {
             $select[] = $primaryKey;
+        }
+
+        $grouping = $indexPage->grouping();
+        if ($grouping instanceof IndexGrouping) {
+            $foreignKey = $grouping->foreignKey();
+            if ($foreignKey !== '' && !in_array($foreignKey, $select, true)) {
+                $select[] = $foreignKey;
+            }
         }
 
         return array_values(array_unique(array_filter($select)));

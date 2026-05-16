@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `UI\EntitySelector\IblockSectionListProvider` for `iblock-section-list` entity (`IblockSectionSelect`, `EntitySelect::entityId('iblock-section-list')`).
 - Grouped index rows via `Grid\Grouping\IndexGrouping`, `IndexPage::grouping()`, resource `indexGrouping()`, Bitrix collapsible grid row metadata, and synthetic group/item row IDs.
 - Relation index fields `Field\HasMany` and `Field\HasOne` that batch-load related values without joining or duplicating base grid rows.
 - Field edit links for index columns through `asEditLink()` / `linkToEdit()` with SidePanel-aware edit URLs.
@@ -15,6 +16,7 @@
 - Page/security/export tests: `PageFactoryTest`, `ResourcePageResolverStrictTest`, `IndexPageSecurityTest`, `DetailPagePermissionTest`, `FormPageValidationLifecycleTest`, `FormPageSidePanelAsyncTest`, `ImportRemovedFromIndexPageTest`, `OptionsPageBackwardCompatibilityTest`, `FormPageJsExtensionTest`, `OptionsPageStabilizationTest`, grid and discovery coverage.
 
 ### Changed
+- Grouped index grids initialize collapsible rows via `AdminKitJs::renderInit('GridCollapsible')` on `IndexPage` instead of auto-starting from `mb.admin.kit` bundle entry.
 - `Resource` — BC base (identity, menu, permissions, pages, export defaults); `CrudResource` — thin ORM layer (`dataManagerClass()`, `hasCrud(): true`) without duplicated defaults.
 - Grid split: `GridQueryBuilder` (ORM params only), `GridDataLoader` (load/count/cache), `Grid` + Bitrix adapters (UI); `IndexPage` delegates to these services.
 - `FormPage` / `DetailPage` — page-level `fields()` / `tabs()` are primary; resource shortcuts are fallbacks.

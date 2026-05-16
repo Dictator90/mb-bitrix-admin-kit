@@ -135,10 +135,37 @@ class RowAssembler
         $row['id'] = $data['__GRID_ROW_ID'] ?? ($data[$this->primaryKey] ?? null);
         $row['actions'] = $actions;
 
-        foreach (['shift', 'depth', 'parent_id', 'has_child', 'expand'] as $key) {
-            if (array_key_exists($key, $meta)) {
-                $row[$key] = $meta[$key];
+        foreach (['shift', 'depth', 'parent_id', 'parent_group_id', 'group_id', 'has_child', 'expand'] as $key) {
+            if (!array_key_exists($key, $meta)) {
+                continue;
             }
+
+            $value = $meta[$key];
+            $row[$key] = in_array($key, ['shift', 'has_child', 'expand'], true)
+                ? (bool)$value
+                : $value;
+        }
+
+        $grouping = $this->indexPage?->grouping();
+        if ($isGroupRow && $grouping instanceof IndexGrouping && $grouping->fullWidth()) {
+            $labelColumn = $grouping->labelColumn() ?? $this->firstFieldColumn();
+            $labelHtml = $labelColumn !== null ? (string)($row['columns'][$labelColumn] ?? '') : '';
+            $depth = is_int($meta['depth'] ?? null) ? (int)$meta['depth'] : 0;
+            $depthClass = 'adminkit-grid-group-label--depth-' . max(0, min($depth, 20));
+            $row['custom'] = '<span class="adminkit-grid-group-label ' . $depthClass . '">' . $labelHtml . '</span>';
+            $rawGroupId = (string)($data['__GROUP_ID'] ?? '');
+            $row['group_id'] = $rawGroupId;
+            $row['align'] = $grouping->align();
+            $row['attrs'] = is_array($row['attrs'] ?? null) ? $row['attrs'] : [];
+            $row['attrs']['data-group'] = null;
+            $row['attrs']['data-group-id'] = $rawGroupId;
+            $row['attrs']['data-align'] = $grouping->align();
+            unset($row['shift']);
+        }
+
+        if (isset($row['group_id']) && $row['group_id'] !== '' && $row['group_id'] !== null) {
+            $row['attrs'] = is_array($row['attrs'] ?? null) ? $row['attrs'] : [];
+            $row['attrs']['data-group-id'] = (string)$row['group_id'];
         }
 
         return $row;

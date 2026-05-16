@@ -20,6 +20,8 @@ final class IndexGrouping
     private array $order = [];
     private bool $expand = false;
     private bool $showUngrouped = true;
+    private bool $fullWidth = false;
+    private string $align = 'left';
     private string|Closure|null $ungroupedLabel = null;
 
     public static function make(): self
@@ -139,6 +141,45 @@ final class IndexGrouping
         }
 
         $this->showUngrouped = (bool)$show;
+
+        return $this;
+    }
+
+    /**
+     * Render group headers as Bitrix {@see main.ui.grid} custom rows (full table width).
+     */
+    public function fullWidth(?bool $enabled = null): self|bool
+    {
+        if (func_num_args() === 0) {
+            return $this->fullWidth;
+        }
+
+        $this->fullWidth = (bool)$enabled;
+
+        return $this;
+    }
+
+    /**
+     * Horizontal align for the grouping label column ({@code COLUMNS[].align} in {@code main.ui.grid}).
+     *
+     * Bitrix maps it to {@code main-grid-cell-left|center|right} on body cells.
+     * For {@see fullWidth()} the custom row {@code <td>} is always {@code main-grid-cell-center};
+     * AdminKit mirrors the same values via {@code data-align} on the row and CSS override.
+     *
+     * @param 'left'|'center'|'right'|null $align
+     */
+    public function align(?string $align = null): self|string
+    {
+        if (func_num_args() === 0) {
+            return $this->align;
+        }
+
+        $align = strtolower((string)$align);
+        if (!in_array($align, ['left', 'center', 'right'], true)) {
+            throw new LogicException('Index grouping align must be one of: left, center, right.');
+        }
+
+        $this->align = $align;
 
         return $this;
     }

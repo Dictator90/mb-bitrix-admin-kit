@@ -8,6 +8,7 @@ use Bitrix\Main\Grid\Options as GridOptions;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\AdminString;
 
 final class BitrixGridAdapter
 {
@@ -55,6 +56,8 @@ final class BitrixGridAdapter
 
         if ($grid->hasCollapsibleRows()) {
             $params['ENABLE_COLLAPSIBLE_ROWS'] = true;
+            $params['COLUMNS'] = $this->applyCollapsibleShiftColumn($params['COLUMNS'], $grid);
+            $params['COLUMNS'] = $this->applyGroupingColumnAlign($params['COLUMNS'], $grid);
         }
 
         if (!$hasActions) {
@@ -62,5 +65,50 @@ final class BitrixGridAdapter
         }
 
         return $params;
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $columns
+     * @return array<int,array<string,mixed>>
+     */
+    private function applyCollapsibleShiftColumn(array $columns, Grid $grid): array
+    {
+        $shiftColumnId = $grid->collapsibleShiftColumnId();
+        if ($shiftColumnId === null || $shiftColumnId === '') {
+            return $columns;
+        }
+
+        $shiftKey = AdminString::safeKey($shiftColumnId);
+        foreach ($columns as $index => $column) {
+            if (($column['id'] ?? '') === $shiftKey) {
+                $columns[$index]['shift'] = true;
+                break;
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $columns
+     * @return array<int,array<string,mixed>>
+     */
+    private function applyGroupingColumnAlign(array $columns, Grid $grid): array
+    {
+        $align = $grid->groupingAlign();
+        $shiftColumnId = $grid->collapsibleShiftColumnId();
+        if ($align === null || $align === '' || $shiftColumnId === null || $shiftColumnId === '') {
+            return $columns;
+        }
+
+        $shiftKey = AdminString::safeKey($shiftColumnId);
+        foreach ($columns as $index => $column) {
+            if (($column['id'] ?? '') === $shiftKey) {
+                $columns[$index]['align'] = $align;
+                break;
+            }
+        }
+
+        return $columns;
     }
 }

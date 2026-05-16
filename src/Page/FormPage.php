@@ -15,6 +15,7 @@ use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
+use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminKitJs;
@@ -271,7 +272,7 @@ class FormPage extends Page
         return $this->resource->formTabs();
     }
 
-    protected function syncFormErrors(\MB\Bitrix\AdminKit\Form\FormData $formData): void
+    protected function syncFormErrors(FormData $formData): void
     {
         foreach ($formData->errors() as $column => $messages) {
             foreach ($messages as $message) {
@@ -284,11 +285,11 @@ class FormPage extends Page
         }
     }
 
-    protected function beforeSave(\MB\Bitrix\AdminKit\Form\FormData $data, DbOperationContext $context): void
+    protected function beforeSave(FormData $data, DbOperationContext $context): void
     {
     }
 
-    protected function afterSave(\MB\Bitrix\AdminKit\Form\FormData $data, DbOperationContext $context, mixed $savedId): void
+    protected function afterSave(FormData $data, DbOperationContext $context, mixed $savedId): void
     {
     }
 

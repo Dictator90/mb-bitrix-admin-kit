@@ -12,6 +12,7 @@ use MB\Bitrix\AdminKit\Support\AdminString;
 use MB\Bitrix\AdminKit\UI\EntitySelector\IblockElementListProvider;
 use MB\Bitrix\AdminKit\UI\EntitySelector\IblockListProvider;
 use MB\Bitrix\AdminKit\UI\EntitySelector\IblockPropertyListProvider;
+use MB\Bitrix\AdminKit\UI\EntitySelector\IblockSectionListProvider;
 use MB\Bitrix\AdminKit\UI\EntitySelector\UserGroupListProvider;
 use MB\Bitrix\AdminKit\UI\EntitySelector\UserListProvider;
 
@@ -395,6 +396,7 @@ class EntitySelect extends Field
             'iblock', 'iblock-list' => IblockListProvider::class,
             'iblock-property', 'iblock-property-list' => IblockPropertyListProvider::class,
             'iblock-element', 'iblock-element-list' => IblockElementListProvider::class,
+            'iblock-section', 'iblock-section-list' => IblockSectionListProvider::class,
             default => null,
         };
     }
