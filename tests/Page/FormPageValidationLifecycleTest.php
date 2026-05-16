@@ -6,7 +6,7 @@ namespace MB\Bitrix\AdminKit\Tests\Page;
 
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Form\FormData;
-use MB\Bitrix\AdminKit\Page\FormPage;
+use MB\Bitrix\AdminKit\Page\Crud\FormPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;

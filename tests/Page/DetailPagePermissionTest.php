@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
-use MB\Bitrix\AdminKit\Page\DetailPage;
+use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;

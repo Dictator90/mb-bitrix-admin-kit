@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Tests\Resource;
 
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Page\DetailPage;
-use MB\Bitrix\AdminKit\Page\FormPage;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
+use MB\Bitrix\AdminKit\Page\Crud\FormPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductTable;
 use PHPUnit\Framework\TestCase;
@@ -47,7 +47,10 @@ final class LegacyDirectResource extends Resource
     use \MB\Bitrix\AdminKit\Resource\Concerns\HasDataManager;
     use \MB\Bitrix\AdminKit\Resource\Concerns\HasDataManagerPersistence;
 
-    protected ?string $dataManagerClass = ProductTable::class;
+    public function dataManagerClass(): string
+    {
+        return ProductTable::class;
+    }
 
     public function indexFields(): iterable
     {

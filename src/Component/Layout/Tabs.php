@@ -38,6 +38,12 @@ class Tabs implements ComponentContract
      */
     protected string $extension = 'mb.ui.tabs';
 
+    protected bool $remember = false;
+
+    protected ?string $rememberStorageKey = null;
+
+    protected ?string $rememberedActiveTabId = null;
+
     /** @param Tab[] $tabs */
     public function __construct(array $tabs = [])
     {
@@ -72,6 +78,34 @@ class Tabs implements ComponentContract
         return $this;
     }
 
+    /**
+     * Remember the last opened tab in $_SESSION (via OptionsPage) and restore it on next visit.
+     */
+    public function remember(bool $remember = true, ?string $storageKey = null): static
+    {
+        $this->remember = $remember;
+        $this->rememberStorageKey = $storageKey;
+
+        return $this;
+    }
+
+    public function remembersActiveTab(): bool
+    {
+        return $this->remember;
+    }
+
+    public function withRememberedActiveTab(?string $tabId): static
+    {
+        $clone = clone $this;
+        $clone->rememberedActiveTabId = $tabId;
+
+        if ($tabId !== null && $tabId !== '') {
+            $clone->activateTabById($tabId);
+        }
+
+        return $clone;
+    }
+
     public function render(): string
     {
         if (empty($this->tabs)) {
@@ -80,9 +114,13 @@ class Tabs implements ComponentContract
 
         Extension::load([$this->extension]);
 
+        if ($this->rememberedActiveTabId !== null && $this->rememberedActiveTabId !== '') {
+            $this->activateTabById($this->rememberedActiveTabId);
+        }
+
         // Ensure at least one tab is active
         $hasActive = (bool)array_filter($this->tabs, fn (Tab $t) => $t->isActive());
-        if (!$hasActive) {
+        if (!$hasActive && $this->tabs !== []) {
             $this->tabs[0]->active();
         }
 
@@ -120,6 +158,7 @@ class Tabs implements ComponentContract
         $ext = json_encode($this->extension, JSON_UNESCAPED_UNICODE);
         $jsItemsJson = json_encode($jsItems, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
         $bodyInjectJson = json_encode($bodyInjects, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
+        $rememberJson = json_encode($this->remember, JSON_UNESCAPED_UNICODE);
 
         return <<<HTML
         <div id="{$cid}"></div>
@@ -156,6 +195,19 @@ class Tabs implements ComponentContract
                 // Initialize ui.hint tooltips for any hints rendered inside tab bodies
                 if (BX.UI && BX.UI.Hint) {
                     BX.UI.Hint.init(container);
+                }
+                if ({$rememberJson}) {
+                    var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
+                    container.addEventListener('click', function(event) {
+                        var header = event.target.closest('[data-bx-name]');
+                        if (!header || !activeTabInput) {
+                            return;
+                        }
+                        var tabId = header.getAttribute('data-bx-name') || '';
+                        if (tabId !== '') {
+                            activeTabInput.value = tabId;
+                        }
+                    });
                 }
             });
         });
@@ -255,5 +307,12 @@ class Tabs implements ComponentContract
             return in_array($str, $rule['values'], true);
         }
         return $str === ($rule['value'] ?? '');
+    }
+
+    protected function activateTabById(string $tabId): void
+    {
+        foreach ($this->tabs as $tab) {
+            $tab->active($tab->getId() === $tabId);
+        }
     }
 }

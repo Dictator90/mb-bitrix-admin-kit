@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Grid;
 
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 

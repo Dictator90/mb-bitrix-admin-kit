@@ -10,7 +10,7 @@ use MB\Bitrix\AdminKit\Manager\AdminKitMenuBuilder;
 use MB\Bitrix\AdminKit\Manager\AdminKitRegistry;
 use MB\Bitrix\AdminKit\Manager\AdminKitRouter;
 use MB\Bitrix\AdminKit\Manager\ResourcePage;
-use MB\Bitrix\AdminKit\Pages\CustomPage;
+use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use PHPUnit\Framework\TestCase;
 

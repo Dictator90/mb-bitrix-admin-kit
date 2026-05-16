@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
 use MB\Bitrix\AdminKit\Action\BulkAction;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
 
@@ -100,7 +100,7 @@ final class IndexPageSecurityTest extends TestCase
                 self::$exportCalled = true;
             }
 
-            protected function buildGrid(): \MB\Bitrix\AdminKit\Grid\Grid
+            public function buildGrid(): \MB\Bitrix\AdminKit\Grid\Grid
             {
                 self::$buildGridCalled = true;
 

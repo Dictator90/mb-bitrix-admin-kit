@@ -7,6 +7,27 @@ function notify(content, isError) {
 	}
 }
 
+function buildFormData(form) {
+	const temporarilyEnabled = [];
+
+	form.querySelectorAll('input, select, textarea').forEach(function(element) {
+		if (!element.name || !element.disabled) {
+			return;
+		}
+
+		temporarilyEnabled.push(element);
+		element.disabled = false;
+	});
+
+	const formData = new FormData(form);
+
+	temporarilyEnabled.forEach(function(element) {
+		element.disabled = true;
+	});
+
+	return formData;
+}
+
 export function init(config) {
 	const form = document.getElementById(config.formId);
 	if (!form) {
@@ -26,7 +47,7 @@ export function init(config) {
 
 		fetch(form.action, {
 			method: 'POST',
-			body: new FormData(form),
+			body: buildFormData(form),
 			headers: { 'X-Requested-With': 'XMLHttpRequest' },
 		})
 			.then(function(response) {

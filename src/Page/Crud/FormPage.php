@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Page;
+namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\Localization\Loc;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
@@ -10,7 +10,9 @@ use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
+use MB\Bitrix\AdminKit\Contracts\Page\FormPageContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
@@ -24,7 +26,7 @@ use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use Throwable;
 
-class FormPage extends Page
+class FormPage extends CrudPage implements FormPageContract
 {
     protected ?DataWrapper $item = null;
     /** @var array<int,string> */
@@ -44,11 +46,10 @@ class FormPage extends Page
     protected string $formId = '';
 
     protected string $mode = 'create';
-    protected bool $isAsync = true;
-
-    public function __construct(ResourceContract $resource, mixed $id = null, array $params = [])
+    public function __construct(?ResourceContract $resource = null, mixed $id = null, array $params = [])
     {
         parent::__construct($resource, $id, $params);
+        $this->pageType = PageType::FORM;
         $this->id = $id;
         $this->mode = (string)($params['mode'] ?? ($this->id !== null ? 'edit' : 'create'));
     }
@@ -272,7 +273,7 @@ class FormPage extends Page
 
 
     /** @return iterable<FieldContract|ComponentContract> */
-    protected function fields(): iterable
+    public function fields(): iterable
     {
         return $this->resource->formFields();
     }

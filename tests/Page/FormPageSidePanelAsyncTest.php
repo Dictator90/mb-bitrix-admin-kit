@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
-use MB\Bitrix\AdminKit\Page\FormPage;
+use MB\Bitrix\AdminKit\Page\Crud\FormPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductTable;
 use PHPUnit\Framework\TestCase;

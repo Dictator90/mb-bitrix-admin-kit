@@ -53,7 +53,7 @@ use MB\Bitrix\AdminKit\Support\Enums\PageType;
  *       ];
  *   }
  */
-abstract class OptionsPage extends AbstractPage
+abstract class OptionsPage extends \MB\Bitrix\AdminKit\Page\StandalonePage
 {
     /** Module ID for Bitrix Config\Option — must be set in subclass. */
     protected string $moduleId = '';
@@ -153,6 +153,7 @@ abstract class OptionsPage extends AbstractPage
 
     protected function handlePost(string $moduleId): void
     {
+        $this->rememberActiveTabFromRequest();
         $siteId = $this->request->getPost('site_id') ?: '';
         $this->errors = $this->persistOptions($moduleId, $siteId);
 
@@ -169,6 +170,7 @@ abstract class OptionsPage extends AbstractPage
      */
     protected function handleAjaxPost(string $moduleId): void
     {
+        $this->rememberActiveTabFromRequest();
         $siteId = $this->request->getPost('site_id') ?: '';
         $errors = $this->persistOptions($moduleId, $siteId);
 
@@ -219,9 +221,10 @@ abstract class OptionsPage extends AbstractPage
     protected function renderOptionsForm(string $moduleId, string $siteId): void
     {
         $action = $this->request->getRequestUri();
-        $components = iterator_to_array($this->components());
+        $components = $this->applyRememberedTabs(iterator_to_array($this->components()));
         $wrapper = $this->buildOptionsWrapper($moduleId, $siteId, $components);
         $formId = 'adminkit-options-' . md5(static::class . $siteId);
+        $activeTabId = $this->resolveRememberedActiveTabId($components);
 
         if ($this->sessidRejected) {
             echo Alert::make(
@@ -247,6 +250,7 @@ abstract class OptionsPage extends AbstractPage
         echo bitrix_sessid_post();
         echo '<input type="hidden" name="site_id" value="' . htmlspecialcharsbx($siteId) . '">';
         echo '<input type="hidden" name="adminkit_ajax" value="Y">';
+        echo '<input type="hidden" name="adminkit_active_tab" value="' . htmlspecialcharsbx($activeTabId ?? '') . '">';
 
         $resolver = static fn (string $col) => $wrapper->get($col);
 
@@ -511,7 +515,7 @@ abstract class OptionsPage extends AbstractPage
         $errors = [];
 
         foreach ($this->collectAllFields() as $field) {
-            $value = $field->serializePostValue($this->request->getPost($field->getColumn()));
+            $value = $field->serializePostValue($this->resolvePostedFieldValue($field->getColumn()));
             $fieldErrors = $field->runValidation($value);
 
             if ($fieldErrors !== []) {
@@ -528,12 +532,75 @@ abstract class OptionsPage extends AbstractPage
     protected function persistOptionValue(string $moduleId, FieldContract $field, mixed $value, string $siteId): void
     {
         if (!$this->shouldPersistOptionValue($value)) {
+            if (method_exists($field, 'preserveStoredValueWhenEmpty') && $field->preserveStoredValueWhenEmpty()) {
+                return;
+            }
+
             Option::delete($moduleId, ['name' => $field->getColumn(), 'site_id' => $siteId]);
 
             return;
         }
 
         Option::set($moduleId, $field->getColumn(), $this->serializeOptionValue($field, $value), $siteId);
+    }
+
+    protected function resolvePostedFieldValue(string $column): mixed
+    {
+        if ($this->request->getPost($column) !== null) {
+            return $this->request->getPost($column);
+        }
+
+        return $this->request->get($column);
+    }
+
+    protected function tabsSessionKey(): string
+    {
+        return static::getId();
+    }
+
+    protected function rememberActiveTabFromRequest(): void
+    {
+        $tabId = (string)($this->request->getPost('adminkit_active_tab') ?? '');
+        if ($tabId === '') {
+            return;
+        }
+
+        if (!isset($_SESSION['MB_ADMIN_KIT_ACTIVE_TAB']) || !is_array($_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'])) {
+            $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'] = [];
+        }
+
+        $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'][$this->tabsSessionKey()] = $tabId;
+    }
+
+    /**
+     * @param array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\ComponentContract|Tab> $components
+     */
+    protected function resolveRememberedActiveTabId(array $components): ?string
+    {
+        $stored = $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'][$this->tabsSessionKey()] ?? null;
+
+        return is_string($stored) && $stored !== '' ? $stored : null;
+    }
+
+    /**
+     * @param array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\ComponentContract|Tab> $components
+     * @return array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\ComponentContract|Tab>
+     */
+    protected function applyRememberedTabs(array $components): array
+    {
+        $storedTabId = $this->resolveRememberedActiveTabId($components);
+        $result = [];
+
+        foreach ($components as $item) {
+            if ($item instanceof \MB\Bitrix\AdminKit\Component\Layout\Tabs && $item->remembersActiveTab()) {
+                $result[] = $item->withRememberedActiveTab($storedTabId);
+                continue;
+            }
+
+            $result[] = $item;
+        }
+
+        return $result;
     }
 
     protected function shouldPersistOptionValue(mixed $value): bool

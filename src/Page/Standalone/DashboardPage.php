@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Pages;
+namespace MB\Bitrix\AdminKit\Page\Standalone;
+
+use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
@@ -37,6 +39,12 @@ use MB\Bitrix\AdminKit\Widget\AbstractWidget;
  */
 abstract class DashboardPage extends CustomPage
 {
+    public function __construct(array $params = [])
+    {
+        parent::__construct($params);
+        $this->pageType = PageType::DASHBOARD;
+    }
+
     protected function pageTitle(): string
     {
         return $this->title();

@@ -109,11 +109,11 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
 }
 
 .ui-ctl-icon-opened-eye {
-    background-image: url("svg/opened-eye.svg");
+    background-image: url("../svg/opened-eye.svg");
 }
 
 .ui-ctl-icon-crossed-eye {
-    background-image: url("svg/crossed-eye.svg");
+    background-image: url("../svg/crossed-eye.svg");
 }
 
 

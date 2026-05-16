@@ -9,5 +9,7 @@ enum PageType: string
     case INDEX = 'index';
     case FORM = 'form';
     case DETAIL = 'detail';
+    case CUSTOM = 'custom';
+    case DASHBOARD = 'dashboard';
     case OPTIONS = 'options';
 }

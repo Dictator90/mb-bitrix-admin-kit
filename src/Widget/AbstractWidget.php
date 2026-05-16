@@ -14,7 +14,7 @@ use MB\Bitrix\AdminKit\Component\Layout\AbstractLayoutComponent;
  * Grid, Column, Box, and any other layout component, as well as used
  * directly inside DashboardPage::widgets().
  *
- * @see \MB\Bitrix\AdminKit\Pages\DashboardPage
+ * @see \MB\Bitrix\AdminKit\Page\Standalone\DashboardPage
  */
 abstract class AbstractWidget extends AbstractLayoutComponent
 {

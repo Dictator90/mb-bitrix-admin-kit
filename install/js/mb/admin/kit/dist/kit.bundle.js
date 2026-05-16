@@ -359,6 +359,21 @@ this.MB = this.MB || {};
         });
       }
     }
+    function buildFormData(form) {
+      var temporarilyEnabled = [];
+      form.querySelectorAll('input, select, textarea').forEach(function (element) {
+        if (!element.name || !element.disabled) {
+          return;
+        }
+        temporarilyEnabled.push(element);
+        element.disabled = false;
+      });
+      var formData = new FormData(form);
+      temporarilyEnabled.forEach(function (element) {
+        element.disabled = true;
+      });
+      return formData;
+    }
     function init$3(config) {
       var form = document.getElementById(config.formId);
       if (!form) {
@@ -374,7 +389,7 @@ this.MB = this.MB || {};
         }
         fetch(form.action, {
           method: 'POST',
-          body: new FormData(form),
+          body: buildFormData(form),
           headers: {
             'X-Requested-With': 'XMLHttpRequest'
           }
@@ -501,11 +516,93 @@ this.MB = this.MB || {};
         applyAllCollapsibleGrids: applyAllCollapsibleGrids
     });
 
+    function _classPrivateMethodInitSpec(obj, privateSet) { _checkPrivateRedeclaration(obj, privateSet); privateSet.add(obj); }
+    function _classPrivateFieldInitSpec(obj, privateMap, value) { _checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
+    function _checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
+    function _classPrivateMethodGet(receiver, privateSet, fn) { if (!privateSet.has(receiver)) { throw new TypeError("attempted to get private field on non-instance"); } return fn; }
+    var _inputNode = /*#__PURE__*/new WeakMap();
+    var _targetNode = /*#__PURE__*/new WeakMap();
+    var _textTargetClass = /*#__PURE__*/new WeakMap();
+    var _passwordTargetClass = /*#__PURE__*/new WeakMap();
+    var _init = /*#__PURE__*/new WeakSet();
+    var PasswordField = /*#__PURE__*/function () {
+      function PasswordField(options) {
+        babelHelpers.classCallCheck(this, PasswordField);
+        _classPrivateMethodInitSpec(this, _init);
+        _classPrivateFieldInitSpec(this, _inputNode, {
+          writable: true,
+          value: void 0
+        });
+        _classPrivateFieldInitSpec(this, _targetNode, {
+          writable: true,
+          value: void 0
+        });
+        _classPrivateFieldInitSpec(this, _textTargetClass, {
+          writable: true,
+          value: void 0
+        });
+        _classPrivateFieldInitSpec(this, _passwordTargetClass, {
+          writable: true,
+          value: void 0
+        });
+        babelHelpers.classPrivateFieldSet(this, _inputNode, BX(options.inputId));
+        babelHelpers.classPrivateFieldSet(this, _targetNode, BX(options.targetId));
+        if (!options.textTargetClass) {
+          babelHelpers.classPrivateFieldSet(this, _textTargetClass, 'ui-ctl-icon-opened-eye');
+        }
+        if (!options.passwordTargetClass) {
+          babelHelpers.classPrivateFieldSet(this, _passwordTargetClass, 'ui-ctl-icon-crossed-eye');
+        }
+        if (!babelHelpers.classPrivateFieldGet(this, _inputNode) || !babelHelpers.classPrivateFieldGet(this, _targetNode)) {
+          return;
+        }
+        this.switchToPassword();
+        _classPrivateMethodGet(this, _init, _init2).call(this);
+      }
+      babelHelpers.createClass(PasswordField, [{
+        key: "switch",
+        value: function _switch() {
+          if (babelHelpers.classPrivateFieldGet(this, _inputNode).type === 'password') {
+            this.switchToText();
+          } else {
+            this.switchToPassword();
+          }
+        }
+      }, {
+        key: "switchToText",
+        value: function switchToText() {
+          babelHelpers.classPrivateFieldGet(this, _inputNode).type = 'text';
+          babelHelpers.classPrivateFieldGet(this, _targetNode).classList.remove(babelHelpers.classPrivateFieldGet(this, _passwordTargetClass));
+          babelHelpers.classPrivateFieldGet(this, _targetNode).classList.add(babelHelpers.classPrivateFieldGet(this, _textTargetClass));
+        }
+      }, {
+        key: "switchToPassword",
+        value: function switchToPassword() {
+          babelHelpers.classPrivateFieldGet(this, _inputNode).type = 'password';
+          babelHelpers.classPrivateFieldGet(this, _targetNode).classList.remove(babelHelpers.classPrivateFieldGet(this, _textTargetClass));
+          babelHelpers.classPrivateFieldGet(this, _targetNode).classList.add(babelHelpers.classPrivateFieldGet(this, _passwordTargetClass));
+        }
+      }]);
+      return PasswordField;
+    }();
+    function _init2() {
+      var _this = this;
+      babelHelpers.classPrivateFieldGet(this, _targetNode).addEventListener('click', function (e) {
+        e.preventDefault();
+        _this["switch"]();
+      });
+    }
+
+    var passwordField = /*#__PURE__*/Object.freeze({
+        PasswordField: PasswordField
+    });
+
     exports.Form = formSave;
     exports.Dependencies = dependencies;
     exports.Visibility = visibility;
     exports.OptionsPage = optionsPage;
     exports.GridCollapsible = gridCollapsible;
+    exports.Fields = passwordField;
 
 }((this.MB.AdminKit = this.MB.AdminKit || {})));
 //# sourceMappingURL=kit.bundle.js.map

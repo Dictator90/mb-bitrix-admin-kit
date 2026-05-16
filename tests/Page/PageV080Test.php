@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Pages\CustomPage;
-use MB\Bitrix\AdminKit\Pages\DashboardPage;
+use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
+use MB\Bitrix\AdminKit\Page\Standalone\DashboardPage;
 use MB\Bitrix\AdminKit\Pages\OptionsPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use PHPUnit\Framework\TestCase;

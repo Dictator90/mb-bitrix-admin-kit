@@ -6,7 +6,7 @@ namespace MB\Bitrix\AdminKit\Manager;
 
 use Bitrix\Main\Context;
 use Bitrix\Main\HttpRequest;
-use MB\Bitrix\AdminKit\Pages\AbstractPage;
+use MB\Bitrix\AdminKit\Page\StandalonePage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 
@@ -65,7 +65,7 @@ final class AdminKitManager
         return $this;
     }
 
-    /** @param class-string<AbstractPage> $pageClass */
+    /** @param class-string<StandalonePage> $pageClass */
     public function registerPage(string $pageClass): static
     {
         $this->registry->registerPage($pageClass);
@@ -99,13 +99,13 @@ final class AdminKitManager
         return $this->discover()->resources();
     }
 
-    /** @return array<string, class-string<AbstractPage>> */
+    /** @return array<string, class-string<StandalonePage>> */
     public function getPages(): array
     {
         return $this->discover()->pages();
     }
 
-    public function getCurrentPage(): ResourcePage|AbstractPage|NotFoundPage
+    public function getCurrentPage(): ResourcePage|StandalonePage|NotFoundPage
     {
         return $this->router()->currentPage();
     }

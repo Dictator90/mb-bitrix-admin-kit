@@ -5,4 +5,7 @@ module.exports = {
 		css: 'dist/kit.bundle.css',
 	},
 	namespace: 'MB.AdminKit',
+	cssImages: {
+		type: 'inline',
+	},
 };

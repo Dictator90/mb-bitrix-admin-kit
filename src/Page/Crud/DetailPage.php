@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Page;
+namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UI\Extension;
@@ -10,19 +10,22 @@ use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
+use MB\Bitrix\AdminKit\Contracts\Page\DetailPageContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
-class DetailPage extends Page
+class DetailPage extends CrudPage implements DetailPageContract
 {
     protected ?DataWrapper $item = null;
 
-    public function __construct(ResourceContract $resource, mixed $id = null, array $params = [])
+    public function __construct(?ResourceContract $resource = null, mixed $id = null, array $params = [])
     {
         parent::__construct($resource, $id, $params);
+        $this->pageType = PageType::DETAIL;
         $this->id = $id;
     }
 
@@ -125,7 +128,7 @@ class DetailPage extends Page
     }
 
     /** @return iterable<FieldContract> */
-    protected function fields(): iterable
+    public function fields(): iterable
     {
         return $this->resource->detailFields();
     }

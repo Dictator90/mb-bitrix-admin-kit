@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use MB\Bitrix\AdminKit\Tests\Grid\GroupedRowsBuilderGroupResource;
 use PHPUnit\Framework\TestCase;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Discovery;
 
 use Bitrix\Main\ORM\Data\DataManager;
-use MB\Bitrix\AdminKit\Pages\AbstractPage;
+use MB\Bitrix\AdminKit\Page\StandalonePage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Filesystem\Filesystem;
 use MB\Filesystem\Finder\ClassFinder;
@@ -24,17 +24,18 @@ final class ClassDiscovery
         return $this->subclassesOf($path, Resource::class);
     }
 
-    /** @return list<class-string<AbstractPage>> */
+    /** @return list<class-string<StandalonePage>> */
     public function standalonePagesIn(string $path): array
     {
         $pages = [];
-        foreach ($this->subclassesOf($path, AbstractPage::class) as $class) {
+
+        foreach ($this->subclassesOf($path, StandalonePage::class) as $class) {
             if ($class::isStandalone()) {
-                $pages[] = $class;
+                $pages[$class] = $class;
             }
         }
 
-        return $pages;
+        return array_values($pages);
     }
 
     /**

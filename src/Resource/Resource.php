@@ -16,7 +16,6 @@ use MB\Bitrix\AdminKit\Resource\Concerns\HasResourcePages;
  * Core resource class that defines a section in the admin panel.
  * For CRUD functionality, extend {@see CrudResource} or {@see DataManagerResource}.
  *
- * @template T of DataManager
  */
 abstract class Resource implements ResourceContract
 {

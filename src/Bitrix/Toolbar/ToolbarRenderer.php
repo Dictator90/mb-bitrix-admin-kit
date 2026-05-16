@@ -11,14 +11,14 @@ use Bitrix\UI\Buttons\Icon;
 use Bitrix\UI\Buttons\JsCode;
 use Bitrix\UI\Toolbar\ButtonLocation;
 use Bitrix\UI\Toolbar\Facade\Toolbar;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 
 final class ToolbarRenderer
 {
-    public function render(ResourceContract $resource, Grid $grid, string $createUrl): void
+    public function render(CrudResourceContract $resource, Grid $grid, string $createUrl): void
     {
         global $APPLICATION;
         if (class_exists(Loc::class)) {
@@ -67,7 +67,7 @@ final class ToolbarRenderer
         $APPLICATION->IncludeComponent('bitrix:ui.toolbar', 'admin', []);
     }
 
-    public function renderForm(ResourceContract $resource, string $formId, string $cancelJs): void
+    public function renderForm(CrudResourceContract $resource, string $formId, string $cancelJs): void
     {
         global $APPLICATION;
         if (class_exists(Loc::class)) {
@@ -77,7 +77,7 @@ final class ToolbarRenderer
         $APPLICATION->IncludeComponent('bitrix:ui.toolbar', 'admin', []);
     }
 
-    public function renderDetail(ResourceContract $resource, string $backJs, ?string $editUrl = null): void
+    public function renderDetail(CrudResourceContract $resource, string $backJs, ?string $editUrl = null): void
     {
         global $APPLICATION;
         if (class_exists(Loc::class)) {
@@ -105,7 +105,7 @@ final class ToolbarRenderer
         $APPLICATION->IncludeComponent('bitrix:ui.toolbar', 'admin', []);
     }
 
-    public function createButtonJs(ResourceContract $resource, Grid $grid, string $createUrl): string
+    public function createButtonJs(CrudResourceContract $resource, Grid $grid, string $createUrl): string
     {
         if (method_exists($resource, 'createInSidePanel') && !$resource->createInSidePanel()) {
             return 'window.location.href=' . json_encode($createUrl, JSON_UNESCAPED_SLASHES) . ';';
@@ -158,7 +158,7 @@ final class ToolbarRenderer
     }
 
     /** @return iterable<ToolbarAction|string> */
-    private function resolveToolbarActions(ResourceContract $resource): iterable
+    private function resolveToolbarActions(CrudResourceContract $resource): iterable
     {
         if (method_exists($resource, 'toolbarActions')) {
             $actions = $resource->toolbarActions();

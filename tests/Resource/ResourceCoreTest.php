@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Resource;
 
-use MB\Bitrix\AdminKit\Page\DetailPage;
-use MB\Bitrix\AdminKit\Page\FormPage;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
+use MB\Bitrix\AdminKit\Page\Crud\FormPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use PHPUnit\Framework\TestCase;
 

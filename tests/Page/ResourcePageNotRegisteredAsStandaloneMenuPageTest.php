@@ -6,7 +6,7 @@ namespace MB\Bitrix\AdminKit\Tests\Page;
 
 use MB\Bitrix\AdminKit\Manager\AdminKitMenuBuilder;
 use MB\Bitrix\AdminKit\Manager\AdminKitRegistry;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Page\ResourcePageResolver;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
@@ -45,7 +45,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Page\DiscoveredResourcePages;
 
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 
 final class DiscoveredProductIndexPage extends IndexPage
 {

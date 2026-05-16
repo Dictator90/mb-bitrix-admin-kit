@@ -126,7 +126,7 @@ class BelongsTo extends Field
             $optionsHtml .= '<option value=""' . $sel . '>' . htmlspecialcharsbx($this->emptyLabel) . '</option>';
         }
         foreach ($options as $optVal => $optLabel) {
-            $sel = $optVal === $current ? ' selected' : '';
+            $sel = (string) $optVal === (string) $current ? ' selected' : '';
             $optionsHtml .= '<option value="' . htmlspecialcharsbx($optVal) . '"' . $sel . '>'
                 . htmlspecialcharsbx($optLabel) . '</option>';
         }

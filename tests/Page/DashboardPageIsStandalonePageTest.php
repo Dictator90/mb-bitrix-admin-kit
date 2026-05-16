@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
 use MB\Bitrix\AdminKit\Manager\AdminKitRegistry;
-use MB\Bitrix\AdminKit\Page\DetailPage;
-use MB\Bitrix\AdminKit\Page\FormPage;
-use MB\Bitrix\AdminKit\Page\IndexPage;
-use MB\Bitrix\AdminKit\Pages\DashboardPage;
+use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
+use MB\Bitrix\AdminKit\Page\Crud\FormPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
+use MB\Bitrix\AdminKit\Page\Standalone\DashboardPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
 
@@ -55,7 +55,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Page\DiscoveredDashboard;
 
-use MB\Bitrix\AdminKit\Pages\DashboardPage;
+use MB\Bitrix\AdminKit\Page\Standalone\DashboardPage;
 
 final class DiscoveredDashboardPage extends DashboardPage
 {

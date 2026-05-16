@@ -6,7 +6,10 @@ namespace MB\Bitrix\AdminKit\Tests\Pages;
 
 use Bitrix\Main\Config\Option;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
+use MB\Bitrix\AdminKit\Component\Layout\Tabs;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Field\BelongsTo;
+use MB\Bitrix\AdminKit\Field\Password;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Pages\OptionsPage;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
@@ -108,6 +111,63 @@ final class OptionsPageStabilizationTest extends TestCase
         $page->exposePersist('vendor.test', $field, '');
 
         self::assertNull(Option::get('vendor.test', 'name', null));
+    }
+
+    public function testEmptyPasswordPreservesStoredOption(): void
+    {
+        Option::set('vendor.test', 'secret', 'stored-secret');
+
+        $page = new TestableOptionsPage();
+        $field = Password::make('Secret', 'secret');
+        $page->exposePersist('vendor.test', $field, '');
+
+        self::assertSame('stored-secret', Option::get('vendor.test', 'secret'));
+    }
+
+    public function testBelongsToValueIsPersisted(): void
+    {
+        $page = new TestableOptionsPage();
+        $field = BelongsTo::make('User', 'user_id', TestUserTableStub::class)
+            ->options(static fn (): array => ['5' => 'Admin']);
+
+        $page->exposePersist('vendor.test', $field, '5');
+
+        self::assertSame('5', Option::get('vendor.test', 'user_id'));
+    }
+
+    public function testRememberedTabIsStoredInSessionAndRestored(): void
+    {
+        $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'] = [];
+
+        $page = new TabsRememberOptionsPage();
+        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['adminkit_active_tab' => 'advanced'];
+        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
+        $page->exposeRememberActiveTabFromRequest();
+
+        self::assertSame('advanced', $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB']['tabs-remember']);
+
+        $tabs = Tabs::make([
+            Tab::make('Main', [Text::make('Main', 'main')])->id('main'),
+            Tab::make('Advanced', [Text::make('Advanced', 'advanced')])->id('advanced'),
+        ])->remember();
+
+        $prepared = $page->exposeApplyRememberedTabs([$tabs])[0];
+        self::assertInstanceOf(Tabs::class, $prepared);
+
+        $reflection = new \ReflectionClass($prepared);
+        $property = $reflection->getProperty('tabs');
+        $property->setAccessible(true);
+        /** @var array<int, Tab> $tabItems */
+        $tabItems = $property->getValue($prepared);
+
+        $activeIds = [];
+        foreach ($tabItems as $tab) {
+            if ($tab->isActive()) {
+                $activeIds[] = $tab->getId();
+            }
+        }
+
+        self::assertSame(['advanced'], $activeIds);
     }
 
     public function testCheckVisibilityRuleSupportsNotEqualsAndInOperators(): void
@@ -234,6 +294,48 @@ final class TestableOptionsPage extends OptionsPage
     public function exposeCheckVisibilityRule(array $rule, mixed $currentValue): bool
     {
         return $this->checkVisibilityRule($rule, $currentValue);
+    }
+}
+
+final class TabsRememberOptionsPage extends OptionsPage
+{
+    protected string $moduleId = 'vendor.test';
+
+    public static function getId(): string
+    {
+        return 'tabs-remember';
+    }
+
+    public static function getTitle(): string
+    {
+        return 'Tabs remember';
+    }
+
+    public function exposeRememberActiveTabFromRequest(): void
+    {
+        $this->rememberActiveTabFromRequest();
+    }
+
+    /**
+     * @param array<int,mixed> $components
+     * @return array<int,mixed>
+     */
+    public function exposeApplyRememberedTabs(array $components): array
+    {
+        return $this->applyRememberedTabs($components);
+    }
+}
+
+final class TestUserTableStub
+{
+    public static function getList(array $params = []): object
+    {
+        return new class () {
+            public function fetch(): ?array
+            {
+                return null;
+            }
+        };
     }
 }
 

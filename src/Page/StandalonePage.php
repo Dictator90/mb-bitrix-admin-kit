@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Pages;
+namespace MB\Bitrix\AdminKit\Page;
 
+use MB\Bitrix\AdminKit\Contracts\Page\StandalonePageContract;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminString;
+use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
-/**
- * Base class for standalone admin pages that are not backed by an ORM DataManager.
- */
-abstract class AbstractPage
+abstract class StandalonePage extends Page implements StandalonePageContract
 {
     abstract public static function getId(): string;
 
@@ -27,11 +26,6 @@ abstract class AbstractPage
         return '';
     }
 
-    public static function isStandalone(): bool
-    {
-        return true;
-    }
-
     public static function isVisibleInMenu(): bool
     {
         return true;
@@ -40,6 +34,16 @@ abstract class AbstractPage
     public static function getParentMenuId(): ?string
     {
         return null;
+    }
+
+    public static function isStandalone(): bool
+    {
+        return true;
+    }
+
+    public function __construct(array $params = [])
+    {
+        parent::__construct($params);
     }
 
     public function id(): string
@@ -74,12 +78,11 @@ abstract class AbstractPage
         return true;
     }
 
+    /** @param array<string,mixed> $params */
     public function url(array $params = []): string
     {
         return (new UrlGenerator($this->baseUrl()))->pageUrl($this->id(), $params);
     }
-
-    abstract public function render();
 
     protected function baseUrl(): string
     {

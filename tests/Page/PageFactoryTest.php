@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
-use MB\Bitrix\AdminKit\Contracts\PageContract;
-use MB\Bitrix\AdminKit\Page\FormPage;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Contracts\Page\ResourcePageContract;
+use MB\Bitrix\AdminKit\Page\Crud\FormPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Page\PageFactory;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
@@ -43,7 +43,7 @@ final class PageFactoryTest extends TestCase
         $page = (new PageFactory())->make(IndexPage::class, new ProductResource());
 
         self::assertInstanceOf(IndexPage::class, $page);
-        self::assertInstanceOf(PageContract::class, $page);
+        self::assertInstanceOf(ResourcePageContract::class, $page);
     }
 }
 

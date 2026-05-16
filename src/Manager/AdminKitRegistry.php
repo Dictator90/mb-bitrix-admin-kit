@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Manager;
 
 use MB\Bitrix\AdminKit\Discovery\ClassDiscovery;
-use MB\Bitrix\AdminKit\Pages\AbstractPage;
+use MB\Bitrix\AdminKit\Page\StandalonePage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
@@ -16,7 +16,7 @@ final class AdminKitRegistry
     /** @var array<string, class-string<Resource>> */
     private array $resources = [];
 
-    /** @var array<string, class-string<AbstractPage>> */
+    /** @var array<string, class-string<StandalonePage>> */
     private array $pages = [];
 
     /** @var array<string, bool> */
@@ -38,7 +38,7 @@ final class AdminKitRegistry
         return $this;
     }
 
-    /** @param class-string<AbstractPage> $pageClass */
+    /** @param class-string<StandalonePage> $pageClass */
     public function registerPage(string $pageClass): self
     {
         if ($this->canRegisterPage($pageClass) && !isset($this->pages[$pageClass::getId()])) {
@@ -94,7 +94,7 @@ final class AdminKitRegistry
         return AdminCollection::make($this->resources)->all();
     }
 
-    /** @return array<string, class-string<AbstractPage>> */
+    /** @return array<string, class-string<StandalonePage>> */
     public function pages(): array
     {
         return AdminCollection::make($this->pages)->all();
@@ -137,7 +137,11 @@ final class AdminKitRegistry
 
     private function canRegisterPage(string $class): bool
     {
-        return $this->canRegister($class, AbstractPage::class) && $class::isStandalone();
+        if (!$class::isStandalone()) {
+            return false;
+        }
+
+        return $this->canRegister($class, StandalonePage::class);
     }
 
     private function canRegister(string $class, string $baseClass): bool

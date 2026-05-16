@@ -7,7 +7,7 @@ namespace MB\Bitrix\AdminKit\Tests\Grid;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
 

@@ -91,7 +91,7 @@ declare(strict_types=1);
 
 namespace {$namespace};
 
-class ProductIndexPage extends \\MB\\Bitrix\\AdminKit\\Page\\IndexPage
+class ProductIndexPage extends \\MB\\Bitrix\\AdminKit\\Page\\Crud\\IndexPage
 {
 }
 PHP_CODE);
@@ -127,7 +127,7 @@ PHP_CODE);
 
         $expectedCalls = [
             [$directory, Resource::class, true],
-            [$directory, \MB\Bitrix\AdminKit\Pages\AbstractPage::class, true],
+            [$directory, \MB\Bitrix\AdminKit\Page\StandalonePage::class, true],
         ];
         self::assertSame(
             array_map(static fn (array $call): array => [str_replace('\\', '/', $call[0]), $call[1], $call[2]], $expectedCalls),
@@ -266,7 +266,7 @@ declare(strict_types=1);
 
 namespace {$namespace};
 
-use MB\\Bitrix\\AdminKit\\Pages\\CustomPage;
+use MB\\Bitrix\\AdminKit\\Page\\Standalone\\CustomPage;
 
 abstract class {$class} extends CustomPage
 {
@@ -281,7 +281,7 @@ PHP_CODE);
         string $id,
         string $parent = 'CustomPage',
     ): void {
-        $usePage = $parent === 'CustomPage' ? "use MB\\Bitrix\\AdminKit\\Pages\\CustomPage;\n" : '';
+        $usePage = $parent === 'CustomPage' ? "use MB\\Bitrix\\AdminKit\\Page\\Standalone\\CustomPage;\n" : '';
         file_put_contents($directory . '/' . $class . '.php', <<<PHP_CODE
 <?php
 

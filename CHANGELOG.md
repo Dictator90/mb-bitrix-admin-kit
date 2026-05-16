@@ -6,10 +6,14 @@
 - Legacy contract aliases in `MB\Bitrix\AdminKit\Contracts\` (`IndexResourceContract`, `FormResourceContract`, `OrmResourceContract`, `ExportResourceContract`, and others) — use `Contracts\Resource\*` instead.
 - Legacy resource traits `HasCrud`, `HasPermissions`, `HasLifecycleEvents` — use `Resource\Concerns\*` instead.
 - Deprecated `Page\OptionsPage` wrapper — use `Pages\OptionsPage`.
+- Deprecated page aliases: `Pages\AbstractPage`, `Pages\CustomPage`, `Pages\DashboardPage`, `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage`, `Contracts\PageContract` — use `Page\StandalonePage`, `Page\Standalone\*`, `Page\Crud\*`, and `Contracts\Page\*` instead.
 - Unused grid panel classes `Grid\Panel\PanelDataProvider`, `Grid\Panel\BulkDeletePanelAction`.
 - `AdminKitJs::renderGridCollapsibleInitialState()`, `Tab::getFields()`, `HasResourceExport::maxImportRows()`.
 
 ### Added
+- `Tabs::remember()` — stores the last active tab in session (per page id) and restores it on the next visit; hidden `adminkit_active_tab` field syncs tab clicks when remember is enabled.
+- `Field::preserveStoredValueWhenEmpty()` — used by `Password` so an empty submit keeps the stored option value instead of deleting it.
+- `Password::oldValue()` (default `true`) — shows the stored value with a show/hide toggle; `oldValue(false)` keeps the previous empty-field edit behavior.
 - New Resource architecture: `Resource` (core) -> `CrudResource` (DSL) -> `DataManagerResource` (ORM).
 - Logic extracted into reusable concerns: `HasResourceIdentity`, `HasResourceMenu`, `HasResourcePages`, `HasResourceFields`, `HasResourceFilters`, `HasResourceActions`, `HasResourceAuthorization`, `HasResourceSidePanel`, `HasResourceGrid`, `HasResourceQuery`, `HasResourceGrouping`, `HasResourceExport`, `HasResourceLifecycle`, `HasDataManager`, `HasDataManagerPersistence`.
 - Narrow resource contracts in `Contracts\Resource\*` for better dependency management.
@@ -28,6 +32,9 @@
 - `OptionsPage::fields()` is now `public` in documentation and examples.
 
 ### Fixed
+- Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.
+- Options page: `Password` and other fields with `preserveStoredValueWhenEmpty()` no longer clear stored values when the posted value is empty.
+- Options page: remembered tab id is applied before render so the correct tab is active after reload.
 - CSRF: added missing `sessid` to native Bitrix grid bulk actions.
 - ORM: fixed potential issues with ambiguous primary key filters by using explicit Bitrix ORM operators.
 - `IndexPage`: restored base `grouping()` hook so `IndexPageDefinition` and `RowAssembler` receive resource `indexGrouping()` (group rows were missing when only collapsible UI was enabled).

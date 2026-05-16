@@ -13,6 +13,7 @@ use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceFields;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceFilters;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrid;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrouping;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasCrudResourcePages;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceLifecycle;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceQuery;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceSidePanel;
@@ -29,6 +30,7 @@ use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceSidePanel;
  */
 abstract class CrudResource extends Resource implements CrudResourceContract
 {
+    use HasCrudResourcePages;
     use HasResourceFields;
     use HasResourceFilters;
     use HasResourceActions;

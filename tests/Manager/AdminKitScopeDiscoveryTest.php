@@ -10,7 +10,7 @@ use MB\Bitrix\AdminKit\Manager\AdminKitManager;
 use MB\Bitrix\AdminKit\Manager\AdminKitRegistry;
 use MB\Bitrix\AdminKit\Manager\AdminKitScope;
 use MB\Bitrix\AdminKit\Manager\DiscoveryConfig;
-use MB\Bitrix\AdminKit\Pages\CustomPage;
+use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use PHPUnit\Framework\TestCase;
 
@@ -300,7 +300,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\DiscoveryFixtures;
 
-use MB\Bitrix\AdminKit\Pages\CustomPage;
+use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
 
 final class {$class} extends CustomPage
 {

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Tests\Page;
 
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Page\DetailPage;
-use MB\Bitrix\AdminKit\Page\FormPage;
-use MB\Bitrix\AdminKit\Page\IndexPage;
+use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
+use MB\Bitrix\AdminKit\Page\Crud\FormPage;
+use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Page\PageFactory;
 use MB\Bitrix\AdminKit\Page\ResourcePageResolver;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
@@ -61,7 +61,7 @@ final class ResourcePagesTest extends TestCase
 
 final class CustomIndexPage extends IndexPage
 {
-    protected function fields(): iterable
+    public function fields(): iterable
     {
         return [Text::make('Custom name', 'CUSTOM_NAME')];
     }

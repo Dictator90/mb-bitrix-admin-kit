@@ -1,3 +1,4 @@
+
 function notify(message) {
 	if (BX.UI && BX.UI.Notification && BX.UI.Notification.Center) {
 		BX.UI.Notification.Center.notify({ content: message });

@@ -128,11 +128,11 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
 }
 
 .ui-ctl-icon-opened-eye {
-    background-image: url("svg/opened-eye.svg");
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='13' height='13' viewBox='6 3 10 17' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M19.15 11.767c-.655.936-4.009 5.429-8.048 5.429s-7.393-4.493-8.047-5.429a.29.29 0 010-.339C3.709 10.493 7.063 6 11.102 6c4.04 0 7.393 4.493 8.048 5.428a.29.29 0 010 .34zm-5.192-.17a2.855 2.855 0 11-5.711.001 2.855 2.855 0 015.71 0z' fill='%23525C69'/%3E%3C/svg%3E");
 }
 
 .ui-ctl-icon-crossed-eye {
-    background-image: url("svg/crossed-eye.svg");
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='13' height='13' viewBox='6 3 12 17' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M5.683 5.256L18.04 17.613l-1.103 1.102-1.832-1.832-.074.034a7.117 7.117 0 01-2.91.623c-2.96 0-5.644-1.815-8.052-5.444a.257.257 0 01-.023-.24l.023-.044.165-.245c.824-1.207 1.68-2.204 2.567-2.99L4.58 6.359l1.102-1.103zm6.439 1.112c2.96 0 5.645 1.815 8.052 5.444a.257.257 0 01.024.24l-.024.044-.164.245c-.806 1.18-1.642 2.16-2.509 2.938l-2.618-2.619a2.85 2.85 0 00-3.468-3.467L9.212 6.991a7.117 7.117 0 012.91-.623zm-2.85 5.586a2.85 2.85 0 003.642 2.738l-3.53-3.53a2.851 2.851 0 00-.112.792z' fill='%23525C69'/%3E%3C/svg%3E");
 }
 
 

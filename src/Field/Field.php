@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use Bitrix\Main\Security\Random;
 use Closure;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Field\Traits\HasFormat;
@@ -23,6 +24,7 @@ abstract class Field implements FieldContract
     use HasFormat;
     use HasReactivity;
 
+    protected string $id;
     protected string $column;
     protected string $label;
     protected mixed $value = null;
@@ -49,6 +51,7 @@ abstract class Field implements FieldContract
     {
         $this->label = $label;
         $this->column = $column ?? AdminString::safeKey($label);
+        $this->id = $this->column . "_" . Random::getString(10);
     }
 
     public function getColumn(): string
@@ -381,6 +384,15 @@ abstract class Field implements FieldContract
     public function serializePostValue(mixed $value): mixed
     {
         return $this->normalize($value);
+    }
+
+    /**
+     * When true, OptionsPage keeps the stored option if POST value is empty
+     * (e.g. password fields that are left blank on edit).
+     */
+    public function preserveStoredValueWhenEmpty(): bool
+    {
+        return false;
     }
 
     protected ?array $visibleWhenRule = null;

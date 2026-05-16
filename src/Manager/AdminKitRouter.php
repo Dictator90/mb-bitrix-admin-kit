@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Manager;
 
 use Bitrix\Main\HttpRequest;
-use MB\Bitrix\AdminKit\Pages\AbstractPage;
+use MB\Bitrix\AdminKit\Page\StandalonePage;
 use MB\Bitrix\AdminKit\Support\AdminString;
 
 final class AdminKitRouter
@@ -19,7 +19,7 @@ final class AdminKitRouter
     {
     }
 
-    public function currentPage(): ResourcePage|AbstractPage|NotFoundPage
+    public function currentPage(): ResourcePage|StandalonePage|NotFoundPage
     {
         $queryPage = method_exists($this->request, 'getQuery') ? $this->request->getQuery(self::PAGE_PARAM) : null;
         $queryResource = method_exists($this->request, 'getQuery') ? $this->request->getQuery(self::RESOURCE_PARAM) : null;
