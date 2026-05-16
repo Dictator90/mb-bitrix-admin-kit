@@ -7,7 +7,7 @@ namespace MB\Bitrix\AdminKit\Page;
 use Closure;
 use InvalidArgumentException;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;

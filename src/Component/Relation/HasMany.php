@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Component\Relation;
 
 use Closure;
-use MB\Bitrix\AdminKit\Contracts\ComponentContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use Throwable;

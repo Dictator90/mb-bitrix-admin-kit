@@ -7,7 +7,7 @@ namespace MB\Bitrix\AdminKit\Grid\Row;
 use Bitrix\Main\ORM\Query\Result;
 use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;

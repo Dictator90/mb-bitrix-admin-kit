@@ -6,9 +6,10 @@ namespace MB\Bitrix\AdminKit\Field;
 
 use Closure;
 use LogicException;
+use MB\Bitrix\AdminKit\Contracts\Field\RelationFieldContract as NewRelationFieldContract;
 use MB\Bitrix\AdminKit\Grid\Relations\RelationFieldContract;
 
-abstract class RelationField extends Field implements RelationFieldContract
+abstract class RelationField extends Field implements RelationFieldContract, NewRelationFieldContract
 {
     protected bool $readonly = true;
     protected ?string $tableClass = null;
@@ -29,6 +30,16 @@ abstract class RelationField extends Field implements RelationFieldContract
         return $this;
     }
 
+    /** @param class-string|null $dataManagerClass */
+    public function relatedDataManager(?string $dataManagerClass): static
+    {
+        if ($dataManagerClass === null || $dataManagerClass === '') {
+            return $this;
+        }
+
+        return $this->table($dataManagerClass);
+    }
+
     public function foreignKey(string $column): static
     {
         $this->foreignKey = $column;
@@ -43,6 +54,15 @@ abstract class RelationField extends Field implements RelationFieldContract
         return $this;
     }
 
+    public function valueResolver(?Closure $resolver): static
+    {
+        if ($resolver === null) {
+            return $this;
+        }
+
+        return $this->value($resolver);
+    }
+
     public function value(string|Closure $value): static
     {
         $this->valueResolver = $value;
@@ -51,7 +71,7 @@ abstract class RelationField extends Field implements RelationFieldContract
     }
 
     /** @param array<string,mixed>|Closure $filter */
-    public function filter(array|Closure $filter): static
+    public function filter(array|Closure|null $filter): static
     {
         $this->filter = $filter;
 
@@ -59,9 +79,9 @@ abstract class RelationField extends Field implements RelationFieldContract
     }
 
     /** @param array<string,string> $order */
-    public function order(array $order): static
+    public function order(array|null $order): static
     {
-        $this->order = $order;
+        $this->order = $order ?? [];
 
         return $this;
     }
@@ -69,6 +89,11 @@ abstract class RelationField extends Field implements RelationFieldContract
     public function isRelationField(): bool
     {
         return true;
+    }
+
+    public function isMany(): bool
+    {
+        return $this->isToMany();
     }
 
     public function relationTableClass(): string

@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use Closure;
-use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
+use MB\Bitrix\AdminKit\Contracts\Field\OptionFieldContract;
+use MB\Bitrix\AdminKit\Field\Options\OptionsResolverContract;
+use MB\Bitrix\AdminKit\Field\Options\OptionsResolverFactory;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
-use MB\Bitrix\AdminKit\Support\AdminString;
 
-class Select extends Field
+class Select extends Field implements OptionFieldContract
 {
-    /** @var array<mixed>|Closure */
-    protected array|Closure $options = [];
+    /** @var array<mixed>|Closure|OptionsResolverContract */
+    protected array|Closure|OptionsResolverContract $options = [];
 
     protected int $cacheTtl = 0;
 
-    /** @param array<mixed>|Closure $options */
-    public function options(array|Closure $options): static
+    /** @param array<mixed>|Closure|OptionsResolverContract $options */
+    public function options(array|Closure|OptionsResolverContract $options): static
     {
         $this->options = $options;
 
@@ -39,32 +40,15 @@ class Select extends Field
     /** @return array<mixed> */
     public function getOptions(array $context = []): array
     {
-        if ($this->cacheTtl <= 0) {
-            return $this->resolveOptions($context);
-        }
-
-        $key = AdminString::cacheKey('adminkit_select_options', [
-            'field' => static::class,
-            'column' => $this->column,
-            'context' => $context,
-        ]);
-        $cached = ArrayTtlCache::get($key);
-        if (is_array($cached)) {
-            return $cached;
-        }
-
-        $options = $this->resolveOptions($context);
-        ArrayTtlCache::set($key, $options, $this->cacheTtl);
-
-        return $options;
+        return $this->resolveOptions($context);
     }
 
     /** @return array<mixed> */
     protected function resolveOptions(array $context = []): array
     {
-        $options = $this->options instanceof Closure ? ($this->options)($context, $this) : $this->options;
+        $resolver = (new OptionsResolverFactory())->make($this->options, $this->cacheTtl);
 
-        return AdminCollection::make(is_iterable($options) ? $options : [])->all();
+        return AdminCollection::make($resolver->resolve($context, $this))->all();
     }
 
     public function getGridColumnType(): string

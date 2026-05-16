@@ -7,16 +7,23 @@ namespace MB\Bitrix\AdminKit\Page\Crud;
 use Bitrix\Main\Localization\Loc;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
-use MB\Bitrix\AdminKit\Contracts\ComponentContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Component\ComponentContext;
+use MB\Bitrix\AdminKit\Component\Renderers\VisibilityWrapper;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\Page\FormPageContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
+use MB\Bitrix\AdminKit\Contracts\UI\FieldContainerContract;
+use MB\Bitrix\AdminKit\Contracts\UI\ItemAwareContract;
+use MB\Bitrix\AdminKit\Contracts\UI\PageTypeAwareContract;
 use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
+use MB\Bitrix\AdminKit\Field\Renderers\FieldRowContext;
+use MB\Bitrix\AdminKit\Field\Renderers\FieldRowRenderer;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
@@ -375,8 +382,14 @@ class FormPage extends CrudPage implements FormPageContract
 
         foreach ($items as $item) {
             if ($item instanceof ComponentContract) {
-                $inner = $item->withPageType(PageType::FORM)->withItem($this->item)->render();
-                echo $this->wrapComponentWithVisibility($item, $inner);
+                if ($item instanceof PageTypeAwareContract) {
+                    $item = $item->withPageType(PageType::FORM);
+                }
+                if ($item instanceof ItemAwareContract) {
+                    $item = $item->withItem($this->item);
+                }
+                $inner = $item->render();
+                echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($this->item, PageType::FORM));
             } elseif ($item instanceof FieldContract) {
                 $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
                 $this->renderFormRow($item, $value);
@@ -427,8 +440,14 @@ class FormPage extends CrudPage implements FormPageContract
 
             foreach ($tab->getItems() as $item) {
                 if ($item instanceof ComponentContract) {
-                    $inner = $item->withPageType(PageType::FORM)->withItem($this->item)->render();
-                    echo $this->wrapComponentWithVisibility($item, $inner);
+                    if ($item instanceof PageTypeAwareContract) {
+                        $item = $item->withPageType(PageType::FORM);
+                    }
+                    if ($item instanceof ItemAwareContract) {
+                        $item = $item->withItem($this->item);
+                    }
+                    $inner = $item->render();
+                    echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($this->item, PageType::FORM));
                 } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
                     $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
                     $this->renderFormRow($item, $value);
@@ -445,25 +464,12 @@ class FormPage extends CrudPage implements FormPageContract
 
     protected function renderFormRow(FieldContract $field, mixed $value): void
     {
-        $column = htmlspecialcharsbx($field->getColumn());
-        $label = htmlspecialcharsbx($field->getLabel());
-        $requiredMark = $field->isRequired() ? ' <span class="ui-ctl-required">*</span>' : '';
-        $hint = method_exists($field, 'renderHint') ? $field->renderHint() : '';
-
-        $visibilityAttr = '';
-        $extraClass = '';
-        if (method_exists($field, 'getVisibleWhen') && ($rule = $field->getVisibleWhen()) !== null) {
-            $visibilityAttr = ' data-visible-when="' . htmlspecialcharsbx(json_encode($rule)) . '"';
-            $sourceVal = $this->item?->get($rule['column']);
-            if (!$this->checkVisibilityRule($rule, $sourceVal)) {
-                $extraClass = ' adminkit-conditional-hidden';
-            }
-        }
-
-        echo '<div class="ui-form-row' . $extraClass . '" data-field-column="' . $column . '"' . $visibilityAttr . '>';
-        echo '<div class="ui-form-label"><div class="ui-ctl-label-text">' . $label . $requiredMark . $hint . '</div></div>';
-        echo '<div class="ui-form-content">';
-        echo $field->renderForm(new FieldRenderContext(
+        echo (new FieldRowRenderer())->render(new FieldRowContext(
+            field: $field,
+            value: $value,
+            item: $this->item,
+            pageType: $this->pageType,
+            renderContext: new FieldRenderContext(
             field: $field,
             resource: $this->resource,
             item: $this->item,
@@ -472,45 +478,9 @@ class FormPage extends CrudPage implements FormPageContract
             row: $this->item?->toArray() ?? [],
             errors: $this->fieldErrors[$field->getColumn()] ?? [],
             meta: ['mode' => $this->mode],
+            ),
+            errors: $this->fieldErrors[$field->getColumn()] ?? [],
         ));
-        foreach ($this->fieldErrors[$field->getColumn()] ?? [] as $message) {
-            echo '<div class="ui-alert ui-alert-inline ui-alert-xs ui-alert-danger adminkit-field-error"><span class="ui-alert-message">' . htmlspecialcharsbx($message) . '</span></div>';
-        }
-        echo '</div>';
-        echo '</div>';
-    }
-
-    protected function checkVisibilityRule(array $rule, mixed $currentValue): bool
-    {
-        $str = (string)($currentValue ?? '');
-        if (isset($rule['values'])) {
-            return in_array($str, $rule['values'], true);
-        }
-        $operator = $rule['operator'] ?? '=';
-        $expected = (string)($rule['value'] ?? '');
-
-        return match ($operator) {
-            '=', '==', '===' => $str === $expected,
-            '!=', '<>', '!==' => $str !== $expected,
-            default => $str === $expected,
-        };
-    }
-
-    protected function wrapComponentWithVisibility(ComponentContract $component, string $inner): string
-    {
-        if (!method_exists($component, 'getVisibleWhen')) {
-            return $inner;
-        }
-        $rule = $component->getVisibleWhen();
-        if ($rule === null) {
-            return $inner;
-        }
-
-        $json = htmlspecialcharsbx(json_encode($rule));
-        $colVal = $this->item?->get($rule['column']);
-        $hidden = $this->checkVisibilityRule($rule, $colVal) ? '' : ' adminkit-conditional-hidden';
-
-        return '<div data-visible-when="' . $json . '" class="adminkit-visibility-wrapper' . $hidden . '">' . $inner . '</div>';
     }
 
     protected function renderButtons(): void
@@ -551,7 +521,7 @@ class FormPage extends CrudPage implements FormPageContract
     {
         $fields = [];
         foreach ($this->getVisibleItems() as $item) {
-            if ($item instanceof ComponentContract) {
+            if ($item instanceof FieldContainerContract) {
                 $fields = array_merge($fields, $item->extractFields());
             } elseif ($item instanceof FieldContract) {
                 $fields[] = $item;
@@ -570,7 +540,7 @@ class FormPage extends CrudPage implements FormPageContract
     {
         $allFields = [];
         foreach ($items as $item) {
-            if ($item instanceof ComponentContract) {
+            if ($item instanceof FieldContainerContract) {
                 $allFields = array_merge($allFields, $item->extractFields());
             } elseif ($item instanceof FieldContract) {
                 $allFields[] = $item;
@@ -671,7 +641,7 @@ class FormPage extends CrudPage implements FormPageContract
             $fields = [];
             foreach ($tabs as $tab) {
                 foreach ($tab->getItems() as $item) {
-                    if ($item instanceof ComponentContract) {
+                    if ($item instanceof FieldContainerContract) {
                         $fields = array_merge($fields, $item->extractFields());
                     } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
                         $fields[] = $item;

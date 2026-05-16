@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Contracts\Resource;
 
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 
 interface ResourceFieldsContract
 {

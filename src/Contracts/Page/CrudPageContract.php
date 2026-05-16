@@ -6,7 +6,7 @@ namespace MB\Bitrix\AdminKit\Contracts\Page;
 
 interface CrudPageContract extends ResourcePageContract
 {
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\Field\FieldContract> */
     public function fields(): iterable;
 
     public function isAsync(): bool;

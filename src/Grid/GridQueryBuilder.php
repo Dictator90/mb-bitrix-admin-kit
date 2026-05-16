@@ -7,7 +7,7 @@ namespace MB\Bitrix\AdminKit\Grid;
 use Bitrix\Main\Grid\Options as GridOptions;
 use Bitrix\Main\HttpRequest;
 use Bitrix\Main\UI\Filter\Options as FilterOptions;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;

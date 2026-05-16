@@ -11,7 +11,7 @@ use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Bitrix\Grid\BitrixFilterAdapter;
 use MB\Bitrix\AdminKit\Bitrix\Grid\BitrixGridAdapter;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Grid\Row\RowAssembler;

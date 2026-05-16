@@ -26,6 +26,14 @@ The legacy static API (`getId()`, `getTitle()`, `getSort()`, `getMenuIcon()`, `g
 - Asset loading: `AssetManager` owns Bitrix extension/CSS/JS registration for page-layer code.
 - Rendering current page: `AdminKitRenderer` captures `render()` output for manager-driven rendering.
 
+## UI layer model
+
+- Fields describe data/behavior and implement `Contracts\Field\FieldContract`.
+- `FieldRowRenderer` is the single place that renders Bitrix `ui-form-row` markup.
+- `ComponentContract` is render-only; container behavior lives in `LayoutComponentContract`.
+- Layout components (`Box`, `Grid`, `Column`, `Tabs`) render children through `ChildrenRenderer`.
+- Widgets are leaf components (`AbstractWidget` no longer inherits layout containers); dashboard composition uses `DashboardRenderer`.
+
 ## Resource pages model
 
 Resources describe the data entity. Pages describe a concrete presentation of that entity.

@@ -9,6 +9,7 @@
 - Deprecated page aliases: `Pages\AbstractPage`, `Pages\CustomPage`, `Pages\DashboardPage`, `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage`, `Contracts\PageContract` — use `Page\StandalonePage`, `Page\Standalone\*`, `Page\Crud\*`, and `Contracts\Page\*` instead.
 - Unused grid panel classes `Grid\Panel\PanelDataProvider`, `Grid\Panel\BulkDeletePanelAction`.
 - `AdminKitJs::renderGridCollapsibleInitialState()`, `Tab::getFields()`, `HasResourceExport::maxImportRows()`.
+- Wide contracts `Contracts\FieldContract` and `Contracts\ComponentContract`; use `Contracts\Field\*`, `Contracts\UI\*`, and `Contracts\Widget\*`.
 
 ### Added
 - `Tabs::remember()` — stores the last active tab in session (per page id) and restores it on the next visit; hidden `adminkit_active_tab` field syncs tab clicks when remember is enabled.
@@ -21,6 +22,11 @@
 - `ResourceActionsContract` with `hasAction()` and `activeActions()` for granular action control.
 - `RelationField` is now `readonly(true)` by default to prevent accidental saving of relation data.
 - CSRF protection for all bulk actions (added `sessid` to action panel JS).
+- New UI contracts: `Contracts\UI\RenderableContract`, `ComponentContract`, `LayoutComponentContract`, `FieldContainerContract`, `ItemAwareContract`, `PageTypeAwareContract`, `HtmlAttributesContract`, `ConditionalVisibilityContract`, `AssetAwareContract`.
+- New field contracts in `Contracts\Field\*` with aggregate `Contracts\Field\FieldContract`.
+- New renderers: `Field\Renderers\FieldRowRenderer`, `Component\Renderers\ChildrenRenderer`, `Component\Renderers\VisibilityWrapper`, `Widget\Dashboard\DashboardRenderer`.
+- New options resolver stack for `Select`: `Field\Options\*Resolver`.
+- New chart architecture: `Widget\ChartWidget` + `Widget\Renderers\ChartWidgetRenderer` (`GraphWidget` now compatibility alias).
 
 ### Changed
 - `Resource` is now a minimal core class for identity, menu, and pages.
@@ -30,6 +36,13 @@
 - `HasDataManagerPersistence::findItem` now uses explicit `=` operator for primary key filter.
 - `ExportAction` now uses explicit `@` operator for selected IDs filter.
 - `OptionsPage::fields()` is now `public` in documentation and examples.
+- `Field` base class moved to concern-based composition (`Field\Concerns\*`) and no longer acts as a monolith.
+- `AbstractLayoutComponent` delegates child rendering to `ChildrenRenderer` and no longer renders field rows directly.
+- `FormPage` and `OptionsPage` now render form rows via `FieldRowRenderer`.
+- `Tabs` rendering is delegated to `TabsRenderer`/`TabBodyRenderer`; duplicate field-row rendering and debug `console.log` removed.
+- `AbstractWidget` is now a leaf dashboard component (no inheritance from layout containers).
+- Dashboard rendering and extension collection moved from `DashboardPage` into `Widget\Dashboard\DashboardRenderer`.
+- Chart widgets no longer load external Chart.js CDN from PHP; chart init is local-extension driven.
 
 ### Fixed
 - Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.

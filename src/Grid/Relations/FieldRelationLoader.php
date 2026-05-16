@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Grid\Relations;
 
 use Closure;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 

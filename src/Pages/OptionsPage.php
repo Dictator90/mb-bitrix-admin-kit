@@ -11,9 +11,16 @@ use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\SiteTable;
 use JsonException;
 use MB\Bitrix\AdminKit\Component\Alert;
+use MB\Bitrix\AdminKit\Component\ComponentContext;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
-use MB\Bitrix\AdminKit\Contracts\ComponentContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Component\Renderers\VisibilityWrapper;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
+use MB\Bitrix\AdminKit\Contracts\UI\FieldContainerContract;
+use MB\Bitrix\AdminKit\Contracts\UI\ItemAwareContract;
+use MB\Bitrix\AdminKit\Contracts\UI\PageTypeAwareContract;
+use MB\Bitrix\AdminKit\Field\Renderers\FieldRowContext;
+use MB\Bitrix\AdminKit\Field\Renderers\FieldRowRenderer;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
@@ -261,8 +268,14 @@ abstract class OptionsPage extends \MB\Bitrix\AdminKit\Page\StandalonePage
                 continue;
             }
             if ($item instanceof ComponentContract) {
-                $inner = $item->withPageType(PageType::OPTIONS)->withItem($wrapper)->render();
-                echo $this->wrapComponentWithVisibility($item, $inner, $resolver);
+                if ($item instanceof PageTypeAwareContract) {
+                    $item = $item->withPageType(PageType::OPTIONS);
+                }
+                if ($item instanceof ItemAwareContract) {
+                    $item = $item->withItem($wrapper);
+                }
+                $inner = $item->render();
+                echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($wrapper, PageType::OPTIONS));
             } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::OPTIONS)) {
                 $this->renderFieldRow($item, $wrapper->get($item->getColumn()), $resolver);
             }
@@ -336,82 +349,12 @@ abstract class OptionsPage extends \MB\Bitrix\AdminKit\Page\StandalonePage
 
     protected function renderFieldRow(FieldContract $field, mixed $value, mixed $sourceValResolver = null): void
     {
-        $column = htmlspecialcharsbx($field->getColumn());
-        $label = htmlspecialcharsbx($field->getLabel());
-        $required = $field->isRequired() ? ' <span class="ui-ctl-required">*</span>' : '';
-        $hint = method_exists($field, 'renderHint') ? $field->renderHint() : '';
-
-        $visibilityAttr = '';
-        $extraClass = '';
-        if (method_exists($field, 'getVisibleWhen') && ($rule = $field->getVisibleWhen()) !== null) {
-            $visibilityAttr = ' data-visible-when="' . htmlspecialcharsbx(json_encode($rule)) . '"';
-            $sourceVal = is_callable($sourceValResolver) ? $sourceValResolver($rule['column']) : null;
-            if (!$this->checkVisibilityRule($rule, $sourceVal)) {
-                $extraClass = ' adminkit-conditional-hidden';
-            }
-        }
-
-        echo '<div class="ui-form-row' . $extraClass . '" data-field-column="' . $column . '"' . $visibilityAttr . '>';
-        echo '<div class="ui-form-label"><div class="ui-ctl-label-text">' . $label . $required . $hint . '</div></div>';
-        echo '<div class="ui-form-content">' . $field->renderFormField($value) . '</div>';
-        echo '</div>';
-    }
-
-    protected function checkVisibilityRule(array $rule, mixed $currentValue): bool
-    {
-        if (isset($rule['values'])) {
-            $str = (string)($currentValue ?? '');
-
-            return in_array($str, $rule['values'], true);
-        }
-
-        $operator = $rule['operator'] ?? '=';
-        $expected = $rule['value'] ?? null;
-
-        if ($operator === 'in') {
-            if (!is_array($expected)) {
-                return false;
-            }
-
-            return in_array((string)($currentValue ?? ''), array_map('strval', $expected), true);
-        }
-
-        if ($operator === 'not in') {
-            if (!is_array($expected)) {
-                return true;
-            }
-
-            return !in_array((string)($currentValue ?? ''), array_map('strval', $expected), true);
-        }
-
-        $str = (string)($currentValue ?? '');
-        $expectedStr = (string)($expected ?? '');
-
-        return match ($operator) {
-            '=', '==', '===' => $str === $expectedStr,
-            '!=', '<>', '!==' => $str !== $expectedStr,
-            default => $str === $expectedStr,
-        };
-    }
-
-    protected function wrapComponentWithVisibility(
-        ComponentContract $component,
-        string $inner,
-        mixed $sourceValResolver = null
-    ): string {
-        if (!method_exists($component, 'getVisibleWhen')) {
-            return $inner;
-        }
-        $rule = $component->getVisibleWhen();
-        if ($rule === null) {
-            return $inner;
-        }
-
-        $json = htmlspecialcharsbx(json_encode($rule));
-        $colVal = is_callable($sourceValResolver) ? $sourceValResolver($rule['column']) : null;
-        $hidden = $this->checkVisibilityRule($rule, $colVal) ? '' : ' adminkit-conditional-hidden';
-
-        return '<div data-visible-when="' . $json . '" class="adminkit-visibility-wrapper' . $hidden . '">' . $inner . '</div>';
+        echo (new FieldRowRenderer())->render(new FieldRowContext(
+            field: $field,
+            value: $value,
+            pageType: PageType::OPTIONS,
+            sourceValueResolver: $sourceValResolver,
+        ));
     }
 
     /**
@@ -573,7 +516,7 @@ abstract class OptionsPage extends \MB\Bitrix\AdminKit\Page\StandalonePage
     }
 
     /**
-     * @param array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\ComponentContract|Tab> $components
+     * @param array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\UI\ComponentContract|Tab> $components
      */
     protected function resolveRememberedActiveTabId(array $components): ?string
     {
@@ -583,8 +526,8 @@ abstract class OptionsPage extends \MB\Bitrix\AdminKit\Page\StandalonePage
     }
 
     /**
-     * @param array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\ComponentContract|Tab> $components
-     * @return array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\ComponentContract|Tab>
+     * @param array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\UI\ComponentContract|Tab> $components
+     * @return array<int, FieldContract|\MB\Bitrix\AdminKit\Contracts\UI\ComponentContract|Tab>
      */
     protected function applyRememberedTabs(array $components): array
     {
@@ -709,7 +652,7 @@ abstract class OptionsPage extends \MB\Bitrix\AdminKit\Page\StandalonePage
         foreach ($components as $item) {
             if ($item instanceof Tab) {
                 $fields = array_merge($fields, $this->extractAllFields($item->getItems()));
-            } elseif ($item instanceof ComponentContract) {
+            } elseif ($item instanceof FieldContainerContract) {
                 $fields = array_merge($fields, $item->extractFields());
             } elseif ($item instanceof FieldContract) {
                 $fields[] = $item;

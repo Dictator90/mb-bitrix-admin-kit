@@ -27,3 +27,17 @@ A public API removal must be introduced with `@deprecated` phpdoc and migration 
 - New Field/Filter/Action classes.
 - New documentation and examples.
 - Bug fixes that preserve the documented contracts.
+
+## Documented exception (UI-layer refactor)
+
+This release intentionally introduces breaking API changes in UI contracts:
+
+- Removed `MB\Bitrix\AdminKit\Contracts\FieldContract` and `MB\Bitrix\AdminKit\Contracts\ComponentContract`.
+- Replaced with narrow contracts in `MB\Bitrix\AdminKit\Contracts\Field\*`, `MB\Bitrix\AdminKit\Contracts\UI\*`, and `MB\Bitrix\AdminKit\Contracts\Widget\*`.
+- `GraphWidget` remains available as a compatibility alias for `ChartWidget`, but chart assets are now local-extension driven (no CDN injection from PHP).
+
+Migration path:
+
+1. Update imports from old contracts to the new namespace groups.
+2. Type against `UI\ComponentContract` for simple renderables and `UI\LayoutComponentContract` for containers.
+3. Use `Field\FieldContract` (aggregate) or narrower field contracts where possible.

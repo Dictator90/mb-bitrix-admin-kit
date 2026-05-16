@@ -306,7 +306,7 @@ final class SettingsPage extends \MB\Bitrix\AdminKit\Pages\OptionsPage
 
 ## DashboardPage и CustomPage
 
-- `Pages\DashboardPage` — dashboard/report-страницы с виджетами (`CountWidget`, `GraphWidget`, layout-компоненты).
+- `Pages\DashboardPage` — dashboard/report-страницы с виджетами (`CountWidget`, `ChartWidget`; `GraphWidget` как alias), layout-компонентами и `DashboardRenderer`.
 - `Pages\CustomPage` — произвольный HTML-контент через `content()`.
 
 Обе страницы регистрируются как standalone (`registerPage()` / discovery) и не смешиваются с resource pages (`IndexPage`/`FormPage`/`DetailPage` не попадают в меню как отдельные пункты сами по себе).

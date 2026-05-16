@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Component\Layout;
 
-use MB\Bitrix\AdminKit\Contracts\ComponentContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 
 class Tab
 {

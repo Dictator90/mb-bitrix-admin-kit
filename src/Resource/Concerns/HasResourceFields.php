@@ -6,25 +6,25 @@ namespace MB\Bitrix\AdminKit\Resource\Concerns;
 
 trait HasResourceFields
 {
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\Field\FieldContract> */
     protected function fields(): iterable
     {
         return [];
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\Field\FieldContract> */
     public function indexFields(): iterable
     {
         return $this->fields();
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\Field\FieldContract> */
     public function formFields(): iterable
     {
         return $this->fields();
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FieldContract> */
+    /** @return iterable<\MB\Bitrix\AdminKit\Contracts\Field\FieldContract> */
     public function detailFields(): iterable
     {
         return $this->formFields();

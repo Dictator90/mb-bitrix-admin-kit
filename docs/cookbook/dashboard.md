@@ -63,15 +63,16 @@ CountWidget::make('Выручка', OrderTable::class)
 
 ---
 
-## График (GraphWidget)
+## График (ChartWidget / GraphWidget)
 
-Использует **Chart.js 4** (загружается с jsDelivr CDN, без зависимостей от Bitrix-расширений).
+`ChartWidget` — основной виджет графика. `GraphWidget` сохранён как alias.
+Инициализация графика выполняется через локальное расширение `mb.admin.kit` без CDN-скриптов из PHP.
 
 ```php
-use MB\Bitrix\AdminKit\Widget\GraphWidget;
+use MB\Bitrix\AdminKit\Widget\ChartWidget;
 
 // Вертикальные столбцы (по умолчанию)
-GraphWidget::make('Заказы по месяцам')
+ChartWidget::make('Заказы по месяцам')
     ->span(12)
     ->data([
         ['category' => 'Янв', 'value' => 42],
@@ -81,7 +82,7 @@ GraphWidget::make('Заказы по месяцам')
     ->height(280)
 
 // Горизонтальные столбцы — удобно для топ-N
-GraphWidget::make('Топ модулей', 'bar')
+ChartWidget::make('Топ модулей', 'bar')
     ->horizontal()
     ->categoryField('module')   // поле строк, которое идёт в labels
     ->valueField('count')       // поле строк с числовым значением
@@ -90,7 +91,7 @@ GraphWidget::make('Топ модулей', 'bar')
     ->height(300)
 
 // Круговая диаграмма
-GraphWidget::make('По статусам', 'pie')
+ChartWidget::make('По статусам', 'pie')
     ->span(6)
     ->categoryField('title')    // поле для подписей сегментов
     ->data([
@@ -100,7 +101,7 @@ GraphWidget::make('По статусам', 'pie')
     ])
 
 // Линейный график с данными из базы
-GraphWidget::make('Регистрации по дням', 'line')
+ChartWidget::make('Регистрации по дням', 'line')
     ->span(12)
     ->categoryField('date')
     ->valueField('cnt')

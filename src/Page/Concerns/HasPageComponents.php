@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page\Concerns;
 
-use MB\Bitrix\AdminKit\Contracts\ComponentContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 
 trait HasPageComponents
 {

@@ -7,7 +7,7 @@ namespace MB\Bitrix\AdminKit\Tests\Pages;
 use Bitrix\Main\Config\Option;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Component\Layout\Tabs;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Field\BelongsTo;
 use MB\Bitrix\AdminKit\Field\Password;
 use MB\Bitrix\AdminKit\Field\Text;
@@ -284,7 +284,7 @@ final class TestableOptionsPage extends OptionsPage
     }
 
     /**
-     * @param array<int,FieldContract|\MB\Bitrix\AdminKit\Contracts\ComponentContract|Tab> $components
+     * @param array<int,FieldContract|\MB\Bitrix\AdminKit\Contracts\UI\ComponentContract|Tab> $components
      */
     public function exposeBuildWrapper(string $moduleId, string $siteId, array $components): DataWrapper
     {

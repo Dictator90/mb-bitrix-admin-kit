@@ -6,6 +6,7 @@ import * as Visibility from './visibility';
 import * as OptionsPage from './options-page';
 import * as GridCollapsible from './grid-collapsible';
 import * as Fields from './fields/password-field';
+import * as ChartWidget from './chart-widget';
 
 export {
     Form,
@@ -13,5 +14,6 @@ export {
     Visibility,
     OptionsPage,
     GridCollapsible,
-    Fields
+    Fields,
+    ChartWidget
 };
