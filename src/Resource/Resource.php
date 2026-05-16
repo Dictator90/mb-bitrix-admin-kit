@@ -113,6 +113,12 @@ abstract class Resource implements ResourceContract
         return 1100;
     }
 
+    /** Close the slider after a successful save in IFRAME mode (async or full POST). */
+    public function closeSidePanelAfterSave(): bool
+    {
+        return true;
+    }
+
     public function getTitle(): string
     {
         return $this->title;

@@ -29,6 +29,7 @@ final class FormPageJsExtensionTest extends TestCase
         $html = (string)ob_get_clean();
 
         self::assertStringContainsString('var m="Form"', $html);
+        self::assertStringContainsString('BX.Runtime.loadExtension("mb.admin.kit")', $html);
         self::assertStringContainsString('MB.AdminKit[m].init', $html);
         self::assertStringNotContainsString("data.set('adminkit_async_save', 'Y')", $html);
     }

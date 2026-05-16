@@ -32,8 +32,10 @@ class FormPage extends Page
     /** @var array<string,string[]> */
     protected array $fieldErrors = [];
 
-    /** Set to true after a successful save inside a SidePanel (skips redirect, closes panel). */
+    /** Set to true after a successful save inside a SidePanel (skips full-page redirect). */
     protected bool $savedInSidePanel = false;
+
+    protected bool $showSavedNotice = false;
 
     protected string $formId = '';
 
@@ -115,9 +117,9 @@ class FormPage extends Page
             }
         }
 
-        // Successful non-async save inside SidePanel: close the slider from the iframe context.
-        if ($this->savedInSidePanel) {
+        if ($this->savedInSidePanel && $this->closeSidePanelAfterSave()) {
             echo '<script>window.top.BX.SidePanel.Instance.getTopSlider().close();</script>';
+
             return;
         }
 
@@ -238,6 +240,10 @@ class FormPage extends Page
         if ($savedId) {
             if ($this->isSidePanelMode()) {
                 $this->savedInSidePanel = true;
+                if (!$this->closeSidePanelAfterSave()) {
+                    $this->showSavedNotice = true;
+                    $this->reloadItemAfterSave($savedId);
+                }
             } else {
                 $redirectUrl = $this->redirectAfterSave($savedId);
                 if ($redirectUrl === null) {
@@ -322,7 +328,7 @@ class FormPage extends Page
             echo '</div>';
         }
 
-        if ($this->request->get('saved') === '1') {
+        if ($this->request->get('saved') === '1' || $this->showSavedNotice) {
             echo '<div class="ui-alert ui-alert-success adminkit-alert"><span class="ui-alert-message">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED')) . '</span></div>';
         }
     }
@@ -668,9 +674,36 @@ class FormPage extends Page
         return array_key_exists($column, $this->submittedValues) ? $this->submittedValues[$column] : $fallback;
     }
 
+    protected function closeSidePanelAfterSave(): bool
+    {
+        return $this->resource->closeSidePanelAfterSave();
+    }
+
+    protected function reloadItemAfterSave(mixed $savedId): void
+    {
+        if ($this->id === null || $this->id === '') {
+            $this->id = $savedId;
+            $this->mode = 'edit';
+        }
+
+        $row = $this->resource->findItem($this->id);
+        if ($row !== null) {
+            $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+        }
+    }
+
     protected function isAsyncSaveRequest(): bool
     {
-        return (string)$this->request->getPost('adminkit_async_save') === 'Y';
+        if ((string)$this->request->getPost('adminkit_async_save') === 'Y') {
+            return true;
+        }
+
+        return $this->isSidePanelMode() && $this->isAjaxRequest();
+    }
+
+    protected function isAjaxRequest(): bool
+    {
+        return strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
     }
 
     protected function sendAsyncSaveResponse(): void
@@ -685,7 +718,8 @@ class FormPage extends Page
             'validationError' => $this->hasValidationErrors,
             'globalErrors' => $this->globalErrors,
             'fieldErrors' => $this->fieldErrors,
-            'closeSidePanel' => $this->savedInSidePanel,
+            'closeSidePanel' => $this->savedInSidePanel && $this->closeSidePanelAfterSave(),
+            'reloadParentGrid' => $this->savedInSidePanel && !$this->closeSidePanelAfterSave(),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         die();
     }
@@ -694,6 +728,7 @@ class FormPage extends Page
     {
         AdminKitJs::renderInit('Form', [
             'formId' => $this->formId,
+            'gridId' => $this->resource->getGridId(),
             'messages' => [
                 'validationError' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR'),
                 'saved' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED'),

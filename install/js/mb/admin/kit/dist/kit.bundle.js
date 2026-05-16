@@ -31,6 +31,20 @@ this.MB = this.MB || {};
         appendGlobalError(form, message);
       });
     }
+    function reloadParentGrid(gridId) {
+      if (!gridId || !window.top || !window.top.BX || !window.top.BX.Main || !window.top.BX.Main.gridManager) {
+        return;
+      }
+      var manager = window.top.BX.Main.gridManager;
+      var grid = manager.getInstanceById ? manager.getInstanceById(gridId) : null;
+      if (!grid && manager.getById) {
+        var pair = manager.getById(gridId);
+        grid = pair && (pair.instance || pair.grid) ? pair.instance || pair.grid : null;
+      }
+      if (grid && typeof grid.reload === 'function') {
+        grid.reload();
+      }
+    }
     function renderFieldErrors(form, fieldErrors) {
       Object.keys(fieldErrors || {}).forEach(function (column) {
         var content = form.querySelector('[data-field-column="' + column + '"] .ui-form-content');
@@ -45,6 +59,53 @@ this.MB = this.MB || {};
         });
       });
     }
+    function submitAsync(form, submitBtn, messages) {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('ui-btn-wait');
+      }
+      var data = new FormData(form);
+      data.set('adminkit_async_save', 'Y');
+      fetch(form.action || window.location.href, {
+        method: 'POST',
+        body: data,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      }).then(function (response) {
+        return response.json();
+      }).then(function (resp) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('ui-btn-wait');
+        }
+        clearFormErrors(form);
+        if (resp.validationError) {
+          var validationTop = document.createElement('div');
+          validationTop.className = 'ui-alert ui-alert-danger adminkit-alert';
+          validationTop.innerHTML = '<span class="ui-alert-message">' + (messages.validationError || '') + '</span>';
+          form.parentNode.insertBefore(validationTop, form);
+        }
+        renderValidationErrors(form, resp.globalErrors);
+        renderFieldErrors(form, resp.fieldErrors);
+        if (resp.success) {
+          if (resp.closeSidePanel && window.top && window.top.BX && window.top.BX.SidePanel) {
+            window.top.BX.SidePanel.Instance.getTopSlider().close();
+          } else {
+            notify(messages.saved || '');
+            if (resp.reloadParentGrid && config.gridId) {
+              reloadParentGrid(config.gridId);
+            }
+          }
+        }
+      })["catch"](function (err) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('ui-btn-wait');
+        }
+        notify('Ошибка запроса: ' + err.message);
+      });
+    }
     function init(config) {
       var form = document.getElementById(config.formId);
       if (!form) {
@@ -52,51 +113,20 @@ this.MB = this.MB || {};
       }
       var submitBtn = document.getElementById(config.formId + '-submit');
       var messages = config.messages || {};
-      form.addEventListener('submit', function (event) {
+      var onSubmit = function onSubmit(event) {
         event.preventDefault();
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.classList.add('ui-btn-wait');
-        }
-        var data = new FormData(form);
-        data.set('adminkit_async_save', 'Y');
-        fetch(form.action || window.location.href, {
-          method: 'POST',
-          body: data,
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
+        submitAsync(form, submitBtn, messages);
+      };
+      form.addEventListener('submit', onSubmit);
+      if (submitBtn) {
+        submitBtn.addEventListener('click', function (event) {
+          if (event.defaultPrevented) {
+            return;
           }
-        }).then(function (response) {
-          return response.json();
-        }).then(function (resp) {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('ui-btn-wait');
-          }
-          clearFormErrors(form);
-          if (resp.validationError) {
-            var validationTop = document.createElement('div');
-            validationTop.className = 'ui-alert ui-alert-danger adminkit-alert';
-            validationTop.innerHTML = '<span class="ui-alert-message">' + (messages.validationError || '') + '</span>';
-            form.parentNode.insertBefore(validationTop, form);
-          }
-          renderValidationErrors(form, resp.globalErrors);
-          renderFieldErrors(form, resp.fieldErrors);
-          if (resp.success) {
-            if (resp.closeSidePanel && window.top && window.top.BX && window.top.BX.SidePanel) {
-              window.top.BX.SidePanel.Instance.getTopSlider().close();
-            } else {
-              notify(messages.saved || '');
-            }
-          }
-        })["catch"](function (err) {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('ui-btn-wait');
-          }
-          notify('Ошибка запроса: ' + err.message);
+          event.preventDefault();
+          submitAsync(form, submitBtn, messages);
         });
-      });
+      }
     }
 
     var formSave = /*#__PURE__*/Object.freeze({

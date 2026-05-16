@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Grid;
 
 use Bitrix\Main\Grid\Options as GridOptions;
+use Bitrix\Main\HttpRequest;
 use Bitrix\Main\UI\Filter\Options as FilterOptions;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
@@ -69,13 +70,19 @@ final class GridQueryBuilder
 
     private function buildOrder(GridContext $context, IndexPageDefinitionContract $indexPage): array
     {
-        $uiOrder = $context->sort ?: $this->readGridSort($context);
+        $uiOrder = $context->sort;
+        if ($uiOrder === []) {
+            $uiOrder = $this->readGridSort($context);
+        }
+        if ($uiOrder === []) {
+            $uiOrder = $this->readRequestSort($context);
+        }
 
-        return array_replace(
-            $indexPage->defaultSort(),
-            $uiOrder,
-            $indexPage->indexOrder($context),
-        );
+        if ($uiOrder !== []) {
+            return $uiOrder;
+        }
+
+        return array_replace($indexPage->defaultSort(), $indexPage->indexOrder($context));
     }
 
     private function readGridSort(GridContext $context): array
@@ -90,6 +97,26 @@ final class GridQueryBuilder
         }
 
         return [];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function readRequestSort(GridContext $context): array
+    {
+        $request = $context->request;
+        if (!$request instanceof HttpRequest) {
+            return [];
+        }
+
+        $by = (string)$request->get('by');
+        if ($by === '') {
+            return [];
+        }
+
+        $order = strtoupper((string)$request->get('order'));
+
+        return [$by => $order === 'DESC' ? 'DESC' : 'ASC'];
     }
 
     private function buildFilter(GridContext $context, IndexPageDefinitionContract $indexPage): array

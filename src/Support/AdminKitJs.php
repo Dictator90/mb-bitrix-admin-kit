@@ -18,6 +18,6 @@ final class AdminKitJs
 
         $moduleJs = json_encode($module, JSON_UNESCAPED_UNICODE);
 
-        echo '<script>BX.ready(function(){var m=' . $moduleJs . ';if(window.MB&&MB.AdminKit&&MB.AdminKit[m]&&MB.AdminKit[m].init){MB.AdminKit[m].init(' . $json . ');}});</script>';
+        echo '<script>BX.ready(function(){var m=' . $moduleJs . ',c=' . $json . ';var run=function(){if(window.MB&&MB.AdminKit&&MB.AdminKit[m]&&MB.AdminKit[m].init){MB.AdminKit[m].init(c);}};if(BX.Runtime&&BX.Runtime.loadExtension){BX.Runtime.loadExtension("mb.admin.kit").then(run).catch(run);}else{run();}});</script>';
     }
 }
