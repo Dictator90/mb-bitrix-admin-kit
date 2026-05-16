@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Resource\Traits;
+namespace MB\Bitrix\AdminKit\Resource\Concerns;
 
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 
-trait HasLifecycleEvents
+trait HasResourceLifecycle
 {
     public function beforeValidate(FormData $data, DbOperationContext $context): void
     {
@@ -28,24 +28,27 @@ trait HasLifecycleEvents
         $this->afterCreated(DataWrapper::fromArray($data->validated(), $this->getPrimaryKey())->setId($id));
     }
 
-    public function beforeUpdate(array $oldItem, FormData $data, DbOperationContext $context): void
+    public function beforeUpdate(mixed $id, FormData $data, DbOperationContext $context): void
     {
-        $this->beforeUpdating(DataWrapper::fromArray($data->validated(), $this->getPrimaryKey())->setId($context->itemId));
+        // Note: $id is passed as first argument in new contract, but old trait used $oldItem array.
+        // We'll keep compatibility by fetching oldItem if needed or just using DataWrapper.
+        $this->beforeUpdating(DataWrapper::fromArray($data->validated(), $this->getPrimaryKey())->setId($id));
     }
 
-    public function afterUpdate(array $item, FormData $data, DbOperationContext $context): void
+    public function afterUpdate(mixed $id, FormData $data, DbOperationContext $context): void
     {
-        $this->afterUpdated(DataWrapper::fromArray($item, $this->getPrimaryKey())->setId($context->itemId));
+        // Note: old trait used $item array.
+        $this->afterUpdated(DataWrapper::fromArray($data->validated(), $this->getPrimaryKey())->setId($id));
     }
 
-    public function beforeDelete(array $item, DbOperationContext $context): void
+    public function beforeDelete(mixed $id, DbOperationContext $context): void
     {
-        $this->beforeDeleting(DataWrapper::fromArray($item, $this->getPrimaryKey()));
+        $this->beforeDeleting(DataWrapper::fromArray($context->oldData, $this->getPrimaryKey()));
     }
 
-    public function afterDelete(array $item, DbOperationContext $context): void
+    public function afterDelete(mixed $id, DbOperationContext $context): void
     {
-        $this->afterDeleted(DataWrapper::fromArray($item, $this->getPrimaryKey()));
+        $this->afterDeleted(DataWrapper::fromArray($context->oldData, $this->getPrimaryKey()));
     }
 
     public function beforeMassDelete(array $ids, DbOperationContext $context): void
@@ -86,10 +89,12 @@ trait HasLifecycleEvents
     {
     }
 
+    /** @param array<int, mixed> $ids */
     protected function beforeMassDeleting(array $ids): void
     {
     }
 
+    /** @param array<int, mixed> $ids */
     protected function afterMassDeleted(array $ids): void
     {
     }

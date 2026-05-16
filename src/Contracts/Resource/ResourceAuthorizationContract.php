@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Contracts;
+namespace MB\Bitrix\AdminKit\Contracts\Resource;
 
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 
-interface ResourcePermissionContract
+interface ResourceAuthorizationContract
 {
     public function canView(?PermissionContext $context = null): bool;
 

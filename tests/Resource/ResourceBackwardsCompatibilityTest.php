@@ -44,6 +44,9 @@ final class ResourceBackwardsCompatibilityTest extends TestCase
 
 final class LegacyDirectResource extends Resource
 {
+    use \MB\Bitrix\AdminKit\Resource\Concerns\HasDataManager;
+    use \MB\Bitrix\AdminKit\Resource\Concerns\HasDataManagerPersistence;
+
     protected ?string $dataManagerClass = ProductTable::class;
 
     public function indexFields(): iterable

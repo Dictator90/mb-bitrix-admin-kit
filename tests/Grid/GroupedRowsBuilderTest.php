@@ -8,7 +8,7 @@ use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\Grouping\GroupedRowsBuilder;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\FakeQueryResult;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
@@ -120,9 +120,12 @@ final class GroupedRowsBuilderTest extends TestCase
     }
 }
 
-final class GroupedRowsBuilderGroupResource extends CrudResource
+final class GroupedRowsBuilderGroupResource extends DataManagerResource
 {
-    protected ?string $dataManagerClass = GroupedRowsBuilderGroupTable::class;
+    public function dataManagerClass(): string
+    {
+        return GroupedRowsBuilderGroupTable::class;
+    }
 
     public static function getId(): string
     {

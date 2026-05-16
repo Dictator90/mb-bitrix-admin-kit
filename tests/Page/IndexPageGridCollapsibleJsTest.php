@@ -19,14 +19,4 @@ final class IndexPageGridCollapsibleJsTest extends TestCase
         self::assertStringContainsString('BX.Runtime.loadExtension("mb.admin.kit")', $html);
         self::assertStringContainsString('MB.AdminKit[m].init', $html);
     }
-
-    public function testDeprecatedInlineRendererDelegatesToRenderInit(): void
-    {
-        ob_start();
-        AdminKitJs::renderGridCollapsibleInitialState();
-        $html = (string)ob_get_clean();
-
-        self::assertStringContainsString('var m="GridCollapsible"', $html);
-        self::assertStringNotContainsString('patchCustom', $html);
-    }
 }

@@ -9,7 +9,8 @@ use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\Grouping\GroupedRowsBuilder;
@@ -30,7 +31,7 @@ class RowAssembler
         protected array $rowActions = [],
         protected string $baseUrl = '',
         protected string $primaryKey = 'ID',
-        protected ?ResourceContract $resource = null,
+        protected ?CrudResourceContract $resource = null,
         protected ?GridContext $context = null,
         protected ?IndexPageDefinitionContract $indexPage = null,
     ) {
@@ -47,12 +48,12 @@ class RowAssembler
             $dataRows[] = $data;
         }
 
-        if ($this->resource instanceof ResourceContract && $this->context instanceof GridContext) {
+        if ($this->resource instanceof CrudResourceContract && $this->context instanceof GridContext) {
             $dataRows = ($this->indexPage ?? $this->resource)->afterIndexRows($dataRows, $this->context);
             $dataRows = (new FieldRelationLoader())->load($dataRows, $this->fields);
 
             $grouping = $this->indexPage?->grouping();
-            if ($grouping instanceof IndexGrouping) {
+            if ($grouping instanceof IndexGrouping && $this->resource instanceof ResourceOrmContract) {
                 $dataRows = (new GroupedRowsBuilder())->build($dataRows, $this->resource, $grouping, $this->context, $this->indexPage, $this->fields);
             }
         }
@@ -74,7 +75,7 @@ class RowAssembler
         $meta = is_array($data['__adminkit_grid_row'] ?? null) ? $data['__adminkit_grid_row'] : [];
         unset($data['__adminkit_grid_row']);
 
-        if (!$isGroupRow && $this->resource instanceof ResourceContract && $this->context instanceof GridContext) {
+        if (!$isGroupRow && $this->resource instanceof CrudResourceContract && $this->context instanceof GridContext) {
             $data = ($this->indexPage ?? $this->resource)->mapIndexRow($data, $this->context);
         }
 
@@ -94,7 +95,7 @@ class RowAssembler
                 continue;
             }
             $value = $field->resolveValue($data, $data);
-            $rendered = $this->resource instanceof ResourceContract
+            $rendered = $this->resource instanceof CrudResourceContract
                 ? $field->renderIndex(new FieldRenderContext(
                     field: $field,
                     resource: $this->resource,
@@ -185,7 +186,7 @@ class RowAssembler
     /** @param array<string,mixed> $data */
     private function wrapEditLink(string $rendered, array $data): string
     {
-        if (!$this->resource instanceof ResourceContract) {
+        if (!$this->resource instanceof CrudResourceContract) {
             return $rendered;
         }
         $id = $data['__REAL_ID'] ?? $data[$this->primaryKey] ?? null;
@@ -195,8 +196,8 @@ class RowAssembler
 
         $url = (new UrlGenerator($this->baseUrl))->editUrl($id);
         $onclick = '';
-        if (method_exists($this->resource, 'editInSidePanel') && $this->resource->editInSidePanel()) {
-            $width = method_exists($this->resource, 'sidePanelWidth') ? (int)$this->resource->sidePanelWidth() : 1100;
+        if ($this->resource->editInSidePanel()) {
+            $width = $this->resource->sidePanelWidth();
             $onclick = ' onclick="BX.SidePanel.Instance.open(this.href, {width: ' . $width . '}); return false;"';
         }
 

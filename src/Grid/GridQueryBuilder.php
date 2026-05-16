@@ -10,8 +10,8 @@ use Bitrix\Main\UI\Filter\Options as FilterOptions;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
-use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
-use MB\Bitrix\AdminKit\Contracts\OrmResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Grid\Relations\RelationFieldContract;
 use MB\Bitrix\AdminKit\Page\ResourceBackedIndexPageDefinition;
@@ -20,7 +20,7 @@ use MB\Bitrix\AdminKit\Support\AdminCollection;
 final class GridQueryBuilder
 {
     public function build(
-        IndexResourceContract&OrmResourceContract $resource,
+        CrudResourceContract&ResourceOrmContract $resource,
         GridContext $context,
         ?IndexPageDefinitionContract $indexPage = null,
     ): array {
@@ -45,7 +45,7 @@ final class GridQueryBuilder
     }
 
     private function buildSelect(
-        OrmResourceContract $resource,
+        ResourceOrmContract $resource,
         GridContext $context,
         IndexPageDefinitionContract $indexPage,
     ): array {
@@ -166,7 +166,7 @@ final class GridQueryBuilder
         ));
     }
 
-    private function resourceBackedDefinition(IndexResourceContract $resource): IndexPageDefinitionContract
+    private function resourceBackedDefinition(CrudResourceContract $resource): IndexPageDefinitionContract
     {
         return new ResourceBackedIndexPageDefinition($resource);
     }

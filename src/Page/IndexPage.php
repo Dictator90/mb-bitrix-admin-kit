@@ -13,6 +13,7 @@ use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
@@ -80,7 +81,7 @@ class IndexPage extends Page
             return;
         }
 
-        if ($action === 'delete' && check_bitrix_sessid()) {
+        if ($action === 'delete' && check_bitrix_sessid() && $this->resource instanceof ResourcePersistenceContract) {
             $id = GridRowId::normalizeItemId($this->request->get('id'));
             if ($id !== null && $id !== '') {
                 $item = $this->resource->findItem($id);
@@ -142,7 +143,7 @@ class IndexPage extends Page
 
         $APPLICATION->IncludeComponent('bitrix:main.ui.grid', '', $grid->getGridComponentParams());
 
-        if ($this->definition()->grouping() instanceof IndexGrouping) {
+        if ($this->grouping() instanceof IndexGrouping) {
             AdminKitJs::renderInit('GridCollapsible', []);
         }
     }
@@ -176,7 +177,7 @@ class IndexPage extends Page
             $this->grid->setBulkActions(array_values($bulkActions));
         }
 
-        $grouping = $this->definition()->grouping();
+        $grouping = $this->grouping();
         if ($grouping instanceof IndexGrouping) {
             $this->grid->enableCollapsibleRows(true, $this->resolveCollapsibleShiftColumn($grouping, $fields));
             $this->grid->setGroupingAlign($grouping->align());
@@ -267,9 +268,17 @@ class IndexPage extends Page
         return $this->resource->indexFields();
     }
 
+    /**
+     * Index grouping for this page. Override to change or disable resource-level grouping.
+     */
     protected function grouping(): ?IndexGrouping
     {
-        return method_exists($this->resource, 'indexGrouping') ? $this->resource->indexGrouping() : null;
+        return $this->resource->indexGrouping();
+    }
+
+    public function indexGrouping(): ?IndexGrouping
+    {
+        return $this->grouping();
     }
 
     /**
@@ -280,6 +289,23 @@ class IndexPage extends Page
         $labelColumn = $grouping->labelColumn();
         if ($labelColumn !== null && $labelColumn !== '') {
             return $labelColumn;
+        }
+
+        $label = $grouping->label();
+        if (is_string($label) && $label !== '') {
+            return $label;
+        }
+
+        foreach ($fields as $field) {
+            if (!$field instanceof FieldContract) {
+                continue;
+            }
+            if (method_exists($field, 'isComputed') && $field->isComputed()) {
+                continue;
+            }
+            if ($field->getColumn() === 'NAME' || $field->getColumn() === 'TITLE') {
+                return $field->getColumn();
+            }
         }
 
         foreach ($fields as $field) {
@@ -544,6 +570,9 @@ class IndexPage extends Page
      */
     protected function saveInlineRow(mixed $id, array $payload): array
     {
+        if (!$this->resource instanceof ResourcePersistenceContract) {
+            return [];
+        }
         if (GridRowId::isGroupId($id)) {
             return [];
         }

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Contracts;
 
-use MB\Bitrix\AdminKit\Contracts\ExportResourceContract;
-use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
-use MB\Bitrix\AdminKit\Contracts\OrmResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceExportContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceQueryContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Export\ExportContext;
 use MB\Bitrix\AdminKit\Grid\GridContext;
@@ -23,9 +25,11 @@ final class StaticCompatibilityTest extends TestCase
         $resource = new ProductResource();
 
         self::assertInstanceOf(ResourceContract::class, $resource);
-        self::assertInstanceOf(ExportResourceContract::class, $resource);
-        self::assertInstanceOf(IndexResourceContract::class, $resource);
-        self::assertInstanceOf(OrmResourceContract::class, $resource);
+        self::assertInstanceOf(DataManagerResourceContract::class, $resource);
+        self::assertInstanceOf(CrudResourceContract::class, $resource);
+        self::assertInstanceOf(ResourceExportContract::class, $resource);
+        self::assertInstanceOf(ResourceQueryContract::class, $resource);
+        self::assertInstanceOf(ResourceOrmContract::class, $resource);
     }
 
     public function testGridAndExportAdaptersAcceptProductResource(): void

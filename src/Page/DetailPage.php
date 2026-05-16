@@ -9,6 +9,7 @@ use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
@@ -37,6 +38,11 @@ class DetailPage extends Page
         Loc::loadMessages(__FILE__);
 
         Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.toolbar']);
+
+        if (!$this->resource instanceof ResourcePersistenceContract) {
+            echo Notification::alert('Resource does not support persistence.', Notification::TYPE_WARNING);
+            return;
+        }
 
         $row = $this->resource->findItem($this->id);
         $this->item = is_array($row)

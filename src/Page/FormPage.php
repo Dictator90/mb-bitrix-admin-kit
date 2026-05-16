@@ -9,6 +9,7 @@ use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
@@ -83,16 +84,20 @@ class FormPage extends Page
         (new ToolbarRenderer())->renderForm($this->resource, $this->formId, $this->cancelActionJs());
 
         if ($this->id !== null && $this->id !== '') {
-            $row = $this->resource->findItem($this->id);
-            if ($row === null) {
-                $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_NOT_FOUND');
+            if (!$this->resource instanceof ResourcePersistenceContract) {
+                $this->globalErrors[] = 'Resource does not support persistence.';
             } else {
-                $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
-                if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
-                    $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW');
-                }
-                if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
-                    $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT');
+                $row = $this->resource->findItem($this->id);
+                if ($row === null) {
+                    $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_NOT_FOUND');
+                } else {
+                    $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+                    if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
+                        $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW');
+                    }
+                    if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
+                        $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT');
+                    }
                 }
             }
         } elseif (!$this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
@@ -211,9 +216,15 @@ class FormPage extends Page
             $this->resource->afterValidate($formData, $context);
 
             if ($this->id) {
+                if (!$this->resource instanceof ResourcePersistenceContract) {
+                    throw new AdminKitException('Resource does not support persistence.');
+                }
                 $result = $this->resource->updateItemResult($this->id, $formData, $context);
                 $savedId = $result->isSuccess() ? $this->id : null;
             } else {
+                if (!$this->resource instanceof ResourcePersistenceContract) {
+                    throw new AdminKitException('Resource does not support persistence.');
+                }
                 $result = $this->resource->createItemResult($formData, $context);
                 $savedId = $result->isSuccess() ? $result->id() : null;
             }
@@ -592,7 +603,7 @@ class FormPage extends Page
             $formData[$field->getColumn()] = $field->serializePostValue($this->request->getPost($field->getColumn()));
         }
 
-        if ($this->id && $this->item === null) {
+        if ($this->id && $this->item === null && $this->resource instanceof ResourcePersistenceContract) {
             $row = $this->resource->findItem($this->id);
             $this->item = $row ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey()) : null;
         }
@@ -689,9 +700,11 @@ class FormPage extends Page
             $this->mode = 'edit';
         }
 
-        $row = $this->resource->findItem($this->id);
-        if ($row !== null) {
-            $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+        if ($this->resource instanceof ResourcePersistenceContract) {
+            $row = $this->resource->findItem($this->id);
+            if ($row !== null) {
+                $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+            }
         }
     }
 

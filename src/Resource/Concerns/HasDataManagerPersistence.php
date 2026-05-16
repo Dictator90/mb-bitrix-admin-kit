@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Resource\Traits;
+namespace MB\Bitrix\AdminKit\Resource\Concerns;
 
 use MB\Bitrix\AdminKit\Database\CrudPersister;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
@@ -13,7 +13,7 @@ use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use RuntimeException;
 
-trait HasCrud
+trait HasDataManagerPersistence
 {
     public function findItem(mixed $id): ?array
     {
@@ -23,7 +23,7 @@ trait HasCrud
         }
 
         $row = $class::getList([
-            'filter' => [$this->getPrimaryKey() => $id],
+            'filter' => ['=' . $this->getPrimaryKey() => $id],
             'limit' => 1,
         ])->fetch();
 
@@ -95,7 +95,7 @@ trait HasCrud
         $context ??= $this->makeOperationContext('update', $id, $oldItem, $formData);
 
         return (new TransactionManager())->run(function () use ($class, $id, $oldItem, $formData, $context): DbResult {
-            $this->beforeUpdate($oldItem, $formData, $context);
+            $this->beforeUpdate($id, $formData, $context);
             $this->sendBitrixEvent('OnBeforeAdminKitResourceUpdate', $context, $formData->validated(), $id);
 
             $updateData = $formData->validated();
@@ -107,7 +107,7 @@ trait HasCrud
             }
 
             $item = array_merge($oldItem, $updateData, [$this->getPrimaryKey() => $id]);
-            $this->afterUpdate($item, $formData, $context);
+            $this->afterUpdate($id, $formData, $context);
             $this->sendBitrixEvent('OnAfterAdminKitResourceUpdate', $context, $item, $id);
 
             return $result;
@@ -137,7 +137,7 @@ trait HasCrud
         $context ??= $this->makeOperationContext('delete', $id, $row, new FormData());
 
         return (new TransactionManager())->run(function () use ($class, $id, $row, $context): DbResult {
-            $this->beforeDelete($row, $context);
+            $this->beforeDelete($id, $context);
             $this->sendBitrixEvent('OnBeforeAdminKitResourceDelete', $context, $row, $id);
 
             $result = (new CrudPersister())->delete($class, $id);
@@ -145,7 +145,7 @@ trait HasCrud
                 return $result;
             }
 
-            $this->afterDelete($row, $context);
+            $this->afterDelete($id, $context);
             $this->sendBitrixEvent('OnAfterAdminKitResourceDelete', $context, $row, $id);
 
             return $result;
@@ -185,6 +185,15 @@ trait HasCrud
         (new CrudPersister())->requireSuccess((new CrudPersister())->fromBitrixResult($result));
     }
 
+    /**
+     * @param string $operation
+     * @param mixed $itemId
+     * @param array<string, mixed> $oldData
+     * @param FormData|null $formData
+     * @param mixed $userId
+     * @param mixed $request
+     * @return DbOperationContext
+     */
     protected function makeOperationContext(
         string $operation,
         mixed $itemId = null,
@@ -209,6 +218,12 @@ trait HasCrud
         );
     }
 
+    /**
+     * @param string $operation
+     * @param array<string, mixed>|object|null $item
+     * @param mixed $userId
+     * @return PermissionContext
+     */
     protected function makePermissionContext(string $operation, array|object|null $item = null, mixed $userId = null): PermissionContext
     {
         return new PermissionContext($userId, null, $this, $operation, $item);

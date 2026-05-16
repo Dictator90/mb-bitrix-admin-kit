@@ -2,18 +2,36 @@
 
 ## Unreleased
 
+### Removed
+- Legacy contract aliases in `MB\Bitrix\AdminKit\Contracts\` (`IndexResourceContract`, `FormResourceContract`, `OrmResourceContract`, `ExportResourceContract`, and others) — use `Contracts\Resource\*` instead.
+- Legacy resource traits `HasCrud`, `HasPermissions`, `HasLifecycleEvents` — use `Resource\Concerns\*` instead.
+- Deprecated `Page\OptionsPage` wrapper — use `Pages\OptionsPage`.
+- Unused grid panel classes `Grid\Panel\PanelDataProvider`, `Grid\Panel\BulkDeletePanelAction`.
+- `AdminKitJs::renderGridCollapsibleInitialState()`, `Tab::getFields()`, `HasResourceExport::maxImportRows()`.
+
 ### Added
-- `UI\EntitySelector\IblockSectionListProvider` for `iblock-section-list` entity (`IblockSectionSelect`, `EntitySelect::entityId('iblock-section-list')`).
-- Grouped index rows via `Grid\Grouping\IndexGrouping`, `IndexPage::grouping()`, resource `indexGrouping()`, Bitrix collapsible grid row metadata, and synthetic group/item row IDs.
-- Relation index fields `Field\HasMany` and `Field\HasOne` that batch-load related values without joining or duplicating base grid rows.
-- Field edit links for index columns through `asEditLink()` / `linkToEdit()` with SidePanel-aware edit URLs.
-- `Discovery\ClassDiscovery` — registry discovery isolated from `AdminKitRegistry`, backed by `mb4it/filesystem` `ClassFinder` and Reflection-based final-class checks.
-- `Resource::pages()` with default `IndexPage`, `FormPage`, `DetailPage`; `PageContract`, `PageFactory`, `ResourcePageResolver`, `PageNotFoundException`.
-- `FieldRenderContext` for page-aware index/form/detail field rendering with backward-compatible raw-value rendering.
-- `Resource::maxExportRows()` (default `5000`) and pre-flight export row counting in `ExportAction`.
-- Narrow resource contracts (`ResourceIdentityContract`, `ResourceMenuContract`, `ResourcePermissionContract`, `OrmResourceContract`, `IndexResourceContract`, `FormResourceContract`, `DetailResourceContract`, `ExportableResourceContract`, `ExportResourceContract`); aggregate `ResourceContract` unchanged for BC.
-- `mb.admin.kit` Bitrix extension: `MB.AdminKit.Form`, `.Dependencies`, `.Visibility`, `.OptionsPage` (form save, field dependencies, visibility, options page).
-- Page/security/export tests: `PageFactoryTest`, `ResourcePageResolverStrictTest`, `IndexPageSecurityTest`, `DetailPagePermissionTest`, `FormPageValidationLifecycleTest`, `FormPageSidePanelAsyncTest`, `ImportRemovedFromIndexPageTest`, `OptionsPageBackwardCompatibilityTest`, `FormPageJsExtensionTest`, `OptionsPageStabilizationTest`, grid and discovery coverage.
+- New Resource architecture: `Resource` (core) -> `CrudResource` (DSL) -> `DataManagerResource` (ORM).
+- Logic extracted into reusable concerns: `HasResourceIdentity`, `HasResourceMenu`, `HasResourcePages`, `HasResourceFields`, `HasResourceFilters`, `HasResourceActions`, `HasResourceAuthorization`, `HasResourceSidePanel`, `HasResourceGrid`, `HasResourceQuery`, `HasResourceGrouping`, `HasResourceExport`, `HasResourceLifecycle`, `HasDataManager`, `HasDataManagerPersistence`.
+- Narrow resource contracts in `Contracts\Resource\*` for better dependency management.
+- `DataManagerResource` as the preferred base class for ORM-backed resources.
+- `ResourceActionsContract` with `hasAction()` and `activeActions()` for granular action control.
+- `RelationField` is now `readonly(true)` by default to prevent accidental saving of relation data.
+- CSRF protection for all bulk actions (added `sessid` to action panel JS).
+
+### Changed
+- `Resource` is now a minimal core class for identity, menu, and pages.
+- `CrudResource` is now a DSL-only class without persistence logic.
+- All ORM-backed examples and fixtures migrated to `DataManagerResource`.
+- Internal services (`GridDataLoader`, `IndexPage`, `FormPage`, `DetailPage`, `ExportAction`) updated to use narrow contracts.
+- `HasDataManagerPersistence::findItem` now uses explicit `=` operator for primary key filter.
+- `ExportAction` now uses explicit `@` operator for selected IDs filter.
+- `OptionsPage::fields()` is now `public` in documentation and examples.
+
+### Fixed
+- CSRF: added missing `sessid` to native Bitrix grid bulk actions.
+- ORM: fixed potential issues with ambiguous primary key filters by using explicit Bitrix ORM operators.
+- `IndexPage`: restored base `grouping()` hook so `IndexPageDefinition` and `RowAssembler` receive resource `indexGrouping()` (group rows were missing when only collapsible UI was enabled).
+- Group labels: `GroupLabelRenderer` now resolves section titles from `__GROUP_DATA` (`NAME`/`TITLE` fallback) and renders `ungroupedLabel()` for the ungrouped bucket; collapsible shift column prefers `NAME` when grouping has no explicit `labelColumn`.
 
 ### Changed
 - Grouped index grids initialize collapsible rows via `AdminKitJs::renderInit('GridCollapsible')` on `IndexPage` instead of auto-starting from `mb.admin.kit` bundle entry.

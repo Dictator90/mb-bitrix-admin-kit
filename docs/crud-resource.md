@@ -7,7 +7,7 @@
 ## Minimal resource
 
 ```php
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     public function dataManagerClass(): string
     {

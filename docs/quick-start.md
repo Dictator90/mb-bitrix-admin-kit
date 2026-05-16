@@ -73,7 +73,7 @@ use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
 use MB\Bitrix\AdminKit\Resource\CrudResource;
 use Vendor\Demo\Orm\ProductTable;
 
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     protected string $title = 'Products';
 

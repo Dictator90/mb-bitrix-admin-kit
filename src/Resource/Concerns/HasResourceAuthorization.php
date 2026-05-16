@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Resource\Traits;
+namespace MB\Bitrix\AdminKit\Resource\Concerns;
 
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 
-trait HasPermissions
+trait HasResourceAuthorization
 {
     public function canCreate(?PermissionContext $context = null): bool
     {

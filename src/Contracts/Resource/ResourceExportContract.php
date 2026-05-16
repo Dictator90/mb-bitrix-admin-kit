@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Contracts;
+namespace MB\Bitrix\AdminKit\Contracts\Resource;
 
-interface ExportableResourceContract
+interface ResourceExportContract
 {
     public function allowExportByFilter(): bool;
 

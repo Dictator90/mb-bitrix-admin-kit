@@ -17,10 +17,10 @@ use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Filter\Types\SelectFilter;
 use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
 use MB\Bitrix\AdminKit\Grid\GridContext;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use Vendor\Demo\Orm\ProductTable;
 
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     protected string $title = 'Demo products';
 

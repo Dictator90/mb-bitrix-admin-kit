@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 
 final class FieldRenderContext
 {
@@ -16,7 +16,7 @@ final class FieldRenderContext
      */
     public function __construct(
         public readonly FieldContract $field,
-        public readonly ResourceContract $resource,
+        public readonly CrudResourceContract $resource,
         public readonly mixed $item = null,
         public readonly mixed $value = null,
         public readonly string $page = '',

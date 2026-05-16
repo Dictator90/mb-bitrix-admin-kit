@@ -6,10 +6,10 @@ namespace Vendor\Demo\Admin;
 
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\MassDeleteAction;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use Vendor\Demo\Orm\ProductTable;
 
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     public function dataManagerClass(): string
     {

@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Contracts;
 
-use MB\Bitrix\AdminKit\Contracts\DetailResourceContract;
-use MB\Bitrix\AdminKit\Contracts\ExportableResourceContract;
-use MB\Bitrix\AdminKit\Contracts\ExportResourceContract;
-use MB\Bitrix\AdminKit\Contracts\FormResourceContract;
-use MB\Bitrix\AdminKit\Contracts\IndexResourceContract;
-use MB\Bitrix\AdminKit\Contracts\OrmResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceAuthorizationContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceExportContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceFieldsContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceFiltersContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceGroupingContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceIdentityContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceMenuContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceQueryContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceIdentityContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceMenuContract;
-use MB\Bitrix\AdminKit\Contracts\ResourcePermissionContract;
 use MB\Bitrix\AdminKit\Resource\CrudResource;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use PHPUnit\Framework\TestCase;
@@ -29,13 +32,16 @@ final class ResourceContractCompositionTest extends TestCase
         return [
             'identity' => [ResourceIdentityContract::class],
             'menu' => [ResourceMenuContract::class],
-            'permissions' => [ResourcePermissionContract::class],
-            'orm' => [OrmResourceContract::class],
-            'index' => [IndexResourceContract::class],
-            'form' => [FormResourceContract::class],
-            'detail' => [DetailResourceContract::class],
-            'exportable' => [ExportableResourceContract::class],
-            'export' => [ExportResourceContract::class],
+            'permissions' => [ResourceAuthorizationContract::class],
+            'orm' => [ResourceOrmContract::class],
+            'persistence' => [ResourcePersistenceContract::class],
+            'fields' => [ResourceFieldsContract::class],
+            'filters' => [ResourceFiltersContract::class],
+            'query' => [ResourceQueryContract::class],
+            'grouping' => [ResourceGroupingContract::class],
+            'export' => [ResourceExportContract::class],
+            'crud' => [CrudResourceContract::class],
+            'dataManager' => [DataManagerResourceContract::class],
         ];
     }
 
@@ -51,21 +57,15 @@ final class ResourceContractCompositionTest extends TestCase
         self::assertTrue(is_subclass_of(CrudResource::class, ResourceContract::class));
     }
 
-    public function testResourceContractKeepsAggregateOnlyMethods(): void
+    public function testResourceContractExposesPageAndActionEntryPoints(): void
     {
         $methods = array_map(
             static fn (\ReflectionMethod $method): string => $method->getName(),
-            array_filter(
-                (new ReflectionClass(ResourceContract::class))->getMethods(),
-                static fn (\ReflectionMethod $method): bool => $method->getDeclaringClass()->getName() === ResourceContract::class,
-            ),
+            (new ReflectionClass(ResourceContract::class))->getMethods(),
         );
 
-        self::assertContains('asyncActions', $methods);
-        self::assertContains('pages', $methods);
-        self::assertContains('indexPage', $methods);
-        self::assertContains('formPage', $methods);
-        self::assertContains('detailPage', $methods);
-        self::assertSame(['asyncActions', 'pages', 'indexPage', 'formPage', 'detailPage'], $methods);
+        foreach (['asyncActions', 'pages', 'indexPage', 'formPage', 'detailPage'] as $method) {
+            self::assertContains($method, $methods, 'ResourceContract must expose ' . $method);
+        }
     }
 }

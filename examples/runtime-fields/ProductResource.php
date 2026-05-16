@@ -8,11 +8,11 @@ use Bitrix\Main\ORM\Fields\Relations\Reference;
 use MB\Bitrix\AdminKit\Field\ID;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Grid\GridContext;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use Vendor\Demo\Orm\CategoryTable;
 use Vendor\Demo\Orm\ProductTable;
 
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     public function dataManagerClass(): string
     {

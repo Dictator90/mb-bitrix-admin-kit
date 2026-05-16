@@ -5,37 +5,43 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Resource;
 
 use Bitrix\Main\ORM\Data\DataManager;
-use LogicException;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceActions;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceAuthorization;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceExport;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceFields;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceFilters;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrid;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrouping;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceLifecycle;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceQuery;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceSidePanel;
 
 /**
- * Explicit base class for Bitrix D7 ORM-backed CRUD resources.
+ * Base class for CRUD-enabled resources.
  *
- * New ORM CRUD sections should extend this class. {@see Resource} remains the
- * backward-compatible base and still exposes CRUD helpers for legacy resources
- * that extend Resource directly.
+ * Defines the CRUD DSL: fields, filters, actions, grid settings, and authorization.
+ * Does not include persistence logic by default. For Bitrix D7 ORM persistence,
+ * extend {@see DataManagerResource}.
  *
  * @template T of DataManager
  * @extends Resource<T>
  */
-abstract class CrudResource extends Resource
+abstract class CrudResource extends Resource implements CrudResourceContract
 {
-    public function dataManagerClass(): string
-    {
-        $class = parent::dataManagerClass();
-        if ($class === '') {
-            throw new LogicException(static::class . ' must declare a non-empty dataManagerClass().');
-        }
-
-        return $class;
-    }
-
-    public function getDataManagerClass(): ?string
-    {
-        return $this->dataManagerClass();
-    }
+    use HasResourceFields;
+    use HasResourceFilters;
+    use HasResourceActions;
+    use HasResourceAuthorization;
+    use HasResourceSidePanel;
+    use HasResourceGrid;
+    use HasResourceQuery;
+    use HasResourceGrouping;
+    use HasResourceExport;
+    use HasResourceLifecycle;
 
     public function hasCrud(): bool
     {
-        return true;
+        return false;
     }
 }

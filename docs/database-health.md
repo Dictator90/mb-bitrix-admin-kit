@@ -11,7 +11,7 @@ Resources that need diagnostics may implement `SchemaAwareResource`:
 use MB\Bitrix\AdminKit\Database\Schema\TableSchema;
 use MB\Bitrix\AdminKit\Resource\SchemaAwareResource;
 
-final class ProductResource extends CrudResource implements SchemaAwareResource
+final class ProductResource extends DataManagerResource implements SchemaAwareResource
 {
     public function expectedTableSchema(): TableSchema
     {

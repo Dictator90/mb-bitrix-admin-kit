@@ -179,7 +179,7 @@ final class ExportAction
 
         if ($context->hasSelectedIds()) {
             $params['filter'] = array_replace($params['filter'] ?? [], [
-                $resource->getPrimaryKey() => AdminCollection::make($context->selectedIds)->all(),
+                '@' . $resource->getPrimaryKey() => AdminCollection::make($context->selectedIds)->all(),
             ]);
         } elseif ($context->hasFilter()) {
             $params['filter'] = array_replace($params['filter'] ?? [], $context->filter);

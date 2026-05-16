@@ -20,12 +20,4 @@ final class AdminKitJs
 
         echo '<script>BX.ready(function(){var m=' . $moduleJs . ',c=' . $json . ';var run=function(){if(window.MB&&MB.AdminKit&&MB.AdminKit[m]&&MB.AdminKit[m].init){MB.AdminKit[m].init(c);}};if(BX.Runtime&&BX.Runtime.loadExtension){BX.Runtime.loadExtension("mb.admin.kit").then(run).catch(run);}else{run();}});</script>';
     }
-
-    /**
-     * @deprecated use {@see renderInit()} with module name {@code GridCollapsible}
-     */
-    public static function renderGridCollapsibleInitialState(): void
-    {
-        self::renderInit('GridCollapsible', []);
-    }
 }

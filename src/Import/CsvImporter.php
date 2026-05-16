@@ -48,9 +48,7 @@ final class CsvImporter implements ImporterInterface
                 continue;
             }
 
-            $maxRows = method_exists($context->resource, 'maxImportRows')
-                ? min($context->maxRows, $context->resource->maxImportRows())
-                : $context->maxRows;
+            $maxRows = $context->maxRows;
             if (count($rows) >= $maxRows) {
                 fclose($handle);
                 $this->lastParsedRows = $rows;

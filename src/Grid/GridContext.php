@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid;
 
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 
 final class GridContext
 {
     public function __construct(
-        public readonly ResourceContract $resource,
+        public readonly DataManagerResourceContract $resource,
         public readonly string $gridId,
         public readonly string $filterId,
         public readonly array $sort = [],
@@ -22,7 +22,7 @@ final class GridContext
     ) {
     }
 
-    public static function make(ResourceContract $resource, mixed $request = null, array $overrides = []): self
+    public static function make(DataManagerResourceContract $resource, mixed $request = null, array $overrides = []): self
     {
         return new self(
             $resource,

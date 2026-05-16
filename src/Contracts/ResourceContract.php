@@ -10,31 +10,11 @@ use MB\Bitrix\AdminKit\Page\FormPage;
 use MB\Bitrix\AdminKit\Page\IndexPage;
 
 /**
- * Aggregate resource contract for backward compatibility.
+ * Aggregate resource contract for ORM-backed admin sections.
  *
- * New internal code should depend on narrower contracts such as
- * {@see IndexResourceContract}, {@see FormResourceContract}, or {@see ExportResourceContract}.
+ * Internal code may depend on narrower contracts in {@see \MB\Bitrix\AdminKit\Contracts\Resource}.
  */
 interface ResourceContract extends
-    ResourceIdentityContract,
-    ResourceMenuContract,
-    ResourcePermissionContract,
-    OrmResourceContract,
-    IndexResourceContract,
-    FormResourceContract,
-    DetailResourceContract,
-    ExportableResourceContract,
-    ExportResourceContract
+    \MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract
 {
-    /** @return iterable<AsyncAction> */
-    public function asyncActions(): iterable;
-
-    /** @return iterable<class-string<PageContract>> */
-    public function pages(): iterable;
-
-    public function indexPage(): IndexPage;
-
-    public function formPage(mixed $id = null): FormPage;
-
-    public function detailPage(mixed $id): DetailPage;
 }

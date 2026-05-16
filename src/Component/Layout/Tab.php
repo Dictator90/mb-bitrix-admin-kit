@@ -192,24 +192,6 @@ class Tab
         return $this->items;
     }
 
-    /**
-     * @return FieldContract[]
-     * @deprecated Use getItems() — recursively unwraps ComponentContract children too.
-     */
-    public function getFields(): array
-    {
-        $fields = [];
-        foreach ($this->items as $item) {
-            if ($item instanceof FieldContract) {
-                $fields[] = $item;
-            } elseif ($item instanceof ComponentContract) {
-                $fields = array_merge($fields, $item->extractFields());
-            }
-        }
-
-        return $fields;
-    }
-
     public function isActive(): bool
     {
         return $this->active;

@@ -15,8 +15,12 @@ final class GroupLabelRenderer
         $groupId = $rowData['__GROUP_ID'] ?? null;
         $groupData = is_array($rowData['__GROUP_DATA'] ?? null) ? $rowData['__GROUP_DATA'] : [];
         $resourceClass = $rowData['__GROUP_RESOURCE'] ?? $grouping->resourceClass();
+        if ($groupId === '__ungrouped' || $groupId === null) {
+            return htmlspecialchars((string)$this->rawLabel($rowData, $grouping, $groupData));
+        }
+
         $resource = new $resourceClass();
-        if (!$resource instanceof ResourceContract || $groupId === null || $groupId === '__ungrouped') {
+        if (!$resource instanceof ResourceContract) {
             return htmlspecialchars((string)$this->rawLabel($rowData, $grouping, $groupData));
         }
 
@@ -38,10 +42,20 @@ final class GroupLabelRenderer
      */
     private function rawLabel(array $rowData, IndexGrouping $grouping, array $groupData): mixed
     {
-        $labelColumn = $grouping->labelColumn();
-        if ($labelColumn !== null && array_key_exists($labelColumn, $rowData)) {
-            return $rowData[$labelColumn];
+        if (($rowData['__GROUP_ID'] ?? null) === '__ungrouped') {
+            $ungroupedLabel = $grouping->ungroupedLabel();
+            if ($ungroupedLabel instanceof \Closure) {
+                return $ungroupedLabel([]);
+            }
+
+            return $ungroupedLabel ?? 'Без группы';
         }
+
+        $labelColumn = $grouping->labelColumn();
+        if ($labelColumn !== null && $labelColumn !== '') {
+            return $groupData[$labelColumn] ?? $rowData[$labelColumn] ?? '';
+        }
+
         $label = $grouping->label();
         if ($label instanceof \Closure) {
             return $label($groupData);
@@ -50,6 +64,20 @@ final class GroupLabelRenderer
             return $groupData[$label] ?? '';
         }
 
-        return '';
+        return $this->defaultGroupLabel($groupData, $grouping->ownerKey());
+    }
+
+    /**
+     * @param array<string,mixed> $groupData
+     */
+    private function defaultGroupLabel(array $groupData, string $ownerKey): string
+    {
+        foreach (['NAME', 'TITLE'] as $column) {
+            if (isset($groupData[$column]) && (string)$groupData[$column] !== '') {
+                return (string)$groupData[$column];
+            }
+        }
+
+        return isset($groupData[$ownerKey]) ? (string)$groupData[$ownerKey] : '';
     }
 }

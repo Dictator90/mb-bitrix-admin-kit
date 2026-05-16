@@ -46,7 +46,7 @@ public function pages(): iterable
 Keep `indexFields()`, `formFields()`, and `detailFields()` for simple resources: they are shortcuts used by the default pages. For advanced UI behavior, register page classes instead of creating `indexResource()`, `formResource()`, `detailResource()`, `IndexResource`, `FormResource`, or `DetailResource` abstractions.
 
 ```php
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     public function pages(): iterable
     {

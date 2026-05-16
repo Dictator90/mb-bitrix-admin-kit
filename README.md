@@ -171,9 +171,9 @@ use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Filter\Types\SelectFilter;
 use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     protected string $title = 'Products';
 
@@ -294,7 +294,7 @@ final class SettingsPage extends \MB\Bitrix\AdminKit\Pages\OptionsPage
         return 'Demo settings';
     }
 
-    protected function fields(): iterable
+    public function fields(): iterable
     {
         return [
             Text::make('API token', 'api_token')->private(),

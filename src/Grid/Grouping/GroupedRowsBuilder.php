@@ -7,7 +7,8 @@ namespace MB\Bitrix\AdminKit\Grid\Grouping;
 use Closure;
 use MB\Bitrix\AdminKit\Contracts\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
@@ -25,7 +26,7 @@ final class GroupedRowsBuilder
      */
     public function build(
         array $itemRows,
-        ResourceContract $itemResource,
+        CrudResourceContract&ResourceOrmContract $itemResource,
         IndexGrouping $grouping,
         GridContext $context,
         ?IndexPageDefinitionContract $indexPage = null,
@@ -104,11 +105,11 @@ final class GroupedRowsBuilder
     }
 
     /** @param class-string $resourceClass */
-    private function makeGroupResource(string $resourceClass): ResourceContract
+    private function makeGroupResource(string $resourceClass): CrudResourceContract&ResourceOrmContract
     {
         $resource = new $resourceClass();
-        if (!$resource instanceof ResourceContract) {
-            throw new \LogicException(sprintf('Grouping resource "%s" must implement ResourceContract.', $resourceClass));
+        if (!$resource instanceof CrudResourceContract || !$resource instanceof ResourceOrmContract) {
+            throw new \LogicException(sprintf('Grouping resource "%s" must implement CrudResourceContract and ResourceOrmContract.', $resourceClass));
         }
 
         return $resource;
@@ -118,7 +119,7 @@ final class GroupedRowsBuilder
      * @param array<string,mixed> $ids
      * @return array<string,array<string,mixed>>
      */
-    private function loadGroups(ResourceContract $resource, IndexGrouping $grouping, array $ids): array
+    private function loadGroups(ResourceOrmContract $resource, IndexGrouping $grouping, array $ids): array
     {
         if ($ids === []) {
             return [];
@@ -149,7 +150,7 @@ final class GroupedRowsBuilder
      * @param array<string,array<string,mixed>> $groups
      * @return array<string,array<string,mixed>>
      */
-    private function loadParentGroups(ResourceContract $resource, IndexGrouping $grouping, array $groups): array
+    private function loadParentGroups(ResourceOrmContract $resource, IndexGrouping $grouping, array $groups): array
     {
         $parentKey = $grouping->parentKey();
         if ($parentKey === null) {
@@ -380,6 +381,12 @@ final class GroupedRowsBuilder
         }
         if (is_string($label)) {
             return $groupRow[$label] ?? null;
+        }
+
+        foreach (['NAME', 'TITLE'] as $column) {
+            if (isset($groupRow[$column]) && (string)$groupRow[$column] !== '') {
+                return $groupRow[$column];
+            }
         }
 
         return $fallbackColumn !== null ? ($groupRow[$fallbackColumn] ?? null) : null;

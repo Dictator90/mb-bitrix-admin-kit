@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Contracts;
+namespace MB\Bitrix\AdminKit\Contracts\Resource;
 
 interface ResourceMenuContract
 {
@@ -13,4 +13,6 @@ interface ResourceMenuContract
     public static function isVisibleInMenu(): bool;
 
     public static function getParentMenuId(): ?string;
+
+    public function group(): ?string;
 }

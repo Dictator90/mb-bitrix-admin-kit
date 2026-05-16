@@ -8,6 +8,15 @@
 - Export remains CSV-first via `ExportAction` / `Export\CsvExporter`.
 - Library classes under `Import\*` are unchanged; do not document or ship import UI until it is re-enabled.
 
+### Resource architecture refactor
+
+- New hierarchy: `Resource` (core) -> `CrudResource` (DSL) -> `DataManagerResource` (ORM).
+- **Breaking change**: ORM-backed resources must now extend `DataManagerResource` instead of `CrudResource`.
+- `CrudResource` no longer includes Bitrix ORM persistence logic by default.
+- Legacy resources extending `Resource` directly can keep ORM logic by using `HasDataManager` and `HasDataManagerPersistence` concerns.
+- `ResourceContract` is now a legacy aggregate; use narrow contracts from `Contracts\Resource\*` in new code.
+- `RelationField` is now `readonly(true)` by default.
+
 ### Security hardening
 
 - POST saves and options updates require valid `check_bitrix_sessid()`.
@@ -16,7 +25,7 @@
 
 ### Resource / pages
 
-- New ORM sections: extend `CrudResource`. Legacy code may keep `extends Resource`.
+- New ORM sections: extend `DataManagerResource`. Legacy code may keep `extends Resource` (with ORM traits) or migrate `extends CrudResource` -> `extends DataManagerResource`.
 - Customize UI via `Resource::pages()` and page subclasses; `indexFields()` / `formFields()` / `detailFields()` remain shortcuts.
 - Standalone: `Pages\OptionsPage` (settings), `Pages\DashboardPage` (widgets). Deprecated: `Page\OptionsPage` wrapper.
 

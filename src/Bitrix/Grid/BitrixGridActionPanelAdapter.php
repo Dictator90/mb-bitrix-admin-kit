@@ -94,6 +94,9 @@ final class BitrixGridActionPanelAdapter
                 'var data={};' .
                 "data['{$actionButtonKeyJs}']='{$actionIdJs}';" .
                 "data['{$forAllKeyJs}']=forAll;" .
+                "if(BX&&typeof BX.bitrix_sessid==='function'){" .
+                    "data['sessid']=BX.bitrix_sessid();" .
+                "}" .
                 'data.ID=ids;' .
                 'data.id=ids;' .
                 'data.rows=ids;' .

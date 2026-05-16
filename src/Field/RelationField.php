@@ -10,7 +10,7 @@ use MB\Bitrix\AdminKit\Grid\Relations\RelationFieldContract;
 
 abstract class RelationField extends Field implements RelationFieldContract
 {
-    /** @var class-string|null */
+    protected bool $readonly = true;
     protected ?string $tableClass = null;
     protected ?string $foreignKey = null;
     protected string $localKey = 'ID';

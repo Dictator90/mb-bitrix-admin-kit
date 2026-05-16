@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Grid;
 
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Database\Performance\QueryPerformanceContext;
@@ -20,7 +20,7 @@ final class GridDataLoader
     }
 
     public function load(
-        ResourceContract $resource,
+        DataManagerResourceContract $resource,
         Grid $grid,
         mixed $request = null,
         ?GridContext $context = null,
@@ -62,7 +62,7 @@ final class GridDataLoader
         return $performance;
     }
 
-    public function makeContext(ResourceContract $resource, Grid $grid, mixed $request = null): GridContext
+    public function makeContext(DataManagerResourceContract $resource, Grid $grid, mixed $request = null): GridContext
     {
         return new GridContext(
             $resource,
@@ -84,7 +84,7 @@ final class GridDataLoader
      * @return array{0:int,1:bool}
      */
     private function resolveTotalCount(
-        ResourceContract $resource,
+        DataManagerResourceContract $resource,
         string $dataManagerClass,
         GridContext $context,
         array $filter,

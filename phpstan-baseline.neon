@@ -1616,21 +1616,6 @@ parameters:
 			path: src/Grid/GridQueryBuilder.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Panel\\\\BulkDeletePanelAction\\:\\:execute\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Panel/BulkDeletePanelAction.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Panel\\\\PanelDataProvider\\:\\:__construct\\(\\) has parameter \\$actions with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Panel/PanelDataProvider.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Panel\\\\PanelDataProvider\\:\\:getActions\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Panel/PanelDataProvider.php
-
-		-
 			message: "#^Call to method format\\(\\) on an unknown class Bitrix\\\\Main\\\\Type\\\\Date\\.$#"
 			count: 1
 			path: src/Grid/Row/Assembler/DateAssembler.php
