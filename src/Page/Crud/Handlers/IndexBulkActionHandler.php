@@ -6,7 +6,6 @@ namespace MB\Bitrix\AdminKit\Page\Crud\Handlers;
 
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\BulkActionDropdown;
-use MB\Bitrix\AdminKit\Action\MassDeleteAction;
 use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
@@ -37,15 +36,14 @@ final class IndexBulkActionHandler
             return null;
         }
 
-        $action = $bulkAction->isDelete() && !$bulkAction instanceof MassDeleteAction
-            ? new MassDeleteAction($bulkAction->getId(), $bulkAction->getLabel())
-            : $bulkAction;
+        $action = $bulkAction;
 
-        $selectedIds = $page->resolveSelectedIds();
+        $forAll = $page->isForAllRowsSelected();
+        $selectedIds = $forAll ? [] : $page->resolveSelectedIds();
         $grid = $page->buildGrid();
         $gridContext = (new GridDataLoader())->makeContext($resource, $grid, $page->request);
         $queryParams = (new GridQueryBuilder())->build($resource, $gridContext, $page->definition());
-        $filter = $selectedIds === [] && $action->canRunByFilter()
+        $filter = $forAll && $action->canRunByFilter()
             ? (is_array($queryParams['filter'] ?? null) ? $queryParams['filter'] : [])
             : [];
 
@@ -57,6 +55,7 @@ final class IndexBulkActionHandler
             request: $page->request,
             filter: $filter,
             gridContext: $gridContext,
+            forAll: $forAll,
         );
 
         $guardErrors = (new QueryGuard())->validateBulkOperation($context);

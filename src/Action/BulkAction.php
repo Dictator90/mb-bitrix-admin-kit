@@ -24,8 +24,10 @@ class BulkAction implements ActionContract, BulkPanelItemContract
     protected ?string $confirmText = null;
     protected bool $danger = false;
     protected bool $allowRunByFilter = false;
+    protected bool $allowRunWithoutFilter = false;
     protected string $group = 'default';
     protected ?string $groupLabel = null;
+    protected int $groupSort = 100;
     protected int $sort = 100;
     protected ?string $icon = null;
     protected ?string $buttonClass = null;
@@ -43,17 +45,9 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         $this->label = $label ?? $id;
     }
 
-    public static function delete(): static
+    public static function delete(string $id = 'delete', ?string $label = 'Удалить выбранные'): MassDeleteAction
     {
-        $action = new static('delete', 'Удалить выбранные');
-        $action->needsConfirm = true;
-        $action->confirmText = 'Вы уверены, что хотите удалить выбранные записи?';
-        $action->danger = true;
-        $action->group('danger', 'Удаление');
-        $action->icon('ui-btn-icon-remove');
-        $action->sort(100);
-
-        return $action;
+        return MassDeleteAction::make($id, $label);
     }
 
     public static function make(string $id, ?string $label = null): static
@@ -68,10 +62,21 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         return $this;
     }
 
-    public function group(string $group, ?string $label = null): static
+    public function group(string $group, ?string $label = null, ?int $sort = null): static
     {
         $this->group = $group;
         $this->groupLabel = $label;
+
+        if ($sort !== null) {
+            $this->groupSort = $sort;
+        }
+
+        return $this;
+    }
+
+    public function groupSort(int $sort): static
+    {
+        $this->groupSort = $sort;
 
         return $this;
     }
@@ -183,6 +188,13 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         return $this;
     }
 
+    public function allowRunWithoutFilter(bool $allow = true): static
+    {
+        $this->allowRunWithoutFilter = $allow;
+
+        return $this;
+    }
+
     public function getId(): string
     {
         return $this->id;
@@ -218,6 +230,11 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         return $this->allowRunByFilter;
     }
 
+    public function canRunWithoutFilter(): bool
+    {
+        return $this->allowRunWithoutFilter;
+    }
+
     public function getGroup(): string
     {
         return $this->group;
@@ -231,6 +248,11 @@ class BulkAction implements ActionContract, BulkPanelItemContract
     public function getSort(): int
     {
         return $this->sort;
+    }
+
+    public function getGroupSort(): int
+    {
+        return $this->groupSort;
     }
 
     public function getIcon(): ?string
@@ -285,11 +307,16 @@ class BulkAction implements ActionContract, BulkPanelItemContract
             return BulkResult::failure('Invalid CSRF token.');
         }
 
-        $ids = $this->selectedIds($context);
         $guardErrors = (new QueryGuard())->validateBulkOperation($context);
         if ($guardErrors !== []) {
             return BulkResult::failure(implode(' ', $guardErrors));
         }
+
+        if (!$this->isRunnable($context)) {
+            return BulkResult::failure('Bulk action is not allowed.');
+        }
+
+        $ids = $this->selectedIds($context);
 
         if ($ids === []) {
             return BulkResult::failure('Не выбраны элементы');
@@ -300,6 +327,7 @@ class BulkAction implements ActionContract, BulkPanelItemContract
                 ->update($this->data)
                 ->canRun($this->canRunCondition ?? true)
                 ->allowRunByFilter($this->allowRunByFilter)
+                ->allowRunWithoutFilter($this->allowRunWithoutFilter)
                 ->execute($context->with(['action' => $this]));
         }
 
@@ -320,27 +348,29 @@ class BulkAction implements ActionContract, BulkPanelItemContract
             static fn (mixed $id): bool => $id !== null && $id !== ''
         ));
 
-        if ($ids === [] && $this->canRunByFilter() && $context->filter !== null && $context->filter !== []) {
-            $pk = $context->resource->getPrimaryKey();
-            $rows = $context->resource->getList([
-                'filter' => $context->filter,
-                'select' => [$pk],
-            ]);
-
-            return AdminCollection::make($rows)->pluck($pk)->all();
+        if ($ids !== [] || !$context->forAll || !$this->canRunByFilter()) {
+            return $ids;
         }
 
-        if ($ids === [] && $this->canRunByFilter() && $context->filter === []) {
-            // No filter means all records
-            $pk = $context->resource->getPrimaryKey();
-            $rows = $context->resource->getList([
-                'select' => [$pk],
-            ]);
+        return $this->idsByFilter($context);
+    }
 
-            return AdminCollection::make($rows)->pluck($pk)->all();
+    /** @return array<int,mixed> */
+    protected function idsByFilter(BulkOperationContext $context): array
+    {
+        // TODO: switch to keyset/chunked loading for very large filtered operations.
+        $pk = $context->resource->getPrimaryKey();
+        $params = [
+            'select' => [$pk],
+        ];
+
+        if ($context->filter !== []) {
+            $params['filter'] = $context->filter;
         }
 
-        return $ids;
+        $rows = $context->resource->getList($params);
+
+        return AdminCollection::make($rows)->pluck($pk)->all();
     }
 
     protected function checkCsrf(): bool
@@ -371,6 +401,7 @@ class BulkAction implements ActionContract, BulkPanelItemContract
                 'request' => $context->request,
                 'filter' => $context->filter,
                 'gridContext' => $context->gridContext,
+                'forAll' => $context->forAll,
             ];
         }
 

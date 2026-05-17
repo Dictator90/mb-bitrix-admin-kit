@@ -18,8 +18,7 @@ final class BulkActionDropdownTest extends TestCase
             ->sort(10)
             ->icon('my-icon')
             ->buttonClass('my-class')
-            ->title('My Title')
-            ->multiple(true);
+            ->title('My Title');
 
         self::assertSame('activity', $dropdown->getId());
         self::assertSame('Активность', $dropdown->getLabel());
@@ -29,7 +28,7 @@ final class BulkActionDropdownTest extends TestCase
         self::assertSame('my-icon', $dropdown->getIcon());
         self::assertSame('my-class', $dropdown->getButtonClass());
         self::assertSame('My Title', $dropdown->getTitle());
-        self::assertTrue($dropdown->isMultiple());
+        self::assertFalse($dropdown->isMultiple());
     }
 
     public function testItSupportsItems(): void

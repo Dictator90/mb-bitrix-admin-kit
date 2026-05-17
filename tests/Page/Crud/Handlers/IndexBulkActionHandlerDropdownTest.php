@@ -58,7 +58,7 @@ final class IndexBulkActionHandlerDropdownTest extends TestCase
             {
                 return [
                     BulkActionDropdown::make('activity')->items([
-                        BulkAction::make('activate')->allowRunByFilter()->update(['ACTIVE' => 'Y'])
+                        BulkAction::make('activate')->allowRunByFilter()->allowRunWithoutFilter()->update(['ACTIVE' => 'Y'])
                     ])
                 ];
             }

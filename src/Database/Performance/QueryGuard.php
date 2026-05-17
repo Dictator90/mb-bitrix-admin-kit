@@ -8,6 +8,7 @@ use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use Throwable;
 
 final class QueryGuard
 {
@@ -36,12 +37,34 @@ final class QueryGuard
 
         $action = $context->action;
 
-        if ($ids !== []) {
+        if ($ids !== [] && !$context->forAll) {
             return [];
         }
 
-        if ($action instanceof BulkAction && !$action->canRunByFilter()) {
+        if (!$context->forAll) {
+            return [];
+        }
+
+        if (!$action instanceof BulkAction || !$action->canRunByFilter()) {
             return ['Run by filter is not explicitly allowed for this bulk action.'];
+        }
+
+        if ($context->filter === [] && !$action->canRunWithoutFilter()) {
+            return ['Running bulk action for all records without filter is not allowed.'];
+        }
+
+        $count = $this->bulkRowsCount($context);
+        if ($count === null) {
+            return ['Bulk operation row count cannot be determined.'];
+        }
+
+        $maxBulkRows = method_exists($context->resource, 'maxBulkRows')
+            ? (int)$context->resource->maxBulkRows()
+            : 5000;
+        $maxBulkRows = max(1, $maxBulkRows);
+
+        if ($count > $maxBulkRows) {
+            return [sprintf('Bulk operation affects too many rows: %d. Maximum allowed: %d.', $count, $maxBulkRows)];
         }
 
         return [];
@@ -52,6 +75,19 @@ final class QueryGuard
         $errors = $this->validateBulkOperation($context);
         if ($errors !== []) {
             throw new \RuntimeException(implode(' ', $errors));
+        }
+    }
+
+    private function bulkRowsCount(BulkOperationContext $context): ?int
+    {
+        if (!method_exists($context->resource, 'getCount')) {
+            return null;
+        }
+
+        try {
+            return (int)$context->resource->getCount($context->filter);
+        } catch (Throwable) {
+            return null;
         }
     }
 }

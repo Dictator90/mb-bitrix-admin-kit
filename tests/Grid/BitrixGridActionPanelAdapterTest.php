@@ -19,7 +19,7 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         $grid->setBulkActions([BulkAction::make('delete', 'Delete')->confirm('Really?')->danger()]);
 
         $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
-        
+
         self::assertCount(1, $panel['GROUPS']);
         $items = $panel['GROUPS'][0]['ITEMS'];
 
@@ -55,9 +55,9 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         ]);
 
         $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
-        
+
         self::assertCount(2, $panel['GROUPS']);
-        
+
         // Group 1: default (A, B sorted)
         $group1 = $panel['GROUPS'][0]['ITEMS'];
         self::assertSame('b', $group1[0]['ID']);
@@ -110,7 +110,7 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         $grid = new Grid('products');
         $grid->setBulkActions([
             BulkAction::make('custom', 'Custom')
-                ->panelItem(fn(Grid $g) => ['TYPE' => 'TEXT', 'ID' => 'custom_' . $g->getId()])
+                ->panelItem(fn (Grid $g) => ['TYPE' => 'TEXT', 'ID' => 'custom_' . $g->getId()])
         ]);
 
         $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
@@ -124,7 +124,7 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         $grid = new Grid('products');
         $grid->setBulkActions([
             BulkActionDropdown::make('activity', 'Activity')
-                ->multiple(true)
+                ->title('Activity title')
                 ->items([
                     BulkAction::make('activate', 'Activate')->confirm('Are you sure?'),
                     BulkAction::make('deactivate', 'Deactivate'),
@@ -137,16 +137,55 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         self::assertSame('DROPDOWN', $item['TYPE']);
         self::assertSame('activity', $item['ID']);
         self::assertSame('ACTIVITY', $item['NAME']);
-        self::assertSame('Y', $item['MULTIPLE']);
-        self::assertCount(2, $item['ITEMS']);
+        self::assertSame('N', $item['MULTIPLE']);
+        self::assertSame('Activity title', $item['TITLE']);
+        self::assertArrayNotHasKey('TEXT', $item);
+        self::assertCount(3, $item['ITEMS']);
 
-        self::assertSame('Activate', $item['ITEMS'][0]['NAME']);
-        self::assertSame('activate', $item['ITEMS'][0]['VALUE']);
-        self::assertTrue($item['ITEMS'][0]['ONCHANGE'][0]['CONFIRM']);
-        self::assertStringContainsString("'activate'", $item['ITEMS'][0]['ONCHANGE'][0]['DATA'][0]['JS']);
+        self::assertSame('Activity', $item['ITEMS'][0]['NAME']);
+        self::assertSame('', $item['ITEMS'][0]['VALUE']);
+        self::assertArrayNotHasKey('ONCHANGE', $item['ITEMS'][0]);
 
-        self::assertSame('Deactivate', $item['ITEMS'][1]['NAME']);
-        self::assertSame('deactivate', $item['ITEMS'][1]['VALUE']);
+        self::assertSame('Activate', $item['ITEMS'][1]['NAME']);
+        self::assertSame('activate', $item['ITEMS'][1]['VALUE']);
+        self::assertTrue($item['ITEMS'][1]['ONCHANGE'][0]['CONFIRM']);
+        self::assertStringContainsString("'activate'", $item['ITEMS'][1]['ONCHANGE'][0]['DATA'][0]['JS']);
+
+        self::assertSame('Deactivate', $item['ITEMS'][2]['NAME']);
+        self::assertSame('deactivate', $item['ITEMS'][2]['VALUE']);
+    }
+
+
+    public function testItSkipsInvisibleActionsAndEmptyDropdowns(): void
+    {
+        $grid = new Grid('products');
+        $grid->setBulkActions([
+            BulkAction::make('hidden', 'Hidden')->canSee(false),
+            BulkActionDropdown::make('empty', 'Empty')->items([
+                BulkAction::make('hidden_child', 'Hidden child')->canSee(false),
+            ]),
+            BulkActionDropdown::make('visible_drop', 'Visible')->items([
+                BulkAction::make('visible_child', 'Visible child'),
+                BulkAction::make('hidden_child_2', 'Hidden child 2')->canSee(false),
+            ]),
+        ]);
+
+        $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
+        $items = $panel['GROUPS'][0]['ITEMS'];
+
+        self::assertCount(1, $items);
+        self::assertSame('visible_drop', $items[0]['ID']);
+        self::assertCount(2, $items[0]['ITEMS']);
+        self::assertSame('Visible', $items[0]['ITEMS'][0]['NAME']);
+        self::assertSame('visible_child', $items[0]['ITEMS'][1]['VALUE']);
+    }
+
+    public function testDropdownMultipleModeIsRejected(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Multiple dropdown bulk actions are not supported yet.');
+
+        BulkActionDropdown::make('activity')->multiple(true);
     }
 
     public function testItThrowsExceptionOnDuplicateIds(): void

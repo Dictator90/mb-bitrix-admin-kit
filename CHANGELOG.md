@@ -28,6 +28,9 @@
 - New renderers: `Field\Renderers\FieldRowRenderer`, `Component\Renderers\ChildrenRenderer`, `Component\Renderers\VisibilityWrapper`, `Widget\Dashboard\DashboardRenderer`.
 - New options resolver stack for `Select`: `Field\Options\*Resolver`.
 - New chart architecture: `Widget\ChartWidget` + `Widget\Renderers\ChartWidgetRenderer` (`GraphWidget` now compatibility alias).
+- `BulkActionDropdown::placeholder()`, `withoutPlaceholder()`, and placeholder accessors for controlling the first Bitrix dropdown item.
+- `BulkAction::allowRunWithoutFilter()` for explicitly allowing guarded full-table bulk actions, plus `BulkOperationContext::$forAll`.
+- Bulk action `groupSort()` support for deterministic action-panel group ordering.
 
 ### Changed
 - Tabs and DialogSelector ship as separate bundles in `mb.admin.kit` (`src/tabs`, `src/dialog-selector` → `dist/*.bundle.js`); no shared `initAll` — each `TabsRenderer` / `DialogSelectorRenderer` initializes its own instance.
@@ -46,6 +49,8 @@
 - `AbstractWidget` is now a leaf dashboard component (no inheritance from layout containers).
 - Dashboard rendering and extension collection moved from `DashboardPage` into `Widget\Dashboard\DashboardRenderer`.
 - Chart widgets no longer load external Chart.js CDN from PHP; chart init is local-extension driven.
+- `BulkAction::delete()` now returns `MassDeleteAction` directly; the index bulk handler no longer substitutes delete actions at runtime.
+- `MassDeleteAction` now shares the delete factory UI defaults (`danger`, remove icon, danger group, confirmation, sort order).
 
 ### Fixed
 - Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.
@@ -55,6 +60,11 @@
 - ORM: fixed potential issues with ambiguous primary key filters by using explicit Bitrix ORM operators.
 - `IndexPage`: restored base `grouping()` hook so `IndexPageDefinition` and `RowAssembler` receive resource `indexGrouping()` (group rows were missing when only collapsible UI was enabled).
 - Group labels: `GroupLabelRenderer` now resolves section titles from `__GROUP_DATA` (`NAME`/`TITLE` fallback) and renders `ungroupedLabel()` for the ungrouped bucket; collapsible shift column prefers `NAME` when grouping has no explicit `labelColumn`.
+- Bulk action dropdowns now render their label as a non-executable placeholder item, so Bitrix `Types::DROPDOWN` shows the dropdown label/placeholder instead of the first child action.
+- Invisible direct bulk actions and invisible dropdown child actions are filtered out of `ACTION_PANEL`; dropdowns with no visible executable children are skipped.
+- For-all bulk mode now uses the explicit `action_all_rows_<GRID_ID>` checkbox flag and ignores selected IDs in that mode.
+- `QueryGuard` now blocks unsafe for-all operations without `allowRunByFilter()`, empty-filter/full-table operations without `allowRunWithoutFilter()`, and operations above `maxBulkRows()`.
+- Custom `BulkAction` handlers now honor action-level `canRun()` before invoking the handler.
 
 ### Changed
 - Grouped index grids initialize collapsible rows via `AdminKitJs::renderInit('GridCollapsible')` on `IndexPage` instead of auto-starting from `mb.admin.kit` bundle entry.

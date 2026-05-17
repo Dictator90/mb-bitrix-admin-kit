@@ -268,7 +268,7 @@ public function rowActions(): iterable
 }
 ```
 
-Bulk actions безопасны по умолчанию и требуют выбранные ID, если действие явно не разрешает запуск по фильтру:
+Bulk actions безопасны по умолчанию и требуют выбранные ID, если действие явно не разрешает запуск по фильтру. `BulkAction::delete()` сразу создаёт `MassDeleteAction`, который проверяет права на каждую запись:
 
 ```php
 public function bulkActions(): iterable
@@ -278,11 +278,23 @@ public function bulkActions(): iterable
             ->group('status', 'Status')
             ->icon('ui-btn-icon-success')
             ->update(['ACTIVE' => 'Y']),
-        BulkAction::delete()
-            ->group('danger', 'Delete'),
+        BulkAction::delete(),
     ];
 }
 ```
+
+Для компактной панели можно использовать dropdown. Из-за поведения Bitrix `Types::DROPDOWN` видимый label берётся из первого элемента, поэтому AdminKit автоматически добавляет placeholder первым item; label dropdown используется как placeholder, а изменить его можно через `placeholder()`:
+
+```php
+BulkActionDropdown::make('activity', 'Активность')
+    ->placeholder('Выберите действие')
+    ->items([
+        BulkAction::make('activate', 'Активировать')->allowRunByFilter()->update(['ACTIVE' => 'Y']),
+        BulkAction::make('deactivate', 'Деактивировать')->allowRunByFilter()->update(['ACTIVE' => 'N']),
+    ]);
+```
+
+Нижний checkbox "для всех" (`SHOW_SELECT_ALL_RECORDS_CHECKBOX`) появляется при наличии `allowRunByFilter()`. Он отправляет `action_all_rows_<GRID_ID>=Y`; backend в этом режиме игнорирует выбранные ID и работает по фильтру. Пустой фильтр запрещён, если действие явно не вызвало `allowRunWithoutFilter()`, а количество строк ограничено `maxBulkRows()`.
 
 ## OptionsPage (настройки модуля)
 
