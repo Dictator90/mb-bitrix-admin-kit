@@ -7,13 +7,17 @@ import * as OptionsPage from './options-page';
 import * as GridCollapsible from './grid-collapsible';
 import * as Fields from './fields/password-field';
 import * as ChartWidget from './chart-widget';
+import * as Tabs from './tabs/index'
+import * as DialogSelector from './dialog-selector/index'
 
 export {
-    Form,
-    Dependencies,
-    Visibility,
-    OptionsPage,
-    GridCollapsible,
-    Fields,
-    ChartWidget
+	Form,
+	Dependencies,
+	Visibility,
+	OptionsPage,
+	GridCollapsible,
+	Fields,
+	ChartWidget,
+	Tabs,
+	DialogSelector
 };

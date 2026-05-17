@@ -41,3 +41,4 @@ Migration path:
 1. Update imports from old contracts to the new namespace groups.
 2. Type against `UI\ComponentContract` for simple renderables and `UI\LayoutComponentContract` for containers.
 3. Use `Field\FieldContract` (aggregate) or narrower field contracts where possible.
+4. Replace manual `mb.ui.tabs` / `mb.ui.dialog-selector` loads with `mb.admin.kit` exports (`kit.Tabs`, `kit.DialogSelector`).

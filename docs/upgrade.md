@@ -33,6 +33,27 @@
 
 - ORM query building: `GridQueryBuilder` only; loading: `GridDataLoader`; Bitrix UI: `Grid` + adapters.
 - Form/options client scripts live in `mb.admin.kit` extension (`MB.AdminKit.Form`, `.Visibility`, `.OptionsPage`).
+- Tabs and DialogSelector runtime also live in `mb.admin.kit` (removed `mb.ui.tabs` / `mb.ui.dialog-selector`).
+
+**Before:**
+
+```js
+BX.Runtime.loadExtension('mb.ui.tabs').then((m) => { /* ... */ });
+BX.Runtime.loadExtension('mb.ui.dialog-selector').then(() => {
+    new MB.UI.DialogSelector.DialogSelector({ /* ... */ }).render();
+});
+```
+
+**After:**
+
+```js
+BX.Runtime.loadExtension('mb.admin.kit').then((kit) => {
+    kit.Tabs.initTabs({ containerId: '...', items: [], bodies: [], remember: true });
+    kit.DialogSelector.initDialogSelector({ targetId: '...', name: 'FIELD', dialog: {} });
+});
+```
+
+Or rely on AdminKit PHP renderers (`data-adminkit-tabs` / `data-adminkit-dialog-selector`) and call `kit.Tabs.initAll()` / `kit.DialogSelector.initAll()` after the extension loads.
 
 ### Contracts
 

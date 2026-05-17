@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
-use Bitrix\Main\UI\Extension;
-use MB\Bitrix\AdminKit\Support\AdminString;
+use MB\Bitrix\AdminKit\Field\Entity\Renderers\DialogSelectorRenderer;
 
 class DialogSelect extends EntitySelect
 {
@@ -79,25 +78,9 @@ class DialogSelect extends EntitySelect
 
     public function renderFormField(mixed $value = null): string
     {
-        if (class_exists(Extension::class)) {
-            Extension::load(['ui', 'mb.ui.dialog-selector']);
-        }
-
         $ids = $this->parseIds($this->resolveValue($value));
         $titles = $this->resolveTitles($ids);
-        $baseName = htmlspecialchars($this->column, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $containerId = htmlspecialchars(
-            AdminString::htmlId('adminkit_dialog_selector', $this->column . '_' . uniqid()),
-            ENT_QUOTES | ENT_SUBSTITUTE,
-            'UTF-8'
-        );
-        $dialogId = htmlspecialchars(
-            AdminString::htmlId('adminkit_dialog', $this->column),
-            ENT_QUOTES | ENT_SUBSTITUTE,
-            'UTF-8'
-        );
-        $readonlyJs = $this->readonly ? 'true' : 'false';
-        $multipleJs = $this->multiple ? 'true' : 'false';
+        $dialogId = 'adminkit_dialog_' . $this->column;
 
         $selectedItems = [];
         foreach ($ids as $id) {
@@ -129,22 +112,13 @@ class DialogSelect extends EntitySelect
             ]];
         }
 
-        $dialogJson = json_encode($dialogOptions, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-
-        return <<<HTML
-        <div id="{$containerId}" class="adminkit-entity-selector__container"></div>
-        <script>
-        BX.ready(function() {
-            (new MB.UI.DialogSelector.DialogSelector({
-                target: '#{$containerId}',
-                name: '{$baseName}',
-                multiple: {$multipleJs},
-                readonly: {$readonlyJs},
-                dialog: {$dialogJson}
-            })).render();
-        });
-        </script>
-        HTML;
+        return (new DialogSelectorRenderer())->render(
+            config: $this->selectorConfig(),
+            ids: $ids,
+            titles: $titles,
+            entities: [],
+            dialogOptionsOverride: $dialogOptions,
+        );
     }
 
     /** @param string[] $selectedIds @return array<int,array<string,mixed>> */

@@ -15,9 +15,9 @@ class Tab
     protected array $items = [];
     protected bool $active = false;
     protected ?string $description = null;
-    /** Icon-set class for the tab header (e.g. '--settings'). Requires mb.ui.tabs. */
+    /** Icon-set class for the tab header (e.g. '--settings'). Rendered via mb.admin.kit Tabs. */
     protected ?string $icon = null;
-    /** Badge counter on the tab header (e.g. 3 or '99+'). Requires mb.ui.tabs. */
+    /** Badge counter on the tab header (e.g. 3 or '99+'). Rendered via mb.admin.kit Tabs. */
     protected int|string|null $count = null;
 
     /**
@@ -79,7 +79,7 @@ class Tab
     // ── Head extras ─────────────────────────────────────────────────────
 
     /**
-     * Tooltip/subtitle shown on the tab header (both ui.tabs and mb.ui.tabs).
+     * Tooltip/subtitle shown on the tab header (mb.admin.kit Tabs).
      */
     public function description(string $description): static
     {
@@ -90,7 +90,7 @@ class Tab
 
     /**
      * Icon-set CSS class shown before the title (e.g. '--settings', '--lock').
-     * Requires mb.ui.tabs — ignored by standard ui.tabs.
+     * Rendered via mb.admin.kit Tabs.
      */
     public function icon(string $iconClass): static
     {
@@ -101,7 +101,7 @@ class Tab
 
     /**
      * Counter badge on the tab header (e.g. 3 or '99+').
-     * Requires mb.ui.tabs — ignored by standard ui.tabs.
+     * Rendered via mb.admin.kit Tabs.
      */
     public function count(int|string $count): static
     {
@@ -165,7 +165,7 @@ class Tab
     }
 
     /**
-     * Build the `head` option array for the ui.tabs / mb.ui.tabs JS constructor.
+     * Build the `head` option array for the MB.AdminKit.Tabs JS constructor.
      */
     public function getHeadOptions(): array
     {

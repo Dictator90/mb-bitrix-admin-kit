@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Removed
+- Standalone Bitrix JS extensions `mb.ui.tabs` and `mb.ui.dialog-selector`; Tabs and DialogSelector runtime now ship inside `mb.admin.kit`.
 - Legacy contract aliases in `MB\Bitrix\AdminKit\Contracts\` (`IndexResourceContract`, `FormResourceContract`, `OrmResourceContract`, `ExportResourceContract`, and others) — use `Contracts\Resource\*` instead.
 - Legacy resource traits `HasCrud`, `HasPermissions`, `HasLifecycleEvents` — use `Resource\Concerns\*` instead.
 - Deprecated `Page\OptionsPage` wrapper — use `Pages\OptionsPage`.
@@ -29,6 +30,8 @@
 - New chart architecture: `Widget\ChartWidget` + `Widget\Renderers\ChartWidgetRenderer` (`GraphWidget` now compatibility alias).
 
 ### Changed
+- Tabs and DialogSelector ship as separate bundles in `mb.admin.kit` (`src/tabs`, `src/dialog-selector` → `dist/*.bundle.js`); no shared `initAll` — each `TabsRenderer` / `DialogSelectorRenderer` initializes its own instance.
+- `Tabs::extension()` removed; `AssetManager::forForm()` no longer loads `mb.ui.tabs` separately.
 - `Resource` is now a minimal core class for identity, menu, and pages.
 - `CrudResource` is now a DSL-only class without persistence logic.
 - All ORM-backed examples and fixtures migrated to `DataManagerResource`.

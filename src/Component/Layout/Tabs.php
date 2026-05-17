@@ -15,7 +15,7 @@ use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 /**
- * Tabs container — wraps Tab instances and renders using the mb.ui.tabs JS extension.
+ * Tabs container — wraps Tab instances and renders using the mb.admin.kit Tabs runtime.
  *
  * Tab cannot render standalone; it must be inside Tabs.
  *
@@ -37,13 +37,10 @@ class Tabs implements LayoutComponentContract
 
     /** @var Tab[] */
     protected array $tabs = [];
+
     protected ?DataWrapper $item = null;
+
     protected PageType $pageType = PageType::FORM;
-    /**
-     * Bitrix JS extension to load. Default is the standard 'ui.tabs' (always available).
-     * Switch to 'mb.ui.tabs' (from mb.core) to unlock icon + count badge support on headers.
-     */
-    protected string $extension = 'mb.ui.tabs';
 
     protected bool $remember = false;
 
@@ -73,14 +70,6 @@ class Tabs implements LayoutComponentContract
     public function withPageType(PageType $type): static
     {
         $this->pageType = $type;
-
-        return $this;
-    }
-
-    /** Override the JS extension name (default: 'ui.tabs'). Use 'mb.ui.tabs' for icon/count support. */
-    public function extension(string $name): static
-    {
-        $this->extension = $name;
 
         return $this;
     }
@@ -133,7 +122,7 @@ class Tabs implements LayoutComponentContract
 
         $html = (new TabsRenderer())->render(
             tabs: $this->tabs,
-            config: new TabsConfig($containerId, $this->extension, $this->remember),
+            config: new TabsConfig($containerId, $this->remember),
             context: new ComponentContext($this->item, $this->pageType),
         );
 

@@ -115,7 +115,7 @@ AdminKit ships two rendering backends and a set of pre-configured concrete field
 ```
 EntitySelect   — Bitrix ui.entity-selector / BX.UI.EntitySelector.TagSelector
     TagSelect  — thin alias for EntitySelect
-    DialogSelect — MB.UI.DialogSelector (mb.ui.dialog-selector; static item lists)
+    DialogSelect — MB.AdminKit.DialogSelector (mb.admin.kit; static item lists)
         UserSelect          — pre-wired for Bitrix users
         IblockSelect        — pre-wired for iblocks
         IblockElementSelect — pre-wired for iblock elements; supports dependsOn()
@@ -187,7 +187,7 @@ EntitySelect::make('Warehouse', 'WAREHOUSE_ID')
 
 ### DialogSelect — static item list
 
-`DialogSelect` renders with `MB.UI.DialogSelector` (requires the `mb.ui.dialog-selector`
+`DialogSelect` renders with `MB.AdminKit.DialogSelector` (requires the `mb.admin.kit`
 Bitrix extension from `mb.core`). Use it for a known, finite set of items:
 
 ```php
@@ -343,7 +343,7 @@ Text::make('Product', 'PRODUCT_ID')
 | `BelongsTo` | Foreign-key select from a DataManager | Single scalar or `null` | Title column value |
 | `BelongsToMany` | Multi-select from a DataManager | Comma-separated IDs | Title column values |
 | `EntitySelect` / `TagSelect` | Generic Bitrix entity selector (TagSelector UI) | Single ID or comma-separated IDs | Label chips via resolver |
-| `DialogSelect` | Static item list selector (mb.ui.dialog-selector) | Single ID or comma-separated IDs | Label chips via resolver |
+| `DialogSelect` | Static item list selector (mb.admin.kit) | Single ID or comma-separated IDs | Label chips via resolver |
 | `UserSelect` | Bitrix user selector | Single ID or comma-separated IDs | User name chips |
 | `IblockSelect` | Iblock selector | Single ID | Iblock name chip |
 | `IblockElementSelect` | Iblock element selector; auto-reloads on `dependsOn()` | Single ID or comma-separated IDs | Element name chips |

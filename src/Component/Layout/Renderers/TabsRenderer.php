@@ -18,7 +18,9 @@ final class TabsRenderer
             return '';
         }
 
-        Extension::load([$config->extension]);
+        if (class_exists(Extension::class)) {
+            Extension::load(['mb.admin.kit']);
+        }
 
         $bodyRenderer = new TabBodyRenderer();
         $items = [];
@@ -44,18 +46,20 @@ final class TabsRenderer
             $jsItems[] = $item;
         }
 
-        $cid = htmlspecialchars($config->containerId, ENT_QUOTES);
-        $ext = json_encode($config->extension, JSON_UNESCAPED_UNICODE);
+        $cid = htmlspecialchars($config->containerId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $jsItemsJson = json_encode($jsItems, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
         $bodyInjectJson = json_encode($bodyInjects, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
         $rememberJson = json_encode($config->remember, JSON_UNESCAPED_UNICODE);
 
         return <<<HTML
-        <div id="{$cid}" data-adminkit-tabs-config="{$cid}"></div>
+        <div id="{$cid}"></div>
         <script>
         BX.ready(function() {
-            BX.Runtime.loadExtension({$ext}).then(function(m) {
-                var tabs = new m.Tabs({ id: '{$cid}', items: {$jsItemsJson} });
+            var run = function() {
+                if (!MB.AdminKit || !MB.AdminKit.Tabs || !MB.AdminKit.Tabs.Tabs) {
+                    return;
+                }
+                var tabs = new MB.AdminKit.Tabs.Tabs({ id: '{$cid}', items: {$jsItemsJson} });
                 var container = tabs.getContainer();
                 var bodies = {$bodyInjectJson};
                 for (var i = 0; i < bodies.length; i++) {
@@ -70,9 +74,9 @@ final class TabsRenderer
                     }
                     if (bodies[i].active) {
                         var bodyInner = container.querySelector('.ui-tabs__tab-body_inner[data-id="' + bodies[i].id + '"]');
-                        var header    = container.querySelector('[data-bx-name="' + bodies[i].id + '"]');
-                        if (bodyInner) bodyInner.classList.add('--body-active');
-                        if (header) header.classList.add('--header-active');
+                        var header = container.querySelector('[data-bx-name="' + bodies[i].id + '"]');
+                        if (bodyInner) { bodyInner.classList.add('--body-active'); }
+                        if (header) { header.classList.add('--header-active'); }
                     }
                 }
                 BX.Dom.append(container, document.getElementById('{$cid}'));
@@ -92,7 +96,12 @@ final class TabsRenderer
                         }
                     });
                 }
-            });
+            };
+            if (BX.Runtime && BX.Runtime.loadExtension) {
+                BX.Runtime.loadExtension('mb.admin.kit').then(run).catch(run);
+            } else {
+                run();
+            }
         });
         </script>
         HTML;

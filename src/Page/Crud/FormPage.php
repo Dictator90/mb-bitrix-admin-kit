@@ -74,7 +74,7 @@ class FormPage extends CrudPage implements FormPageContract
         $inPanel = $this->isSidePanelMode();
 
         $assetManager = (new AssetManager())->forForm();
-        $assetManager->addExtensions(['ui', 'ui.layout-form', 'ui.buttons', 'ui.hint', 'mb.ui.tabs', 'ui.toolbar', 'ui.alerts', 'ui.notification']);
+        $assetManager->addExtensions(['ui', 'ui.layout-form', 'ui.buttons', 'ui.hint', 'ui.toolbar', 'ui.alerts', 'ui.notification']);
 
         if ($inPanel) {
             $assetManager->addExtensions('sidepanel');

@@ -8,7 +8,6 @@ final class TabsConfig
 {
     public function __construct(
         public readonly string $containerId,
-        public readonly string $extension,
         public readonly bool $remember,
     ) {
     }
