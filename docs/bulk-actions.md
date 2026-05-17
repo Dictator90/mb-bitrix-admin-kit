@@ -46,7 +46,7 @@ For every selected row the action loads the record, checks `canRun()`, then chec
 
 ## Mass delete
 
-`MassDeleteAction` performs safe mass deletion:
+`BulkAction::delete()` creates a `MassDeleteAction` with danger-group UI defaults. `MassDeleteAction` performs safe mass deletion:
 
 ```php
 use MB\Bitrix\AdminKit\Action\MassDeleteAction;
@@ -117,7 +117,8 @@ public function bulkActions(): iterable
 
 ### UI methods
 
-- `group(string $id, ?string $label = null)` — sets the group ID and optional label. Bitrix action panel groups items visually.
+- `group(string $id, ?string $label = null, ?int $sort = null)` — sets the group ID, optional label, and optional group sort value. Bitrix action panel groups items visually.
+- `groupSort(int $sort)` — controls ordering between groups; groups are sorted by `groupSort`, then by group key.
 - `sort(int $sort)` — sets the display order within the group (default `100`).
 - `icon(string $class)` — adds a Bitrix CSS icon class (e.g., `ui-btn-icon-remove`, `ui-btn-icon-success`).
 - `buttonClass(string $class)` or `class(string $class)` — adds custom CSS classes to the button.
@@ -127,9 +128,28 @@ public function bulkActions(): iterable
 - `panelType(string $type)` — sets the Bitrix panel type (default `BUTTON`).
 - `panelItem(array|Closure $item)` — provides a raw Bitrix action panel item array. If a closure is used, it receives the `Grid` instance.
 
-### Select all records
+### Select all records / For all mode
 
-If at least one bulk action has `allowRunByFilter()` enabled, the grid automatically shows the "Select all records" checkbox. You can override this behavior on the Grid:
+If at least one direct bulk action or dropdown child action has `allowRunByFilter()` enabled, the grid automatically shows Bitrix `SHOW_SELECT_ALL_RECORDS_CHECKBOX` — the lower action-panel checkbox for "all records". This is not the header checkbox that selects visible rows.
+
+When that checkbox sends `action_all_rows_<GRID_ID>=Y`, AdminKit treats the operation as filter-based even if selected IDs are also posted by the browser. The backend ignores selected IDs in this mode and uses the current grid filter.
+
+```php
+BulkAction::make('activate', 'Активировать')
+    ->allowRunByFilter()
+    ->update(['ACTIVE' => 'Y']);
+```
+
+Running a filter-based action with an empty filter means "all rows" and is blocked by default. Enable it only for actions that are safe for a full-table operation:
+
+```php
+BulkAction::make('activate_all', 'Активировать все')
+    ->allowRunByFilter()
+    ->allowRunWithoutFilter()
+    ->update(['ACTIVE' => 'Y']);
+```
+
+`QueryGuard` counts affected rows before IDs are materialized and blocks operations above `maxBulkRows()` (default `5000`; add `maxBulkRows(): int` on the resource to customize). You can override checkbox visibility on the Grid:
 
 ```php
 $grid->showSelectAllRecordsCheckbox(false);
@@ -167,8 +187,11 @@ public function bulkActions(): iterable
 ```
 
 - **Container Only**: Dropdowns themselves do not have handlers or update data.
-- **Unique IDs**: Child action IDs must be unique across all bulk actions in the grid.
+- **Placeholder**: Bitrix `Types::DROPDOWN` displays the first/selected item as the visible label. AdminKit therefore inserts a placeholder item first; the dropdown label is used as that placeholder by default.
+- **Placeholder API**: Use `->placeholder('Выберите действие')` to change the placeholder or `->withoutPlaceholder()` to render only executable child items.
+- **Unique IDs**: Child action IDs must be unique across all bulk actions in the grid. The placeholder is not executable and does not participate in ID validation.
 - **Run by filter**: `allowRunByFilter()` should be set on the child actions. If any child action (or direct action) supports running by filter, the "Select all records" checkbox will appear.
+- **Multiple mode**: `multiple(true)` is intentionally rejected until backend execution supports multiple selected dropdown child actions.
 
 ## Permissions and conditions
 

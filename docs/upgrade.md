@@ -34,8 +34,10 @@
 - ORM query building: `GridQueryBuilder` only; loading: `GridDataLoader`; Bitrix UI: `Grid` + adapters.
 - **New Action Panel model**: Bulk actions now support grouping, icons, sorting, and standard Bitrix `main.ui.grid` action panel features.
 - `BitrixGridActionPanelAdapter` now builds `ACTION_PANEL['GROUPS']` instead of a flat list.
-- **Select all records**: `SHOW_SELECT_ALL_RECORDS_CHECKBOX` is now supported and automatically enabled if any bulk action has `allowRunByFilter()`.
-- `BulkAction::delete()` now defaults to `group('danger', 'Удаление')`, `icon('ui-btn-icon-remove')`, and `sort(100)`.
+- **Select all records**: `SHOW_SELECT_ALL_RECORDS_CHECKBOX` is now supported and automatically enabled if any direct bulk action or dropdown child action has `allowRunByFilter()`. The backend now reads the explicit `action_all_rows_<GRID_ID>` flag instead of inferring for-all mode from empty selected IDs.
+- Filter-based bulk operations are guarded by `allowRunByFilter()`, `allowRunWithoutFilter()` for empty-filter/full-table runs, and `maxBulkRows()` (default `5000`).
+- `BulkActionDropdown` now renders its label as a first placeholder item by default; use `placeholder()` or `withoutPlaceholder()` to customize this. `multiple(true)` is rejected because executing several dropdown child actions at once is not supported yet.
+- `BulkAction::delete()` now returns `MassDeleteAction`, which defaults to `group('danger', 'Удаление')`, `icon('ui-btn-icon-remove')`, and `sort(100)`.
 - Form/options client scripts live in `mb.admin.kit` extension (`MB.AdminKit.Form`, `.Visibility`, `.OptionsPage`).
 - Tabs and DialogSelector runtime also live in `mb.admin.kit` (removed `mb.ui.tabs` / `mb.ui.dialog-selector`).
 

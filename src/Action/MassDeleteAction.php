@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Action;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
+use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 use Throwable;
@@ -16,7 +17,12 @@ class MassDeleteAction extends BulkAction
     public function __construct(string $id = 'delete', ?string $label = 'Удалить выбранные')
     {
         parent::__construct($id, $label);
-        $this->confirm('Вы уверены, что хотите удалить выбранные записи?')->danger();
+        $this
+            ->confirm('Вы уверены, что хотите удалить выбранные записи?')
+            ->danger()
+            ->group('danger', 'Удаление', 900)
+            ->icon('ui-btn-icon-remove')
+            ->sort(100);
     }
 
     public static function make(string $id = 'delete', ?string $label = 'Удалить выбранные'): static
@@ -28,6 +34,11 @@ class MassDeleteAction extends BulkAction
     {
         if (!$this->checkCsrf()) {
             return BulkResult::failure('Invalid CSRF token.');
+        }
+
+        $guardErrors = (new QueryGuard())->validateBulkOperation($context);
+        if ($guardErrors !== []) {
+            return BulkResult::failure(implode(' ', $guardErrors));
         }
 
         $ids = $this->selectedIds($context);

@@ -27,7 +27,6 @@ final class BitrixGridActionPanelAdapter
         $groups = [];
         $actionsByGroup = [];
 
-        // Pre-fill default group items
         $defaultItems = [];
         if ($grid->hasEditableFields()) {
             $defaultItems[] = (new GridPanelSnippet())->getEditButton();
@@ -37,19 +36,23 @@ final class BitrixGridActionPanelAdapter
             $defaultItems[] = (new GridPanelSnippet())->getForAllCheckbox();
         }
 
-        $allPanelItems = $grid->getBulkActions();
         $this->validateUniqueActionIds($grid);
 
-        foreach ($allPanelItems as $item) {
+        foreach ($this->visiblePanelItems($grid) as $item) {
             $groupName = $item->getGroup();
             $actionsByGroup[$groupName][] = $item;
         }
 
-        // Add default group actions to default items
         if (isset($actionsByGroup['default'])) {
-            usort($actionsByGroup['default'], static fn (BulkPanelItemContract $a, BulkPanelItemContract $b): int => $a->getSort() <=> $b->getSort());
+            usort($actionsByGroup['default'], static function (BulkPanelItemContract $a, BulkPanelItemContract $b): int {
+                return $a->getSort() <=> $b->getSort();
+            });
+
             foreach ($actionsByGroup['default'] as $item) {
-                $defaultItems[] = $this->buildPanelItem($grid, $item);
+                $panelItem = $this->buildPanelItem($grid, $item);
+                if ($panelItem !== []) {
+                    $defaultItems[] = $panelItem;
+                }
             }
             unset($actionsByGroup['default']);
         }
@@ -60,15 +63,26 @@ final class BitrixGridActionPanelAdapter
             ];
         }
 
-        // Sort remaining groups by key for consistency
-        ksort($actionsByGroup);
+        uksort($actionsByGroup, static function (string $leftKey, string $rightKey) use ($actionsByGroup): int {
+            $leftItem = $actionsByGroup[$leftKey][0] ?? null;
+            $rightItem = $actionsByGroup[$rightKey][0] ?? null;
+            $leftSort = $leftItem instanceof BulkPanelItemContract ? $leftItem->getGroupSort() : 100;
+            $rightSort = $rightItem instanceof BulkPanelItemContract ? $rightItem->getGroupSort() : 100;
+
+            return ($leftSort <=> $rightSort) ?: ($leftKey <=> $rightKey);
+        });
 
         foreach ($actionsByGroup as $groupName => $items) {
-            usort($items, static fn (BulkPanelItemContract $a, BulkPanelItemContract $b): int => $a->getSort() <=> $b->getSort());
+            usort($items, static function (BulkPanelItemContract $a, BulkPanelItemContract $b): int {
+                return $a->getSort() <=> $b->getSort();
+            });
 
             $panelItems = [];
             foreach ($items as $item) {
-                $panelItems[] = $this->buildPanelItem($grid, $item);
+                $panelItem = $this->buildPanelItem($grid, $item);
+                if ($panelItem !== []) {
+                    $panelItems[] = $panelItem;
+                }
             }
 
             if ($panelItems !== []) {
@@ -77,6 +91,41 @@ final class BitrixGridActionPanelAdapter
         }
 
         return $groups;
+    }
+
+    /** @return list<BulkPanelItemContract> */
+    private function visiblePanelItems(Grid $grid): array
+    {
+        $items = [];
+
+        foreach ($grid->getBulkActions() as $item) {
+            if ($item instanceof BulkActionDropdown) {
+                if ($this->visibleDropdownItems($item) !== []) {
+                    $items[] = $item;
+                }
+                continue;
+            }
+
+            if ($item instanceof BulkAction && $item->isVisible()) {
+                $items[] = $item;
+            }
+        }
+
+        return $items;
+    }
+
+    /** @return list<BulkAction> */
+    private function visibleDropdownItems(BulkActionDropdown $dropdown): array
+    {
+        $items = [];
+
+        foreach ($dropdown->getItems() as $action) {
+            if ($action->isVisible()) {
+                $items[] = $action;
+            }
+        }
+
+        return $items;
     }
 
     private function buildPanelItem(Grid $grid, BulkPanelItemContract $item): array
@@ -131,20 +180,45 @@ final class BitrixGridActionPanelAdapter
     /** @return array<string,mixed> */
     private function buildBulkActionDropdown(Grid $grid, BulkActionDropdown $dropdown): array
     {
+        $visibleActions = $this->visibleDropdownItems($dropdown);
+        if ($visibleActions === []) {
+            return [];
+        }
+
         $items = [];
-        foreach ($dropdown->getItems() as $action) {
+        if ($dropdown->shouldShowPlaceholder()) {
+            $items[] = [
+                'NAME' => $dropdown->getPlaceholder(),
+                'VALUE' => $dropdown->getPlaceholderValue(),
+            ];
+        }
+
+        foreach ($visibleActions as $action) {
             $items[] = $this->buildDropdownItem($grid, $action);
         }
 
-        return array_filter([
+        $control = [
             'TYPE' => Types::DROPDOWN,
             'ID' => $dropdown->getId(),
             'NAME' => strtoupper($dropdown->getId()),
-            'TEXT' => $dropdown->getLabel(),
-            'TITLE' => $dropdown->getLabel(),
             'MULTIPLE' => $dropdown->isMultiple() ? 'Y' : 'N',
             'ITEMS' => $items,
-        ]);
+        ];
+
+        if ($dropdown->getTitle() !== null) {
+            $control['TITLE'] = $dropdown->getTitle();
+        }
+
+        $class = trim(implode(' ', array_filter([
+            $dropdown->getButtonClass(),
+            $dropdown->getIcon(),
+        ])));
+
+        if ($class !== '') {
+            $control['CLASS'] = $class;
+        }
+
+        return $control;
     }
 
     /** @return array<string,mixed> */
@@ -221,7 +295,7 @@ final class BitrixGridActionPanelAdapter
                 "data['{$forAllKeyJs}']=forAll;" .
                 "if(BX&&typeof BX.bitrix_sessid==='function'){" .
                     "data['sessid']=BX.bitrix_sessid();" .
-                "}" .
+                '}' .
                 'data.ID=ids;' .
                 'data.id=ids;' .
                 'data.rows=ids;' .

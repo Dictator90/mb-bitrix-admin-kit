@@ -33,3 +33,10 @@ Create, update, delete, and bulk update/delete operations should route through `
 ## Query hooks
 
 Use `indexSelect()`, `indexFilter()`, `indexOrder()`, `indexRuntime()`, `modifyIndexParams()`, `afterIndexRows()`, and `mapIndexRow()` to customize the list query without changing generic grid internals.
+
+
+## Bulk operation safety
+
+Bulk actions on `CrudResource`/`DataManagerResource` remain selected-ID only by default. Use `allowRunByFilter()` on a direct `BulkAction` or a dropdown child action to enable the lower Bitrix "for all records" checkbox. When `action_all_rows_<GRID_ID>=Y` is posted, AdminKit uses the current grid filter instead of posted selected IDs.
+
+Filter-based operations with an empty filter are full-table operations and require an explicit `allowRunWithoutFilter()` opt-in. `QueryGuard` also checks `maxBulkRows()` before materializing IDs; define `maxBulkRows(): int` on the resource to lower or raise the default limit of `5000`.

@@ -19,6 +19,7 @@ final class QueryGuardTest extends TestCase
             action: BulkAction::make('export'),
             selectedIds: [],
             filter: ['ACTIVE' => 'Y'],
+            forAll: true,
         ));
 
         self::assertNotEmpty($errors);

@@ -7,35 +7,26 @@ namespace MB\Bitrix\AdminKit\Page\Crud;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Action\BulkAction;
-use MB\Bitrix\AdminKit\Manager\AssetManager;
-use MB\Bitrix\AdminKit\Action\MassDeleteAction;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
+use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\Page\IndexPageContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
-use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
-use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
+use MB\Bitrix\AdminKit\Grid\Grid;
+use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Grid\GridDataLoader;
+use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
+use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
+use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexBulkActionHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexDeleteHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexExportHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexInlineEditHandler;
 use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Page\IndexPageDefinition;
-use MB\Bitrix\AdminKit\Database\BulkOperationContext;
-use MB\Bitrix\AdminKit\Database\DbOperationContext;
-use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
-use MB\Bitrix\AdminKit\Export\ExportAction;
-use MB\Bitrix\AdminKit\Export\ExportContext;
-use MB\Bitrix\AdminKit\Form\DataPipeline;
-use MB\Bitrix\AdminKit\Grid\Grid;
-use MB\Bitrix\AdminKit\Grid\GridContext;
-use MB\Bitrix\AdminKit\Grid\GridDataLoader;
-use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
-use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
-use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
@@ -445,6 +436,13 @@ class IndexPage extends CrudPage implements IndexPageContract
         $legacy = (string)($_POST['action'] ?? '');
 
         return $legacy !== '' ? $legacy : null;
+    }
+
+    public function isForAllRowsSelected(): bool
+    {
+        $key = 'action_all_rows_' . $this->resource->getGridId();
+
+        return (string)($_POST[$key] ?? '') === 'Y';
     }
 
     /** @return array<int,mixed> */

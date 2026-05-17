@@ -16,5 +16,7 @@ interface BulkPanelItemContract
 
     public function getSort(): int;
 
+    public function getGroupSort(): int;
+
     public function isVisible(): bool;
 }

@@ -86,6 +86,10 @@
 - Keep standalone pages (`Pages\DashboardPage`, `Pages\OptionsPage`, `Pages\CustomPage`) registered/discovered separately from resource pages (`Page\IndexPage`, `Page\FormPage`, `Page\DetailPage`); resource page subclasses must not become standalone menu entries unless they explicitly use the standalone page API.
 - Preserve the existing Field API surface and keep `renderFormField()` as the fallback used by context-aware `renderForm()` implementations.
 
+## BulkAction/action panel maintenance notes
+- For `Types::DROPDOWN` controls, keep the dropdown label as a non-executable first placeholder item; Bitrix displays the first/selected item as the visible label.
+- Keep bulk "for all" execution based on the explicit `action_all_rows_<GRID_ID>` checkbox flag, not on empty selected IDs. Empty-filter/full-table runs must stay opt-in through `allowRunWithoutFilter()`.
+
 ## v1.4.0 grouped index rows notes
 - Keep grouped index rows inside the existing `IndexPage` / `IndexPageDefinitionContract` flow; do not add a separate tree-grid loader.
 - Keep `HasMany` / `HasOne` relation fields batch-loaded after base rows are fetched and avoid ORM JOINs that duplicate grid rows.

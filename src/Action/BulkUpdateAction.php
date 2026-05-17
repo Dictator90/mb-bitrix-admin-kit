@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Action;
 
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
+use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
@@ -28,6 +29,11 @@ class BulkUpdateAction extends BulkAction
     {
         if (!$this->checkCsrf()) {
             return BulkResult::failure('Invalid CSRF token.');
+        }
+
+        $guardErrors = (new QueryGuard())->validateBulkOperation($context);
+        if ($guardErrors !== []) {
+            return BulkResult::failure(implode(' ', $guardErrors));
         }
 
         $ids = $this->selectedIds($context);

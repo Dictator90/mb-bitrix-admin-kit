@@ -22,6 +22,7 @@ final class BulkOperationContext
         public readonly ?HttpRequest $request = null,
         public readonly array $filter = [],
         public readonly ?GridContext $gridContext = null,
+        public readonly bool $forAll = false,
     ) {
     }
 
@@ -36,6 +37,7 @@ final class BulkOperationContext
             $changes['request'] ?? $this->request,
             $changes['filter'] ?? $this->filter,
             $changes['gridContext'] ?? $this->gridContext,
+            $changes['forAll'] ?? $this->forAll,
         );
     }
 }
