@@ -32,6 +32,10 @@
 ### Grid and JS
 
 - ORM query building: `GridQueryBuilder` only; loading: `GridDataLoader`; Bitrix UI: `Grid` + adapters.
+- **New Action Panel model**: Bulk actions now support grouping, icons, sorting, and standard Bitrix `main.ui.grid` action panel features.
+- `BitrixGridActionPanelAdapter` now builds `ACTION_PANEL['GROUPS']` instead of a flat list.
+- **Select all records**: `SHOW_SELECT_ALL_RECORDS_CHECKBOX` is now supported and automatically enabled if any bulk action has `allowRunByFilter()`.
+- `BulkAction::delete()` now defaults to `group('danger', 'Удаление')`, `icon('ui-btn-icon-remove')`, and `sort(100)`.
 - Form/options client scripts live in `mb.admin.kit` extension (`MB.AdminKit.Form`, `.Visibility`, `.OptionsPage`).
 - Tabs and DialogSelector runtime also live in `mb.admin.kit` (removed `mb.ui.tabs` / `mb.ui.dialog-selector`).
 

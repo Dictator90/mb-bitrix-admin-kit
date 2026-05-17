@@ -274,8 +274,12 @@ Bulk actions безопасны по умолчанию и требуют выб
 public function bulkActions(): iterable
 {
     return [
-        BulkAction::make('activate', 'Activate')->update(['ACTIVE' => 'Y']),
-        BulkAction::delete(),
+        BulkAction::make('activate', 'Activate')
+            ->group('status', 'Status')
+            ->icon('ui-btn-icon-success')
+            ->update(['ACTIVE' => 'Y']),
+        BulkAction::delete()
+            ->group('danger', 'Delete'),
     ];
 }
 ```

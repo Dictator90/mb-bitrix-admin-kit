@@ -9,7 +9,7 @@ The grid layer is split into small services so Bitrix UI concerns stay separate 
 - `Grid` stores UI state: grid id, filter id, fields, filters, row actions, bulk actions, rows, total count, and `PageNavigation`. It does not build ORM params.
 - `BitrixGridAdapter` builds `bitrix:main.ui.grid` component params such as columns, rows, sorting UI state, navigation, total count, inline-edit flags, AJAX flags, and action-panel integration.
 - `BitrixFilterAdapter` builds `bitrix:main.ui.filter` component params and returns `null` when the grid has no filters.
-- `BitrixGridActionPanelAdapter` builds action-panel groups, the inline edit button, bulk-action buttons, confirm messages, danger classes, and JavaScript callbacks that submit selected IDs through native grid AJAX reload.
+- `BitrixGridActionPanelAdapter` builds action-panel groups, sorts actions within groups, handles icons and CSS classes, integrates the inline edit button, the "Select all records" checkbox, dropdown bulk actions, and standard Bitrix panel constants. It generates JavaScript callbacks that submit selected IDs or the for-all flag through native grid AJAX reload.
 - `ToolbarRenderer` integrates `Toolbar::addFilter()`, the create button, create SidePanel behavior, SidePanel width, direct create navigation, and final `bitrix:ui.toolbar` rendering.
 
 ## GridContext

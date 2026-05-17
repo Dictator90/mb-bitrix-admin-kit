@@ -34,15 +34,10 @@ final class QueryGuard
             static fn (mixed $id): bool => $id !== null && $id !== ''
         ));
 
-        $runByFilter = $ids === [] && $context->filter !== [];
         $action = $context->action;
 
         if ($ids !== []) {
             return [];
-        }
-
-        if (!$runByFilter) {
-            return ['No selected ids were provided.'];
         }
 
         if ($action instanceof BulkAction && !$action->canRunByFilter()) {

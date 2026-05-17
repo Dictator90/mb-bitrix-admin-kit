@@ -396,6 +396,27 @@ namespace Bitrix\Main\Grid\Panel { if (!class_exists(Snippet::class)) {
         {
             return ['TYPE' => 'BUTTON', 'ID' => 'edit_button', 'TEXT' => 'Edit'];
         }
+
+        public function getForAllCheckbox(): array
+        {
+            return ['TYPE' => 'CHECKBOX', 'ID' => 'for_all_checkbox', 'TEXT' => 'For All'];
+        }
+    }
+} if (!class_exists(Types::class)) {
+    class Types
+    {
+        public const BUTTON = 'BUTTON';
+        public const DROPDOWN = 'DROPDOWN';
+        public const CHECKBOX = 'CHECKBOX';
+        public const TEXT = 'TEXT';
+        public const LINK = 'LINK';
+        public const HIDDEN = 'HIDDEN';
+        public const CUSTOM = 'CUSTOM';
+    }
+} if (!class_exists(Actions::class)) {
+    class Actions
+    {
+        public const CALLBACK = 'CALLBACK';
     }
 } }
 

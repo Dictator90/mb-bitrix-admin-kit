@@ -68,16 +68,16 @@ abstract class OptionsPage extends \MB\Bitrix\AdminKit\Page\StandalonePage
     /** Show per-site tabs (one form per site in SiteTable). */
     protected bool $multiSite = false;
 
-    protected HttpRequest $request;
     protected array $errors = [];
     private bool $sessidRejected = false;
 
     public function __construct()
     {
+        parent::__construct();
+
         if (class_exists(Loc::class)) {
             Loc::loadMessages(__FILE__);
         }
-        $this->request = Context::getCurrent()->getRequest();
     }
 
     /**

@@ -41,6 +41,7 @@ final class BitrixGridAdapter
             'TOTAL_ROWS_COUNT' => $grid->getTotalCount(),
             'SHOW_ROW_CHECKBOXES' => $hasActions,
             'SHOW_CHECK_ALL_CHECKBOXES' => $hasActions,
+            'SHOW_SELECT_ALL_RECORDS_CHECKBOX' => $grid->shouldShowSelectAllRecordsCheckbox(),
             'SHOW_ACTION_PANEL' => $hasActions,
             'ACTION_PANEL' => $hasActions ? $this->actionPanelAdapter->componentParams($grid) : null,
             'ALLOW_INLINE_EDIT' => $inlineEditable,

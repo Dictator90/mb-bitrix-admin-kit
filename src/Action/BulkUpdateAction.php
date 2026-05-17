@@ -13,8 +13,8 @@ use Throwable;
 
 class BulkUpdateAction extends BulkAction
 {
-    /** @var array<string,mixed> */
-    protected array $data = [];
+    /** @var array<string,mixed>|null */
+    protected ?array $data = null;
 
     /** @param array<string,mixed> $data */
     public function update(array $data): static

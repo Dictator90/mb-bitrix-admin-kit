@@ -84,6 +84,92 @@ BulkAction::make('recalculate')
     });
 ```
 
+## UI and Action Panel grouping
+
+Bulk actions can be grouped, sorted, and styled for the Bitrix `main.ui.grid` action panel.
+
+```php
+use MB\Bitrix\AdminKit\Action\BulkAction;
+
+public function bulkActions(): iterable
+{
+    return [
+        BulkAction::make('activate', 'Активировать')
+            ->group('status', 'Статус')
+            ->icon('ui-btn-icon-success')
+            ->sort(10)
+            ->allowRunByFilter()
+            ->handle(fn(array $ids, BulkOperationContext $context) => ...),
+
+        BulkAction::make('deactivate', 'Деактивировать')
+            ->group('status', 'Статус')
+            ->icon('ui-btn-icon-stop')
+            ->sort(20)
+            ->allowRunByFilter()
+            ->handle(fn(array $ids, BulkOperationContext $context) => ...),
+
+        BulkAction::delete()
+            ->group('danger', 'Удаление')
+            ->sort(100),
+    ];
+}
+```
+
+### UI methods
+
+- `group(string $id, ?string $label = null)` — sets the group ID and optional label. Bitrix action panel groups items visually.
+- `sort(int $sort)` — sets the display order within the group (default `100`).
+- `icon(string $class)` — adds a Bitrix CSS icon class (e.g., `ui-btn-icon-remove`, `ui-btn-icon-success`).
+- `buttonClass(string $class)` or `class(string $class)` — adds custom CSS classes to the button.
+- `title(string $title)` — sets the button's `title` attribute.
+- `danger(bool $danger = true)` — marks the action as dangerous. In Bitrix UI, this automatically adds the `ui-btn-danger` class if no other button class is specified.
+- `confirm(string $message)` — shows a Bitrix confirmation dialog before running the action.
+- `panelType(string $type)` — sets the Bitrix panel type (default `BUTTON`).
+- `panelItem(array|Closure $item)` — provides a raw Bitrix action panel item array. If a closure is used, it receives the `Grid` instance.
+
+### Select all records
+
+If at least one bulk action has `allowRunByFilter()` enabled, the grid automatically shows the "Select all records" checkbox. You can override this behavior on the Grid:
+
+```php
+$grid->showSelectAllRecordsCheckbox(false);
+```
+
+### Dropdown bulk actions
+
+You can group multiple bulk actions into a dropdown menu to save space in the action panel. `BulkActionDropdown` acts as a UI container; the actual execution is performed by the selected child action.
+
+```php
+use MB\Bitrix\AdminKit\Action\BulkAction;
+use MB\Bitrix\AdminKit\Action\BulkActionDropdown;
+
+public function bulkActions(): iterable
+{
+    return [
+        BulkActionDropdown::make('activity', 'Активность')
+            ->group('status', 'Статус')
+            ->sort(10)
+            ->items([
+                BulkAction::make('activate', 'Активировать')
+                    ->allowRunByFilter()
+                    ->update(['ACTIVE' => 'Y']),
+
+                BulkAction::make('deactivate', 'Деактивировать')
+                    ->allowRunByFilter()
+                    ->update(['ACTIVE' => 'N']),
+            ]),
+
+        BulkAction::delete()
+            ->group('danger', 'Удаление')
+            ->sort(100),
+    ];
+}
+```
+
+- **Container Only**: Dropdowns themselves do not have handlers or update data.
+- **Unique IDs**: Child action IDs must be unique across all bulk actions in the grid.
+- **Run by filter**: `allowRunByFilter()` should be set on the child actions. If any child action (or direct action) supports running by filter, the "Select all records" checkbox will appear.
+
 ## Permissions and conditions
 
 `canSee()` controls whether an action is rendered. `canRun()` is checked before the action runs and for every loaded row. Both methods accept closures, `ConditionTree`, and short `field/operator/value` conditions. Internally the package uses `AdminCondition`.

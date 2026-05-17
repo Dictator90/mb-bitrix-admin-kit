@@ -17,12 +17,12 @@ final class GridQueryBuilderUsesIndexPageDefinitionTest extends TestCase
     {
         $resource = new ProductResource();
         $page = new class ($resource) extends IndexPage {
-            protected function fields(): iterable
+            public function fields(): iterable
             {
                 return [Text::make('Page field', 'PAGE_FIELD')];
             }
 
-            protected function defaultSelect(): array
+            public function defaultSelect(): array
             {
                 return ['PAGE_DEFAULT'];
             }

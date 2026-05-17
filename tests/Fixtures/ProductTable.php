@@ -52,6 +52,7 @@ final class ProductTable
         $filter = $params['filter'] ?? [];
 
         foreach ($filter as $field => $value) {
+            $field = ltrim($field, '=<>!');
             $rows = array_values(array_filter($rows, static function (array $row) use ($field, $value): bool {
                 if (is_array($value)) {
                     return in_array($row[$field] ?? null, $value, true);
@@ -74,6 +75,7 @@ final class ProductTable
         $rows = self::$rows;
 
         foreach ($filter as $field => $value) {
+            $field = ltrim($field, '=<>!');
             $rows = array_values(array_filter($rows, static function (array $row) use ($field, $value): bool {
                 if (is_array($value)) {
                     return in_array($row[$field] ?? null, $value, true);

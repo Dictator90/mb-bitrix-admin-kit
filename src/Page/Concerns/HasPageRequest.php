@@ -8,7 +8,7 @@ use Bitrix\Main\HttpRequest;
 
 trait HasPageRequest
 {
-    protected HttpRequest $request;
+    public HttpRequest $request;
 
     protected function isPost(): bool
     {
@@ -20,7 +20,7 @@ trait HasPageRequest
         return strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
     }
 
-    protected function currentUserId(): mixed
+    public function currentUserId(): mixed
     {
         global $USER;
 

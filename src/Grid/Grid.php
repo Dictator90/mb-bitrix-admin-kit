@@ -8,8 +8,10 @@ use Bitrix\Main\Grid\Options as GridOptions;
 use Bitrix\Main\ORM\Query\Result;
 use Bitrix\Main\UI\PageNavigation;
 use MB\Bitrix\AdminKit\Action\BulkAction;
+use MB\Bitrix\AdminKit\Action\BulkActionDropdown;
 use MB\Bitrix\AdminKit\Bitrix\Grid\BitrixFilterAdapter;
 use MB\Bitrix\AdminKit\Bitrix\Grid\BitrixGridAdapter;
+use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\FilterContract;
@@ -27,8 +29,9 @@ class Grid
     protected bool $collapsibleRows = false;
     protected ?string $collapsibleShiftColumnId = null;
     protected ?string $groupingAlign = null;
+    protected ?bool $showSelectAllRecordsCheckbox = null;
 
-    /** @var BulkAction[] */
+    /** @var BulkPanelItemContract[] */
     protected array $bulkActions = [];
 
     /**
@@ -86,7 +89,7 @@ class Grid
         $this->nav->setRecordCount($count);
     }
 
-    /** @param BulkAction[] $actions */
+    /** @param BulkPanelItemContract[] $actions */
     public function setBulkActions(array $actions): void
     {
         $this->bulkActions = $actions;
@@ -180,10 +183,27 @@ class Grid
         return $this->primaryKey;
     }
 
-    /** @return BulkAction[] */
+    /** @return BulkPanelItemContract[] */
     public function getBulkActions(): array
     {
         return $this->bulkActions;
+    }
+
+    /** @return list<BulkAction> */
+    public function getExecutableBulkActions(): array
+    {
+        $executable = [];
+        foreach ($this->bulkActions as $item) {
+            if ($item instanceof BulkAction) {
+                $executable[] = $item;
+            } elseif ($item instanceof BulkActionDropdown) {
+                foreach ($item->getItems() as $child) {
+                    $executable[] = $child;
+                }
+            }
+        }
+
+        return $executable;
     }
 
     public function hasEditableFields(): bool
@@ -200,5 +220,29 @@ class Grid
         }
 
         return false;
+    }
+
+    public function showSelectAllRecordsCheckbox(bool $show = true): static
+    {
+        $this->showSelectAllRecordsCheckbox = $show;
+
+        return $this;
+    }
+
+    public function hasRunByFilterBulkActions(): bool
+    {
+        foreach ($this->getExecutableBulkActions() as $action) {
+            if ($action->canRunByFilter()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function shouldShowSelectAllRecordsCheckbox(): bool
+    {
+        return $this->showSelectAllRecordsCheckbox
+            ?? $this->hasRunByFilterBulkActions();
     }
 }

@@ -17,6 +17,7 @@ use MB\Bitrix\AdminKit\Contracts\Page\IndexPageContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexBulkActionHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexDeleteHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexExportHandler;
@@ -177,7 +178,7 @@ class IndexPage extends CrudPage implements IndexPageContract
 
         $bulkActions = array_filter(
             iterator_to_array($this->bulkActions()),
-            fn ($a) => $a instanceof BulkAction && $a->isVisible()
+            fn ($a) => $a instanceof BulkPanelItemContract && $a->isVisible()
         );
 
         if (!empty($bulkActions)) {
