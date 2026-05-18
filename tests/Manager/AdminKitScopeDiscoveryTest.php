@@ -13,15 +13,37 @@ use MB\Bitrix\AdminKit\Manager\DiscoveryConfig;
 use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class AdminKitScopeDiscoveryTest extends TestCase
 {
+    private ?string $previousDocumentRoot = null;
+
+    private bool $documentRootChanged = false;
+
+    protected function tearDown(): void
+    {
+        if ($this->documentRootChanged) {
+            if ($this->previousDocumentRoot === null) {
+                unset($_SERVER['DOCUMENT_ROOT']);
+            } else {
+                $_SERVER['DOCUMENT_ROOT'] = $this->previousDocumentRoot;
+            }
+        }
+
+        parent::tearDown();
+    }
+
     public function testAdminKitScopeFromStringModuleTest(): void
     {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/local/modules/vendor.module', 0777, true);
+
         $scope = AdminKitScope::fromModule('vendor.module');
 
         self::assertSame('vendor.module', $scope->scopeId());
-        self::assertSame([], $scope->discoveryPaths());
+        self::assertSame([$root . '/local/modules/vendor.module/lib/Admin'], $scope->discoveryPaths());
     }
 
     public function testAdminKitScopeFromObjectModuleTest(): void
@@ -82,10 +104,81 @@ final class AdminKitScopeDiscoveryTest extends TestCase
 
     public function testAdminKitForModuleStringTest(): void
     {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/local/modules/vendor.module', 0777, true);
+
         $manager = AdminKit::forModule('vendor.module');
 
         self::assertInstanceOf(AdminKitManager::class, $manager);
         self::assertSame('vendor.module', $manager->scopeId());
+        self::assertSame([$root . '/local/modules/vendor.module/lib/Admin'], $manager->scope()->discoveryPaths());
+    }
+
+    public function testAdminKitScopeFromModuleIdDefaultDiscoveryPathTest(): void
+    {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/local/modules/vendor.demo', 0777, true);
+
+        $scope = AdminKitScope::fromModuleId('vendor.demo');
+
+        self::assertSame('vendor.demo', $scope->scopeId());
+        self::assertSame([$root . '/local/modules/vendor.demo/lib/Admin'], $scope->discoveryPaths());
+    }
+
+    public function testAdminKitScopeFromModuleIdCustomDiscoveryPathTest(): void
+    {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/local/modules/vendor.demo', 0777, true);
+
+        $scope = AdminKitScope::fromModuleId('vendor.demo', 'lib/Resources');
+
+        self::assertSame([$root . '/local/modules/vendor.demo/lib/Resources'], $scope->discoveryPaths());
+    }
+
+    public function testAdminKitScopeFromModuleIdMultipleDiscoveryPathsTest(): void
+    {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/local/modules/vendor.demo', 0777, true);
+
+        $scope = AdminKitScope::fromModuleId('vendor.demo', ['lib/Admin', 'lib/Pages']);
+
+        self::assertSame([
+            $root . '/local/modules/vendor.demo/lib/Admin',
+            $root . '/local/modules/vendor.demo/lib/Pages',
+        ], $scope->discoveryPaths());
+    }
+
+    public function testAdminKitScopeResolveModulePathPrefersLocalModuleTest(): void
+    {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/local/modules/vendor.demo', 0777, true);
+        mkdir($root . '/bitrix/modules/vendor.demo', 0777, true);
+
+        self::assertSame($root . '/local/modules/vendor.demo', AdminKitScope::resolveModulePath('vendor.demo'));
+    }
+
+    public function testAdminKitScopeResolveModulePathFallsBackToBitrixModuleTest(): void
+    {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/bitrix/modules/vendor.demo', 0777, true);
+
+        self::assertSame($root . '/bitrix/modules/vendor.demo', AdminKitScope::resolveModulePath('vendor.demo'));
+    }
+
+    public function testAdminKitScopeResolveModulePathThrowsForMissingModuleTest(): void
+    {
+        $this->setDocumentRoot($this->makeDirectory());
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Bitrix module [vendor.missing] was not found.');
+
+        AdminKitScope::resolveModulePath('vendor.missing');
     }
 
     public function testAdminKitForModuleObjectTest(): void
@@ -114,9 +207,14 @@ final class AdminKitScopeDiscoveryTest extends TestCase
 
     public function testAdminKitDoesNotRequireModuleEntityContractTest(): void
     {
+        $root = $this->makeDirectory();
+        $this->setDocumentRoot($root);
+        mkdir($root . '/local/modules/vendor.module', 0777, true);
+
         $manager = AdminKit::manager('vendor.module');
 
         self::assertSame('vendor.module', $manager->scopeId());
+        self::assertSame([$root . '/local/modules/vendor.module/lib/Admin'], $manager->scope()->discoveryPaths());
     }
 
     public function testDiscoveryConfigTest(): void
@@ -238,6 +336,16 @@ final class AdminKitScopeDiscoveryTest extends TestCase
         mkdir($dir, 0777, true);
 
         return $dir;
+    }
+
+    private function setDocumentRoot(string $root): void
+    {
+        if (! $this->documentRootChanged) {
+            $this->previousDocumentRoot = $_SERVER['DOCUMENT_ROOT'] ?? null;
+            $this->documentRootChanged = true;
+        }
+
+        $_SERVER['DOCUMENT_ROOT'] = $root;
     }
 
     private function writeResource(string $dir, string $class, string $id, bool $abstract = false): void

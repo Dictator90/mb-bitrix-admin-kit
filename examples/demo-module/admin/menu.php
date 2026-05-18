@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/include.php';
-
+use Bitrix\Main\Loader;
 use MB\Bitrix\AdminKit\Manager\AdminKitManager;
 use MB\Bitrix\AdminKit\Manager\AdminKitScope;
 use Vendor\Demo\Admin\DashboardPage;
 use Vendor\Demo\Admin\ProductResource;
 use Vendor\Demo\Admin\SettingsPage;
 
-$scope = new AdminKitScope('demo.module', ['local/modules/demo.module/lib/Admin']);
+Loader::includeModule('demo.module');
 
+$scope = AdminKitScope::fromModuleId('demo.module');
 
 return [
     'parent_menu' => 'global_menu_content',

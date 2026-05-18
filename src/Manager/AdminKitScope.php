@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
+use Bitrix\Main\Loader;
+use RuntimeException;
+
 final class AdminKitScope
 {
     /** @param string[] $discoveryPaths */
@@ -17,7 +20,7 @@ final class AdminKitScope
     public static function fromModule(string|object $module): self
     {
         if (is_string($module)) {
-            return new self($module);
+            return self::fromModuleId($module);
         }
 
         $scopeId = self::stringFromMethod($module, 'getModuleId')
@@ -34,6 +37,52 @@ final class AdminKitScope
         }
 
         return new self($scopeId, $libPath !== null ? [$libPath] : []);
+    }
+
+    public static function fromModuleId(string $moduleId, string|array $discoveryPath = 'lib/Admin'): self
+    {
+        $modulePath = self::resolveModulePath($moduleId);
+        $paths = [];
+
+        foreach ((array) $discoveryPath as $path) {
+            $paths[] = rtrim($modulePath, '/\\') . '/' . ltrim((string) $path, '/\\');
+        }
+
+        return new self($moduleId, $paths);
+    }
+
+    public static function resolveModulePath(string $moduleId): string
+    {
+        if (class_exists(Loader::class)) {
+            foreach ([
+                'modules/' . $moduleId . '/include.php',
+                'modules/' . $moduleId . '/install/index.php',
+            ] as $relative) {
+                $path = Loader::getLocal($relative);
+                if (is_string($path) && $path !== '') {
+                    if (str_ends_with($path, '/include.php')) {
+                        return dirname($path);
+                    }
+
+                    if (str_ends_with($path, '/install/index.php')) {
+                        return dirname(dirname($path));
+                    }
+                }
+            }
+        }
+
+        $documentRoot = rtrim((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), '/\\');
+
+        foreach ([
+            $documentRoot . '/local/modules/' . $moduleId,
+            $documentRoot . '/bitrix/modules/' . $moduleId,
+        ] as $path) {
+            if (is_dir($path)) {
+                return $path;
+            }
+        }
+
+        throw new RuntimeException(sprintf('Bitrix module [%s] was not found.', $moduleId));
     }
 
     public static function fromScope(string $scopeId): self

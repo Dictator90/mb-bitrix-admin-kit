@@ -28,16 +28,42 @@
 composer require mb4it/bitrix-admin-kit
 ```
 
-В `include.php` модуля подключите autoload:
+AdminKit можно подключать как внутри Bitrix-модуля, так и вне модуля.
+
+### Внутри Bitrix-модуля
+
+Пакет можно установить в директорию модуля или в корень проекта. В `include.php` модуля подключите module `vendor/autoload.php` с fallback на проектный `vendor/autoload.php`, затем в admin-файле явно подключите модуль и создайте scope по module id:
 
 ```php
-<?php
+use Bitrix\Main\Loader;
+use MB\Bitrix\AdminKit\Manager\AdminKitManager;
+use MB\Bitrix\AdminKit\Manager\AdminKitScope;
 
-$autoload = __DIR__ . '/vendor/autoload.php';
-if (is_file($autoload)) {
-    require_once $autoload;
-}
+Loader::includeModule('vendor.demo');
+
+$scope = AdminKitScope::fromModuleId('vendor.demo');
+(new AdminKitManager($scope))->getCurrentPage()->render();
 ```
+
+`Loader::includeModule()` подключает модуль и его классы, а `AdminKitScope::fromModuleId()` отвечает за discovery `Resource`/`Page` классов, по умолчанию из `lib/Admin`.
+
+### Вне модуля
+
+Установите пакет в корне проекта, подключите `vendor/autoload.php` в `local/php_interface/init.php` или конкретном admin-файле, а scope создайте по абсолютному пути к локальным классам:
+
+```php
+use MB\Bitrix\AdminKit\Manager\AdminKitManager;
+use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+
+$scope = AdminKitScope::fromDirectory(
+    $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Admin',
+    'local.admin'
+);
+
+(new AdminKitManager($scope))->getCurrentPage()->render();
+```
+
+Подробнее: [docs/installation.md](docs/installation.md), [docs/quick-start.md](docs/quick-start.md), [docs/discovery.md](docs/discovery.md).
 
 ## Быстрый пример ресурса
 
@@ -75,6 +101,7 @@ final class ProductResource extends DataManagerResource
 - Установка: [docs/installation.md](docs/installation.md)
 - Быстрый старт: [docs/quick-start.md](docs/quick-start.md)
 - Архитектура: [docs/architecture.md](docs/architecture.md)
+- Scope и discovery: [docs/discovery.md](docs/discovery.md)
 - Ресурсы и страницы: [docs/resources.md](docs/resources.md), [docs/pages.md](docs/pages.md)
 - Грид: [docs/grid.md](docs/grid.md)
 - Поля и фильтры: [docs/fields.md](docs/fields.md), [docs/filters.md](docs/filters.md)

@@ -28,6 +28,7 @@
 - Wide contracts `Contracts\FieldContract` and `Contracts\ComponentContract`; use `Contracts\Field\*`, `Contracts\UI\*`, and `Contracts\Widget\*`.
 
 ### Added
+- Added `AdminKitScope::fromModuleId()` and `resolveModulePath()` for module-relative resource/page discovery without replacing explicit `Loader::includeModule()` bootstrap.
 - `Support\LocalizedMessage` — shared `Loc::getMessage` helper for user-facing strings (replaces duplicated private `message()` methods).
 - `Pages\Handlers\OptionsPagePostHandler` and `Pages\Handlers\OptionsPageFormRenderer` — extracted POST and form rendering from `Pages\OptionsPage`.
 - `Tabs::remember()` — stores the last active tab in session (per page id) and restores it on the next visit; hidden `adminkit_active_tab` field syncs tab clicks when remember is enabled.
@@ -50,6 +51,8 @@
 - Bulk action `groupSort()` support for deterministic action-panel group ordering.
 
 ### Changed
+- Updated bootstrap/discovery documentation and demo module examples to separate Bitrix-module and local-admin usage scenarios.
+- `AdminKitScope::fromModule(string)` now treats string values as Bitrix module IDs and delegates to `fromModuleId()`.
 - Tabs and DialogSelector ship as separate bundles in `mb.admin.kit` (`src/tabs`, `src/dialog-selector` → `dist/*.bundle.js`); no shared `initAll` — each `TabsRenderer` / `DialogSelectorRenderer` initializes its own instance.
 - `Tabs::extension()` removed; `AssetManager::forForm()` no longer loads `mb.ui.tabs` separately.
 - `Resource` is now a minimal core class for identity, menu, and pages.
