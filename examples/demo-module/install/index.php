@@ -25,7 +25,7 @@ class vendor_demo extends CModule
         ModuleManager::unRegisterModule($this->MODULE_ID);
     }
 
-    private function installDb(): void
+    public function installDb(): void
     {
         $connection = Application::getConnection();
         if ($connection->isTableExists('vendor_demo_product')) {
@@ -46,7 +46,7 @@ class vendor_demo extends CModule
         );
     }
 
-    private function uninstallDb(): void
+    public function uninstallDb(): void
     {
         Application::getConnection()->queryExecute('DROP TABLE IF EXISTS vendor_demo_product');
     }

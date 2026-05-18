@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 use MB\Bitrix\AdminKit\Support\AdminString;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 final class SidePanelAdapter
 {
-    public function __construct(private ResourceContract $resource, private ?UrlGenerator $urls = null)
+    public function __construct(private CrudResourceContract $resource, private ?UrlGenerator $urls = null)
     {
     }
 

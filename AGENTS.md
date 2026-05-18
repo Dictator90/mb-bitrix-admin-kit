@@ -61,3 +61,36 @@
 - Treat Resource, CrudResource, GridContext, FormData, DbResult, BulkResult, Field, Filter, Action, support adapters, persistence, grid query, URL, and import/export classes as stable public API unless a task explicitly requests a breaking change.
 - Do not require userland resources to type against `MB\Support\Collection`, global helpers, or internal adapter classes; keep public extension points based on simple PHP types and callables.
 - Document every backward-compatibility exception and migration step in `docs/backward-compatibility.md` and `CHANGELOG.md` before changing code.
+
+## v1.1.0 scope/discovery notes
+- Treat `scopeId` as the AdminKit area identifier; it may be a Bitrix module ID, but code must not assume it is an installed module.
+- Keep `AdminKit::forModule()` module-first while supporting `forScope()`, directory shortcuts, and manual registration without discovery.
+- Discovery paths must remain optional and safe: missing directories should not break manually registered resources or pages.
+
+## v1.2.0 grid architecture notes
+- Keep `GridQueryBuilder` as the only source of Bitrix ORM query params (`select`, `filter`, `order`, `runtime`, `limit`, `offset`).
+- Keep `GridDataLoader` responsible for GridContext creation, QueryGuard, total count/cache, DataManager calls, and QueryPerformanceContext.
+- Keep `Grid` and `src/Bitrix/Grid/*Adapter.php` focused on UI state and Bitrix component/action-panel params; do not reintroduce ORM query building into `Grid` or `IndexPage`.
+- Keep toolbar/filter/create button integration in `Bitrix\Toolbar\ToolbarRenderer` when changing index-page toolbar behavior.
+
+
+## Discovery notes
+- Keep class discovery in `MB\Bitrix\AdminKit\Discovery\ClassDiscovery`; `Manager\AdminKitRegistry` must not parse PHP tokens or walk directories directly.
+- Use `mb4it/filesystem` `MB\Filesystem\Finder\ClassFinder` as the shared class lookup engine and keep final Resource/standalone Page checks Reflection-based.
+
+## v1.3.0 resource pages notes
+- Treat `Resource::pages()` plus `IndexPage`, `FormPage`, and `DetailPage` subclasses as the primary view customization mechanism.
+- Keep `indexFields()`, `formFields()`, and `detailFields()` as simple fallback shortcuts; do not add `indexResource()`, `formResource()`, `detailResource()`, or split Resource abstractions.
+- Keep grid query/data/row layers fed by `IndexPage` definitions rather than direct `resource->indexFields()` calls when rendering an index page.
+- Use `FieldRenderContext` for page-aware field rendering on index, form, and detail pages while preserving backward-compatible raw-value rendering.
+- Keep standalone pages (`Pages\DashboardPage`, `Pages\OptionsPage`, `Pages\CustomPage`) registered/discovered separately from resource pages (`Page\IndexPage`, `Page\FormPage`, `Page\DetailPage`); resource page subclasses must not become standalone menu entries unless they explicitly use the standalone page API.
+- Preserve the existing Field API surface and keep `renderFormField()` as the fallback used by context-aware `renderForm()` implementations.
+
+## BulkAction/action panel maintenance notes
+- For `Types::DROPDOWN` controls, keep the dropdown label as a non-executable first placeholder item; Bitrix displays the first/selected item as the visible label.
+- Keep bulk "for all" execution based on the explicit `action_all_rows_<GRID_ID>` checkbox flag, not on empty selected IDs. Empty-filter/full-table runs must stay opt-in through `allowRunWithoutFilter()`.
+
+## v1.4.0 grouped index rows notes
+- Keep grouped index rows inside the existing `IndexPage` / `IndexPageDefinitionContract` flow; do not add a separate tree-grid loader.
+- Keep `HasMany` / `HasOne` relation fields batch-loaded after base rows are fetched and avoid ORM JOINs that duplicate grid rows.
+- Preserve synthetic grid row IDs (`group:*`, `item:*`) and filter group IDs out of item bulk/inline operations.

@@ -2,32 +2,17 @@
 
 declare(strict_types=1);
 
+use MB\Bitrix\AdminKit\Manager\AdminKitManager;
+use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/include.php';
 
-use Vendor\Demo\Admin\DashboardPage;
-use Vendor\Demo\Admin\ProductResource;
-use Vendor\Demo\Admin\SettingsPage;
-
-$page = (string)($_REQUEST['page'] ?? ProductResource::getId());
-$action = (string)($_REQUEST['action'] ?? 'index');
-$id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : null;
+global $APPLICATION, $adminPage;
+$adminPage->hideTitle();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
 
-if ($page === SettingsPage::getId()) {
-    (new SettingsPage())->render();
-} elseif ($page === DashboardPage::getId()) {
-    (new DashboardPage())->render();
-} else {
-    $resource = new ProductResource();
-
-    match ($action) {
-        'add' => $resource->formPage()->render(),
-        'edit' => $resource->formPage($id)->render(),
-        'detail', 'view' => $resource->detailPage($id)->render(),
-        default => $resource->indexPage()->render(),
-    };
-}
+$scope = new AdminKitScope('demo.module', ['local/modules/demo.module/lib/Admin']);
+(new AdminKitManager($scope))->getCurrentPage()->render();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Widget;
 
-use MB\Bitrix\AdminKit\Component\Layout\AbstractLayoutComponent;
+use MB\Bitrix\AdminKit\Component\Concerns\HasConditionalVisibility;
+use MB\Bitrix\AdminKit\Component\Concerns\HasHtmlAttributes;
+use MB\Bitrix\AdminKit\Contracts\Widget\DashboardWidgetContract;
 
 /**
  * Base class for dashboard widgets.
@@ -14,19 +16,16 @@ use MB\Bitrix\AdminKit\Component\Layout\AbstractLayoutComponent;
  * Grid, Column, Box, and any other layout component, as well as used
  * directly inside DashboardPage::widgets().
  *
- * @see \MB\Bitrix\AdminKit\Pages\DashboardPage
+ * @see \MB\Bitrix\AdminKit\Page\Standalone\DashboardPage
  */
-abstract class AbstractWidget extends AbstractLayoutComponent
+abstract class AbstractWidget implements DashboardWidgetContract
 {
+    use HasHtmlAttributes;
+    use HasConditionalVisibility;
+
     protected string $label  = '';
     protected ?string $icon  = null;
     protected int $span      = 3;  // default: 3 of 12 dashboard grid columns
-
-    /** @param array<int, mixed> $children */
-    public function __construct(array $children = [])
-    {
-        parent::__construct($children);
-    }
 
     public function label(string $label): static
     {
@@ -84,9 +83,8 @@ abstract class AbstractWidget extends AbstractLayoutComponent
         return "<div{$class}{$style}{$attrs}>{$this->renderWidget()}</div>";
     }
 
-    /** Widgets are leaf nodes — they contain no form fields. */
-    public function extractFields(): array
+    public function __toString(): string
     {
-        return [];
+        return $this->render();
     }
 }

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Component;
 
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
+
 class Button
 {
-    public static function save(string $text = 'Сохранить', array $attrs = []): string
+    public static function save(string $text = '', array $attrs = []): string
     {
+        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BUTTON_SAVE', 'Save');
+
         return static::render(
             'submit',
             $text,
@@ -16,13 +20,16 @@ class Button
         );
     }
 
-    public static function cancel(string $text = 'Отмена', string $onclick = 'window.history.back()'): string
+    public static function cancel(string $text = '', string $onclick = 'window.history.back()'): string
     {
+        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BUTTON_CANCEL', 'Cancel');
+
         return static::render('button', $text, 'ui-btn ui-btn-link', ['onclick' => $onclick]);
     }
 
-    public static function add(string $url, string $text = 'Добавить'): string
+    public static function add(string $url, string $text = ''): string
     {
+        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BUTTON_ADD', 'Add');
         $escapedUrl = htmlspecialcharsbx($url);
 
         return '<a href="' . $escapedUrl . '" class="ui-btn ui-btn-primary ui-btn-icon-add">' . htmlspecialcharsbx(
@@ -82,4 +89,5 @@ class Button
             $text
         ) . '</button>';
     }
+
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vendor\Demo\Admin;
 
-use MB\Bitrix\AdminKit\Pages\DashboardPage as BaseDashboardPage;
+use MB\Bitrix\AdminKit\Page\Standalone\DashboardPage as BaseDashboardPage;
 use Vendor\Demo\Orm\ProductTable;
 
 final class DashboardPage extends BaseDashboardPage

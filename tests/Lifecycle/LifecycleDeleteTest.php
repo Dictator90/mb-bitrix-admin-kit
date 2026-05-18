@@ -14,13 +14,13 @@ final class LifecycleDeleteTest extends TestCase
     {
         $resource = new class () extends ProductResource {
             public array $calls = [];
-            public function beforeDelete(array $item, DbOperationContext $context): void
+            public function beforeDelete(mixed $id, DbOperationContext $context): void
             {
-                $this->calls[] = 'before:' . $item['NAME'];
+                $this->calls[] = 'before:' . ($context->oldData['NAME'] ?? '');
             }
-            public function afterDelete(array $item, DbOperationContext $context): void
+            public function afterDelete(mixed $id, DbOperationContext $context): void
             {
-                $this->calls[] = 'after:' . $item['NAME'];
+                $this->calls[] = 'after:' . ($context->oldData['NAME'] ?? '');
             }
         };
 

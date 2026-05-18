@@ -8,7 +8,7 @@ use Bitrix\Main\Loader;
 use CIBlock;
 
 /**
- * Information-block selector — wraps the 'iblock-list' entity from mb.ui.dialog-selector.
+ * Information-block selector — wraps the 'iblock-list' entity via mb.admin.kit DialogSelector.
  *
  *   IblockSelect::make('Инфоблок', 'IBLOCK_ID')
  */

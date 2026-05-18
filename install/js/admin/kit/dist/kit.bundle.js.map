@@ -1,1 +1,0 @@
-{"version":3,"file":"kit.bundle.js","sources":["../src/index.js"],"sourcesContent":["import './css/admin-common.css';\r\nexport default {\r\n}"],"names":[],"mappings":";;;;;;AACA,gBAAe,EACd;;;;;;;;"}

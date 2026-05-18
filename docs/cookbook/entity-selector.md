@@ -1,7 +1,7 @@
 # Entity Selector Fields
 
 AdminKit provides a layered family of selector fields built on Bitrix's
-`ui.entity-selector` and the custom `mb.ui.dialog-selector` extension.
+`ui.entity-selector` and the package `mb.ui.dialog-selector` extension.
 
 ## Class hierarchy
 
@@ -82,6 +82,20 @@ IblockSectionSelect::make('Section', 'SECTION_ID')
     ->multiple();
 ```
 
+Register the provider in the module `.settings.php` (`ui.entity-selector`):
+
+```php
+[
+    'entityId' => 'iblock-section-list',
+    'provider' => [
+        'moduleId' => 'your.module',
+        'className' => \MB\Bitrix\AdminKit\UI\EntitySelector\IblockSectionListProvider::class,
+    ],
+],
+```
+
+Options: `iblockId` (int), `activeFilter` (bool, only `ACTIVE = Y`).
+
 ---
 
 ## EntitySelect / TagSelect — generic Bitrix entity
@@ -112,8 +126,9 @@ resolved automatically without calling `resolveLabels()`:
 | `user`, `user-list` | `Bitrix\Main\UserTable` |
 | `user-group`, `user-group-list` | `UserGroupListProvider` |
 | `iblock`, `iblock-list` | Bitrix iblock |
-| `iblock-element`, `iblock-element-list` | Bitrix iblock |
-| `iblock-property`, `iblock-property-list` | Bitrix iblock |
+| `iblock-element`, `iblock-element-list` | `IblockElementListProvider` |
+| `iblock-section`, `iblock-section-list` | `IblockSectionListProvider` |
+| `iblock-property`, `iblock-property-list` | `IblockPropertyListProvider` |
 
 For other entities, supply a resolver:
 
@@ -130,8 +145,8 @@ EntitySelect::make('Warehouse', 'WAREHOUSE_ID')
 
 ## DialogSelect — static item list
 
-`DialogSelect` uses `MB.UI.DialogSelector.DialogSelector` (from the custom
-`mb.ui.dialog-selector` Bitrix extension). Use it when you have a finite set
+`DialogSelect` uses `MB.AdminKit.DialogSelector` (from the `mb.admin.kit`
+extension). Use it when you have a finite set
 of known items and no server-side search is needed.
 
 ```php

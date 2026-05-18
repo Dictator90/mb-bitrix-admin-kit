@@ -96,15 +96,16 @@ CountWidget::make('Revenue', OrderTable::class)
 
 ---
 
-### GraphWidget
+### ChartWidget / GraphWidget
 
-Renders a Chart.js 4 chart. The Chart.js library is loaded from jsDelivr CDN — no Bitrix extension required. Only one CDN `<script>` tag is emitted per page regardless of how many `GraphWidget` instances appear.
+`ChartWidget` is the primary chart widget. `GraphWidget` is kept as a compatibility alias that extends `ChartWidget`.
+Chart rendering is initialized through the local `mb.admin.kit` extension with `data-adminkit-chart` payload; no CDN script tag is injected from PHP.
 
 ```php
-use MB\Bitrix\AdminKit\Widget\GraphWidget;
+use MB\Bitrix\AdminKit\Widget\ChartWidget;
 
 // Vertical bar chart (default)
-GraphWidget::make('Orders by month')
+ChartWidget::make('Orders by month')
     ->span(12)
     ->data([
         ['category' => 'Jan', 'value' => 42],
@@ -114,7 +115,7 @@ GraphWidget::make('Orders by month')
     ->height(280)
 
 // Horizontal bar chart
-GraphWidget::make('Top modules', 'bar')
+ChartWidget::make('Top modules', 'bar')
     ->horizontal()
     ->categoryField('module')
     ->valueField('count')
@@ -122,7 +123,7 @@ GraphWidget::make('Top modules', 'bar')
     ->span(12)
 
 // Pie chart
-GraphWidget::make('Status breakdown', 'pie')
+ChartWidget::make('Status breakdown', 'pie')
     ->span(6)
     ->categoryField('title')
     ->data([
@@ -132,13 +133,13 @@ GraphWidget::make('Status breakdown', 'pie')
     ])
 
 // Data loaded at render time
-GraphWidget::make('Users per day')
+ChartWidget::make('Users per day')
     ->span(12)
     ->dataCallback(fn() => UserRepo::registrationsPerDay(30))
     ->height(250)
 
 // Custom Chart.js options (deep-merged)
-GraphWidget::make('Revenue (line)', 'line')
+ChartWidget::make('Revenue (line)', 'line')
     ->span(12)
     ->data([...])
     ->config(['options' => ['tension' => 0.4]])

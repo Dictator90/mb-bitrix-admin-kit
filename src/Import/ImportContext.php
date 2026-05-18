@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Import;
 
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 final class ImportContext
@@ -16,7 +16,7 @@ final class ImportContext
     public array $mappedRows;
 
     public function __construct(
-        public readonly ResourceContract $resource,
+        public readonly DataManagerResourceContract $resource,
         iterable $rawRows = [],
         iterable $mappedRows = [],
         public readonly mixed $userId = null,

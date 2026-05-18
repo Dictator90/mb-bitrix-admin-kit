@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Call to method toArray\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Action/AsyncAction.php
-
-		-
 			message: "#^Function check_bitrix_sessid not found\\.$#"
 			count: 1
 			path: src/Action/AsyncAction.php
@@ -31,14 +26,14 @@ parameters:
 			path: src/Action/AsyncAction.php
 
 		-
-			message: "#^Parameter \\$request of method MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\AsyncAction\\:\\:dispatch\\(\\) has invalid type Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: src/Action/AsyncAction.php
 
 		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			message: "#^Access to constant BUTTON on an unknown class Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Types\\.$#"
 			count: 1
-			path: src/Action/AsyncAction.php
+			path: src/Action/BulkAction.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\BulkAction\\:\\:conditionContext\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
@@ -47,6 +42,11 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\BulkAction\\:\\:conditionContext\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Action/BulkAction.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\BulkAction\\:\\:getCustomPanelItem\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Action/BulkAction.php
 
@@ -66,13 +66,23 @@ parameters:
 			path: src/Action/BulkAction.php
 
 		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\BulkAction\\:\\:\\$updateData type has no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\BulkAction\\:\\:panelItem\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Action/BulkAction.php
+
+		-
+			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\BulkAction\\:\\:\\$customPanelItem type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Action/BulkAction.php
+
+		-
+			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\BulkAction\\:\\:\\$data type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Action/BulkAction.php
 
 		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 2
+			count: 1
 			path: src/Action/BulkAction.php
 
 		-
@@ -104,6 +114,26 @@ parameters:
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 3
 			path: src/Action/RowAction.php
+
+		-
+			message: "#^Access to constant CALLBACK on an unknown class Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Actions\\.$#"
+			count: 2
+			path: src/Bitrix/Grid/BitrixGridActionPanelAdapter.php
+
+		-
+			message: "#^Access to constant DROPDOWN on an unknown class Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Types\\.$#"
+			count: 1
+			path: src/Bitrix/Grid/BitrixGridActionPanelAdapter.php
+
+		-
+			message: "#^Call to an undefined method Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Snippet\\:\\:getForAllCheckbox\\(\\)\\.$#"
+			count: 1
+			path: src/Bitrix/Grid/BitrixGridActionPanelAdapter.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Bitrix\\\\Grid\\\\BitrixGridActionPanelAdapter\\:\\:buildPanelItem\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Bitrix/Grid/BitrixGridActionPanelAdapter.php
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
@@ -182,7 +212,7 @@ parameters:
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 8
+			count: 4
 			path: src/Component/Layout/AbstractLayoutComponent.php
 
 		-
@@ -196,27 +226,7 @@ parameters:
 			path: src/Component/Layout/AbstractLayoutComponent.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\AbstractLayoutComponent\\:\\:checkVisibilityRule\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Component/Layout/AbstractLayoutComponent.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\AbstractLayoutComponent\\:\\:getVisibleWhen\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Component/Layout/AbstractLayoutComponent.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\AbstractLayoutComponent\\:\\:\\$attrs type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Component/Layout/AbstractLayoutComponent.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\AbstractLayoutComponent\\:\\:\\$classes type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Component/Layout/AbstractLayoutComponent.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\AbstractLayoutComponent\\:\\:\\$styles type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Component/Layout/AbstractLayoutComponent.php
 
@@ -301,17 +311,27 @@ parameters:
 			path: src/Component/Layout/Tab.php
 
 		-
-			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
-			count: 1
-			path: src/Component/Layout/Tabs.php
-
-		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 4
 			path: src/Component/Layout/Tabs.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tabs\\:\\:checkVisibilityRule\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tabs\\:\\:buildClassAttr\\(\\) has parameter \\$extra with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Component/Layout/Tabs.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tabs\\:\\:buildStyleAttr\\(\\) has parameter \\$extra with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Component/Layout/Tabs.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tabs\\:\\:getVisibleWhen\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Component/Layout/Tabs.php
+
+		-
+			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tabs\\:\\:\\$visibleWhenRule type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Component/Layout/Tabs.php
 
@@ -338,6 +358,11 @@ parameters:
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 6
+			path: src/Component/Relation/HasMany.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Relation\\\\HasMany\\:\\:extractFields\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
 			path: src/Component/Relation/HasMany.php
 
 		-
@@ -371,6 +396,16 @@ parameters:
 			path: src/Component/Relation/HasOne.php
 
 		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Renderers\\\\ChildrenRenderer\\:\\:render\\(\\) has parameter \\$children with no value type specified in iterable type iterable\\.$#"
+			count: 1
+			path: src/Component/Renderers/ChildrenRenderer.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 1
+			path: src/Component/Renderers/VisibilityWrapper.php
+
+		-
 			message: "#^Call to static method JSEscape\\(\\) on an unknown class CUtil\\.$#"
 			count: 4
 			path: src/Component/SidePanel.php
@@ -379,11 +414,6 @@ parameters:
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\SidePanel\\:\\:open\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Component/SidePanel.php
-
-		-
-			message: "#^Access to constant SUCCESS on an unknown class Bitrix\\\\UI\\\\Buttons\\\\Color\\.$#"
-			count: 1
-			path: src/Component/Toolbar.php
 
 		-
 			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
@@ -411,29 +441,39 @@ parameters:
 			path: src/Component/Toolbar.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:dependsOn\\(\\) has parameter \\$sourceColumns with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldRenderContract\\:\\:renderDetail\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Contracts/FieldContract.php
+			path: src/Contracts/Field/FieldRenderContract.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:getGridColumnConfig\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldRenderContract\\:\\:renderIndex\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Contracts/FieldContract.php
+			path: src/Contracts/Field/FieldRenderContract.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:renderDetail\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldVisibilityContract\\:\\:getVisibleWhen\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Contracts/FieldContract.php
+			path: src/Contracts/Field/FieldVisibilityContract.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:renderForm\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\OptionFieldContract\\:\\:getOptions\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Contracts/FieldContract.php
+			path: src/Contracts/Field/OptionFieldContract.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:renderIndex\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\ReactiveFieldContract\\:\\:dependsOn\\(\\) has parameter \\$sourceColumns with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Contracts/FieldContract.php
+			path: src/Contracts/Field/ReactiveFieldContract.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\RelationFieldContract\\:\\:filter\\(\\) has parameter \\$filter with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contracts/Field/RelationFieldContract.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\RelationFieldContract\\:\\:order\\(\\) has parameter \\$order with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contracts/Field/RelationFieldContract.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FilterContract\\:\\:applyToOrmFilter\\(\\) has parameter \\$filter with no value type specified in iterable type array\\.$#"
@@ -456,144 +496,9 @@ parameters:
 			path: src/Contracts/FilterContract.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:afterIndexRows\\(\\) has parameter \\$rows with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\UI\\\\ConditionalVisibilityContract\\:\\:getVisibleWhen\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:afterIndexRows\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:beforeIndexQueryParams\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:beforeIndexQueryParams\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:createItem\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:createItemResult\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:defaultFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:defaultSelect\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:defaultSort\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:findItem\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:formTabs\\(\\) has invalid return type MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Tab\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getCount\\(\\) has parameter \\$filter with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getList\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getList\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexOrder\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexRuntime\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexSelect\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:mapIndexRow\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:mapIndexRow\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:massDelete\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:modifyIndexParams\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:modifyIndexParams\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:runtimeFields\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:updateItem\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:updateItemResult\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Contracts/ResourceContract.php
-
-		-
-			message: "#^Parameter \\$request of method MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\BulkOperationContext\\:\\:__construct\\(\\) has invalid type Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Database/BulkOperationContext.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\BulkOperationContext\\:\\:\\$request has unknown class Bitrix\\\\Main\\\\HttpRequest as its type\\.$#"
-			count: 1
-			path: src/Database/BulkOperationContext.php
+			path: src/Contracts/UI/ConditionalVisibilityContract.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\BulkResult\\:\\:addError\\(\\) has parameter \\$errors with no value type specified in iterable type array\\.$#"
@@ -642,16 +547,6 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\DbOperationContext\\:\\:__construct\\(\\) has parameter \\$validatedData with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Database/DbOperationContext.php
-
-		-
-			message: "#^Parameter \\$request of method MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\DbOperationContext\\:\\:__construct\\(\\) has invalid type Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Database/DbOperationContext.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\DbOperationContext\\:\\:\\$request has unknown class Bitrix\\\\Main\\\\HttpRequest as its type\\.$#"
 			count: 1
 			path: src/Database/DbOperationContext.php
 
@@ -711,12 +606,12 @@ parameters:
 			path: src/Database/TransactionManager.php
 
 		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:computeValue\\(\\)\\.$#"
+			message: "#^PHPDoc tag @return contains generic type MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\<Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\> but class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource is not generic\\.$#"
 			count: 1
-			path: src/Export/CsvExporter.php
+			path: src/Discovery/ClassDiscovery.php
 
 		-
-			message: "#^Call to an undefined static method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getId\\(\\)\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:computeValue\\(\\)\\.$#"
 			count: 1
 			path: src/Export/CsvExporter.php
 
@@ -856,23 +751,33 @@ parameters:
 			path: src/Field/Email.php
 
 		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Entity\\\\EntitySelectorConfig\\:\\:__construct\\(\\) has parameter \\$entityOptions with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Entity/EntitySelectorConfig.php
+
+		-
 			message: "#^Call to method getId\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
 			count: 1
-			path: src/Field/EntitySelect.php
+			path: src/Field/Entity/EntitySelectorLabelResolver.php
 
 		-
 			message: "#^Call to method getTitle\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
 			count: 1
-			path: src/Field/EntitySelect.php
+			path: src/Field/Entity/EntitySelectorLabelResolver.php
 
 		-
 			message: "#^Class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
 			count: 1
-			path: src/Field/EntitySelect.php
+			path: src/Field/Entity/EntitySelectorLabelResolver.php
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 7
+			count: 6
+			path: src/Field/Entity/Renderers/TagSelectorRenderer.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 1
 			path: src/Field/EntitySelect.php
 
 		-
@@ -926,11 +831,6 @@ parameters:
 			path: src/Field/Field.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:computeValue\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/Field.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:dependsOn\\(\\) has parameter \\$sourceColumns with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Field.php
@@ -957,11 +857,6 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:evaluateFieldCondition\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/Field.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:getGridColumnConfig\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Field.php
 
@@ -996,11 +891,6 @@ parameters:
 			path: src/Field/Field.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:renderForm\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/Field.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:renderIndex\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Field.php
@@ -1011,17 +901,7 @@ parameters:
 			path: src/Field/Field.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:resolveReactiveDependencies\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/Field.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:runValidation\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/Field.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:validate\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Field.php
 
@@ -1106,7 +986,7 @@ parameters:
 			path: src/Field/IblockElementSelect.php
 
 		-
-			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlockSection\\.$#"
+			message: "#^Call to static method query\\(\\) on an unknown class Bitrix\\\\Iblock\\\\SectionTable\\.$#"
 			count: 1
 			path: src/Field/IblockSectionSelect.php
 
@@ -1156,8 +1036,33 @@ parameters:
 			path: src/Field/Number.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Options\\\\ArrayOptionsResolver\\:\\:resolve\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
 			count: 1
+			path: src/Field/Options/ArrayOptionsResolver.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Options\\\\CachedOptionsResolver\\:\\:resolve\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Options/CachedOptionsResolver.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Options\\\\CallbackOptionsResolver\\:\\:resolve\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Options/CallbackOptionsResolver.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Options\\\\OptionsResolverContract\\:\\:resolve\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Options/OptionsResolverContract.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Options\\\\OptionsResolverFactory\\:\\:make\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Options/OptionsResolverFactory.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 6
 			path: src/Field/Password.php
 
 		-
@@ -1171,13 +1076,38 @@ parameters:
 			path: src/Field/Preview.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 6
-			path: src/Field/Select.php
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Renderers\\\\FieldRenderContextFactory\\:\\:make\\(\\) has parameter \\$errors with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Renderers/FieldRenderContextFactory.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Select\\:\\:getGridColumnConfig\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Renderers\\\\FieldRenderContextFactory\\:\\:make\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
 			count: 1
+			path: src/Field/Renderers/FieldRenderContextFactory.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 4
+			path: src/Field/Renderers/FieldRowRenderer.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Renderers\\\\FieldVisibilityEvaluator\\:\\:isVisible\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Renderers/FieldVisibilityEvaluator.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 1
+			path: src/Field/Renderers/FieldVisibilityWrapper.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Renderers\\\\FieldVisibilityWrapper\\:\\:wrap\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Field/Renderers/FieldVisibilityWrapper.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 6
 			path: src/Field/Select.php
 
 		-
@@ -1371,7 +1301,7 @@ parameters:
 			path: src/Filter/Types/TextFilter.php
 
 		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:runValidation\\(\\)\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:runValidation\\(\\)\\.$#"
 			count: 1
 			path: src/Form/DataPipeline.php
 
@@ -1446,91 +1376,6 @@ parameters:
 			path: src/Grid/Column/ColumnDataProvider.php
 
 		-
-			message: "#^Call to method allowAllRecords\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method getEditButton\\(\\) on an unknown class Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Snippet\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method getFilter\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Filter\\\\Options\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method getLimit\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method getNavParams\\(\\) on an unknown class Bitrix\\\\Main\\\\Grid\\\\Options\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method getOffset\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method getPageSize\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method getSorting\\(\\) on an unknown class Bitrix\\\\Main\\\\Grid\\\\Options\\.$#"
-			count: 2
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method setPageSize\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to method setRecordCount\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Call to static method JSEscape\\(\\) on an unknown class CUtil\\.$#"
-			count: 3
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Instantiated class Bitrix\\\\Main\\\\Grid\\\\Options not found\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Instantiated class Bitrix\\\\Main\\\\Grid\\\\Panel\\\\Snippet not found\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Instantiated class Bitrix\\\\Main\\\\UI\\\\Filter\\\\Options not found\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Instantiated class Bitrix\\\\Main\\\\UI\\\\PageNavigation not found\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:buildActionPanel\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:buildOrmFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:getFilterComponentParams\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Grid/Grid.php
@@ -1541,27 +1386,7 @@ parameters:
 			path: src/Grid/Grid.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:getOrmParams\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 2
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:getPagination\\(\\) has invalid return type Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
 			message: "#^Parameter \\$result of method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:setRawRows\\(\\) has invalid type Bitrix\\\\Main\\\\ORM\\\\Query\\\\Result\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:\\$gridOptions has unknown class Bitrix\\\\Main\\\\Grid\\\\Options as its type\\.$#"
-			count: 1
-			path: src/Grid/Grid.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Grid\\:\\:\\$nav has unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation as its type\\.$#"
 			count: 1
 			path: src/Grid/Grid.php
 
@@ -1614,21 +1439,6 @@ parameters:
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\GridQueryBuilder\\:\\:readGridSort\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Grid/GridQueryBuilder.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Panel\\\\BulkDeletePanelAction\\:\\:execute\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Panel/BulkDeletePanelAction.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Panel\\\\PanelDataProvider\\:\\:__construct\\(\\) has parameter \\$actions with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Panel/PanelDataProvider.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Panel\\\\PanelDataProvider\\:\\:getActions\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Grid/Panel/PanelDataProvider.php
 
 		-
 			message: "#^Call to method format\\(\\) on an unknown class Bitrix\\\\Main\\\\Type\\\\Date\\.$#"
@@ -1701,7 +1511,7 @@ parameters:
 			path: src/Grid/Row/Assembler/SwitcherAssembler.php
 
 		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:computeValue\\(\\)\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:computeValue\\(\\)\\.$#"
 			count: 1
 			path: src/Grid/Row/RowAssembler.php
 
@@ -1796,27 +1606,7 @@ parameters:
 			path: src/Import/ImporterInterface.php
 
 		-
-			message: "#^Call to method getRequestUri\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Manager/AdminKitManager.php
-
-		-
 			message: "#^Call to static method getCurrent\\(\\) on an unknown class Bitrix\\\\Main\\\\Context\\.$#"
-			count: 1
-			path: src/Manager/AdminKitManager.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitManager\\:\\:getResources\\(\\) return type with generic class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource does not specify its types\\: T$#"
-			count: 1
-			path: src/Manager/AdminKitManager.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitManager\\:\\:register\\(\\) has parameter \\$resourceClass with generic class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource but does not specify its types\\: T$#"
-			count: 1
-			path: src/Manager/AdminKitManager.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitManager\\:\\:\\$request has unknown class Bitrix\\\\Main\\\\HttpRequest as its type\\.$#"
 			count: 1
 			path: src/Manager/AdminKitManager.php
 
@@ -1826,59 +1616,19 @@ parameters:
 			path: src/Manager/AdminKitMenuBuilder.php
 
 		-
-			message: "#^Call to static method classFinder\\(\\) on an unknown class MB\\\\Bitrix\\\\Filesystem\\\\Filesystem\\.$#"
+			message: "#^Call to function is_string\\(\\) with void will always evaluate to false\\.$#"
 			count: 1
-			path: src/Manager/AdminKitRegistry.php
+			path: src/Manager/AdminKitRenderer.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitRegistry\\:\\:registerResource\\(\\) has parameter \\$resourceClass with generic class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource but does not specify its types\\: T$#"
+			message: "#^Result of method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\ResourcePage\\:\\:render\\(\\) \\(void\\) is used\\.$#"
 			count: 1
-			path: src/Manager/AdminKitRegistry.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitRegistry\\:\\:resources\\(\\) return type with generic class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource does not specify its types\\: T$#"
-			count: 1
-			path: src/Manager/AdminKitRegistry.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitRegistry\\:\\:\\$resources with generic class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource does not specify its types\\: T$#"
-			count: 1
-			path: src/Manager/AdminKitRegistry.php
-
-		-
-			message: "#^Call to method get\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 4
-			path: src/Manager/AdminKitRouter.php
-
-		-
-			message: "#^Call to method getPost\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Manager/AdminKitRouter.php
-
-		-
-			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Manager/AdminKitRouter.php
-
-		-
-			message: "#^Parameter \\$request of method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitRouter\\:\\:__construct\\(\\) has invalid type Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Manager/AdminKitRouter.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\AdminKitRouter\\:\\:\\$request has unknown class Bitrix\\\\Main\\\\HttpRequest as its type\\.$#"
-			count: 1
-			path: src/Manager/AdminKitRouter.php
+			path: src/Manager/AdminKitRenderer.php
 
 		-
 			message: "#^Call to static method getCurrent\\(\\) on an unknown class Bitrix\\\\Main\\\\Context\\.$#"
 			count: 1
 			path: src/Manager/ResourcePage.php
-
-		-
-			message: "#^Call to an undefined static method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getId\\(\\)\\.$#"
-			count: 1
-			path: src/Manager/SidePanelAdapter.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\SidePanelAdapter\\:\\:encodeOptions\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
@@ -1906,209 +1656,329 @@ parameters:
 			path: src/Manager/ToolbarAction.php
 
 		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:detailFields\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/DetailPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canView\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/DetailPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getPrimaryKey\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/DetailPage.php
+
+		-
 			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
 			count: 1
-			path: src/Page/DetailPage.php
+			path: src/Page/Crud/DetailPage.php
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 2
-			path: src/Page/DetailPage.php
+			path: src/Page/Crud/DetailPage.php
 
 		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:applyDependency\\(\\)\\.$#"
-			count: 2
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:getDependsOn\\(\\)\\.$#"
-			count: 2
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:serializePostValue\\(\\)\\.$#"
+			message: "#^Parameter \\#1 \\$resource of method MB\\\\Bitrix\\\\AdminKit\\\\Bitrix\\\\Toolbar\\\\ToolbarRenderer\\:\\:renderDetail\\(\\) expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 1
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/DetailPage.php
 
 		-
-			message: "#^Call to method active\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\FieldRenderContext constructor expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 1
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/DetailPage.php
 
 		-
-			message: "#^Call to method get\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 2
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Call to method getId\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
-			count: 2
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Call to method getItems\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Tab\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 1
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/DetailPage.php
 
 		-
-			message: "#^Call to method getItems\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:applyDependency\\(\\)\\.$#"
 			count: 2
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Call to method getPost\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 4
-			path: src/Page/FormPage.php
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:getDependsOn\\(\\)\\.$#"
+			count: 2
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Call to method getRequestUri\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:afterValidate\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:beforeValidate\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canCreate\\(\\)\\.$#"
+			count: 2
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canUpdate\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:closeSidePanelAfterSave\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:formFields\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:formTabs\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getGridId\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canUpdate\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canView\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/FormPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getPrimaryKey\\(\\)\\.$#"
 			count: 3
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Call to method getTitle\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
-			count: 1
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Call to method isActive\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
-			count: 3
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
-			count: 2
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
 			message: "#^Function bitrix_sessid_post not found\\.$#"
 			count: 1
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
 			message: "#^Function check_bitrix_sessid not found\\.$#"
-			count: 1
-			path: src/Page/FormPage.php
+			count: 2
+			path: src/Page/Crud/FormPage.php
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 13
-			path: src/Page/FormPage.php
+			count: 11
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\FormPage\\:\\:checkVisibilityRule\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
+			message: "#^Parameter \\#1 \\$resource of method MB\\\\Bitrix\\\\AdminKit\\\\Bitrix\\\\Toolbar\\\\ToolbarRenderer\\:\\:renderForm\\(\\) expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
 			count: 1
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Parameter \\#1 \\$tabs of method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\FormPage\\:\\:renderTabbedForm\\(\\) expects array\\<MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\>, array\\<MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Tab\\> given\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\DbOperationContext constructor expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\DataManagerResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
 			count: 1
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Parameter \\$tabs of method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\FormPage\\:\\:renderTabbedForm\\(\\) has invalid type MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Tab\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\FieldRenderContext constructor expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
 			count: 1
-			path: src/Page/FormPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\FormPage\\:\\:\\$errors type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Page/FormPage.php
-
-		-
-			message: "#^Access to constant ADD on an unknown class Bitrix\\\\UI\\\\Buttons\\\\Icon\\.$#"
-			count: 1
-			path: src/Page/IndexPage.php
-
-		-
-			message: "#^Access to constant AFTER_TITLE on an unknown class Bitrix\\\\UI\\\\Toolbar\\\\ButtonLocation\\.$#"
-			count: 1
-			path: src/Page/IndexPage.php
-
-		-
-			message: "#^Access to constant SUCCESS on an unknown class Bitrix\\\\UI\\\\Buttons\\\\Color\\.$#"
-			count: 1
-			path: src/Page/IndexPage.php
-
-		-
-			message: "#^Call to an undefined static method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getId\\(\\)\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
 			count: 2
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Call to method get\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 2
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Call to method getCurrentPage\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
+			message: "#^Parameter \\#1 \\$items of method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Crud\\\\Handlers\\\\IndexBulkActionHandler\\:\\:findBulkActionById\\(\\) expects iterable\\<MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Action\\\\BulkPanelItemContract\\>, iterable\\<MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ActionContract\\> given\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/Handlers/IndexBulkActionHandler.php
 
 		-
-			message: "#^Call to method getLimit\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canDelete\\(\\)\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/Handlers/IndexDeleteHandler.php
 
 		-
-			message: "#^Call to method getOffset\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/Handlers/IndexDeleteHandler.php
 
 		-
-			message: "#^Call to method getPageSize\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\PageNavigation\\.$#"
+			message: "#^Call to protected method clearOutputBuffers\\(\\) of class MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Page\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/Handlers/IndexExportHandler.php
 
 		-
-			message: "#^Call to method getPost\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:formFields\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getGridId\\(\\)\\.$#"
 			count: 2
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
 
 		-
-			message: "#^Call to static method addButton\\(\\) on an unknown class Bitrix\\\\UI\\\\Toolbar\\\\Facade\\\\Toolbar\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:afterValidate\\(\\)\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
 
 		-
-			message: "#^Call to static method addFilter\\(\\) on an unknown class Bitrix\\\\UI\\\\Toolbar\\\\Facade\\\\Toolbar\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:beforeValidate\\(\\)\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canUpdate\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
+
+		-
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\DbOperationContext constructor expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\DataManagerResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
+			count: 1
+			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
+
+		-
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
+			count: 1
+			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:afterIndexRows\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:beforeIndexQueryParams\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:bulkActions\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canView\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:defaultFilter\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:defaultSelect\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:defaultSort\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:filters\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getGridId\\(\\)\\.$#"
+			count: 5
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getPrimaryKey\\(\\)\\.$#"
+			count: 3
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexFields\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexFilter\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexGrouping\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexOrder\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexRuntime\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:indexSelect\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:mapIndexRow\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:maxPageSize\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:modifyIndexParams\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:rowActions\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:runtimeFields\\(\\)\\.$#"
+			count: 1
+			path: src/Page/Crud/IndexPage.php
 
 		-
 			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/IndexPage.php
 
 		-
 			message: "#^Function check_bitrix_sessid not found\\.$#"
-			count: 1
-			path: src/Page/IndexPage.php
+			count: 2
+			path: src/Page/Crud/IndexPage.php
 
 		-
-			message: "#^Instantiated class Bitrix\\\\UI\\\\Buttons\\\\Button not found\\.$#"
+			message: "#^Parameter \\#1 \\$resource of method MB\\\\Bitrix\\\\AdminKit\\\\Bitrix\\\\Toolbar\\\\ToolbarRenderer\\:\\:render\\(\\) expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
+			path: src/Page/Crud/IndexPage.php
 
 		-
-			message: "#^Instantiated class Bitrix\\\\UI\\\\Buttons\\\\JsCode not found\\.$#"
+			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
 			count: 1
-			path: src/Page/IndexPage.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\IndexPage\\:\\:resolveTotalCount\\(\\) has parameter \\$filter with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Page/IndexPage.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\IndexPage\\:\\:resolveTotalCount\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Page/IndexPage.php
-
-		-
-			message: "#^Call to method isPost\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Page/Page.php
+			path: src/Page/Crud/IndexPage.php
 
 		-
 			message: "#^Call to static method getCurrent\\(\\) on an unknown class Bitrix\\\\Main\\\\Context\\.$#"
@@ -2121,12 +1991,52 @@ parameters:
 			path: src/Page/Page.php
 
 		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Page\\:\\:\\$request has unknown class Bitrix\\\\Main\\\\HttpRequest as its type\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Page\\:\\:extractFields\\(\\) has parameter \\$items with no value type specified in iterable type iterable\\.$#"
 			count: 1
 			path: src/Page/Page.php
 
 		-
-			message: "#^Call to an undefined static method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getId\\(\\)\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Pages\\:\\:__construct\\(\\) has parameter \\$pages with no value type specified in iterable type iterable\\.$#"
+			count: 1
+			path: src/Page/Pages.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\ResourcePage\\:\\:setContext\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Page/ResourcePage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Page\\\\ResourcePageContract\\:\\:setContext\\(\\)\\.$#"
+			count: 1
+			path: src/Page/ResourcePageResolver.php
+
+		-
+			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\ResourcePageResolver\\:\\:\\$factory is never read, only written\\.$#"
+			count: 1
+			path: src/Page/ResourcePageResolver.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 1
+			path: src/Page/Standalone/CustomPage.php
+
+		-
+			message: "#^PHPDoc type array\\<string\\> of property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Standalone\\\\CustomPage\\:\\:\\$extensions is not covariant with PHPDoc type array\\<int, string\\> of overridden property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Page\\:\\:\\$extensions\\.$#"
+			count: 1
+			path: src/Page/Standalone/CustomPage.php
+
+		-
+			message: "#^Return type \\(iterable\\<MB\\\\Bitrix\\\\AdminKit\\\\Manager\\\\ToolbarAction\\|string\\>\\) of method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Standalone\\\\CustomPage\\:\\:toolbarActions\\(\\) should be compatible with return type \\(iterable\\<MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ActionContract\\>\\) of method MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Page\\:\\:toolbarActions\\(\\)$#"
+			count: 1
+			path: src/Page/Standalone/CustomPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:databaseTableName\\(\\)\\.$#"
+			count: 1
+			path: src/Page/System/DatabaseHealthPage.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getDataManagerClass\\(\\)\\.$#"
 			count: 1
 			path: src/Page/System/DatabaseHealthPage.php
 
@@ -2136,78 +2046,28 @@ parameters:
 			path: src/Page/System/DatabaseHealthPage.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\AbstractPage\\:\\:render\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Pages/AbstractPage.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\AbstractPage\\:\\:url\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Pages/AbstractPage.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Pages/CustomPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:applyDependency\\(\\)\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:applyDependency\\(\\)\\.$#"
 			count: 2
 			path: src/Pages/OptionsPage.php
 
 		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:getDependsOn\\(\\)\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:getDependsOn\\(\\)\\.$#"
 			count: 2
 			path: src/Pages/OptionsPage.php
 
 		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:runValidation\\(\\)\\.$#"
-			count: 2
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\FieldContract\\:\\:serializePostValue\\(\\)\\.$#"
-			count: 3
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to method get\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to method getItems\\(\\) on an unknown class MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to method getPost\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 8
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to method getRequestUri\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
-			count: 3
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to method isPost\\(\\) on an unknown class Bitrix\\\\Main\\\\HttpRequest\\.$#"
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:runValidation\\(\\)\\.$#"
 			count: 1
 			path: src/Pages/OptionsPage.php
 
 		-
 			message: "#^Call to static method delete\\(\\) on an unknown class Bitrix\\\\Main\\\\Config\\\\Option\\.$#"
-			count: 2
+			count: 1
 			path: src/Pages/OptionsPage.php
 
 		-
 			message: "#^Call to static method get\\(\\) on an unknown class Bitrix\\\\Main\\\\Config\\\\Option\\.$#"
 			count: 2
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to static method getCurrent\\(\\) on an unknown class Bitrix\\\\Main\\\\Context\\.$#"
-			count: 1
 			path: src/Pages/OptionsPage.php
 
 		-
@@ -2217,12 +2077,7 @@ parameters:
 
 		-
 			message: "#^Call to static method set\\(\\) on an unknown class Bitrix\\\\Main\\\\Config\\\\Option\\.$#"
-			count: 2
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Class MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab not found\\.$#"
-			count: 2
+			count: 1
 			path: src/Pages/OptionsPage.php
 
 		-
@@ -2242,32 +2097,7 @@ parameters:
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 7
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:checkVisibilityRule\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:components\\(\\) return type has no value type specified in iterable type iterable\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:fields\\(\\) has invalid return type MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Parameter \\$components of method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:buildOptionsWrapper\\(\\) has invalid type MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Parameter \\$components of method MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:extractAllFields\\(\\) has invalid type MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\Tab\\.$#"
-			count: 1
+			count: 5
 			path: src/Pages/OptionsPage.php
 
 		-
@@ -2276,53 +2106,28 @@ parameters:
 			path: src/Pages/OptionsPage.php
 
 		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:\\$request has unknown class Bitrix\\\\Main\\\\HttpRequest as its type\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource\\<T of Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\>\\:\\:getPrimaryKey\\(\\)\\.$#"
+			count: 7
+			path: src/Resource/CrudResource.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource\\:\\:dataManagerClass\\(\\) has invalid return type Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\.$#"
+			message: "#^PHPDoc tag @extends contains generic type MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\<Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\> but class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource is not generic\\.$#"
 			count: 1
 			path: src/Resource/CrudResource.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource\\:\\:getDataManagerClass\\(\\) has invalid return type Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\.$#"
+			message: "#^PHPDoc tag @template T for method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource\\:\\:resolveCrudPage\\(\\) shadows @template T of Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager for class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource\\.$#"
 			count: 1
 			path: src/Resource/CrudResource.php
 
 		-
-			message: "#^PHPDoc tag @extends has invalid type Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\.$#"
-			count: 1
+			message: "#^Parameter \\#1 \\$expectedClass of method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource\\<T of Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\>\\:\\:resolveCrudPage\\(\\) expects class\\-string\\<T of Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\>, string given\\.$#"
+			count: 3
 			path: src/Resource/CrudResource.php
 
 		-
-			message: "#^PHPDoc tag @template T for class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource has invalid bound type Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\.$#"
-			count: 1
-			path: src/Resource/CrudResource.php
-
-		-
-			message: "#^Call to an undefined static method T of Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\:\\:getCount\\(\\)\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Call to an undefined static method T of Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\:\\:getList\\(\\)\\.$#"
-			count: 2
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:afterDelete\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:afterIndexRows\\(\\) has parameter \\$rows with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:afterIndexRows\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:getPrimaryKey\\(\\)\\.$#"
+			count: 6
 			path: src/Resource/Resource.php
 
 		-
@@ -2331,177 +2136,7 @@ parameters:
 			path: src/Resource/Resource.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:afterMassDeleted\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:afterUpdate\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:beforeDelete\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:beforeIndexQueryParams\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:beforeIndexQueryParams\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:beforeMassDelete\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:beforeMassDeleting\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:beforeUpdate\\(\\) has parameter \\$oldItem with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:createItem\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:createItemResult\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:defaultFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:defaultSelect\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:defaultSort\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:findItem\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:formTabs\\(\\) has invalid return type MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Tab\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:getCount\\(\\) has parameter \\$filter with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:getDataManagerClass\\(\\) has invalid return type Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:getList\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:getList\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:indexFilter\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:indexOrder\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:indexRuntime\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:indexSelect\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:makeOperationContext\\(\\) has parameter \\$oldData with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:makePermissionContext\\(\\) has parameter \\$item with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:mapIndexRow\\(\\) has parameter \\$row with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:mapIndexRow\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:massDelete\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:modifyIndexParams\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:modifyIndexParams\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:runtimeFields\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:updateItem\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:updateItemResult\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^PHPDoc tag @template T for class MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource has invalid bound type Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\.$#"
-			count: 1
-			path: src/Resource/Resource.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\Resource\\:\\:\\$dataManagerClass has unknown class Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager as its type\\.$#"
 			count: 1
 			path: src/Resource/Resource.php
 
@@ -2566,16 +2201,6 @@ parameters:
 			path: src/Support/DataWrapper.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\Export\\\\CsvExporter\\:\\:export\\(\\) has parameter \\$ormFilter with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/Export/CsvExporter.php
-
-		-
-			message: "#^Call to an undefined static method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getId\\(\\)\\.$#"
-			count: 2
-			path: src/Support/UrlGenerator.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\UrlGenerator\\:\\:actionUrl\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Support/UrlGenerator.php
@@ -2632,11 +2257,6 @@ parameters:
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\UrlGenerator\\:\\:with\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Support/UrlGenerator.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Support\\\\UrlGenerator\\:\\:withQuery\\(\\) has parameter \\$params with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Support/UrlGenerator.php
 
@@ -2772,11 +2392,6 @@ parameters:
 
 		-
 			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/IblockElementListProvider.php
-
-		-
-			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockElementListProvider does not extend any class\\.$#"
 			count: 1
 			path: src/UI/EntitySelector/IblockElementListProvider.php
 
@@ -2926,11 +2541,6 @@ parameters:
 			path: src/UI/EntitySelector/IblockListProvider.php
 
 		-
-			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider does not extend any class\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/IblockListProvider.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockListProvider\\:\\:__construct\\(\\) has parameter \\$options with no type specified\\.$#"
 			count: 1
 			path: src/UI/EntitySelector/IblockListProvider.php
@@ -3046,11 +2656,6 @@ parameters:
 			path: src/UI/EntitySelector/IblockPropertyListProvider.php
 
 		-
-			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider does not extend any class\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/IblockPropertyListProvider.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockPropertyListProvider\\:\\:__construct\\(\\) has parameter \\$options with no type specified\\.$#"
 			count: 1
 			path: src/UI/EntitySelector/IblockPropertyListProvider.php
@@ -3106,6 +2711,111 @@ parameters:
 			path: src/UI/EntitySelector/IblockPropertyListProvider.php
 
 		-
+			message: "#^Access to an undefined property MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:\\$options\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:getOption\\(\\)\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to method addItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to method addRecentItem\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to method getItemCollection\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 2
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to method getQuery\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to method getRecentItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to method loadPreselectedItems\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to method setCacheable\\(\\) on an unknown class Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to static method GetFileArray\\(\\) on an unknown class CFile\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlockSection\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to static method getImageSrc\\(\\) on an unknown class Bitrix\\\\Iblock\\\\Component\\\\Tools\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Call to static method includeModule\\(\\) on an unknown class Bitrix\\\\Main\\\\Loader\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:getItems\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:getPreselectedItems\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:makeItem\\(\\) has invalid return type Bitrix\\\\UI\\\\EntitySelector\\\\Item\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^PHPDoc tag @throws with type Bitrix\\\\Main\\\\LoaderException is not subtype of Throwable$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Parameter \\$dialog of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:fillDialog\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\Dialog\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
+			message: "#^Parameter \\$searchQuery of method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\IblockSectionListProvider\\:\\:doSearch\\(\\) has invalid type Bitrix\\\\UI\\\\EntitySelector\\\\SearchQuery\\.$#"
+			count: 1
+			path: src/UI/EntitySelector/IblockSectionListProvider.php
+
+		-
 			message: "#^Access to an undefined property MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:\\$options\\.$#"
 			count: 3
 			path: src/UI/EntitySelector/UserGroupListProvider.php
@@ -3157,11 +2867,6 @@ parameters:
 
 		-
 			message: "#^Instantiated class Bitrix\\\\UI\\\\EntitySelector\\\\Tab not found\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/UserGroupListProvider.php
-
-		-
-			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserGroupListProvider does not extend any class\\.$#"
 			count: 1
 			path: src/UI/EntitySelector/UserGroupListProvider.php
 
@@ -3506,11 +3211,6 @@ parameters:
 			path: src/UI/EntitySelector/UserListProvider.php
 
 		-
-			message: "#^MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider does not extend any class\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/UserListProvider.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\UI\\\\EntitySelector\\\\UserListProvider\\:\\:__construct\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/UI/EntitySelector/UserListProvider.php
@@ -3727,10 +3427,70 @@ parameters:
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 5
+			count: 4
+			path: src/Widget/AbstractWidget.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\AbstractWidget\\:\\:buildClassAttr\\(\\) has parameter \\$extra with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/AbstractWidget.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\AbstractWidget\\:\\:buildStyleAttr\\(\\) has parameter \\$extra with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/AbstractWidget.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\AbstractWidget\\:\\:getVisibleWhen\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/AbstractWidget.php
+
+		-
+			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\AbstractWidget\\:\\:\\$visibleWhenRule type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/AbstractWidget.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\Chart\\\\ChartConfig\\:\\:__construct\\(\\) has parameter \\$datasets with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/Chart/ChartConfig.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\Chart\\\\ChartConfig\\:\\:__construct\\(\\) has parameter \\$labels with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/Chart/ChartConfig.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\Chart\\\\ChartDataset\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/Chart/ChartDataset.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\ChartWidget\\:\\:parseRows\\(\\) has parameter \\$rows with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Widget/ChartWidget.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: src/Widget/ChartWidget.php
+
+		-
+			message: "#^Call to an undefined static method Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\:\\:getCount\\(\\)\\.$#"
+			count: 1
 			path: src/Widget/CountWidget.php
 
 		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 5
+			path: src/Widget/CountWidget.php
+
+		-
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\Dashboard\\\\WidgetAssetsCollector\\:\\:collect\\(\\) has parameter \\$widgets with no value type specified in iterable type iterable\\.$#"
 			count: 1
-			path: src/Widget/GraphWidget.php
+			path: src/Widget/Dashboard/WidgetAssetsCollector.php
+
+		-
+			message: "#^Function htmlspecialcharsbx not found\\.$#"
+			count: 3
+			path: src/Widget/Renderers/ChartWidgetRenderer.php

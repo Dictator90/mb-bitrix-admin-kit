@@ -1,15 +1,35 @@
-# Import/export
+# Экспорт (CSV)
 
-AdminKit import/export is CSV-first for v1.0.0. XLSX/Excel engines are intentionally out of scope unless a future task explicitly adds them.
+> Import UI на index-страницах и тулбаре временно отключён.  
+> Классы `MB\Bitrix\AdminKit\Import\*` остаются в библиотеке для будущего включения, но в текущей ветке не подключены к `IndexPage`.
 
-## Export safety
+## Принципы
 
-Export actions require explicit selected IDs or an allowed filter. Full export remains disabled unless a Resource/action opts in. Export must respect Resource permissions and field visibility.
+- Экспорт CSV-first.
+- XLSX/Excel-движки не входят в текущий scope.
+- Экспорт должен быть безопасным по умолчанию.
 
-## Import safety
+## Безопасность экспорта
 
-Import validates upload input, parses CSV rows in chunks, maps columns to fields, and reuses `Form\DataPipeline` so CSV imports share Field normalization and validation with forms.
+- Требуются выбранные ID или разрешённый экспорт по фильтру.
+- Полный экспорт выключен по умолчанию (`allowExportAll(): false`).
+- Проверяется `canView()` у ресурса.
+- Превышение `maxExportRows()` останавливает экспорт до выборки данных.
 
-## Results
+## Основные классы
 
-Import/export row sets, mappings, chunks, selected IDs, and errors should be stored in `AdminCollection` internally while public APIs expose simple arrays and iterables.
+- `ExportAction` — точка входа.
+- `ExportContext` — контекст операции.
+- `MB\Bitrix\AdminKit\Export\CsvExporter` — CSV-экспортёр.
+
+## Хуки ресурса
+
+```php
+public function allowExportByFilter(): bool { return true; }
+public function allowExportAll(): bool { return false; }
+public function maxExportRows(): int { return 5000; }
+```
+
+## Примечание по import
+
+Для import см. [docs/import.md](import.md): там описан только библиотечный слой без UI-флоу.

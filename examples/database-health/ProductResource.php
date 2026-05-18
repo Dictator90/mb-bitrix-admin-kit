@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Vendor\Demo\Admin;
 
 use MB\Bitrix\AdminKit\Database\Schema\TableSchema;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use MB\Bitrix\AdminKit\Resource\SchemaAwareResource;
 use Vendor\Demo\Orm\ProductTable;
 
-final class ProductResource extends CrudResource implements SchemaAwareResource
+final class ProductResource extends DataManagerResource implements SchemaAwareResource
 {
     public function dataManagerClass(): string
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Widget;
 
+use Bitrix\Main\ORM\Data\DataManager;
 use Throwable;
 
 /**
@@ -23,7 +24,7 @@ use Throwable;
  */
 final class CountWidget extends AbstractWidget
 {
-    /** @var class-string Bitrix ORM DataManager subclass. */
+    /** @var class-string<DataManager> Bitrix ORM DataManager subclass. */
     private string $tableClass;
 
     /** @var array<string, mixed> */
@@ -38,11 +39,11 @@ final class CountWidget extends AbstractWidget
     private ?\Closure $valueCallback = null;
 
     /**
-     * @param class-string $tableClass Bitrix ORM DataManager subclass.
+     * @param class-string<DataManager> $tableClass Bitrix ORM DataManager subclass.
      */
     public static function make(string $label, string $tableClass): static
     {
-        $widget             = new static([]);
+        $widget             = new static();
         $widget->label      = $label;
         $widget->tableClass = $tableClass;
 

@@ -1,15 +1,51 @@
-# Grid
+# Грид
 
-The grid layer renders index fields, applies filters, orders rows, handles pagination, and delegates ORM parameter building to `GridQueryBuilder`.
+Grid-слой разделён на сервисы, чтобы UI и ORM-логику не смешивать.
 
-## GridContext
+## Зоны ответственности
 
-`GridContext` is part of the stable public API. It represents request/grid state such as filter values, sorting, pagination, selected rows, and Resource context. Minor and patch releases must not break its format.
+- `GridQueryBuilder` — единственный источник ORM-параметров (`select`, `filter`, `order`, `runtime`, `limit`, `offset`).
+- `GridDataLoader` — формирование `GridContext`, загрузка строк, total count, кеширование count, `QueryGuard`.
+- `Grid` — UI-состояние: поля, фильтры, строки, пагинация, action panel.
+- Bitrix-адаптеры (`BitrixGridAdapter`, `BitrixFilterAdapter`, `BitrixGridActionPanelAdapter`) — сборка параметров компонентов `main.ui.grid`/`main.ui.filter`.
+- `ToolbarRenderer` — интеграция фильтра, create-кнопки и sidepanel-настроек.
 
-## Query assembly order
+## Порядок построения запроса
 
-`GridQueryBuilder` combines field select, Resource defaults, UI filter input, Resource query hooks, runtime fields, sort, and pagination in a deterministic order. Runtime field objects are passed through to `DataManager::getList()` parameters.
+`GridQueryBuilder` учитывает:
 
-## Computed columns
+- `indexFields()` и фильтры;
+- `defaultSort()`, `defaultFilter()`, `defaultSelect()`;
+- `runtimeFields()`;
+- `indexSelect()`, `indexFilter()`, `indexOrder()`, `indexRuntime()`;
+- `beforeIndexQueryParams()` и `modifyIndexParams()`.
 
-Computed columns are calculated after ORM rows are loaded and are not selected automatically from the database.
+## Интеграция с IndexPage
+
+`Page\Crud\IndexPage` не должен строить ORM-параметры вручную — только делегировать в `GridDataLoader`/`GridQueryBuilder`.
+
+## Загрузка данных
+
+Рекомендуемый сценарий:
+
+1. создать `GridContext`;
+2. собрать ORM-параметры через `GridQueryBuilder`;
+3. применить guard-ограничения;
+4. при необходимости посчитать `total`;
+5. получить `DataManager::getList($params)`;
+6. передать результат в `Grid::setRawRows()`.
+
+## Валидация сортировки
+
+Сортировка из запроса нормализуется и применяется только к явно sortable-полям.
+
+## Группировка строк
+
+Группировка строится через `Grid\Grouping\IndexGrouping` в рамках обычного `IndexPage`-потока.
+
+- synthetic row IDs: `group:{id}`, `item:{id}`;
+- bulk/inline-операции игнорируют `group:*` и нормализуют `item:*`.
+
+## Relation-поля в гриде
+
+`HasMany`/`HasOne` не добавляют JOIN к базовому запросу списка и не должны дублировать строки грида. Загрузка связанных значений выполняется отдельным этапом после выборки базовых строк.

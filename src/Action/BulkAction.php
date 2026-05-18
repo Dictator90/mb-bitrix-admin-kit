@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Action;
 
+use Bitrix\Main\Grid\Panel\Types;
 use Closure;
+use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
+use MB\Bitrix\AdminKit\Contracts\ActionContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
+use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\AdminCondition;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Support\Conditionable\ConditionTree;
 
-class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
+class BulkAction implements ActionContract, BulkPanelItemContract
 {
     protected string $id;
     protected string $label;
@@ -20,10 +25,20 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
     protected ?string $confirmText = null;
     protected bool $danger = false;
     protected bool $allowRunByFilter = false;
+    protected bool $allowRunWithoutFilter = false;
+    protected string $group = 'default';
+    protected ?string $groupLabel = null;
+    protected int $groupSort = 100;
+    protected int $sort = 100;
+    protected ?string $icon = null;
+    protected ?string $buttonClass = null;
+    protected ?string $title = null;
+    protected string $panelType = Types::BUTTON;
+    protected array|Closure|null $customPanelItem = null;
     protected bool|Closure|ConditionTree|null $canSeeCondition = null;
     protected mixed $canRunCondition = null;
     protected ?Closure $handler = null;
-    protected ?array $updateData = null;
+    protected ?array $data = null;
 
     public function __construct(string $id, ?string $label = null)
     {
@@ -31,14 +46,9 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
         $this->label = $label ?? $id;
     }
 
-    public static function delete(): static
+    public static function delete(string $id = 'delete', ?string $label = null): MassDeleteAction
     {
-        $action = new static('delete', 'Удалить выбранные');
-        $action->needsConfirm = true;
-        $action->confirmText = 'Вы уверены, что хотите удалить выбранные записи?';
-        $action->danger = true;
-
-        return $action;
+        return MassDeleteAction::make($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete selected'));
     }
 
     public static function make(string $id, ?string $label = null): static
@@ -49,6 +59,81 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
     public function label(string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    public function group(string $group, ?string $label = null, ?int $sort = null): static
+    {
+        $this->group = $group;
+        $this->groupLabel = $label;
+
+        if ($sort !== null) {
+            $this->groupSort = $sort;
+        }
+
+        return $this;
+    }
+
+    public function groupSort(int $sort): static
+    {
+        $this->groupSort = $sort;
+
+        return $this;
+    }
+
+    public function groupLabel(?string $label): static
+    {
+        $this->groupLabel = $label;
+
+        return $this;
+    }
+
+    public function sort(int $sort): static
+    {
+        $this->sort = $sort;
+
+        return $this;
+    }
+
+    public function icon(?string $icon): static
+    {
+        $this->icon = $icon;
+
+        return $this;
+    }
+
+    public function buttonClass(?string $class): static
+    {
+        $this->buttonClass = $class;
+
+        return $this;
+    }
+
+    public function class(string $class): static
+    {
+        $this->buttonClass = $class;
+
+        return $this;
+    }
+
+    public function title(?string $title): static
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    public function panelType(string $type): static
+    {
+        $this->panelType = $type;
+
+        return $this;
+    }
+
+    public function panelItem(array|Closure $item): static
+    {
+        $this->customPanelItem = $item;
 
         return $this;
     }
@@ -92,7 +177,7 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
     /** @param array<string,mixed> $data */
     public function update(array $data): static
     {
-        $this->updateData = $data;
+        $this->data = $data;
 
         return $this;
     }
@@ -100,6 +185,13 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
     public function allowRunByFilter(bool $allow = true): static
     {
         $this->allowRunByFilter = $allow;
+
+        return $this;
+    }
+
+    public function allowRunWithoutFilter(bool $allow = true): static
+    {
+        $this->allowRunWithoutFilter = $allow;
 
         return $this;
     }
@@ -139,6 +231,65 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
         return $this->allowRunByFilter;
     }
 
+    public function canRunWithoutFilter(): bool
+    {
+        return $this->allowRunWithoutFilter;
+    }
+
+    public function getGroup(): string
+    {
+        return $this->group;
+    }
+
+    public function getGroupLabel(): ?string
+    {
+        return $this->groupLabel;
+    }
+
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    public function getGroupSort(): int
+    {
+        return $this->groupSort;
+    }
+
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    public function getButtonClass(): ?string
+    {
+        return $this->buttonClass;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function getPanelType(): string
+    {
+        return $this->panelType;
+    }
+
+    public function hasCustomPanelItem(): bool
+    {
+        return $this->customPanelItem !== null;
+    }
+
+    public function getCustomPanelItem(Grid $grid): ?array
+    {
+        if ($this->customPanelItem instanceof Closure) {
+            return ($this->customPanelItem)($grid);
+        }
+
+        return $this->customPanelItem;
+    }
+
     public function isVisible(BulkOperationContext|array $context = []): bool
     {
         return AdminCondition::evaluate($this->canSeeCondition, $this->conditionContext($context));
@@ -157,24 +308,27 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
             return BulkResult::failure('Invalid CSRF token.');
         }
 
-        $ids = $this->selectedIds($context);
         $guardErrors = (new QueryGuard())->validateBulkOperation($context);
         if ($guardErrors !== []) {
             return BulkResult::failure(implode(' ', $guardErrors));
-        }
-
-        if ($ids === []) {
-            return BulkResult::failure('Не выбраны элементы');
         }
 
         if (!$this->isRunnable($context)) {
             return BulkResult::failure('Bulk action is not allowed.');
         }
 
-        if ($this->updateData !== null) {
+        $ids = $this->selectedIds($context);
+
+        if ($ids === []) {
+            return BulkResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_EMPTY_SELECTION', 'No items selected.'));
+        }
+
+        if ($this->data !== null) {
             return (new BulkUpdateAction($this->id, $this->label))
-                ->update($this->updateData)
+                ->update($this->data)
                 ->canRun($this->canRunCondition ?? true)
+                ->allowRunByFilter($this->allowRunByFilter)
+                ->allowRunWithoutFilter($this->allowRunWithoutFilter)
                 ->execute($context->with(['action' => $this]));
         }
 
@@ -190,10 +344,34 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
     /** @return array<int,mixed> */
     public function selectedIds(BulkOperationContext $context): array
     {
-        return array_values(array_filter(
+        $ids = array_values(array_filter(
             AdminCollection::make($context->selectedIds)->all(),
             static fn (mixed $id): bool => $id !== null && $id !== ''
         ));
+
+        if ($ids !== [] || !$context->forAll || !$this->canRunByFilter()) {
+            return $ids;
+        }
+
+        return $this->idsByFilter($context);
+    }
+
+    /** @return array<int,mixed> */
+    protected function idsByFilter(BulkOperationContext $context): array
+    {
+        // TODO: switch to keyset/chunked loading for very large filtered operations.
+        $pk = $context->resource->getPrimaryKey();
+        $params = [
+            'select' => [$pk],
+        ];
+
+        if ($context->filter !== []) {
+            $params['filter'] = $context->filter;
+        }
+
+        $rows = $context->resource->getList($params);
+
+        return AdminCollection::make($rows)->pluck($pk)->all();
     }
 
     protected function checkCsrf(): bool
@@ -224,6 +402,7 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
                 'request' => $context->request,
                 'filter' => $context->filter,
                 'gridContext' => $context->gridContext,
+                'forAll' => $context->forAll,
             ];
         }
 
@@ -236,4 +415,5 @@ class BulkAction implements \MB\Bitrix\AdminKit\Contracts\ActionContract
 
         return $data;
     }
+
 }

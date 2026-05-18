@@ -4,316 +4,47 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Resource;
 
-use Bitrix\Main\ORM\Data\DataManager;
-use MB\Bitrix\AdminKit\Action\AsyncAction;
-use MB\Bitrix\AdminKit\Contracts\ActionContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\FilterContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
-use MB\Bitrix\AdminKit\Grid\GridContext;
-use MB\Bitrix\AdminKit\Page\DetailPage;
-use MB\Bitrix\AdminKit\Page\FormPage;
-use MB\Bitrix\AdminKit\Page\IndexPage;
-use MB\Bitrix\AdminKit\Resource\Traits\HasCrud;
-use MB\Bitrix\AdminKit\Resource\Traits\HasLifecycleEvents;
-use MB\Bitrix\AdminKit\Resource\Traits\HasPermissions;
-use MB\Bitrix\AdminKit\Support\AdminString;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasCrudResourcePages;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceAuthorization;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceFields;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrid;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceIdentity;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceLifecycle;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceMenu;
 
 /**
- * Base for ORM-backed CRUD resources (Grid + Form + Detail pages).
+ * Base administrative resource: identity, menu, and pages.
  *
- * For settings/options pages, use Pages\OptionsPage instead.
+ * Core resource class that defines a section in the admin panel.
+ * For CRUD functionality, extend {@see CrudResource} or {@see DataManagerResource}.
  *
- * @template T of DataManager
  */
 abstract class Resource implements ResourceContract
 {
-    use HasLifecycleEvents;
-    use HasPermissions;
-    use HasCrud;
-
-    protected string $title = '';
-
-    /** @var class-string<T>|null */
-    protected ?string $dataManagerClass = null;
-
-    protected string $primaryKey = 'ID';
-
-    // ── Menu / routing identity ──────────────────────────────────────────
-
-    /**
-     * Unique slug used in `?page=` routing and admin menu URLs.
-     * Defaults to lower-cased class short-name without "Resource" suffix.
-     */
-    public static function getId(): string
-    {
-        return AdminString::resourceId(static::class);
-    }
-
-    public static function getSort(): int
-    {
-        return 100;
-    }
-
-    public static function getMenuIcon(): string
-    {
-        return '';
-    }
-
-    public static function isVisibleInMenu(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Return the getId() of a parent Resource/Page to nest this item in the menu.
-     * Null = root-level item.
-     */
-    public static function getParentMenuId(): ?string
-    {
-        return null;
-    }
-
-    // ────────────────────────────────────────────────────────────────────
-
-
-    public function group(): ?string
-    {
-        return static::getParentMenuId();
-    }
-
-    public function useSidePanel(): bool
-    {
-        return false;
-    }
-
-    public function createInSidePanel(): bool
-    {
-        return $this->useSidePanel();
-    }
-
-    public function editInSidePanel(): bool
-    {
-        return $this->useSidePanel();
-    }
-
-    public function detailInSidePanel(): bool
-    {
-        return $this->useSidePanel();
-    }
-
-    public function sidePanelWidth(): int
-    {
-        return 1100;
-    }
-
-    public function getTitle(): string
-    {
-        return $this->title;
-    }
-
-    /** @return class-string<T>|null */
-    public function getDataManagerClass(): ?string
-    {
-        return $this->dataManagerClass ?: null;
-    }
-    public function dataManagerClass(): string
-    {
-        return $this->dataManagerClass ?? '';
-    }
-
-    public function primaryKey(): string
-    {
-        return $this->primaryKey;
-    }
-
-    public function defaultSort(): array
-    {
-        return [$this->getPrimaryKey() => 'DESC'];
-    }
-
-    public function defaultFilter(): array
-    {
-        return [];
-    }
-
-    public function defaultSelect(): array
-    {
-        return [];
-    }
-
-    public function runtimeFields(): array
-    {
-        return [];
-    }
-
-    public function indexSelect(GridContext $context): array
-    {
-        return [];
-    }
-
-    public function indexFilter(GridContext $context): array
-    {
-        return [];
-    }
-
-    public function indexOrder(GridContext $context): array
-    {
-        return [];
-    }
-
-    public function indexRuntime(GridContext $context): array
-    {
-        return [];
-    }
-
-    public function beforeIndexQueryParams(array $params, GridContext $context): array
-    {
-        return $params;
-    }
-
-    public function afterIndexRows(array $rows, GridContext $context): array
-    {
-        return $rows;
-    }
-
-    public function mapIndexRow(array $row, GridContext $context): array
-    {
-        return $row;
-    }
-
-    public function modifyIndexParams(array $params, GridContext $context): array
-    {
-        return $params;
-    }
-
-
-    public function getPrimaryKey(): string
-    {
-        return $this->primaryKey;
-    }
+    use HasResourceIdentity;
+    use HasResourceMenu;
+    use HasCrudResourcePages;
+    use HasResourceFields;
+    use HasResourceAuthorization;
+    use HasResourceGrid;
+    use HasResourceLifecycle;
 
     public function hasCrud(): bool
     {
-        return $this->getDataManagerClass() !== null;
-    }
-
-    public function bulkChunkSize(): int
-    {
-        return 100;
+        return method_exists($this, 'getDataManagerClass') && $this->getDataManagerClass() !== null;
     }
 
     public function databaseTableName(): string
     {
-        $class = $this->getDataManagerClass();
-        if ($class && method_exists($class, 'getTableName')) {
-            return (string)$class::getTableName();
+        if (!method_exists($this, 'getDataManagerClass')) {
+            return '';
         }
 
-        return '';
-    }
+        $class = $this->getDataManagerClass();
 
-    public function useTotalCount(GridContext $context): bool
-    {
-        return true;
-    }
-
-    public function countCacheTtl(GridContext $context): int
-    {
-        return 0;
-    }
-
-    public function maxPageSize(): int
-    {
-        return 200;
-    }
-
-    public function allowExportByFilter(): bool
-    {
-        return true;
-    }
-
-    public function allowExportAll(): bool
-    {
-        return false;
-    }
-
-    public function maxImportRows(): int
-    {
-        return 1000;
-    }
-
-
-    // ── Field / Filter / Action definitions ──────────────────────────────
-
-    /** @return iterable<FieldContract> */
-    abstract public function indexFields(): iterable;
-
-    /** @return iterable<FieldContract> */
-    abstract public function formFields(): iterable;
-
-    /** @return iterable<FieldContract> */
-    public function detailFields(): iterable
-    {
-        return $this->formFields();
-    }
-
-    /** @return iterable<FilterContract> */
-    public function filters(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<ActionContract> */
-    public function rowActions(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<ActionContract> */
-    public function bulkActions(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<AsyncAction> */
-    public function asyncActions(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<Tab> */
-    public function formTabs(): iterable
-    {
-        return [];
-    }
-
-    // ── Pages ────────────────────────────────────────────────────────────
-
-    public function indexPage(): IndexPage
-    {
-        return new IndexPage($this);
-    }
-
-    public function formPage(?int $id = null): FormPage
-    {
-        return new FormPage($this, $id);
-    }
-
-    public function detailPage(int $id): DetailPage
-    {
-        return new DetailPage($this, $id);
-    }
-
-    // ── Grid identity ────────────────────────────────────────────────────
-
-    public function getGridId(): string
-    {
-        return AdminString::gridId($this->dataManagerClass ?: static::class);
-    }
-
-    public function getFilterId(): string
-    {
-        return AdminString::filterId($this->dataManagerClass ?: static::class);
+        return $class && method_exists($class, 'getTableName')
+            ? (string)$class::getTableName()
+            : '';
     }
 }

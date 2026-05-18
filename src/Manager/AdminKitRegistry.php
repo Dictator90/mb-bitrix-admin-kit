@@ -4,57 +4,84 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
-use MB\Bitrix\AdminKit\Pages\AbstractPage;
-use MB\Bitrix\AdminKit\Pages\CustomPage;
-use MB\Bitrix\AdminKit\Pages\DashboardPage;
-use MB\Bitrix\AdminKit\Pages\OptionsPage;
+use MB\Bitrix\AdminKit\Discovery\ClassDiscovery;
+use MB\Bitrix\AdminKit\Page\StandalonePage;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
-use MB\Bitrix\Filesystem\Filesystem;
-use ReflectionClass;
 
 final class AdminKitRegistry
 {
+    private ClassDiscovery $discovery;
+
     /** @var array<string, class-string<Resource>> */
     private array $resources = [];
 
-    /** @var array<string, class-string<AbstractPage>> */
+    /** @var array<string, class-string<StandalonePage>> */
     private array $pages = [];
 
-    private bool $discovered = false;
+    /** @var array<string, bool> */
+    private array $discoveredPaths = [];
+
+    public function __construct(?ClassDiscovery $discovery = null)
+    {
+        $this->discovery = $discovery ?? new ClassDiscovery();
+    }
 
     /** @param class-string<Resource> $resourceClass */
     public function registerResource(string $resourceClass): self
     {
-        $this->resources[$resourceClass::getId()] = $resourceClass;
-        $this->sort();
+        if ($this->canRegister($resourceClass, Resource::class) && !isset($this->resources[$resourceClass::getId()])) {
+            $this->resources[$resourceClass::getId()] = $resourceClass;
+            $this->sort();
+        }
 
         return $this;
     }
 
-    /** @param class-string<AbstractPage> $pageClass */
+    /** @param class-string<StandalonePage> $pageClass */
     public function registerPage(string $pageClass): self
     {
-        $this->pages[$pageClass::getId()] = $pageClass;
+        if ($this->canRegisterPage($pageClass) && !isset($this->pages[$pageClass::getId()])) {
+            $this->pages[$pageClass::getId()] = $pageClass;
+            $this->sort();
+        }
+
+        return $this;
+    }
+
+    public function discoverPath(string $path): self
+    {
+        $path = $this->normalizePath($path);
+        if ($path === '' || isset($this->discoveredPaths[$path]) || !is_dir($path)) {
+            return $this;
+        }
+
+        $this->discoveredPaths[$path] = true;
+
+        foreach ($this->discovery->resourcesIn($path) as $class) {
+            if (!isset($this->resources[$class::getId()])) {
+                $this->resources[$class::getId()] = $class;
+            }
+        }
+
+        foreach ($this->discovery->standalonePagesIn($path) as $class) {
+            if (!isset($this->pages[$class::getId()])) {
+                $this->pages[$class::getId()] = $class;
+            }
+        }
+
         $this->sort();
 
         return $this;
     }
 
-    public function discover(?string $libPath): self
+    /** @param string[] $paths */
+    public function discoverPaths(array $paths): self
     {
-        if ($this->discovered) {
-            return $this;
-        }
-
-        $this->discovered = true;
-        if ($libPath === null) {
-            return $this;
-        }
-
-        $this->discoverClasses($libPath, Resource::class, $this->resources);
-        foreach ($this->pageBaseClasses() as $baseClass) {
-            $this->discoverClasses($libPath, $baseClass, $this->pages);
+        foreach ($paths as $path) {
+            if (is_string($path)) {
+                $this->discoverPath($path);
+            }
         }
         $this->sort();
 
@@ -67,7 +94,7 @@ final class AdminKitRegistry
         return AdminCollection::make($this->resources)->all();
     }
 
-    /** @return array<string, class-string<AbstractPage>> */
+    /** @return array<string, class-string<StandalonePage>> */
     public function pages(): array
     {
         return AdminCollection::make($this->pages)->all();
@@ -93,21 +120,37 @@ final class AdminKitRegistry
         return reset($this->pages) ?: null;
     }
 
-    /** @param array<string, class-string> $registry */
-    private function discoverClasses(string $libPath, string $baseClass, array &$registry): void
+    private function normalizePath(string $path): string
     {
-        foreach (Filesystem::classFinder()->extends($libPath, $baseClass) as $item) {
-            $class = $item['class'];
-            if (!(new ReflectionClass($class))->isAbstract() && !isset($registry[$class::getId()])) {
-                $registry[$class::getId()] = $class;
-            }
+        $path = trim(str_replace('\\', '/', $path));
+        if ($path === '') {
+            return '';
         }
+
+        $realPath = realpath($path);
+        if (is_string($realPath)) {
+            return str_replace('\\', '/', $realPath);
+        }
+
+        return rtrim($path, '/');
     }
 
-    /** @return class-string[] */
-    private function pageBaseClasses(): array
+    private function canRegisterPage(string $class): bool
     {
-        return [AbstractPage::class, OptionsPage::class, CustomPage::class, DashboardPage::class];
+        if (!$this->canRegister($class, StandalonePage::class)) {
+            return false;
+        }
+
+        return $class::isStandalone();
+    }
+
+    private function canRegister(string $class, string $baseClass): bool
+    {
+        if (!class_exists($class) || !is_subclass_of($class, $baseClass)) {
+            return false;
+        }
+
+        return !(new \ReflectionClass($class))->isAbstract();
     }
 
     private function sort(): void

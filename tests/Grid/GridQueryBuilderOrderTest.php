@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class GridQueryBuilderOrderTest extends TestCase
 {
-    public function testItMergesDefaultUiAndIndexOrder(): void
+    public function testUiSortReplacesDefaultAndIndexOrder(): void
     {
         $resource = new class () extends ProductResource {
             public function indexOrder(GridContext $context): array
@@ -24,6 +24,31 @@ final class GridQueryBuilderOrderTest extends TestCase
             'sort' => ['NAME' => 'DESC'],
         ]));
 
-        self::assertSame(['ID' => 'ASC', 'NAME' => 'DESC', 'SORT' => 'ASC'], $params['order']);
+        self::assertSame(['NAME' => 'DESC'], $params['order']);
+    }
+
+    public function testItMergesDefaultAndIndexOrderWhenUiSortIsEmpty(): void
+    {
+        $resource = new class () extends ProductResource {
+            public function indexOrder(GridContext $context): array
+            {
+                return ['SORT' => 'ASC'];
+            }
+        };
+
+        $params = (new GridQueryBuilder())->build($resource, GridContext::make($resource));
+
+        self::assertSame(['ID' => 'ASC', 'SORT' => 'ASC'], $params['order']);
+    }
+
+    public function testItReadsSortFromHttpRequest(): void
+    {
+        $resource = new ProductResource();
+        $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = ['by' => 'NAME', 'order' => 'asc'];
+        $request = \Bitrix\Main\Context::getCurrent()->getRequest();
+
+        $params = (new GridQueryBuilder())->build($resource, GridContext::make($resource, $request));
+
+        self::assertSame(['NAME' => 'ASC'], $params['order']);
     }
 }

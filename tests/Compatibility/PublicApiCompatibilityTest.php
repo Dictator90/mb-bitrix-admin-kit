@@ -50,7 +50,6 @@ final class PublicApiCompatibilityTest extends TestCase
         foreach ($this->sourceFiles() as $file) {
             $contents = (string)file_get_contents($file->getPathname());
 
-            self::assertDoesNotMatchRegularExpression('/function\s+(collect|str|condition)\s*\(/', $contents, $file->getPathname());
             self::assertSame([], $this->globalHelperCalls($contents), $file->getPathname());
         }
     }

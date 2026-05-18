@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use Closure;
-use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
+use MB\Bitrix\AdminKit\Contracts\Field\OptionFieldContract;
+use MB\Bitrix\AdminKit\Field\Options\OptionsResolverContract;
+use MB\Bitrix\AdminKit\Field\Options\OptionsResolverFactory;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
-use MB\Bitrix\AdminKit\Support\AdminString;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
-class Select extends Field
+class Select extends Field implements OptionFieldContract
 {
-    /** @var array<mixed>|Closure */
-    protected array|Closure $options = [];
+    /** @var array<mixed>|Closure|OptionsResolverContract */
+    protected array|Closure|OptionsResolverContract $options = [];
 
     protected int $cacheTtl = 0;
 
-    /** @param array<mixed>|Closure $options */
-    public function options(array|Closure $options): static
+    /** @param array<mixed>|Closure|OptionsResolverContract $options */
+    public function options(array|Closure|OptionsResolverContract $options): static
     {
         $this->options = $options;
 
@@ -39,32 +41,15 @@ class Select extends Field
     /** @return array<mixed> */
     public function getOptions(array $context = []): array
     {
-        if ($this->cacheTtl <= 0) {
-            return $this->resolveOptions($context);
-        }
-
-        $key = AdminString::cacheKey('adminkit_select_options', [
-            'field' => static::class,
-            'column' => $this->column,
-            'context' => $context,
-        ]);
-        $cached = ArrayTtlCache::get($key);
-        if (is_array($cached)) {
-            return $cached;
-        }
-
-        $options = $this->resolveOptions($context);
-        ArrayTtlCache::set($key, $options, $this->cacheTtl);
-
-        return $options;
+        return $this->resolveOptions($context);
     }
 
     /** @return array<mixed> */
     protected function resolveOptions(array $context = []): array
     {
-        $options = $this->options instanceof Closure ? ($this->options)($context, $this) : $this->options;
+        $resolver = (new OptionsResolverFactory())->make($this->options, $this->cacheTtl);
 
-        return AdminCollection::make(is_iterable($options) ? $options : [])->all();
+        return AdminCollection::make($resolver->resolve($context, $this))->all();
     }
 
     public function getGridColumnType(): string
@@ -115,12 +100,28 @@ class Select extends Field
 
     public function renderIndex(mixed $value, array $row = []): string
     {
-        return $this->renderSelectedLabels($this->displayValue($value, $row, ['page' => 'index', 'field' => $this]));
+        if ($value instanceof FieldRenderContext) {
+            $row = $value->row;
+            $meta = array_merge($value->meta, ['page' => $value->page, 'field' => $this, 'context' => $value]);
+            $value = $value->value;
+        } else {
+            $meta = ['page' => 'index', 'field' => $this];
+        }
+
+        return $this->renderSelectedLabels($this->displayValue($value, $row, $meta));
     }
 
     public function renderDetail(mixed $value, array $row = []): string
     {
-        return $this->renderSelectedLabels($this->displayValue($value, $row, ['page' => 'detail', 'field' => $this]));
+        if ($value instanceof FieldRenderContext) {
+            $row = $value->row;
+            $meta = array_merge($value->meta, ['page' => $value->page, 'field' => $this, 'context' => $value]);
+            $value = $value->value;
+        } else {
+            $meta = ['page' => 'detail', 'field' => $this];
+        }
+
+        return $this->renderSelectedLabels($this->displayValue($value, $row, $meta));
     }
 
     public function normalize(mixed $value): mixed
@@ -154,7 +155,12 @@ class Select extends Field
             }
 
             if (!in_array((string)$selected, $allowed, true)) {
-                $errors[] = "Поле \"{$this->getLabel()}\" содержит недопустимое значение";
+                $errors[] = LocalizedMessage::get(
+                    __FILE__,
+                    'MB_ADMIN_KIT_FIELD_INVALID_OPTION',
+                    'Field "#FIELD#" contains an invalid value.',
+                    ['#FIELD#' => $this->getLabel()],
+                );
                 break;
             }
         }
@@ -188,4 +194,5 @@ class Select extends Field
 
         return implode(', ', $labels);
     }
+
 }

@@ -1,29 +1,53 @@
-# Backward compatibility policy
+# Политика обратной совместимости
 
-v1.0.0 freezes the stable public API for AdminKit. Minor and patch releases in v1.x must not break existing modules.
+Начиная с `v1.0.0`, публичный API AdminKit считается стабильным. Релизы `v1.x` (minor/patch) не должны ломать существующие модули.
 
-## Must remain compatible
+## Что должно оставаться совместимым
 
-- Public/protected method signatures.
-- Public class names and namespaces.
-- Basic CRUD behavior.
-- `FormData` raw/normalized/validated/errors format.
-- `GridContext` format.
-- `DbResult` format.
-- `BulkResult` format.
-- Base Field API.
-- Base Filter API.
-- Base Action API.
-- Resource and CrudResource extension points.
-- Support adapter class names: `AdminCollection`, `AdminString`, `AdminCondition`.
+- сигнатуры `public`/`protected` методов;
+- публичные имена классов и namespaces;
+- базовое поведение CRUD-страниц;
+- формат `FormData` (`raw`, `normalized`, `validated`, `errors`);
+- формат `GridContext`;
+- формат `DbResult` и `BulkResult`;
+- базовые точки расширения `Resource`/`CrudResource`;
+- базовые API `Field`, `Filter`, `Action`.
 
-## Deprecation rules
+## Правила deprecation
 
-A public API removal must be introduced with `@deprecated` phpdoc and migration notes before it is removed. Internal adapters can change, but module authors should not be forced to instantiate them directly.
+Удаление публичного API допускается только после:
 
-## Allowed changes in minor releases
+1. пометки `@deprecated` в phpdoc;
+2. описания миграции в документации;
+3. отражения в `CHANGELOG.md`.
 
-- New optional methods with safe defaults.
-- New Field/Filter/Action classes.
-- New documentation and examples.
-- Bug fixes that preserve the documented contracts.
+## Что можно менять в minor-релизах
+
+- добавлять новые опциональные методы с безопасными дефолтами;
+- добавлять новые классы полей/фильтров/действий;
+- исправлять баги без изменения контракта поведения;
+- расширять документацию и примеры.
+
+## Примечания по стабилизации v1.x
+
+- Legacy-алиасы CRUD-страниц сохранены:
+  - `MB\Bitrix\AdminKit\Page\IndexPage` -> `Page\Crud\IndexPage`
+  - `MB\Bitrix\AdminKit\Page\FormPage` -> `Page\Crud\FormPage`
+  - `MB\Bitrix\AdminKit\Page\DetailPage` -> `Page\Crud\DetailPage`
+- `Resource` сохраняет совместимое legacy-поведение (`indexPage`, `formPage`, `detailPage`).
+- Legacy fallback для DataManager-сценариев сохранён.
+- Ветви раннего JSON-ответа стабилизированы для корректного завершения тестов.
+
+## Задокументированное исключение
+
+В рамках UI-рефакторинга были изменены некоторые контракты:
+
+- вместо широких старых контрактов используются узкие `Contracts\Field\*`, `Contracts\UI\*`, `Contracts\Widget\*`;
+- `GraphWidget` сохранён как совместимый alias для `ChartWidget`.
+
+## Миграционный путь (кратко)
+
+1. Обновить `use`-импорты на новые namespaces контрактов.
+2. Для UI-компонентов использовать `UI\ComponentContract`/`UI\LayoutComponentContract`.
+3. Для полей использовать `Field\FieldContract` или более узкие контракты.
+4. Для JS-подключений использовать `mb.admin.kit` вместо legacy-расширений.

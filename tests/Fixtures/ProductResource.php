@@ -7,9 +7,9 @@ namespace MB\Bitrix\AdminKit\Tests\Fixtures;
 use MB\Bitrix\AdminKit\Field\ID;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 
-class ProductResource extends CrudResource
+class ProductResource extends DataManagerResource
 {
     public function dataManagerClass(): string
     {

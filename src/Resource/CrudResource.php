@@ -5,113 +5,45 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Resource;
 
 use Bitrix\Main\ORM\Data\DataManager;
-use MB\Bitrix\AdminKit\Contracts\ActionContract;
-use MB\Bitrix\AdminKit\Contracts\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\FilterContract;
-use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasCrudResourcePages;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceActions;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceAuthorization;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceExport;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceFields;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceFilters;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrid;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrouping;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceLifecycle;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceQuery;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceSidePanel;
 
 /**
- * Explicit base class for Bitrix D7 ORM-backed CRUD resources.
+ * Base class for CRUD-enabled resources.
+ *
+ * Defines the CRUD DSL: fields, filters, actions, grid settings, and authorization.
+ * Does not include persistence logic by default. For Bitrix D7 ORM persistence,
+ * extend {@see DataManagerResource}.
  *
  * @template T of DataManager
  * @extends Resource<T>
  */
-abstract class CrudResource extends Resource
+abstract class CrudResource extends Resource implements CrudResourceContract
 {
-    /** @return class-string<T> */
-    public function dataManagerClass(): string
-    {
-        return parent::dataManagerClass();
-    }
+    use HasCrudResourcePages;
+    use HasResourceFields;
+    use HasResourceFilters;
+    use HasResourceActions;
+    use HasResourceAuthorization;
+    use HasResourceSidePanel;
+    use HasResourceGrid;
+    use HasResourceQuery;
+    use HasResourceGrouping;
+    use HasResourceExport;
+    use HasResourceLifecycle;
 
-    public function getDataManagerClass(): ?string
-    {
-        return $this->dataManagerClass ?: $this->dataManagerClass();
-    }
-
-    public function primaryKey(): string
-    {
-        return $this->primaryKey;
-    }
-
-    public function getPrimaryKey(): string
-    {
-        return $this->primaryKey();
-    }
-
-    public function bulkChunkSize(): int
-    {
-        return 100;
-    }
-
-    public function databaseTableName(): string
-    {
-        $class = $this->getDataManagerClass();
-        if ($class && method_exists($class, 'getTableName')) {
-            return (string)$class::getTableName();
-        }
-
-        return '';
-    }
-
-    public function useTotalCount(GridContext $context): bool
-    {
-        return true;
-    }
-
-    public function countCacheTtl(GridContext $context): int
-    {
-        return 0;
-    }
-
-    public function maxPageSize(): int
-    {
-        return 200;
-    }
-
-    public function allowExportByFilter(): bool
-    {
-        return true;
-    }
-
-    public function allowExportAll(): bool
+    public function hasCrud(): bool
     {
         return false;
-    }
-
-    public function maxImportRows(): int
-    {
-        return 1000;
-    }
-
-
-    /** @return iterable<FieldContract> */
-    abstract public function indexFields(): iterable;
-
-    /** @return iterable<FieldContract> */
-    abstract public function formFields(): iterable;
-
-    /** @return iterable<FieldContract> */
-    public function detailFields(): iterable
-    {
-        return $this->formFields();
-    }
-
-    /** @return iterable<FilterContract> */
-    public function filters(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<ActionContract> */
-    public function rowActions(): iterable
-    {
-        return [];
-    }
-
-    /** @return iterable<ActionContract> */
-    public function bulkActions(): iterable
-    {
-        return [];
     }
 }

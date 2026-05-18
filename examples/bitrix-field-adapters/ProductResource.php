@@ -7,10 +7,10 @@ namespace Vendor\Demo\Admin;
 use MB\Bitrix\AdminKit\Field\EntitySelectorField;
 use MB\Bitrix\AdminKit\Field\IblockElementSelectorField;
 use MB\Bitrix\AdminKit\Field\UserSelector;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use Vendor\Demo\Orm\ProductTable;
 
-final class ProductResource extends CrudResource
+final class ProductResource extends DataManagerResource
 {
     public function dataManagerClass(): string
     {

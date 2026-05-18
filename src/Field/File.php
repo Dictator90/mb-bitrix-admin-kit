@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use CFile;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class File extends Field
 {
@@ -58,7 +59,7 @@ class File extends Field
                     <small style="color:#888;margin-left:8px;">{$fileSize}</small>
                     <label style="margin-left:16px;">
                         <input type="checkbox" name="{$name}_delete" value="Y">
-                        удалить
+                        {LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_FILE_DELETE', 'delete')}
                     </label>
                 </div>
                 HTML;
@@ -81,7 +82,7 @@ class File extends Field
                 style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
             <div class="ui-ctl-label-text" style="padding:8px 16px;cursor:pointer;">
                 <span class="ui-icon-16 ui-icon-16-upload" style="vertical-align:middle;margin-right:4px;"></span>
-                Выберите файл
+                {LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_FILE_SELECT', 'Choose file')}
             </div>
         </div>
         HTML;
@@ -101,4 +102,5 @@ class File extends Field
 
         return htmlspecialcharsbx($fileInfo['ORIGINAL_NAME'] ?? $fileInfo['FILE_NAME'] ?? '');
     }
+
 }

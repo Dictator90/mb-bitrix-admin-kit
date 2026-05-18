@@ -18,7 +18,7 @@ namespace Vendor\Module\Admin;
 use MB\Bitrix\AdminKit\Field\Password;
 use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Pages\OptionsPage;
+use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
 
 final class ModuleSettingsPage extends OptionsPage
 {
@@ -143,8 +143,8 @@ public function fields(): iterable
 | `active()` | Mark as initially active (first tab is active by default if none set) |
 | `id(string)` | Explicit DOM/routing ID; auto-derived from title otherwise |
 | `description(string)` | Tooltip shown on the tab header |
-| `icon(string)` | Icon-set CSS class (`'--settings'`, `'--lock'`, …); requires `mb.ui.tabs` |
-| `count(int\|string)` | Badge counter (`3`, `'99+'`); requires `mb.ui.tabs` |
+| `icon(string)` | Icon-set CSS class (`'--settings'`, `'--lock'`, …); rendered via `mb.admin.kit` Tabs |
+| `count(int\|string)` | Badge counter (`3`, `'99+'`); rendered via `mb.admin.kit` Tabs |
 | `field(...)` / `fields(...)` / `with([...])` | Add items after construction |
 
 ---

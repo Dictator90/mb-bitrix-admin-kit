@@ -1,6 +1,6 @@
 # Как сделать страницу настроек
 
-Расширьте `MB\Bitrix\AdminKit\Pages\OptionsPage` и объявите `$moduleId`.
+Расширьте `MB\Bitrix\AdminKit\Page\Standalone'OptionsPage` и объявите `$moduleId`.
 
 ```php
 <?php
@@ -12,7 +12,7 @@ use MB\Bitrix\AdminKit\Component\Layout\Tabs;
 use MB\Bitrix\AdminKit\Field\Password;
 use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Pages\OptionsPage;
+use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
 
 final class SettingsPage extends OptionsPage
 {

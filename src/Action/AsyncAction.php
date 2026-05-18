@@ -6,6 +6,8 @@ namespace MB\Bitrix\AdminKit\Action;
 
 use Bitrix\Main\HttpRequest;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
+use MB\Bitrix\AdminKit\Support\ResponseTerminator;
 use Throwable;
 
 abstract class AsyncAction implements ActionContract
@@ -45,10 +47,10 @@ abstract class AsyncAction implements ActionContract
     /**
      * Process and send JSON response. Call this from the component when isAjax().
      */
-    public function dispatch(HttpRequest $request): never
+    public function dispatch(HttpRequest $request): void
     {
         if (!check_bitrix_sessid()) {
-            $this->sendError('Недействительный токен безопасности');
+            $this->sendError(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_ASYNC_INVALID_CSRF', 'Invalid CSRF token.'));
         }
 
         try {
@@ -59,21 +61,22 @@ abstract class AsyncAction implements ActionContract
         }
     }
 
-    protected function sendSuccess(array $data = []): never
+    protected function sendSuccess(array $data = []): void
     {
         $this->sendJson(['status' => 'success', 'data' => $data]);
     }
 
-    protected function sendError(string $message, int $code = 400): never
+    protected function sendError(string $message, int $code = 400): void
     {
         http_response_code($code);
         $this->sendJson(['status' => 'error', 'message' => $message]);
     }
 
-    protected function sendJson(array $payload): never
+    protected function sendJson(array $payload): void
     {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($payload, JSON_UNESCAPED_UNICODE);
-        exit;
+        ResponseTerminator::terminate();
     }
+
 }

@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 namespace {
+    if (!defined('B_PROLOG_INCLUDED')) {
+        define('B_PROLOG_INCLUDED', true);
+    }
+
+    putenv('MB_ADMIN_KIT_TESTING=1');
+
     spl_autoload_register(function (string $class): void {
         $prefix = 'MB\\Bitrix\\AdminKit\\Tests\\';
         if (str_starts_with($class, $prefix)) {
@@ -116,13 +122,38 @@ namespace Bitrix\Main {
     {
         public function isPost(): bool
         {
-            return false;
-        } public function get(string $key): mixed
+            return (bool)($GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] ?? false);
+        }
+
+        public function get(string $key): mixed
         {
-            return null;
-        } public function getPost(string $key): mixed
+            return $GLOBALS['MB_ADMIN_KIT_TEST_GET'][$key] ?? null;
+        }
+
+        public function getPost(string $key): mixed
         {
-            return null;
+            return $GLOBALS['MB_ADMIN_KIT_TEST_POST'][$key] ?? null;
+        }
+
+        public function getRequestUri(): string
+        {
+            return (string)($GLOBALS['MB_ADMIN_KIT_TEST_REQUEST_URI'] ?? '/bitrix/admin/test.php');
+        }
+
+        public function getHeader(string $name): ?string
+        {
+            $headers = $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] ?? [];
+
+            return $headers[$name] ?? $headers[strtolower($name)] ?? null;
+        }
+
+        /** @return array<string,mixed> */
+        public function toArray(): array
+        {
+            return array_merge(
+                $GLOBALS['MB_ADMIN_KIT_TEST_GET'] ?? [],
+                $GLOBALS['MB_ADMIN_KIT_TEST_POST'] ?? [],
+            );
         }
     }
     class Context
@@ -220,7 +251,54 @@ namespace {
     }
     function check_bitrix_sessid(): bool
     {
-        return true;
+        return (bool)($GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] ?? true);
+    }
+
+    $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = false;
+    $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = [];
+    $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [];
+    $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
+    $GLOBALS['MB_ADMIN_KIT_TEST_REQUEST_URI'] = '/bitrix/admin/test.php';
+    $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] = [];
+}
+
+namespace Bitrix\Main\Localization {
+    if (!class_exists(Loc::class)) {
+        class Loc
+        {
+            /** @var array<string,string> */
+            private static array $messages = [];
+
+            public static function loadMessages(string $file): void
+            {
+                $base = dirname(__DIR__);
+                $relative = str_replace('\\', '/', $file);
+                foreach (['ru'] as $lang) {
+                    $relativeFromSrc = str_replace('\\', '/', preg_replace('#^.*/src/#', 'src/', $relative) ?? $relative);
+                    $langFile = $base . '/lang/' . $lang . '/' . $relativeFromSrc;
+                    if (!is_file($langFile)) {
+                        continue;
+                    }
+                    $MESS = [];
+                    include $langFile;
+                    if (is_array($MESS)) {
+                        foreach ($MESS as $key => $value) {
+                            self::$messages[(string)$key] = (string)$value;
+                        }
+                    }
+                }
+            }
+
+            public static function getMessage(string $code, ?array $replace = null): ?string
+            {
+                $message = self::$messages[$code] ?? null;
+                if ($message === null || $replace === null) {
+                    return $message;
+                }
+
+                return str_replace(array_keys($replace), array_values($replace), $message);
+            }
+        }
     }
 }
 
@@ -239,13 +317,27 @@ namespace Bitrix\Main\Config { if (!class_exists(Option::class)) {
     class Option
     {
         public static array $values = [];
+
+        public static int $setCalls = 0;
+
+        public static function reset(): void
+        {
+            self::$values = [];
+            self::$setCalls = 0;
+        }
+
         public static function get(string $moduleId, string $name, mixed $default = '', string $siteId = ''): mixed
         {
             return self::$values[$moduleId][$siteId][$name] ?? $default;
-        } public static function set(string $moduleId, string $name, string $value, string $siteId = ''): void
+        }
+
+        public static function set(string $moduleId, string $name, string $value, string $siteId = ''): void
         {
+            self::$setCalls++;
             self::$values[$moduleId][$siteId][$name] = $value;
-        } public static function delete(string $moduleId, array $filter): void
+        }
+
+        public static function delete(string $moduleId, array $filter): void
         {
             unset(self::$values[$moduleId][$filter['site_id'] ?? ''][$filter['name'] ?? '']);
         }
@@ -277,18 +369,133 @@ namespace { if (!function_exists('bitrix_sessid_post')) {
     {
         $GLOBALS['last_redirect'] = $url;
     }
-} $GLOBALS['APPLICATION'] = new class () {
-    public string $title = '';
-    public array $css = [];
-    public array $js = [];
-    public function SetTitle(string $title): void
+} if (!function_exists('mb_admin_kit_application_mock')) {
+    function mb_admin_kit_application_mock(): object
     {
-        $this->title = $title;
-    } public function SetAdditionalCSS(string $path): void
-    {
-        $this->css[] = $path;
-    } public function AddHeadScript(string $path): void
-    {
-        $this->js[] = $path;
+        return new class () {
+            public string $title = '';
+            public array $css = [];
+            public array $js = [];
+            public array $components = [];
+
+            public function SetTitle(string $title): void
+            {
+                $this->title = $title;
+            }
+
+            public function SetAdditionalCSS(string $path): void
+            {
+                $this->css[] = $path;
+            }
+
+            public function AddHeadScript(string $path): void
+            {
+                $this->js[] = $path;
+            }
+
+            public function IncludeComponent(string $name, string $template, array $params = [], $parent = null, array $exParams = []): void
+            {
+                $this->components[] = [$name, $template, $params];
+            }
+        };
     }
-}; }
+}
+
+    $GLOBALS['APPLICATION'] = mb_admin_kit_application_mock();
+}
+
+namespace Bitrix\Main\Grid\Panel { if (!class_exists(Snippet::class)) {
+    class Snippet
+    {
+        public function getEditButton(): array
+        {
+            return ['TYPE' => 'BUTTON', 'ID' => 'edit_button', 'TEXT' => 'Edit'];
+        }
+
+        public function getForAllCheckbox(): array
+        {
+            return ['TYPE' => 'CHECKBOX', 'ID' => 'for_all_checkbox', 'TEXT' => 'For All'];
+        }
+    }
+} if (!class_exists(Types::class)) {
+    class Types
+    {
+        public const BUTTON = 'BUTTON';
+        public const DROPDOWN = 'DROPDOWN';
+        public const CHECKBOX = 'CHECKBOX';
+        public const TEXT = 'TEXT';
+        public const LINK = 'LINK';
+        public const HIDDEN = 'HIDDEN';
+        public const CUSTOM = 'CUSTOM';
+    }
+} if (!class_exists(Actions::class)) {
+    class Actions
+    {
+        public const CALLBACK = 'CALLBACK';
+    }
+} }
+
+namespace { if (!class_exists(CUtil::class)) {
+    class CUtil
+    {
+        public static function JSEscape(string $value): string
+        {
+            return addslashes($value);
+        }
+    }
+} }
+
+namespace Bitrix\UI\Buttons { if (!class_exists(Button::class)) {
+    class Button
+    {
+        public function __construct(public array $params)
+        {
+        }
+    }
+    final class Color
+    {
+        public const SUCCESS = 'success';
+    }
+    final class Icon
+    {
+        public const ADD = 'add';
+    }
+    class JsCode
+    {
+        public function __construct(public string $code)
+        {
+        }
+        public function __toString(): string
+        {
+            return $this->code;
+        }
+    }
+} }
+
+namespace Bitrix\UI\Toolbar { if (!class_exists(ButtonLocation::class)) {
+    final class ButtonLocation
+    {
+        public const AFTER_TITLE = 'after_title';
+    }
+} }
+
+namespace Bitrix\UI\Toolbar\Facade { if (!class_exists(Toolbar::class)) {
+    final class Toolbar
+    {
+        public static array $filters = [];
+        public static array $buttons = [];
+        public static function addFilter(array $params): void
+        {
+            self::$filters[] = $params;
+        }
+        public static function addButton(object $button, string $location): void
+        {
+            self::$buttons[] = [$button, $location];
+        }
+        public static function reset(): void
+        {
+            self::$filters = [];
+            self::$buttons = [];
+        }
+    }
+} }

@@ -1,0 +1,10 @@
+<?php
+
+declare(strict_types=1);
+
+namespace MB\Bitrix\AdminKit\Contracts\UI;
+
+interface HtmlableContract
+{
+    public function __toString(): string;
+}

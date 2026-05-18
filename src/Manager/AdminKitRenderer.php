@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
-use MB\Bitrix\AdminKit\Pages\AbstractPage;
+use MB\Bitrix\AdminKit\Page\StandalonePage;
 
 final class AdminKitRenderer
 {
-    public function render(ResourcePage|AbstractPage|NotFoundPage $page): string
+    public function render(ResourcePage|StandalonePage|NotFoundPage $page): string
     {
         ob_start();
         $result = $page->render();

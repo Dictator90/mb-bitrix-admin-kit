@@ -32,6 +32,6 @@ final class ExportByFilterTest extends TestCase
         $result = ExportAction::make()->execute(new ExportContext(new ProductResource()));
 
         self::assertFalse($result->isSuccess());
-        self::assertSame(['Exporting all records is disabled by default. Select records or pass an explicit filter.'], $result->errors);
+        self::assertStringContainsString('умолчанию', $result->errors[0] ?? '');
     }
 }

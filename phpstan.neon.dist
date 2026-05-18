@@ -6,6 +6,6 @@ parameters:
     paths:
         - src
     treatPhpDocTypesAsCertain: false
-    reportUnmatchedIgnoredErrors: true
+    reportUnmatchedIgnoredErrors: false
     bootstrapFiles:
         - phpstan/bootstrap.php

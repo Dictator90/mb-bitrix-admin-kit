@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Database\Performance;
 
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 
 final class QueryPerformanceContext
 {
     /** @param array<string,mixed> $params */
     public function __construct(
-        public readonly ResourceContract $resource,
+        public readonly DataManagerResourceContract $resource,
         public readonly GridContext $gridContext,
         public readonly array $params = [],
         public readonly float $executionTime = 0.0,

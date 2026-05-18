@@ -6,19 +6,26 @@ namespace MB\Bitrix\AdminKit\Import;
 
 use Closure;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 final class ImportAction
 {
     private Closure|bool $canRunCondition = true;
+    private string $id;
+    private string $label;
+    private ImporterInterface $importer;
 
     public function __construct(
-        private readonly string $id = 'import',
-        private readonly string $label = 'Импорт',
-        private readonly ImporterInterface $importer = new CsvImporter(),
+        string $id = 'import',
+        ?string $label = null,
+        ?ImporterInterface $importer = null,
     ) {
+        $this->id = $id;
+        $this->label = $label ?? LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_LABEL', 'Import');
+        $this->importer = $importer ?? new CsvImporter();
     }
 
-    public static function make(string $id = 'import', string $label = 'Импорт'): self
+    public static function make(string $id = 'import', ?string $label = null): self
     {
         return new self($id, $label);
     }
@@ -33,7 +40,7 @@ final class ImportAction
     public function parse(mixed $file, ImportContext $context): ImportResult
     {
         if (!$this->isRunnable($context)) {
-            return (new ImportResult())->addError('action', 'Import action is not allowed.');
+            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
         }
 
         return $this->importer->parseUploadedFile($file, $context);
@@ -55,7 +62,7 @@ final class ImportAction
     public function validateOnly(ImportContext $context): ImportResult
     {
         if (!$this->isRunnable($context)) {
-            return (new ImportResult())->addError('action', 'Import action is not allowed.');
+            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
         }
 
         return $this->importer->validateRows($context);
@@ -64,11 +71,11 @@ final class ImportAction
     public function import(ImportContext $context): ImportResult
     {
         if (!$this->isRunnable($context)) {
-            return (new ImportResult())->addError('action', 'Import action is not allowed.');
+            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
         }
 
         if (!$this->hasBasePermission($context)) {
-            return (new ImportResult())->addError('permission', 'Import permission denied.');
+            return (new ImportResult())->addError('permission', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_PERMISSION_DENIED', 'Import permission denied.'));
         }
 
         return $this->importer->importRows($context);
@@ -97,4 +104,5 @@ final class ImportAction
         return $resource->canCreate(new PermissionContext($context->userId, null, $resource, 'import.create'))
             || $resource->canUpdate(new PermissionContext($context->userId, null, $resource, 'import.update'));
     }
+
 }

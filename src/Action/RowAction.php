@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Action;
 
 use CUtil;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class RowAction implements ActionContract
 {
@@ -25,7 +26,7 @@ class RowAction implements ActionContract
 
     public static function edit(?string $url = null): static
     {
-        $action = new static('edit', 'Редактировать');
+        $action = new static('edit', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_ROW_ACTION_EDIT', 'Edit'));
         $action->url = $url;
         $action->useSidePanel = true;
 
@@ -34,7 +35,7 @@ class RowAction implements ActionContract
 
     public static function view(?string $url = null): static
     {
-        $action = new static('view', 'Просмотр');
+        $action = new static('view', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_ROW_ACTION_VIEW', 'View'));
         $action->url = $url;
         $action->useSidePanel = true;
 
@@ -43,9 +44,12 @@ class RowAction implements ActionContract
 
     public static function delete(): static
     {
-        $action = new static('delete', 'Удалить');
+        $action = new static('delete', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_ROW_ACTION_DELETE', 'Delete'));
         $action->useConfirm = true;
-        $action->confirmText = 'Вы уверены, что хотите удалить этот элемент?';
+        $action->confirmText = LocalizedMessage::get(__FILE__,
+            'MB_ADMIN_KIT_ROW_ACTION_DELETE_CONFIRM',
+            'Are you sure you want to delete this item?',
+        );
         $action->type = 'delete';
 
         return $action;
@@ -121,13 +125,15 @@ class RowAction implements ActionContract
     {
         $urlJs = CUtil::JSEscape($url);
         if ($gridId === null || $gridId === '') {
-            return "BX.SidePanel.Instance.open('{$urlJs}')";
+            return "BX.SidePanel.Instance.open('{$urlJs}',{cacheable:false,allowChangeHistory:false})";
         }
 
         $gridIdJson = json_encode($gridId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '""';
 
         return
             "BX.SidePanel.Instance.open('{$urlJs}',{" .
+                'cacheable:false,' .
+                'allowChangeHistory:false,' .
                 'events:{' .
                     'onCloseComplete:function(){' .
                         'var manager=BX.Main&&BX.Main.gridManager?BX.Main.gridManager:null;' .
@@ -142,4 +148,5 @@ class RowAction implements ActionContract
                 '}' .
             '})';
     }
+
 }

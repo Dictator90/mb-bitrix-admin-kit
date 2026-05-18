@@ -6,15 +6,17 @@ namespace MB\Bitrix\AdminKit\Action;
 
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
+use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
 class BulkUpdateAction extends BulkAction
 {
-    /** @var array<string,mixed> */
-    protected array $data = [];
+    /** @var array<string,mixed>|null */
+    protected ?array $data = null;
 
     /** @param array<string,mixed> $data */
     public function update(array $data): static
@@ -30,9 +32,14 @@ class BulkUpdateAction extends BulkAction
             return BulkResult::failure('Invalid CSRF token.');
         }
 
+        $guardErrors = (new QueryGuard())->validateBulkOperation($context);
+        if ($guardErrors !== []) {
+            return BulkResult::failure(implode(' ', $guardErrors));
+        }
+
         $ids = $this->selectedIds($context);
         if ($ids === []) {
-            return BulkResult::failure('Не выбраны элементы');
+            return BulkResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_EMPTY_SELECTION', 'No items selected.'));
         }
 
         $context = $context->with(['selectedIds' => $ids, 'action' => $this]);
@@ -103,4 +110,5 @@ class BulkUpdateAction extends BulkAction
 
         return array_chunk(AdminCollection::make($ids)->all(), $chunkSize);
     }
+
 }

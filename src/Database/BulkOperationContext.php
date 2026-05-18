@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Database;
 
 use Bitrix\Main\HttpRequest;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 
 final class BulkOperationContext
@@ -15,13 +15,14 @@ final class BulkOperationContext
      * @param array<string,mixed> $filter
      */
     public function __construct(
-        public readonly ResourceContract $resource,
+        public readonly DataManagerResourceContract $resource,
         public readonly mixed $action,
         public readonly array $selectedIds = [],
         public readonly mixed $userId = null,
         public readonly ?HttpRequest $request = null,
         public readonly array $filter = [],
         public readonly ?GridContext $gridContext = null,
+        public readonly bool $forAll = false,
     ) {
     }
 
@@ -36,6 +37,7 @@ final class BulkOperationContext
             $changes['request'] ?? $this->request,
             $changes['filter'] ?? $this->filter,
             $changes['gridContext'] ?? $this->gridContext,
+            $changes['forAll'] ?? $this->forAll,
         );
     }
 }

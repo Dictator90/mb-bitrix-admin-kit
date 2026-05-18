@@ -1,57 +1,57 @@
-# Architecture
+# Архитектура
 
-## AdminKitManager
+## Общая модель
 
-Публичный фасад модуля. Регистрирует Resource и standalone Page, отдает меню, текущую страницу, router и renderer. В v0.8+ фасад делегирует хранение, маршрутизацию и рендеринг специализированным классам.
+Пакет строится вокруг фасада менеджера и набора узких сервисов:
 
-## Registry
+- регистрация и discovery классов;
+- маршрутизация страниц;
+- рендер CRUD/standalone страниц;
+- загрузка данных грида и адаптация к Bitrix UI.
 
-`Manager\AdminKitRegistry` хранит зарегистрированные Resource/Page и может выполнять discovery по `lib/Admin`. Registry не рендерит и не строит URL.
+## Фасад и менеджеры
 
-## Router
+- `AdminKit`/`AdminKitManager` — точка входа для scope-модуля.
+- `Manager\AdminKitRegistry` — хранение ресурсов и страниц, discovery через `Discovery\ClassDiscovery`.
+- `Manager\AdminKitRouter` — выбор целевой страницы по запросу.
+- `Manager\AdminKitMenuBuilder` — генерация меню.
 
-`Manager\AdminKitRouter` читает request, ищет `?page=`, выбирает standalone Page или ResourcePage. Если page не найден, возвращает NotFoundPage.
+## Ресурсы
 
-## Resource
+- `Resource` — стабильная базовая модель раздела (id, title, menu, permissions, pages, sidepanel).
+- `CrudResource` — CRUD DSL-слой.
+- `DataManagerResource` — рекомендованная база для ORM-ресурсов.
 
-`Resource` — базовое описание административного раздела: id, title, menu, permissions, default select/filter/sort, runtime fields, hooks и SidePanel настройки.
+Для нового ORM CRUD используйте `DataManagerResource`.
 
-## CrudResource
+## Страницы
 
-`CrudResource` — Resource для Bitrix D7 ORM `DataManager`. Он требует `dataManagerClass()`, `indexFields()` и `formFields()`, добавляет CRUD defaults, bulk chunk size, import/export лимиты и параметры производительности.
+- CRUD: `Page\Crud\IndexPage`, `FormPage`, `DetailPage`.
+- Standalone: `Pages\OptionsPage`, `Pages\DashboardPage`, `Page\Standalone\CustomPage`.
 
-## Page
+Совместимые алиасы `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage` сохранены как обёртки.
 
-`Page\IndexPage`, `FormPage`, `DetailPage` обслуживают CRUD. `Pages\OptionsPage`, `CustomPage`, `DashboardPage` обслуживают самостоятельные страницы модуля.
+## Поля, фильтры, действия
 
-## Field
+- `Field` — рендер, нормализация, валидация, отображение.
+- `Filter` — перевод UI-фильтра в ORM-условия.
+- `Action`/bulk actions — действия строки и массовые операции.
 
-Field описывает колонку, форму, нормализацию, валидацию, экспорт/импорт и отображение. Конкретные Field-классы расширяют базовый `Field`; массивы в multiple-полях сохраняются явно.
+Bulk-операции работают через `BulkOperationContext` и возвращают `BulkResult`.
 
-## Filter
+## Грид-слой
 
-Filter описывает поле `main.ui.filter` и преобразует непустое UI-значение в ORM filter. Для сложных сценариев используйте `CallbackFilter` или Resource hooks.
+- `GridQueryBuilder` — единственный источник ORM-параметров (`select/filter/order/runtime/limit/offset`).
+- `GridDataLoader` — выполнение запроса, total count, guard/caching.
+- `Grid` + Bitrix-адаптеры — только UI-состояние и параметры компонентов.
 
-## Action
+Подробнее: [docs/grid.md](grid.md).
 
-Row actions формируют меню строки. Bulk actions исполняются через `BulkOperationContext`, возвращают `BulkResult`, проверяют выбранные ID, `canRun()` и права Resource по каждой записи.
+## Слой совместимости и поддержки
 
-## GridQueryBuilder
+- `AdminCollection`, `AdminString`, `AdminCondition` — внутренние адаптеры support-пакетов.
+- Public API должен оставаться стабильным в рамках v1.x (см. [docs/backward-compatibility.md](backward-compatibility.md)).
 
-Собирает ORM-параметры списка из полей, фильтров, сортировки, пагинации, default/index hooks, runtime fields и `modifyIndexParams()`.
+## Локализация
 
-## CrudPersister
-
-Единая точка create/update/delete для ORM. Возвращает `DbResult`, чтобы низкоуровневые ORM-ошибки доходили до формы и bulk operations.
-
-## FormData
-
-Stage-aware контейнер формы: `raw`, `normalized`, `validated`, `errors`. Используется формой и import pipeline, чтобы CSV-import и ручное сохранение имели одинаковую нормализацию.
-
-## UrlGenerator
-
-Строит admin URL для Resource, Page, create/edit/detail, row action, bulk action, import/export и endpoint-сценариев. Новая page/menu/routing логика не должна конкатенировать query string вручную.
-
-## Support adapters
-
-`AdminCollection`, `AdminString`, `AdminCondition` изолируют ядро AdminKit от глобальных helper-функций и конкретных реализаций support-пакетов.
+Пользовательские сообщения должны идти через `Bitrix\Main\Localization\Loc` с `lang/ru` и `lang/en` файлами.

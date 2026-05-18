@@ -1,6 +1,125 @@
 # Changelog
 
+## Unreleased
+
+### Stabilization
+- Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.
+- Restored legacy `Resource` behavior expected by v1 modules: default CRUD page helpers (`indexPage/formPage/detailPage`), menu/permission/grid defaults, and DataManager fallback compatibility for direct `Resource` + persistence-trait usage.
+- Restored legacy page aliases `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage` as compatibility wrappers over `Page\Crud\*` (deprecated wrappers retained).
+- Fixed standalone-page registration safety (`AdminKitRegistry` now validates type before calling standalone methods).
+- Fixed menu builder safety for non-CRUD resources (guarded calls to optional `canView`/`hasCrud`/`group`).
+- Fixed field display pipeline double-formatting (`displayUsing`/preview no longer double-applies formatting).
+- Fixed `UserListProvider` boolean filter conditions (`onlyWithEmail`, `invitedUsers`).
+- Fixed selected export filtering to use primary-key filtering compatible with existing resource expectations.
+- Added inline-edit BC bridge on `IndexPage::saveInlineRow()` and visibility-rule BC helper on `Pages\OptionsPage::checkVisibilityRule()`.
+- Updated JS extension tests/fixtures to current `mb.admin.kit` bundle layout and stabilized isolated test fixtures.
+- Refreshed PHPStan baseline (`phpstan-baseline.neon`) to separate current known issues from new regressions.
+
+### Removed
+- Unused legacy field traits in `Field\Traits\*` (`HasValidation`, `HasFormat`, `HasVisibility`, `HasReactivity`, `Makeable`); use `Field\Concerns\*` instead.
+- Unused `Resource\Concerns\HasResourcePages` trait (superseded by `HasCrudResourcePages`).
+- Standalone Bitrix JS extensions `mb.ui.tabs` and `mb.ui.dialog-selector`; Tabs and DialogSelector runtime now ship inside `mb.admin.kit`.
+- Legacy contract aliases in `MB\Bitrix\AdminKit\Contracts\` (`IndexResourceContract`, `FormResourceContract`, `OrmResourceContract`, `ExportResourceContract`, and others) — use `Contracts\Resource\*` instead.
+- Legacy resource traits `HasCrud`, `HasPermissions`, `HasLifecycleEvents` — use `Resource\Concerns\*` instead.
+- Deprecated `Page\OptionsPage` wrapper — use `Pages\OptionsPage`.
+- Deprecated page aliases: `Pages\AbstractPage`, `Pages\CustomPage`, `Pages\DashboardPage`, `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage`, `Contracts\PageContract` — use `Page\StandalonePage`, `Page\Standalone\*`, `Page\Crud\*`, and `Contracts\Page\*` instead.
+- Unused grid panel classes `Grid\Panel\PanelDataProvider`, `Grid\Panel\BulkDeletePanelAction`.
+- `AdminKitJs::renderGridCollapsibleInitialState()`, `Tab::getFields()`, `HasResourceExport::maxImportRows()`.
+- Wide contracts `Contracts\FieldContract` and `Contracts\ComponentContract`; use `Contracts\Field\*`, `Contracts\UI\*`, and `Contracts\Widget\*`.
+
+### Added
+- `Support\LocalizedMessage` — shared `Loc::getMessage` helper for user-facing strings (replaces duplicated private `message()` methods).
+- `Pages\Handlers\OptionsPagePostHandler` and `Pages\Handlers\OptionsPageFormRenderer` — extracted POST and form rendering from `Pages\OptionsPage`.
+- `Tabs::remember()` — stores the last active tab in session (per page id) and restores it on the next visit; hidden `adminkit_active_tab` field syncs tab clicks when remember is enabled.
+- `Field::preserveStoredValueWhenEmpty()` — used by `Password` so an empty submit keeps the stored option value instead of deleting it.
+- `Password::oldValue()` (default `true`) — shows the stored value with a show/hide toggle; `oldValue(false)` keeps the previous empty-field edit behavior.
+- New Resource architecture: `Resource` (core) -> `CrudResource` (DSL) -> `DataManagerResource` (ORM).
+- Logic extracted into reusable concerns: `HasResourceIdentity`, `HasResourceMenu`, `HasResourcePages`, `HasResourceFields`, `HasResourceFilters`, `HasResourceActions`, `HasResourceAuthorization`, `HasResourceSidePanel`, `HasResourceGrid`, `HasResourceQuery`, `HasResourceGrouping`, `HasResourceExport`, `HasResourceLifecycle`, `HasDataManager`, `HasDataManagerPersistence`.
+- Narrow resource contracts in `Contracts\Resource\*` for better dependency management.
+- `DataManagerResource` as the preferred base class for ORM-backed resources.
+- `ResourceActionsContract` with `hasAction()` and `activeActions()` for granular action control.
+- `RelationField` is now `readonly(true)` by default to prevent accidental saving of relation data.
+- CSRF protection for all bulk actions (added `sessid` to action panel JS).
+- New UI contracts: `Contracts\UI\RenderableContract`, `ComponentContract`, `LayoutComponentContract`, `FieldContainerContract`, `ItemAwareContract`, `PageTypeAwareContract`, `HtmlAttributesContract`, `ConditionalVisibilityContract`, `AssetAwareContract`.
+- New field contracts in `Contracts\Field\*` with aggregate `Contracts\Field\FieldContract`.
+- New renderers: `Field\Renderers\FieldRowRenderer`, `Component\Renderers\ChildrenRenderer`, `Component\Renderers\VisibilityWrapper`, `Widget\Dashboard\DashboardRenderer`.
+- New options resolver stack for `Select`: `Field\Options\*Resolver`.
+- New chart architecture: `Widget\ChartWidget` + `Widget\Renderers\ChartWidgetRenderer` (`GraphWidget` now compatibility alias).
+- `BulkActionDropdown::placeholder()`, `withoutPlaceholder()`, and placeholder accessors for controlling the first Bitrix dropdown item.
+- `BulkAction::allowRunWithoutFilter()` for explicitly allowing guarded full-table bulk actions, plus `BulkOperationContext::$forAll`.
+- Bulk action `groupSort()` support for deterministic action-panel group ordering.
+
+### Changed
+- Tabs and DialogSelector ship as separate bundles in `mb.admin.kit` (`src/tabs`, `src/dialog-selector` → `dist/*.bundle.js`); no shared `initAll` — each `TabsRenderer` / `DialogSelectorRenderer` initializes its own instance.
+- `Tabs::extension()` removed; `AssetManager::forForm()` no longer loads `mb.ui.tabs` separately.
+- `Resource` is now a minimal core class for identity, menu, and pages.
+- `CrudResource` is now a DSL-only class without persistence logic.
+- All ORM-backed examples and fixtures migrated to `DataManagerResource`.
+- Internal services (`GridDataLoader`, `IndexPage`, `FormPage`, `DetailPage`, `ExportAction`) updated to use narrow contracts.
+- `HasDataManagerPersistence::findItem` now uses explicit `=` operator for primary key filter.
+- `ExportAction` now uses explicit `@` operator for selected IDs filter.
+- `OptionsPage::fields()` is now `public` in documentation and examples.
+- `Field` base class moved to concern-based composition (`Field\Concerns\*`) and no longer acts as a monolith.
+- `AbstractLayoutComponent` delegates child rendering to `ChildrenRenderer` and no longer renders field rows directly.
+- `FormPage` and `OptionsPage` now render form rows via `FieldRowRenderer`.
+- `Tabs` rendering is delegated to `TabsRenderer`/`TabBodyRenderer`; duplicate field-row rendering and debug `console.log` removed.
+- `AbstractWidget` is now a leaf dashboard component (no inheritance from layout containers).
+- Dashboard rendering and extension collection moved from `DashboardPage` into `Widget\Dashboard\DashboardRenderer`.
+- Chart widgets no longer load external Chart.js CDN from PHP; chart init is local-extension driven.
+- `BulkAction::delete()` now returns `MassDeleteAction` directly; the index bulk handler no longer substitutes delete actions at runtime.
+- `MassDeleteAction` now shares the delete factory UI defaults (`danger`, remove icon, danger group, confirmation, sort order).
+
+### Fixed
+- Localized hardcoded user-facing messages in actions, bulk results, relation components, selectors, validation rules, import/export handlers, and CRUD page notifications by moving them to `Loc` message files (`lang/ru` and `lang/en` for the affected classes).
+- Updated key documentation files to Russian and synchronized quick-start/install/architecture/grid/import-export/backward-compatibility guides with the current package behavior.
+- Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.
+- Options page: `Password` and other fields with `preserveStoredValueWhenEmpty()` no longer clear stored values when the posted value is empty.
+- Options page: remembered tab id is applied before render so the correct tab is active after reload.
+- CSRF: added missing `sessid` to native Bitrix grid bulk actions.
+- ORM: fixed potential issues with ambiguous primary key filters by using explicit Bitrix ORM operators.
+- `IndexPage`: restored base `grouping()` hook so `IndexPageDefinition` and `RowAssembler` receive resource `indexGrouping()` (group rows were missing when only collapsible UI was enabled).
+- Group labels: `GroupLabelRenderer` now resolves section titles from `__GROUP_DATA` (`NAME`/`TITLE` fallback) and renders `ungroupedLabel()` for the ungrouped bucket; collapsible shift column prefers `NAME` when grouping has no explicit `labelColumn`.
+- Bulk action dropdowns now render their label as a non-executable placeholder item, so Bitrix `Types::DROPDOWN` shows the dropdown label/placeholder instead of the first child action.
+- Invisible direct bulk actions and invisible dropdown child actions are filtered out of `ACTION_PANEL`; dropdowns with no visible executable children are skipped.
+- For-all bulk mode now uses the explicit `action_all_rows_<GRID_ID>` checkbox flag and ignores selected IDs in that mode.
+- `QueryGuard` now blocks unsafe for-all operations without `allowRunByFilter()`, empty-filter/full-table operations without `allowRunWithoutFilter()`, and operations above `maxBulkRows()`.
+- Custom `BulkAction` handlers now honor action-level `canRun()` before invoking the handler.
+
+### Changed
+- Grouped index grids initialize collapsible rows via `AdminKitJs::renderInit('GridCollapsible')` on `IndexPage` instead of auto-starting from `mb.admin.kit` bundle entry.
+- `Resource` — BC base (identity, menu, permissions, pages, export defaults); `CrudResource` — thin ORM layer (`dataManagerClass()`, `hasCrud(): true`) without duplicated defaults.
+- Grid split: `GridQueryBuilder` (ORM params only), `GridDataLoader` (load/count/cache), `Grid` + Bitrix adapters (UI); `IndexPage` delegates to these services.
+- `FormPage` / `DetailPage` — page-level `fields()` / `tabs()` are primary; resource shortcuts are fallbacks.
+- `Pages\OptionsPage` stabilized (sessid, JSON array options, `visibleWhen` aligned with `FormPage`); `Page\OptionsPage` deprecated wrapper retained.
+- Routing: `admin_resource` + `admin_page` alongside legacy `page` / `action`.
+- Export: removed legacy `Support\Export\CsvExporter`; use `Export\CsvExporter` + `ExportAction`.
+- Discovery: multi-path, safe missing directories, duplicate-id preservation; standalone pages via `AbstractPage::isStandalone()`.
+- Documentation: README, `docs/pages.md`, `docs/grid.md`, `docs/discovery.md`, `docs/architecture.md`, `docs/upgrade.md`, export-only `docs/import-export.md`, import-disabled `docs/import.md`.
+
+### Removed / disabled
+- Import UI and toolbar entrypoints removed from `IndexPage` (no `action=import`, no import SidePanel flow on index). Library `Import\*` classes remain for future re-enable.
+
+### Fixed
+- CSRF: POST saves and options updates require valid sessid; AJAX returns JSON errors, normal POST shows alert.
+- `DetailPage` enforces `canView` before rendering a record.
+- `FormPage` validation/save lifecycle and permission checks (`canCreate` / `canUpdate`) on render and save.
+- `FormPage` async SidePanel save returns JSON via `sendAsyncSaveResponse()` instead of full-page redirect.
+- String primary-key delete on index grid.
+- `GridQueryBuilder::buildOrder()` three-layer sort merge.
+- Export guard messages localized; export failures use `ui.alerts` on index.
+- Form/toolbar RU label mojibake (UTF-8 `Loc` files).
+
 ## v1.0.0 - 2026-05-14
+
+### Changed
+- Split Bitrix grid architecture into `GridQueryBuilder` for ORM params, `GridDataLoader` for DataManager loading/count/cache, `Grid` for state, Bitrix grid/filter/action-panel adapters for component params, and `ToolbarRenderer` for toolbar/filter/create integration.
+- Removed ORM query construction from `Grid` and made `IndexPage` delegate data loading and toolbar rendering to dedicated services.
+- Documented the new grid layering in `docs/grid.md` and added coverage for the new query/data/UI boundaries.
+
+### Added
+- Added scoped AdminKit creation with `AdminKitScope`, `forModule()`, `forScope()`, `fromDirectory()`, and `fromDirectories()` for module, `local/php_interface`, custom-directory, and manual-registration workflows.
+- Added multi-path discovery configuration and registry discovery that safely ignores missing paths and skips abstract classes.
+- Documented scope-based discovery in README and `docs/discovery.md`.
 
 ### Added
 - Added the `MB\Bitrix\AdminKit\AdminKit` facade for creating per-module managers.
@@ -25,6 +144,13 @@
 - Updated `EntitySelect` label resolution to use `src/UI/EntitySelector` providers by default; `resolveLabels()` now serves as an optional custom-label override.
 - Improved `IblockElementListProvider` avatar resolution for selector items: now uses `PREVIEW_PICTURE`, then `DETAIL_PICTURE`, then `MORE_PHOTO` fallback.
 - Restored legacy `IblockElementSelect` entity binding to `iblock-element-list` and legacy label resolution behavior from previous support package implementation.
+- Added toolbar buttons for CSV export/import and wired `action=export`/`action=import` handling in `IndexPage` to execute `ExportAction` and `ImportAction`.
+- Updated import UX: `action=import` now opens in SidePanel and uses AdminKit `ui-form`/Field-based layout instead of a raw standalone markup block.
+- Reworked CSV import UI to a staged flow using Bitrix `ui.stepprocessing` (`parse` -> `validate` -> `import`) inside SidePanel and removed the `К списку` action from the import form.
+- Temporarily removed import entrypoints from resource index pages and toolbar, and added configurable resource toolbar actions with built-in `export` action support.
+- Localized export guard/error messages via Bitrix `Loc` and ensured export failures render with styled `ui.alerts` notifications on index pages.
+- Localized index and toolbar user-facing labels/messages (create/export button labels, inline row error template, and export fallback message) via Bitrix `Loc` keys.
+- Unified toolbar management across `IndexPage`, `FormPage`, and `DetailPage` using Bitrix `Toolbar` facade patterns (top save/cancel on form, back/edit on detail, and localized toolbar labels).
 
 ### Migration notes
 - v1.0.0 is a stabilization release, not a feature expansion release. Existing v0.1.0-v0.9.0 Resource, Field, Filter, Action, persistence, bulk action, import/export, and page-layer extension points remain the migration path.

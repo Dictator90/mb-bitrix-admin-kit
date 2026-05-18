@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use Bitrix\Iblock\SectionTable;
 use Bitrix\Main\Loader;
-use CIBlockSection;
 
 class IblockSectionSelect extends DialogSelect
 {
@@ -25,20 +25,20 @@ class IblockSectionSelect extends DialogSelect
     public function iblockId(int $iblockId): static
     {
         $this->iblockId = $iblockId;
-        $this->resetEntities()->entityId('iblock-section', ['iblockId' => $iblockId]);
+        $this->resetEntities()->entityId('iblock-section-list', ['iblockId' => $iblockId]);
         $this->resolveLabels(static function (array $ids) use ($iblockId): array {
             if (!class_exists(Loader::class) || !Loader::includeModule('iblock')) {
                 return [];
             }
 
-            $filter = ['@ID' => $ids];
-            if ($iblockId > 0) {
-                $filter['IBLOCK_ID'] = $iblockId;
-            }
-
             $result = [];
-            $rs = CIBlockSection::GetList([], $filter, false, ['ID', 'NAME']);
-            while ($row = $rs->Fetch()) {
+            $rows = SectionTable::query()
+                ->setSelect(['ID', 'NAME'])
+                ->where('IBLOCK_ID', $iblockId)
+                ->whereIn('ID', $ids)
+                ->fetchAll();
+
+            foreach ($rows as $row) {
                 $result[(string)$row['ID']] = $row['NAME'] ?: (string)$row['ID'];
             }
 

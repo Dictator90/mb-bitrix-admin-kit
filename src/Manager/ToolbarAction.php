@@ -56,4 +56,14 @@ final class ToolbarAction
     {
         return '<a id="' . htmlspecialcharsbx($this->id) . '" class="' . htmlspecialcharsbx($this->class) . '" href="' . htmlspecialcharsbx($this->url) . '">' . htmlspecialcharsbx($this->label) . '</a>';
     }
+
+    public function getLabel(): string
+    {
+        return $this->label;
+    }
+
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
 }

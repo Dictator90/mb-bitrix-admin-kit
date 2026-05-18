@@ -8,6 +8,7 @@ use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Manager\SidePanelAdapter;
 use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
+use MB\Bitrix\AdminKit\Tests\Fixtures\ManagerBaseTestResource;
 use PHPUnit\Framework\TestCase;
 
 final class SidePanelToolbarAssetV080Test extends TestCase
@@ -38,12 +39,12 @@ final class SidePanelToolbarAssetV080Test extends TestCase
     {
         $assets = (new AssetManager())->forGrid()->forGrid()->forSidePanel()->addCss('/a.css')->addCss('/a.css')->all();
 
-        self::assertSame(['main.ui.grid', 'main.ui.filter', 'ui.buttons', 'ui.toolbar', 'sidepanel'], $assets['extensions']);
+        self::assertSame(['main.ui.grid', 'main.ui.filter', 'ui.buttons', 'ui.toolbar', 'mb.admin.kit', 'sidepanel'], $assets['extensions']);
         self::assertSame(['/a.css'], $assets['css']);
     }
 }
 
-final class SidePanelResource extends BaseTestResource
+final class SidePanelResource extends ManagerBaseTestResource
 {
     protected string $title = 'Side';
     public static function getId(): string
