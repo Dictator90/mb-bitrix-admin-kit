@@ -71,6 +71,7 @@
 
 ### Fixed
 - Localized hardcoded user-facing messages in actions, bulk results, relation components, selectors, validation rules, import/export handlers, and CRUD page notifications by moving them to `Loc` message files (`lang/ru` and `lang/en` for the affected classes).
+- Updated key documentation files to Russian and synchronized quick-start/install/architecture/grid/import-export/backward-compatibility guides with the current package behavior.
 - Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.
 - Options page: `Password` and other fields with `preserveStoredValueWhenEmpty()` no longer clear stored values when the posted value is empty.
 - Options page: remembered tab id is applied before render so the correct tab is active after reload.

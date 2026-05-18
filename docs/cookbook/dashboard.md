@@ -27,16 +27,6 @@ final class MyDashboard extends DashboardPage
 }
 ```
 
-Зарегистрировать в admin-файле:
-
-```php
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
-require_once __DIR__ . '/../include.php';
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
-(new MyDashboard())->render();
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
-```
-
 ---
 
 ## Статистические карточки (CountWidget)

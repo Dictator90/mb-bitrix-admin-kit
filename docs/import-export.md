@@ -1,24 +1,28 @@
-# Export (CSV)
+# Экспорт (CSV)
 
-> **Import UI is temporarily disabled** on resource index pages and toolbars. Classes under `MB\Bitrix\AdminKit\Import\*` remain in the codebase for a future release, but `ImportAction`, `ImportContext`, and `CsvImporter` are not wired into `IndexPage` in the current branch. See `docs/import.md` for library-level notes only.
+> Import UI на index-страницах и тулбаре временно отключён.  
+> Классы `MB\Bitrix\AdminKit\Import\*` остаются в библиотеке для будущего включения, но в текущей ветке не подключены к `IndexPage`.
 
-AdminKit export is **CSV-first**. XLSX/Excel engines are out of scope unless a future task explicitly adds them.
+## Принципы
 
-## Export safety
+- Экспорт CSV-first.
+- XLSX/Excel-движки не входят в текущий scope.
+- Экспорт должен быть безопасным по умолчанию.
 
-- `ExportAction` requires explicit selected IDs or an allowed filter (`allowExportByFilter()`).
-- Full export (`allowExportAll()`) stays disabled unless the Resource opts in.
-- Export checks `canView()` on the Resource.
-- Hidden, private, and system fields are not exported.
-- Pre-flight row count runs before `getList()`; exceeding `maxExportRows()` (default `5000`) aborts with a localized error.
+## Безопасность экспорта
 
-## Implementation
+- Требуются выбранные ID или разрешённый экспорт по фильтру.
+- Полный экспорт выключен по умолчанию (`allowExportAll(): false`).
+- Проверяется `canView()` у ресурса.
+- Превышение `maxExportRows()` останавливает экспорт до выборки данных.
 
-- `ExportAction` — HTTP/action entry point.
-- `ExportContext` — resource, field set, filter/IDs, user context.
-- `MB\Bitrix\AdminKit\Export\CsvExporter` — CSV writer (legacy `Support\Export\CsvExporter` was removed).
+## Основные классы
 
-## Resource hooks
+- `ExportAction` — точка входа.
+- `ExportContext` — контекст операции.
+- `MB\Bitrix\AdminKit\Export\CsvExporter` — CSV-экспортёр.
+
+## Хуки ресурса
 
 ```php
 public function allowExportByFilter(): bool { return true; }
@@ -26,6 +30,6 @@ public function allowExportAll(): bool { return false; }
 public function maxExportRows(): int { return 5000; }
 ```
 
-## Results
+## Примечание по import
 
-Export row sets, selected IDs, and errors use `AdminCollection` internally; public APIs expose plain arrays and iterables.
+Для import см. [docs/import.md](import.md): там описан только библиотечный слой без UI-флоу.

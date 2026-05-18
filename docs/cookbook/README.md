@@ -1,18 +1,18 @@
-# Cookbook
+# Рецепты (Cookbook)
 
-Практические рецепты v0.9.0:
+Практические сценарии:
 
 - [Как добавить поле](field.md)
 - [Как добавить фильтр](filter.md)
 - [Как добавить row action](row-action.md)
 - [Как добавить bulk action](bulk-action.md)
 - [Как открыть форму в SidePanel](sidepanel.md)
-- [Как добавить runtime ReferenceField](runtime-reference.md)
-- [Как сделать computed column](computed-column.md)
-- [Как сделать кастомный save](custom-save.md)
-- [Как добавить beforeCreate/afterUpdate](lifecycle-hooks.md)
-- [Как проверить права](permissions.md)
-- [Как сделать страницу настроек](options-page.md)
-- [Как сделать dashboard (CountWidget, GraphWidget, Layout)](dashboard.md)
-- [Entity selector fields (UserSelect, IblockSelect, DialogSelect, …)](entity-selector.md)
-- [Как сделать import/export](import-export.md)
+- [Как добавить runtime-поля](runtime-reference.md)
+- [Как сделать computed-колонку](computed-column.md)
+- [Как кастомизировать save](custom-save.md)
+- [Lifecycle hooks](lifecycle-hooks.md)
+- [Права доступа](permissions.md)
+- [Страница настроек](options-page.md)
+- [Dashboard-страница](dashboard.md)
+- [Entity selector поля](entity-selector.md)
+- [Import/export](import-export.md)

@@ -1,32 +1,33 @@
-# Resource import (library only — UI disabled)
+# Импорт ресурсов (только библиотечный слой)
 
-> **Import UI and index-page flow are temporarily disabled.** Do not expect toolbar import buttons, SidePanel import wizards, or `action=import` handling on `IndexPage` in the current branch. The notes below describe the **library layer** kept for a future re-enable.
+> Import UI и index-flow временно отключены.  
+> В текущей ветке не используйте кнопки импорта в тулбаре, sidepanel-импорт и `action=import` в `IndexPage`.
 
-v0.7.0 added a CSV-first import layer for CRUD resources. XLSX/Excel import is out of scope.
+## Что остаётся в библиотеке
 
-## Components (not active on IndexPage)
+- `ImportAction` — parse/preview/validate/import.
+- `ImportContext` — контекст ресурса, маппинга и режима.
+- `CsvImporter` — CSV-парсинг, маппинг, валидация через `Form\DataPipeline`.
 
-- `ImportAction` — parse, preview, validate-only, and import flows.
-- `ImportContext` — resource, rows, mapping, mode, key field, limits.
-- `CsvImporter` — parses CSV, maps columns, validates via `Form\DataPipeline`, persists rows.
+## Формат CSV
 
-## CSV format
+- Первая строка — заголовки.
+- Значения маппятся в поля ресурса до этапа валидации.
 
-The first row is headers. Values map to resource field columns before validation.
+## Режимы (для будущего включения UI)
 
-## Modes (when re-enabled)
+- `create` — создание валидных строк.
+- `update` — обновление по `keyField`.
+- `upsert` — обновление или создание по `keyField`.
 
-- `create` — create every valid row.
-- `update` — update by `keyField`.
-- `upsert` — update or create by `keyField`.
+## Пайплайн полей
 
-## Field pipeline
+Import использует `Form\DataPipeline`, чтобы нормализация и валидация совпадали с обычным сохранением формы.
 
-Import is designed to use `Form\DataPipeline` so CSV rows share Field `normalize()` and validation with form saves.
+## Права и лимиты
 
-## Permissions and limits
+- `create` требует `canCreate()`.
+- `update` требует `canUpdate()`.
+- лимиты могут задаваться в ресурсе (например, `maxImportRows()`), когда import UI будет снова включён.
 
-- Create imports require `canCreate()`; update imports require `canUpdate()` per row.
-- Row limits via `maxImportRows()` on Resource (when import is restored).
-
-For export, see `docs/import-export.md`.
+Экспорт описан в [docs/import-export.md](import-export.md).

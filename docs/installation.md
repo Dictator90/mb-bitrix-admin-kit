@@ -1,22 +1,29 @@
-# Installation
+# Установка
 
-## Requirements
+## Требования
 
-- PHP `^8.2`.
-- 1C-Bitrix with the D7 ORM and the admin area available.
-- Composer autoload enabled in the Bitrix module or application.
+- PHP `^8.2`
+- 1С‑Битрикс с D7 ORM и доступом к административной части
+- Composer
 
-## Composer
+## Установка через Composer
 
 ```bash
 composer require mb4it/bitrix-admin-kit
 ```
 
-The package requires `mb4it/collections`, `mb4it/stringable`, `mb4it/conditionable`, and `mb4it/filesystem` through Composer. AdminKit wraps support behavior with `AdminCollection`, `AdminString`, `AdminCondition`, and `Discovery\ClassDiscovery`; module code can keep using plain PHP arrays, strings, booleans, callables, and regular PHP classes while class discovery is delegated to `MB\Filesystem\Finder\ClassFinder`.
+Пакет подтягивает зависимости `mb4it/*` и использует их через внутренние адаптеры:
 
-## Bitrix module bootstrap
+- `AdminCollection`
+- `AdminString`
+- `AdminCondition`
+- `Discovery\ClassDiscovery`
 
-Load Composer from the module `include.php` before rendering admin pages:
+Код модуля может работать с обычными PHP-массивами, строками, `callable` и классами — адаптеры нужны внутри AdminKit.
+
+## Bootstrap в модуле Битрикс
+
+В `include.php` модуля подключите autoload до рендера админ-страниц:
 
 ```php
 <?php
@@ -27,9 +34,7 @@ if (is_file($autoload)) {
 }
 ```
 
-AdminKit does not register global helper functions and does not create automatic `class_alias()` mappings, which keeps it safe for projects where support packages are already installed.
-
-## Development checks
+## Проверки в разработке
 
 ```bash
 composer validate --strict

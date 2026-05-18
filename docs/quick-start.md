@@ -1,6 +1,6 @@
-# Quick start: первый CRUD в Bitrix-модуле
+# Быстрый старт: первый CRUD в модуле Битрикс
 
-Путь ниже показывает минимальный рабочий сценарий для модуля `vendor.demo`.
+Ниже минимальный рабочий сценарий для модуля `vendor.demo`.
 
 ## 1. Установка
 
@@ -9,7 +9,7 @@ cd local/modules/vendor.demo
 composer require mb4it/bitrix-admin-kit
 ```
 
-В `include.php` подключите autoload:
+В `include.php` модуля:
 
 ```php
 <?php
@@ -20,7 +20,7 @@ if (is_file($autoload)) {
 }
 ```
 
-## 2. ORM DataManager
+## 2. ORM-таблица
 
 `lib/Orm/ProductTable.php`:
 
@@ -51,9 +51,7 @@ final class ProductTable extends DataManager
 }
 ```
 
-Создайте таблицу штатной установкой модуля или миграцией проекта.
-
-## 3. ProductResource
+## 3. Resource
 
 `lib/Admin/ProductResource.php`:
 
@@ -70,12 +68,12 @@ use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Filter\Types\SelectFilter;
 use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use Vendor\Demo\Orm\ProductTable;
 
 final class ProductResource extends DataManagerResource
 {
-    protected string $title = 'Products';
+    protected string $title = 'Товары';
 
     public function dataManagerClass(): string
     {
@@ -86,26 +84,26 @@ final class ProductResource extends DataManagerResource
     {
         return [
             ID::make('ID'),
-            Text::make('Name', 'NAME'),
-            Select::make('Type', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service']),
-            Switcher::make('Active', 'ACTIVE')->values('Y', 'N'),
+            Text::make('Название', 'NAME'),
+            Select::make('Тип', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service']),
+            Switcher::make('Активность', 'ACTIVE')->values('Y', 'N'),
         ];
     }
 
     public function formFields(): iterable
     {
         return [
-            Text::make('Name', 'NAME')->required(),
-            Select::make('Type', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service'])->default('simple'),
-            Switcher::make('Active', 'ACTIVE')->values('Y', 'N')->default('Y'),
+            Text::make('Название', 'NAME')->required(),
+            Select::make('Тип', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service'])->default('simple'),
+            Switcher::make('Активность', 'ACTIVE')->values('Y', 'N')->default('Y'),
         ];
     }
 
     public function filters(): iterable
     {
         return [
-            TextFilter::make('Name', 'NAME'),
-            SelectFilter::make('Type', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service'])->exact(),
+            TextFilter::make('Название', 'NAME'),
+            SelectFilter::make('Тип', 'TYPE')->options(['simple' => 'Simple', 'service' => 'Service'])->exact(),
         ];
     }
 
@@ -128,27 +126,22 @@ final class ProductResource extends DataManagerResource
 ```php
 <?php
 
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/include.php';
-
 use Vendor\Demo\Admin\ProductResource;
 
-$resource = new ProductResource();
-$action = (string)($_REQUEST['action'] ?? 'index');
-$id = isset($_REQUEST['id']) ? (int)$_REQUEST['id'] : null;
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
+
+global $APPLICATION, $adminPage;
+$adminPage->hideTitle();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
 
-match ($action) {
-    'add' => $resource->formPage()->render(),
-    'edit' => $resource->formPage($id)->render(),
-    default => $resource->indexPage()->render(),
-};
+$scope = \MB\Bitrix\AdminKit\Manager\AdminKitScope('vendor.demo', [__DIR__ . '/../lib/Admin'])
+(new MB\Bitrix\AdminKit\Manager\AdminKitManager($scope))->getCurrentPage()->render();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
 ```
 
-## 5. menu.php
+## 5. Пункт меню
 
 `admin/menu.php`:
 
@@ -159,31 +152,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/include.php
 
 use Vendor\Demo\Admin\ProductResource;
 
-return [[
+return [
     'parent_menu' => 'global_menu_content',
     'section' => ProductResource::getId(),
     'sort' => ProductResource::getSort(),
-    'text' => 'Products',
-    'title' => 'Products',
+    'text' => 'Товары',
+    'title' => 'Товары',
     'url' => 'demo_admin.php?page=' . ProductResource::getId(),
     'icon' => ProductResource::getMenuIcon(),
-]];
+];
 ```
 
-## 6. Открытие страницы
+## 6. Проверка
 
-1. Установите модуль и создайте таблицу `vendor_demo_product`.
-2. Откройте админку Bitrix.
-3. Перейдите в раздел меню `Products` или откройте `/bitrix/admin/demo_admin.php?page=product`.
+1. Создайте таблицу `vendor_demo_product`.
+2. Откройте админку Битрикс.
+3. Перейдите в пункт `Товары` или откройте `/bitrix/admin/demo_admin.php?page=product`.
 
-## 7. Создание записи
-
-На странице списка нажмите кнопку добавления. Заполните `Name`, `Type`, `Active` и сохраните. Форма вызовет `ProductTable::add()` через `CrudPersister`.
-
-## 8. Редактирование записи
-
-В меню строки выберите `Редактировать`. Форма загрузит запись по `ID`, нормализует POST через Field и вызовет `ProductTable::update()`.
-
-## 9. Удаление записи
-
-В меню строки выберите `Удалить` или отметьте несколько строк и выполните bulk delete. Удаление проверяет CSRF, выбранные ID и права Resource.
+После этого доступны базовые сценарии: список, создание, редактирование, удаление и массовое удаление.
