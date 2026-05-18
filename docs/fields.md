@@ -360,3 +360,9 @@ Text::make('Product', 'PRODUCT_ID')
 All classes inherit `required()`, `readonly()`, `multiple()`, `default()`, `help()`,
 `placeholder()`, `visibleWhen()`, `requiredWhen()`, `readonlyWhen()`, `dependsOn()`,
 `onChange()`, and `displayUsing()` from `Field`.
+
+## Grid editable metadata
+
+- Inline edit metadata comes from `getGridColumnConfig()` and is enabled only when `editable(true)` is set **and** field is not readonly.
+- `Select` exposes Bitrix list editor items as `editable[items]` only for inline-editable columns.
+- Relation and entity selector fields (`RelationField` descendants, `EntitySelect`, `DialogSelect`, `TagSelect`, `UserSelect`, `Iblock*Select`) are intentionally non-inline-editable in `main.ui.grid`; edit these values through form/sidepanel flows.
