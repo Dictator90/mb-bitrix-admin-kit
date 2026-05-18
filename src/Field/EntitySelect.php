@@ -171,6 +171,11 @@ class EntitySelect extends Field
         return implode(' ', $parts);
     }
 
+    protected function supportsInlineEdit(): bool
+    {
+        return false;
+    }
+
     protected function parseIds(mixed $value): array
     {
         return (new EntitySelectorValueNormalizer())->parseIds($value);
