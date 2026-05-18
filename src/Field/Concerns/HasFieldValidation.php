@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Field\Concerns;
 use Closure;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\AdminCondition;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Support\Validation\Rules;
 use MB\Support\Conditionable\ConditionTree;
 
@@ -102,13 +103,23 @@ trait HasFieldValidation
         $required = $this->required || $this->hasActiveRequiredCondition($data);
 
         if ($required && $this->isEmptyValidationValue($value)) {
-            $errors[] = "Поле \"{$this->getLabel()}\" обязательно для заполнения";
+            $errors[] = LocalizedMessage::get(
+                __FILE__,
+                'MB_ADMIN_KIT_FIELD_REQUIRED',
+                'Field "#FIELD#" is required.',
+                ['#FIELD#' => $this->getLabel()],
+            );
         }
 
         foreach ($this->validators as $validator) {
             $result = $validator($value, $data);
             if ($result === false) {
-                $errors[] = "Поле \"{$this->getLabel()}\" содержит некорректное значение";
+                $errors[] = LocalizedMessage::get(
+                    __FILE__,
+                    'MB_ADMIN_KIT_FIELD_INVALID',
+                    'Field "#FIELD#" contains an invalid value.',
+                    ['#FIELD#' => $this->getLabel()],
+                );
             } elseif (is_string($result) && $result !== '') {
                 $errors[] = $result;
             }
@@ -205,4 +216,5 @@ trait HasFieldValidation
 
         return $results !== [] && !in_array(false, $results, true);
     }
+
 }

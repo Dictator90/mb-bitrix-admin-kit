@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use Closure;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
 /**
  * Select one record from a DataManager table (foreign-key select).
- *
- * Usage:
- *   BelongsTo::make('Категория', 'CATEGORY_ID', CategoryTable::class)
- *       ->titleColumn('NAME')
- *       ->emptyOption('— выберите —')
- *       ->filter(['ACTIVE' => 'Y'])
- *       ->orderBy('SORT')
  */
 class BelongsTo extends Field
 {
@@ -66,10 +60,10 @@ class BelongsTo extends Field
         return $this;
     }
 
-    /** Add a blank first option (e.g. '— выберите —'). */
-    public function emptyOption(string $label = '— выберите —'): static
+    /** Add a blank first option. */
+    public function emptyOption(string $label = ''): static
     {
-        $this->emptyLabel = $label;
+        $this->emptyLabel = $label !== '' ? $label : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BELONGS_TO_EMPTY_OPTION', '— select —');
         return $this;
     }
 
@@ -142,7 +136,7 @@ class BelongsTo extends Field
     public function previewValue(mixed $value): string
     {
         if ($value === null || $value === '') {
-            return '—';
+            return LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BELONGS_TO_EMPTY_PREVIEW', '—');
         }
         if ($this->optionsCallback !== null) {
             $options = ($this->optionsCallback)();
@@ -170,4 +164,5 @@ class BelongsTo extends Field
     {
         return 'list';
     }
+
 }

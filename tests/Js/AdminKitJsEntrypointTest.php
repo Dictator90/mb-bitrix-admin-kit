@@ -8,14 +8,14 @@ use PHPUnit\Framework\TestCase;
 
 final class AdminKitJsEntrypointTest extends TestCase
 {
-    public function testCoreIndexHasNoTabsOrDialogSelector(): void
+    public function testCoreIndexExportsTabsAndDialogSelector(): void
     {
         $source = (string)file_get_contents(dirname(__DIR__, 2) . '/install/js/mb/admin/kit/src/index.js');
 
-        self::assertStringNotContainsString('./tabs', $source);
-        self::assertStringNotContainsString('./dialog-selector', $source);
-        self::assertStringNotContainsString('initTabs', $source);
-        self::assertStringNotContainsString('initAll', $source);
+        self::assertStringContainsString('./tabs/index', $source);
+        self::assertStringContainsString('./dialog-selector/index', $source);
+        self::assertStringContainsString('Tabs', $source);
+        self::assertStringContainsString('DialogSelector', $source);
     }
 
     public function testTabsAndDialogSelectorSourcesExportClassesOnly(): void

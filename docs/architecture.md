@@ -57,3 +57,20 @@ Stage-aware контейнер формы: `raw`, `normalized`, `validated`, `er
 ## Support adapters
 
 `AdminCollection`, `AdminString`, `AdminCondition` изолируют ядро AdminKit от глобальных helper-функций и конкретных реализаций support-пакетов.
+
+`LocalizedMessage` централизует `Loc::getMessage()` для пользовательских строк в actions, pages, fields и UI providers.
+
+## Naming glossary (омонимы)
+
+| Имя | Namespace / путь | Роль |
+|-----|------------------|------|
+| `IndexPage` (legacy alias) | `Page\IndexPage` | Deprecated wrapper → `Page\Crud\IndexPage` |
+| `IndexPage` (canonical) | `Page\Crud\IndexPage` | CRUD list page implementation |
+| `OptionsPage` | `Pages\OptionsPage` | Standalone module settings (`b_option`) |
+| `CustomPage` / `DashboardPage` | `Page\Standalone\*` | Other standalone pages |
+| `ResourcePage` (page class) | `Page\ResourcePage` | Base class for resource-bound CRUD pages |
+| `ResourcePage` (dispatcher) | `Manager\ResourcePage` | HTTP dispatcher: resolves index/form/detail for a resource |
+| `HasOne` / `HasMany` (field) | `Field\HasOne`, `Field\HasMany` | Relation field types for forms/grid |
+| `HasOne` / `HasMany` (component) | `Component\Relation\*` | Inline relation UI widgets on form/detail |
+| `PageNotFoundException` | `Exception\PageNotFoundException` | Routing: page id not registered |
+| `AdminKitException` | `Exceptions\AdminKitException` | General library errors |

@@ -10,6 +10,7 @@ use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
 class BulkUpdateAction extends BulkAction
@@ -38,7 +39,7 @@ class BulkUpdateAction extends BulkAction
 
         $ids = $this->selectedIds($context);
         if ($ids === []) {
-            return BulkResult::failure('Не выбраны элементы');
+            return BulkResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_EMPTY_SELECTION', 'No items selected.'));
         }
 
         $context = $context->with(['selectedIds' => $ids, 'action' => $this]);
@@ -109,4 +110,5 @@ class BulkUpdateAction extends BulkAction
 
         return array_chunk(AdminCollection::make($ids)->all(), $chunkSize);
     }
+
 }

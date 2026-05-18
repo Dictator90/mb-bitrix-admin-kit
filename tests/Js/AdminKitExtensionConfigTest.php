@@ -8,15 +8,14 @@ use PHPUnit\Framework\TestCase;
 
 final class AdminKitExtensionConfigTest extends TestCase
 {
-    public function testMbAdminKitExtensionIncludesTabsAndDialogSelectorBundles(): void
+    public function testMbAdminKitExtensionIncludesKitBundles(): void
     {
         $root = dirname(__DIR__, 2) . '/install/js/mb/admin/kit';
         /** @var array{js: list<string>, css: list<string>} $config */
         $config = require $root . '/config.php';
 
-        self::assertContains('dist/tabs.bundle.js', $config['js']);
-        self::assertContains('dist/dialog-selector.bundle.js', $config['js']);
-        self::assertContains('dist/tabs.bundle.css', $config['css']);
+        self::assertContains('dist/kit.bundle.js', $config['js']);
+        self::assertContains('dist/kit.bundle.css', $config['css']);
 
         foreach ($config['js'] as $script) {
             self::assertFileExists($root . '/' . $script, 'Missing JS asset: ' . $script);

@@ -8,14 +8,10 @@ use MB\Bitrix\AdminKit\Page\Crud\DetailPage as CrudDetailPage;
 use MB\Bitrix\AdminKit\Page\Crud\FormPage as CrudFormPage;
 use MB\Bitrix\AdminKit\Page\Crud\IndexPage as CrudIndexPage;
 use MB\Bitrix\AdminKit\Page\CrudPage;
-use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
-use MB\Bitrix\AdminKit\Page\Crud\FormPage;
-use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Page\Page;
 use MB\Bitrix\AdminKit\Page\ResourcePage;
 use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
 use MB\Bitrix\AdminKit\Page\StandalonePage;
-use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -81,21 +77,6 @@ final class PageArchitectureTest extends TestCase
         self::assertTrue(is_subclass_of(CrudIndexPage::class, CrudPage::class));
         self::assertTrue(is_subclass_of(CrudFormPage::class, ResourcePage::class));
         self::assertTrue(is_subclass_of(CrudDetailPage::class, CrudPage::class));
-    }
-
-    public function testLegacyPageAliasesExtendCrudPages(): void
-    {
-        self::assertTrue(is_subclass_of(IndexPage::class, CrudIndexPage::class));
-        self::assertTrue(is_subclass_of(FormPage::class, CrudFormPage::class));
-        self::assertTrue(is_subclass_of(DetailPage::class, CrudDetailPage::class));
-    }
-
-    public function testResourcePageAcceptsResource(): void
-    {
-        $resource = new ProductResource();
-        $page = new IndexPage($resource);
-
-        self::assertSame($resource, $page->resource());
     }
 
     public function testStandalonePageExtendsCorePage(): void

@@ -15,13 +15,13 @@ final class LifecycleUpdateTest extends TestCase
     {
         $resource = new class () extends ProductResource {
             public array $calls = [];
-            public function beforeUpdate(array $oldItem, FormData $data, DbOperationContext $context): void
+            public function beforeUpdate(mixed $id, FormData $data, DbOperationContext $context): void
             {
-                $this->calls[] = 'before:' . $oldItem['NAME'];
+                $this->calls[] = 'before:' . ($context->oldData['NAME'] ?? '');
             }
-            public function afterUpdate(array $item, FormData $data, DbOperationContext $context): void
+            public function afterUpdate(mixed $id, FormData $data, DbOperationContext $context): void
             {
-                $this->calls[] = 'after:' . $item['NAME'];
+                $this->calls[] = 'after:' . ($data->validated()['NAME'] ?? '');
             }
         };
 

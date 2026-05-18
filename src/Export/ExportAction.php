@@ -8,6 +8,7 @@ use Closure;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 final class ExportAction
 {
@@ -16,19 +17,20 @@ final class ExportAction
     private Closure|bool $canRunCondition = true;
     private bool $allowRunByFilter = true;
     private bool $allowRunAll = false;
+    private string $id;
+    private string $label;
 
     public function __construct(
-        private readonly string $id = 'export',
-        private readonly string $label = 'Экспорт',
+        string $id = 'export',
+        ?string $label = null,
         ?ExporterInterface $exporter = null,
     ) {
-        if (class_exists(\Bitrix\Main\Localization\Loc::class)) {
-            \Bitrix\Main\Localization\Loc::loadMessages(__FILE__);
-        }
+        $this->id = $id;
+        $this->label = $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_EXPORT_LABEL', 'Export');
         $this->exporters = [$exporter ?? new CsvExporter()];
     }
 
-    public static function make(string $id = 'export', string $label = 'Экспорт'): self
+    public static function make(string $id = 'export', ?string $label = null): self
     {
         return new self($id, $label);
     }
@@ -64,11 +66,11 @@ final class ExportAction
     public function execute(ExportContext $context): ExportResult
     {
         if (!$context->resource->canView(new PermissionContext($context->userId, null, $context->resource, 'export'))) {
-            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_PERMISSION_DENIED', 'Export permission denied.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_PERMISSION_DENIED', 'Export permission denied.'));
         }
 
         if (!$this->isRunnable($context)) {
-            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export action is not allowed.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export action is not allowed.'));
         }
 
         if (
@@ -77,7 +79,7 @@ final class ExportAction
             && !$this->allowRunAll
             && !$context->resource->allowExportAll()
         ) {
-            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_ALL_DISABLED', 'Exporting all records is disabled by default. Select records or pass an explicit filter.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_ALL_DISABLED', 'Exporting all records is disabled by default. Select records or pass an explicit filter.'));
         }
 
         if (
@@ -88,12 +90,12 @@ final class ExportAction
                 || !$context->resource->allowExportByFilter()
             )
         ) {
-            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_FILTER_DISABLED', 'Export by filter is disabled for this action.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_FILTER_DISABLED', 'Export by filter is disabled for this action.'));
         }
 
         $maxRows = $this->maxExportRows($context);
         if ($maxRows <= 0) {
-            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export is disabled for this resource.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export is disabled for this resource.'));
         }
 
         $rowCount = $this->countExportRows($context);
@@ -103,7 +105,7 @@ final class ExportAction
 
         $exporter = $this->resolveExporter($context->format);
         if ($exporter === null) {
-            return ExportResult::failure($this->message('MB_ADMIN_KIT_EXPORT_UNSUPPORTED_FORMAT', 'Unsupported export format.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_UNSUPPORTED_FORMAT', 'Unsupported export format.'));
         }
 
         return $exporter->export($this->rows($context), $context);
@@ -136,21 +138,12 @@ final class ExportAction
 
     private function tooManyRowsMessage(int $maxRows): string
     {
-        $template = $this->message(
+        return LocalizedMessage::get(
+            __FILE__,
             'MB_ADMIN_KIT_EXPORT_TOO_MANY_ROWS',
             'Too many rows to export. Maximum: #MAX#.',
+            ['#MAX#' => (string) $maxRows],
         );
-
-        return str_replace('#MAX#', (string)$maxRows, $template);
-    }
-
-    private function message(string $key, string $fallback): string
-    {
-        if (class_exists(\Bitrix\Main\Localization\Loc::class)) {
-            return (string)(\Bitrix\Main\Localization\Loc::getMessage($key) ?: $fallback);
-        }
-
-        return $fallback;
     }
 
     private function resolveExporter(string $format): ?ExporterInterface
@@ -179,7 +172,7 @@ final class ExportAction
 
         if ($context->hasSelectedIds()) {
             $params['filter'] = array_replace($params['filter'] ?? [], [
-                '@' . $resource->getPrimaryKey() => AdminCollection::make($context->selectedIds)->all(),
+                $resource->getPrimaryKey() => AdminCollection::make($context->selectedIds)->all(),
             ]);
         } elseif ($context->hasFilter()) {
             $params['filter'] = array_replace($params['filter'] ?? [], $context->filter);

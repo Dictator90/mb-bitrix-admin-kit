@@ -28,6 +28,16 @@ A public API removal must be introduced with `@deprecated` phpdoc and migration 
 - New documentation and examples.
 - Bug fixes that preserve the documented contracts.
 
+## v1.x stabilization notes (2026-05)
+
+- Legacy CRUD page aliases are preserved as wrappers:
+  - `MB\Bitrix\AdminKit\Page\IndexPage` -> `Page\Crud\IndexPage`
+  - `MB\Bitrix\AdminKit\Page\FormPage` -> `Page\Crud\FormPage`
+  - `MB\Bitrix\AdminKit\Page\DetailPage` -> `Page\Crud\DetailPage`
+- `Resource` keeps backward-compatible CRUD page helper behavior (`indexPage`, `formPage`, `detailPage`) and safe defaults used by legacy non-CRUD resources.
+- DataManager fallback remains compatible for legacy resources that extend `Resource` and wire persistence traits directly.
+- JSON/early-response branches are test-aware to avoid silent PHPUnit process aborts; production behavior still terminates responses normally.
+
 ## Documented exception (UI-layer refactor)
 
 This release intentionally introduces breaking API changes in UI contracts:

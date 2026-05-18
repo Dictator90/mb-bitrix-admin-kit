@@ -301,7 +301,7 @@ BulkActionDropdown::make('activity', 'Активность')
 Standalone-страница для `b_option` / `b_option_site`. Не наследуйте ORM `CrudResource` для настроек — используйте `Pages\OptionsPage`. Deprecated-обёртка `Page\OptionsPage` сохранена для обратной совместимости.
 
 ```php
-final class SettingsPage extends \MB\Bitrix\AdminKit\Pages\OptionsPage
+final class SettingsPage extends \MB\Bitrix\AdminKit\Page\Standalone\OptionsPage
 {
     protected string $moduleId = 'vendor.demo';
 
@@ -511,3 +511,12 @@ final class ProductResource extends CrudResource
 The shortcuts `indexFields()`, `formFields()`, and `detailFields()` still work for simple resources. For complex views, override `fields()`, `filters()`, `rowActions()`, `bulkActions()`, query hooks, tabs, and save hooks on the appropriate page class. Do not introduce `indexResource()`, `formResource()`, `detailResource()`, `IndexResource`, `FormResource`, or `DetailResource`; page classes are the extension point.
 
 See `docs/pages.md` for full custom page examples and the `admin_resource` / `admin_page` routing parameters.
+
+## Compatibility notes (v1.x)
+
+- Legacy page class aliases remain available for existing modules:
+  - `MB\Bitrix\AdminKit\Page\IndexPage`
+  - `MB\Bitrix\AdminKit\Page\FormPage`
+  - `MB\Bitrix\AdminKit\Page\DetailPage`
+  They proxy to `MB\Bitrix\AdminKit\Page\Crud\*` and are kept for backward compatibility.
+- JS runtime is consolidated into `mb.admin.kit` bundle; extension config points to `dist/kit.bundle.js` and `dist/kit.bundle.css`.

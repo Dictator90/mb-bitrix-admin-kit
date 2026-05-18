@@ -1,0 +1,2 @@
+<?php
+$MESS['MB_ADMIN_KIT_SELECTOR_GROUPS_TITLE'] = 'Группы';

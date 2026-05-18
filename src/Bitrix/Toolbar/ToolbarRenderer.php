@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Bitrix\Toolbar;
 
-use Bitrix\Main\Localization\Loc;
 use Bitrix\UI\Buttons\Button;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Bitrix\UI\Buttons\Color;
 use Bitrix\UI\Buttons\Icon;
 use Bitrix\UI\Buttons\JsCode;
@@ -34,7 +34,7 @@ final class ToolbarRenderer
                 new Button([
                     'color' => Color::SUCCESS,
                     'icon' => Icon::ADD,
-                    'text' => $this->message('MB_ADMIN_KIT_TOOLBAR_CREATE', 'Create'),
+                    'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_CREATE', 'Create'),
                     'click' => new JsCode($this->createButtonJs($resource, $grid, $createUrl)),
                 ]),
                 ButtonLocation::AFTER_TITLE,
@@ -45,7 +45,7 @@ final class ToolbarRenderer
             if ($action === 'export') {
                 Toolbar::addButton(
                     new Button([
-                        'text' => $this->message('MB_ADMIN_KIT_TOOLBAR_EXPORT_CSV', 'Export CSV'),
+                        'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_EXPORT_CSV', 'Export CSV'),
                         'click' => new JsCode('window.location.href=' . json_encode($this->exportUrl($grid), JSON_UNESCAPED_SLASHES) . ';'),
                     ]),
                     ButtonLocation::AFTER_TITLE,
@@ -87,7 +87,7 @@ final class ToolbarRenderer
         if ($editUrl !== null && $resource->canUpdate(new PermissionContext(resource: $resource, operation: 'update'))) {
             Toolbar::addButton(
                 new Button([
-                    'text' => $this->message('MB_ADMIN_KIT_TOOLBAR_EDIT', 'Edit'),
+                    'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_EDIT', 'Edit'),
                     'click' => new JsCode('window.location.href=' . json_encode($editUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';'),
                 ]),
                 ButtonLocation::AFTER_TITLE,
@@ -96,7 +96,7 @@ final class ToolbarRenderer
 
         Toolbar::addButton(
             new Button([
-                'text' => $this->message('MB_ADMIN_KIT_TOOLBAR_BACK', 'Back'),
+                'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_BACK', 'Back'),
                 'click' => new JsCode($backJs),
             ]),
             ButtonLocation::AFTER_TITLE,
@@ -170,12 +170,4 @@ final class ToolbarRenderer
         return ['export'];
     }
 
-    private function message(string $key, string $fallback): string
-    {
-        if (class_exists(Loc::class)) {
-            return (string)(Loc::getMessage($key) ?: $fallback);
-        }
-
-        return $fallback;
-    }
 }

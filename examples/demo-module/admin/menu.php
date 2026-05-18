@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/include.php';
 
+use MB\Bitrix\AdminKit\Manager\AdminKitManager;
+use MB\Bitrix\AdminKit\Manager\AdminKitScope;
 use Vendor\Demo\Admin\DashboardPage;
 use Vendor\Demo\Admin\ProductResource;
 use Vendor\Demo\Admin\SettingsPage;
 
-return [[
+$scope = new AdminKitScope('demo.module', ['local/modules/demo.module/lib/Admin']);
+
+
+return [
     'parent_menu' => 'global_menu_content',
     'section' => 'vendor_demo',
     'sort' => 200,
@@ -17,6 +22,9 @@ return [[
     'url' => 'demo_admin.php?page=' . DashboardPage::getId(),
     'icon' => DashboardPage::getMenuIcon(),
     'items_id' => 'menu_vendor_demo',
+    'items' => (new AdminKitManager($scope))->getMenu(),
+    // Or manually
+    /*
     'items' => [
         [
             'text' => 'Dashboard',
@@ -37,4 +45,5 @@ return [[
             'sort' => SettingsPage::getSort(),
         ],
     ],
-]];
+    */
+];

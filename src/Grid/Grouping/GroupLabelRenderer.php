@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Grid\Grouping;
 
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 final class GroupLabelRenderer
@@ -48,7 +49,7 @@ final class GroupLabelRenderer
                 return $ungroupedLabel([]);
             }
 
-            return $ungroupedLabel ?? 'Без группы';
+            return $ungroupedLabel ?? LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_GROUPING_UNGROUPED', 'Ungrouped');
         }
 
         $labelColumn = $grouping->labelColumn();
@@ -80,4 +81,5 @@ final class GroupLabelRenderer
 
         return isset($groupData[$ownerKey]) ? (string)$groupData[$ownerKey] : '';
     }
+
 }

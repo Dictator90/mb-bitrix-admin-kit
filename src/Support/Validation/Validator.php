@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Support\Validation;
 
 use Closure;
 use InvalidArgumentException;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class Validator
 {
@@ -13,12 +14,6 @@ class Validator
 
     /**
      * Validate data against rules.
-     *
-     * Rules format:
-     * [
-     *   'field_name' => [Rules::email(), Rules::maxLength(255)],
-     *   'other_field' => [fn($v) => $v > 0 ? true : 'Must be positive'],
-     * ]
      *
      * @param array $data Input data ['field' => value, ...]
      * @param array $rules Validation rules ['field' => [Closure, ...], ...]
@@ -42,7 +37,12 @@ class Validator
                 $result = $rule($value);
 
                 if ($result === false) {
-                    $this->errors[$field][] = "Поле {$field} содержит некорректное значение";
+                    $this->errors[$field][] = LocalizedMessage::get(
+                        __FILE__,
+                        'MB_ADMIN_KIT_VALIDATOR_INVALID_FIELD',
+                        'Field #FIELD# contains an invalid value.',
+                        ['#FIELD#' => (string) $field],
+                    );
                 } elseif (is_string($result) && $result !== '') {
                     $this->errors[$field][] = $result;
                 }
@@ -98,4 +98,5 @@ class Validator
             throw new InvalidArgumentException(implode('; ', $this->getFlatErrors()));
         }
     }
+
 }

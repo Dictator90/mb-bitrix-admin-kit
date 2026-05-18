@@ -6,7 +6,6 @@ namespace MB\Bitrix\AdminKit\Field;
 
 use Bitrix\Iblock\SectionTable;
 use Bitrix\Main\Loader;
-use CIBlockSection;
 
 class IblockSectionSelect extends DialogSelect
 {

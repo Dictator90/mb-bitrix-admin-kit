@@ -11,7 +11,7 @@ use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Field\BelongsTo;
 use MB\Bitrix\AdminKit\Field\Password;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Pages\OptionsPage;
+use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +39,6 @@ final class OptionsPageStabilizationTest extends TestCase
     public function testAjaxPostWithInvalidSessidReturnsJsonErrorAndDoesNotSave(): void
     {
         $page = new SessidCapturingOptionsPage();
-        SessidCapturingOptionsPage::$jsonPayload = null;
 
         $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
         $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = false;
@@ -48,16 +47,12 @@ final class OptionsPageStabilizationTest extends TestCase
             'name' => 'Changed',
         ];
 
-        try {
-            $page->render();
-            self::fail('Expected JSON exit');
-        } catch (\RuntimeException $exception) {
-            self::assertSame('json_exit', $exception->getMessage());
-        }
+        ob_start();
+        $page->render();
+        $output = (string) ob_get_clean();
 
-        self::assertIsArray(SessidCapturingOptionsPage::$jsonPayload);
-        self::assertSame('error', SessidCapturingOptionsPage::$jsonPayload['status'] ?? null);
-        self::assertStringContainsString('Сессия истекла', (string)(SessidCapturingOptionsPage::$jsonPayload['message'] ?? ''));
+        self::assertStringContainsString('"status":"error"', str_replace(' ', '', $output));
+        self::assertStringContainsString('Сессия истекла', $output);
         self::assertSame(0, Option::$setCalls);
     }
 
@@ -223,9 +218,6 @@ final class OptionsPageStabilizationTest extends TestCase
 
 final class SessidCapturingOptionsPage extends OptionsPage
 {
-    /** @var array<string,mixed>|null */
-    public static ?array $jsonPayload = null;
-
     protected string $moduleId = 'vendor.test';
 
     public static function getId(): string
@@ -238,16 +230,9 @@ final class SessidCapturingOptionsPage extends OptionsPage
         return 'Sessid options';
     }
 
-    protected function components(): iterable
+    public function components(): iterable
     {
         return [Text::make('Name', 'name')];
-    }
-
-    protected function sendJsonAndExit(array $payload): never
-    {
-        self::$jsonPayload = $payload;
-
-        throw new \RuntimeException('json_exit');
     }
 }
 
@@ -265,7 +250,7 @@ final class TestableOptionsPage extends OptionsPage
         return 'Testable options';
     }
 
-    protected function components(): iterable
+    public function components(): iterable
     {
         return [
             Text::make('Type', 'type'),
@@ -353,7 +338,7 @@ final class SingleTabOptionsPage extends OptionsPage
         return 'Single tab options';
     }
 
-    protected function components(): iterable
+    public function components(): iterable
     {
         return [
             Tab::make('Orphan', [

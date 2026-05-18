@@ -7,7 +7,6 @@ namespace MB\Bitrix\AdminKit\Page;
 use MB\Bitrix\AdminKit\Contracts\Page\StandalonePageContract;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminString;
-use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 abstract class StandalonePage extends Page implements StandalonePageContract

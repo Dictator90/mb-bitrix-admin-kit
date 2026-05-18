@@ -19,7 +19,17 @@ trait HasDataManager
     /** @return class-string<T>|null */
     public function getDataManagerClass(): ?string
     {
-        return $this->dataManagerClass ?: null;
+        if ($this->dataManagerClass !== null && $this->dataManagerClass !== '') {
+            return $this->dataManagerClass;
+        }
+
+        if (method_exists($this, 'dataManagerClass')) {
+            $class = (string)$this->dataManagerClass();
+
+            return $class !== '' ? $class : null;
+        }
+
+        return null;
     }
 
     public function dataManagerClass(): string

@@ -18,7 +18,7 @@ final class ImportRemovedFromIndexPageTest extends TestCase
     public function testIndexPageSourceDoesNotReferenceImportNamespace(): void
     {
         $source = (string)file_get_contents(
-            dirname(__DIR__, 2) . '/src/Page/IndexPage.php',
+            dirname(__DIR__, 2) . '/src/Page/Crud/IndexPage.php',
         );
 
         self::assertStringNotContainsString('MB\\Bitrix\\AdminKit\\Import\\', $source);

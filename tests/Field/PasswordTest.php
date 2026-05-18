@@ -17,7 +17,7 @@ final class PasswordTest extends TestCase
         self::assertStringContainsString('adminkit-password-field', $html);
         self::assertStringContainsString('data-adminkit-password-toggle', $html);
         self::assertStringContainsString('ui-ctl-icon-crossed-eye', $html);
-        self::assertStringNotContainsString('Оставьте пустым', $html);
+        self::assertStringNotContainsString('Leave empty to keep current value', $html);
     }
 
     public function testOldValueDisabledKeepsEmptyInputAndHint(): void
@@ -27,7 +27,7 @@ final class PasswordTest extends TestCase
         self::assertStringContainsString('value=""', $html);
         self::assertStringNotContainsString('adminkit-password-field', $html);
         self::assertStringNotContainsString('data-adminkit-password-toggle', $html);
-        self::assertStringContainsString('Значение сохранено', $html);
+        self::assertStringContainsString('Stored value is preserved', $html);
     }
 
     public function testPreserveStoredValueWhenEmptyIsAlwaysEnabled(): void

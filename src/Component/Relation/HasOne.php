@@ -9,15 +9,6 @@ use Throwable;
 /**
  * Renders the fields of a single related record inline.
  * The related record is found using a foreign key on the related table.
- *
- * Usage:
- *   HasOne::make('Профиль', ProfileTable::class)
- *       ->foreignKey('USER_ID')
- *       ->columns([
- *           Text::make('Телефон', 'PHONE'),
- *           Text::make('Город', 'CITY'),
- *       ])
- *       ->editUrl(fn($row) => '/bitrix/admin/profile_edit.php?id=' . $row['ID'])
  */
 class HasOne extends HasMany
 {
@@ -46,11 +37,11 @@ class HasOne extends HasMany
         $editBtn = '';
         if ($this->editUrlCallback !== null && $row !== null) {
             $editUrl = htmlspecialcharsbx(($this->editUrlCallback)($row));
-            $editBtn = ' <a href="' . $editUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border">Изменить</a>';
+            $editBtn = ' <a href="' . $editUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border">' . $this->message('MB_ADMIN_KIT_HAS_ONE_EDIT', 'Edit') . '</a>';
         }
         if ($this->createUrlCallback !== null && $row === null && $parentId !== null) {
             $createUrl = htmlspecialcharsbx(($this->createUrlCallback)($parentId));
-            $editBtn = ' <a href="' . $createUrl . '" class="ui-btn ui-btn-xs ui-btn-success-light">Создать</a>';
+            $editBtn = ' <a href="' . $createUrl . '" class="ui-btn ui-btn-xs ui-btn-success-light">' . $this->message('MB_ADMIN_KIT_HAS_ONE_CREATE', 'Create') . '</a>';
         }
 
         ob_start();
@@ -63,9 +54,9 @@ class HasOne extends HasMany
             <div class="adminkit-hasmany__body">
                 <?php
                 if ($row === null): ?>
-                    <div class="adminkit-hasmany__empty">Запись не найдена</div>
+                    <div class="adminkit-hasmany__empty"><?= $this->message('MB_ADMIN_KIT_HAS_ONE_NOT_FOUND', 'Record not found') ?></div>
                 <?php elseif (empty($this->columns)): ?>
-                    <div class="adminkit-hasmany__empty">Столбцы не заданы — используйте ->columns([...])</div>
+                    <div class="adminkit-hasmany__empty"><?= $this->message('MB_ADMIN_KIT_HAS_MANY_COLUMNS_REQUIRED', 'Columns are not configured. Use ->columns([...]).') ?></div>
                 <?php else: ?>
                     <div class="ui-form">
                         <?php

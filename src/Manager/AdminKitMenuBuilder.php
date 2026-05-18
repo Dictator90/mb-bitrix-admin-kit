@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
-use MB\Bitrix\AdminKit\Page\Page;
-use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\AdminString;
@@ -53,18 +51,25 @@ final class AdminKitMenuBuilder
         $entries = [];
         foreach ($this->registry->resources() as $id => $class) {
             $resource = new $class();
-            if (!$class::isVisibleInMenu() || !$resource->canView($context)) {
+            if (!$class::isVisibleInMenu()) {
                 continue;
             }
+
+            if (method_exists($resource, 'canView') && !$resource->canView($context)) {
+                continue;
+            }
+
+            $hasCrud = method_exists($resource, 'hasCrud') ? $resource->hasCrud() : false;
+            $group = method_exists($resource, 'group') ? $resource->group() : null;
 
             $entries[] = [
                 'text' => $resource->getTitle(),
                 'title' => $resource->getTitle(),
-                'url' => (new UrlGenerator($this->baseUrl))->resourceUrl($id, ['action' => $resource->hasCrud() ? 'list' : 'options']),
+                'url' => (new UrlGenerator($this->baseUrl))->resourceUrl($id, ['action' => $hasCrud ? 'list' : 'options']),
                 'icon' => $class::getMenuIcon(),
                 'sort' => $class::getSort(),
                 'items_id' => AdminString::id('adminkit_menu', $id),
-                '_parent' => $class::getParentMenuId() ?: (method_exists($resource, 'group') ? $resource->group() : null),
+                '_parent' => $class::getParentMenuId() ?: $group,
             ];
         }
 

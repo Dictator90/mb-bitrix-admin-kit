@@ -137,11 +137,11 @@ final class AdminKitRegistry
 
     private function canRegisterPage(string $class): bool
     {
-        if (!$class::isStandalone()) {
+        if (!$this->canRegister($class, StandalonePage::class)) {
             return false;
         }
 
-        return $this->canRegister($class, StandalonePage::class);
+        return $class::isStandalone();
     }
 
     private function canRegister(string $class, string $baseClass): bool

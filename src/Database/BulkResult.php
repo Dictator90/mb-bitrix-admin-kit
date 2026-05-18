@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Database;
 
+use Bitrix\Main\Localization\Loc;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 
 final class BulkResult
@@ -50,7 +51,10 @@ final class BulkResult
     {
         $key = $this->key($id);
         $messages = array_values(array_filter(array_map('strval', (array)$errors), static fn (string $error): bool => $error !== ''));
-        $this->errorsById[$key] = array_merge($this->errorsById[$key] ?? [], $messages ?: ['Bulk operation failed.']);
+        $this->errorsById[$key] = array_merge(
+            $this->errorsById[$key] ?? [],
+            $messages ?: [$this->translate('MB_ADMIN_KIT_BULK_RESULT_FAILED', 'Bulk operation failed.')],
+        );
         $this->failedCount = count($this->errorsById);
         $this->recalculateTotal();
     }
@@ -86,13 +90,15 @@ final class BulkResult
     public function message(): string
     {
         $summary = $this->summary();
+        $template = $this->translate(
+            'MB_ADMIN_KIT_BULK_RESULT_SUMMARY',
+            'Processed: #TOTAL#. Success: #SUCCESS#. Skipped: #SKIPPED#. Failed: #FAILED#.',
+        );
 
-        return sprintf(
-            'Обработано: %d. Успешно: %d. Пропущено: %d. С ошибкой: %d.',
-            $summary['total'],
-            $summary['success'],
-            $summary['skipped'],
-            $summary['failed'],
+        return str_replace(
+            ['#TOTAL#', '#SUCCESS#', '#SKIPPED#', '#FAILED#'],
+            [(string)$summary['total'], (string)$summary['success'], (string)$summary['skipped'], (string)$summary['failed']],
+            $template,
         );
     }
 
@@ -104,5 +110,16 @@ final class BulkResult
     private function key(mixed $id): string
     {
         return is_scalar($id) || $id === null ? (string)$id : md5(serialize($id));
+    }
+
+    private function translate(string $key, string $fallback): string
+    {
+        if (class_exists(Loc::class)) {
+            Loc::loadMessages(__FILE__);
+
+            return (string)(Loc::getMessage($key) ?: $fallback);
+        }
+
+        return $fallback;
     }
 }

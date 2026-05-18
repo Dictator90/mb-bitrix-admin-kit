@@ -10,9 +10,9 @@ use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Grid\Row\RowAssembler;
 use MB\Bitrix\AdminKit\Page\ResourceBackedIndexPageDefinition;
 use MB\Bitrix\AdminKit\Tests\Fixtures\FakeQueryResult;
+use MB\Bitrix\AdminKit\Tests\Fixtures\GroupedRowsBuilderGroupResource;
+use MB\Bitrix\AdminKit\Tests\Fixtures\GroupedRowsBuilderGroupTable;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
-use MB\Bitrix\AdminKit\Tests\Grid\GroupedRowsBuilderGroupResource;
-use MB\Bitrix\AdminKit\Tests\Grid\GroupedRowsBuilderGroupTable;
 use PHPUnit\Framework\TestCase;
 
 final class FieldEditLinkTest extends TestCase

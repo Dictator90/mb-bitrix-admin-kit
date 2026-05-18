@@ -8,8 +8,8 @@ use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\Grouping\GroupedRowsBuilder;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
-use MB\Bitrix\AdminKit\Resource\DataManagerResource;
-use MB\Bitrix\AdminKit\Tests\Fixtures\FakeQueryResult;
+use MB\Bitrix\AdminKit\Tests\Fixtures\GroupedRowsBuilderGroupResource;
+use MB\Bitrix\AdminKit\Tests\Fixtures\GroupedRowsBuilderGroupTable;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
 
@@ -117,43 +117,5 @@ final class GroupedRowsBuilderTest extends TestCase
 
         self::assertSame('item', $rows[0]['__ROW_TYPE']);
         self::assertArrayNotHasKey('__adminkit_grid_row', $rows[0]);
-    }
-}
-
-final class GroupedRowsBuilderGroupResource extends DataManagerResource
-{
-    public function dataManagerClass(): string
-    {
-        return GroupedRowsBuilderGroupTable::class;
-    }
-
-    public static function getId(): string
-    {
-        return 'groups';
-    }
-
-    public function indexFields(): iterable
-    {
-        return [Text::make('Name', 'NAME')];
-    }
-
-    public function formFields(): iterable
-    {
-        return [Text::make('Name', 'NAME')];
-    }
-}
-
-final class GroupedRowsBuilderGroupTable
-{
-    public static array $rows = [];
-    public static array $lastParams = [];
-
-    public static function getList(array $params): FakeQueryResult
-    {
-        self::$lastParams = $params;
-        $ids = $params['filter']['@ID'] ?? [];
-        $rows = array_values(array_filter(self::$rows, static fn (array $row): bool => in_array($row['ID'], $ids, true)));
-
-        return new FakeQueryResult($rows);
     }
 }

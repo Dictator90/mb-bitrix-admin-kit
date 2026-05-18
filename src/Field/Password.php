@@ -59,7 +59,8 @@ class Password extends Field
             <button type="button"
                 id="toggle_{$this->id}"
                 class="ui-ctl-after ui-ctl-icon-btn ui-ctl-icon-crossed-eye adminkit-password-toggle"
-                aria-label="Показать пароль"
+                data-adminkit-password-toggle="Y"
+                aria-label="Show password"
                 aria-pressed="false"></button>
         HTML;
 
@@ -73,7 +74,7 @@ class Password extends Field
                 inputId: '{$this->id}',
                 targetId: 'toggle_{$this->id}'
             }));
-        </script>  
+        </script>
         HTML;
     }
 
@@ -83,11 +84,11 @@ class Password extends Field
         $reqAttr = $this->required ? ' required' : '';
         $hasStored = $value !== null && (string)$value !== '';
         $placeholder = $hasStored
-            ? htmlspecialcharsbx($this->placeholder ?? 'Оставьте пустым, чтобы не менять')
+            ? htmlspecialcharsbx($this->placeholder ?? 'Leave empty to keep current value')
             : htmlspecialcharsbx((string)($this->placeholder ?? ''));
         $placeholderAttr = $placeholder !== '' ? ' placeholder="' . $placeholder . '"' : '';
         $hint = $hasStored
-            ? '<div class="ui-form-hint">Введите новый пароль только для замены.</div>'
+            ? '<div class="ui-form-hint">Stored value is preserved. Enter a new password only to replace it.</div>'
             : '';
 
         return <<<HTML

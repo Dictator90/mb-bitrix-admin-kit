@@ -21,7 +21,6 @@ final class AdminKitScopeDiscoveryTest extends TestCase
         $scope = AdminKitScope::fromModule('vendor.module');
 
         self::assertSame('vendor.module', $scope->scopeId());
-        self::assertNull($scope->basePath());
         self::assertSame([], $scope->discoveryPaths());
     }
 
@@ -35,8 +34,7 @@ final class AdminKitScopeDiscoveryTest extends TestCase
         $scope = AdminKitScope::fromModule($module);
 
         self::assertSame('vendor.object', $scope->id());
-        self::assertSame('/module/path', $scope->basePath());
-        self::assertSame([], $scope->discoveryPaths());
+        self::assertSame(['/module/path/lib'], $scope->discoveryPaths());
     }
 
     public function testAdminKitScopeFromObjectWithGetLibPathTest(): void
@@ -50,16 +48,11 @@ final class AdminKitScopeDiscoveryTest extends TestCase
             {
                 return '/module';
             }
-            public function getLibPath(): string
-            {
-                return '/module/lib';
-            }
         };
 
         $scope = AdminKitScope::fromModule($module);
 
         self::assertSame('vendor.lib', $scope->scopeId());
-        self::assertSame('/module', $scope->basePath());
         self::assertSame(['/module/lib'], $scope->discoveryPaths());
     }
 
@@ -76,7 +69,6 @@ final class AdminKitScopeDiscoveryTest extends TestCase
         $scope = AdminKitScope::fromDirectory('/local/php_interface/lib/Admin', 'site.admin');
 
         self::assertSame('site.admin', $scope->scopeId());
-        self::assertSame('/local/php_interface/lib/Admin', $scope->basePath());
         self::assertSame(['/local/php_interface/lib/Admin'], $scope->discoveryPaths());
     }
 
@@ -85,7 +77,6 @@ final class AdminKitScopeDiscoveryTest extends TestCase
         $scope = AdminKitScope::fromDirectories(['/admin', '/tools'], 'site.admin');
 
         self::assertSame('site.admin', $scope->scopeId());
-        self::assertSame('/admin', $scope->basePath());
         self::assertSame(['/admin', '/tools'], $scope->discoveryPaths());
     }
 
@@ -109,15 +100,6 @@ final class AdminKitScopeDiscoveryTest extends TestCase
     public function testAdminKitForScopeTest(): void
     {
         self::assertSame('site.admin', AdminKit::forScope('site.admin')->scopeId());
-    }
-
-    public function testAdminKitFromDirectoryTest(): void
-    {
-        $dir = $this->makeDirectory();
-        $manager = AdminKit::fromDirectory($dir, 'site.admin');
-
-        self::assertSame('site.admin', $manager->scopeId());
-        self::assertSame($dir, $manager->scope()->basePath());
     }
 
     public function testAdminKitFromDirectoriesTest(): void

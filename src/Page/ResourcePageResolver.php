@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page;
 
 use LogicException;
-use MB\Bitrix\AdminKit\Contracts\Page\PageContract as CorePageContract;
 use MB\Bitrix\AdminKit\Contracts\Page\ResourcePageContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Exception\PageNotFoundException;

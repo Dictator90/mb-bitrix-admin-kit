@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page\Concerns;
 
+use MB\Bitrix\AdminKit\Support\ResponseTerminator;
+
 trait HasPageResponse
 {
     public function redirect(string $url): void
@@ -17,7 +19,7 @@ trait HasPageResponse
         $this->clearOutputBuffers();
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($payload, JSON_UNESCAPED_UNICODE);
-        die();
+        ResponseTerminator::terminate();
     }
 
     /** @param array<string,mixed> $payload */
@@ -28,8 +30,6 @@ trait HasPageResponse
 
     protected function clearOutputBuffers(): void
     {
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        ResponseTerminator::clearOutputBuffers();
     }
 }

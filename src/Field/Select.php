@@ -9,6 +9,7 @@ use MB\Bitrix\AdminKit\Contracts\Field\OptionFieldContract;
 use MB\Bitrix\AdminKit\Field\Options\OptionsResolverContract;
 use MB\Bitrix\AdminKit\Field\Options\OptionsResolverFactory;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class Select extends Field implements OptionFieldContract
 {
@@ -154,7 +155,12 @@ class Select extends Field implements OptionFieldContract
             }
 
             if (!in_array((string)$selected, $allowed, true)) {
-                $errors[] = "Поле \"{$this->getLabel()}\" содержит недопустимое значение";
+                $errors[] = LocalizedMessage::get(
+                    __FILE__,
+                    'MB_ADMIN_KIT_FIELD_INVALID_OPTION',
+                    'Field "#FIELD#" contains an invalid value.',
+                    ['#FIELD#' => $this->getLabel()],
+                );
                 break;
             }
         }
@@ -188,4 +194,5 @@ class Select extends Field implements OptionFieldContract
 
         return implode(', ', $labels);
     }
+
 }

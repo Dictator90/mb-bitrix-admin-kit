@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Component\Layout\Renderers;
 
 use MB\Bitrix\AdminKit\Component\ComponentContext;
-use MB\Bitrix\AdminKit\Component\Renderers\ChildrenRenderer;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
+use MB\Bitrix\AdminKit\Component\Renderers\ChildrenRenderer;
 
 final class TabBodyRenderer
 {

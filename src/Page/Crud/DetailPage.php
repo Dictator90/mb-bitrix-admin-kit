@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page\Crud;
 
-use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UI\Extension;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\Page\DetailPageContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
-use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
+use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
@@ -38,8 +38,6 @@ class DetailPage extends CrudPage implements DetailPageContract
     {
         global $APPLICATION;
 
-        Loc::loadMessages(__FILE__);
-
         Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.toolbar']);
 
         if (!$this->resource instanceof ResourcePersistenceContract) {
@@ -54,7 +52,7 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         if (!$this->item) {
             echo Notification::alert(
-                $this->message('MB_ADMIN_KIT_DETAIL_NOT_FOUND', 'Элемент не найден.'),
+                LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_DETAIL_NOT_FOUND', 'Item not found.'),
                 Notification::TYPE_WARNING,
             );
 
@@ -63,7 +61,7 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
             echo Notification::alert(
-                $this->message('MB_ADMIN_KIT_DETAIL_ERR_CANNOT_VIEW', 'Недостаточно прав для просмотра записи.'),
+                LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_DETAIL_ERR_CANNOT_VIEW', 'Insufficient permissions to view this record.'),
                 Notification::TYPE_WARNING,
             );
 
@@ -106,7 +104,7 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         (new ToolbarRenderer())->renderDetail($this->resource, $backAction, $this->editUrl());
 
-        $backLabel = htmlspecialcharsbx($this->message('MB_ADMIN_KIT_DETAIL_BACK', 'Назад'));
+        $backLabel = htmlspecialcharsbx(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_DETAIL_BACK', 'Back'));
         echo '<div class="ui-button-panel">';
         echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialchars($backAction, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">' . $backLabel . '</button>';
         echo '</div>';
@@ -148,14 +146,4 @@ class DetailPage extends CrudPage implements DetailPageContract
         return $fields;
     }
 
-    private function message(string $key, string $fallback): string
-    {
-        if (class_exists(Loc::class)) {
-            Loc::loadMessages(__FILE__);
-
-            return (string)(Loc::getMessage($key) ?: $fallback);
-        }
-
-        return $fallback;
-    }
 }

@@ -53,7 +53,7 @@ final class IndexInlineEditHandler
      * @param array<string,mixed> $payload
      * @return array<int,string>
      */
-    private function saveInlineRow(IndexPage $page, mixed $id, array $payload): array
+    public function saveInlineRow(IndexPage $page, mixed $id, array $payload): array
     {
         $resource = $page->resource();
         if (!$resource instanceof ResourcePersistenceContract) {

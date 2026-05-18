@@ -30,6 +30,7 @@ use MB\Bitrix\AdminKit\Page\IndexPageDefinition;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 class IndexPage extends CrudPage implements IndexPageContract
@@ -297,7 +298,7 @@ class IndexPage extends CrudPage implements IndexPageContract
             }
         }
 
-        $actions[] = BulkAction::make('export_selected', 'Экспорт выбранных CSV');
+        $actions[] = BulkAction::make('export_selected', $this->message('MB_ADMIN_KIT_INDEX_EXPORT_SELECTED_CSV', 'Export selected CSV'));
 
         return $actions;
     }
@@ -484,6 +485,17 @@ class IndexPage extends CrudPage implements IndexPageContract
         return $result;
     }
 
+    /**
+     * @deprecated kept for backward compatibility with legacy IndexPage overrides/tests.
+     *
+     * @param array<string,mixed> $payload
+     * @return array<int,string>
+     */
+    protected function saveInlineRow(mixed $id, array $payload): array
+    {
+        return (new IndexInlineEditHandler())->saveInlineRow($this, $id, $payload);
+    }
+
     public function isLegacyBulkAjaxRequest(): bool
     {
         return (string)($_POST['adminkit_bulk_action'] ?? '') !== '';
@@ -497,7 +509,7 @@ class IndexPage extends CrudPage implements IndexPageContract
 
         Extension::load(['ui.alerts']);
         echo Notification::alert(
-            $this->message('MB_ADMIN_KIT_INDEX_ERR_CANNOT_VIEW', 'Недостаточно прав для просмотра раздела.'),
+            $this->message('MB_ADMIN_KIT_INDEX_ERR_CANNOT_VIEW', 'Insufficient permissions to view this section.'),
             Notification::TYPE_WARNING,
         );
 
@@ -508,7 +520,7 @@ class IndexPage extends CrudPage implements IndexPageContract
     {
         $message = $this->message(
             'MB_ADMIN_KIT_INDEX_SESSION_EXPIRED',
-            'Сессия истекла. Обновите страницу и повторите действие.',
+            'Session expired. Refresh the page and try again.',
         );
 
         if ($this->isAjaxRequest() || $this->isLegacyBulkAjaxRequest()) {
@@ -530,12 +542,7 @@ class IndexPage extends CrudPage implements IndexPageContract
 
     public function message(string $key, string $fallback): string
     {
-        if (class_exists(Loc::class)) {
-            Loc::loadMessages(__FILE__);
-            return (string)(Loc::getMessage($key) ?: $fallback);
-        }
-
-        return $fallback;
+        return LocalizedMessage::get(__FILE__, $key, $fallback);
     }
 
 }

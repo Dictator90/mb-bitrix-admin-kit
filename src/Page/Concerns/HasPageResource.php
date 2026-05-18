@@ -13,9 +13,6 @@ trait HasPageResource
 
     protected mixed $id = null;
 
-    /** @var array<string,mixed> */
-    protected array $params = [];
-
     public function resource(): ResourceContract
     {
         if (!$this->hasResource()) {

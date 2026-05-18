@@ -18,8 +18,11 @@ final class DataManagerResourceTest extends TestCase
 
     public function testDataManagerResourceRequiresClass(): void
     {
-        $resource = new class extends DataManagerResource {
-            public function dataManagerClass(): string { return ''; }
+        $resource = new class () extends DataManagerResource {
+            public function dataManagerClass(): string
+            {
+                return '';
+            }
         };
 
         $this->expectException(LogicException::class);
@@ -33,7 +36,7 @@ final class DataManagerResourceTest extends TestCase
         self::assertTrue($resource->hasCrud());
         self::assertSame(ProductTable::class, $resource->dataManagerClass());
         self::assertSame(['ID' => 1, 'NAME' => 'One'], $resource->findItem(1));
-        
+
         $id = $resource->createItem(['NAME' => 'New Item']);
         self::assertSame(2, $id);
         self::assertSame(['ID' => 2, 'NAME' => 'New Item'], $resource->findItem(2));

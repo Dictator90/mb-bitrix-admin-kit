@@ -14,6 +14,7 @@ use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\AdminCondition;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Support\Conditionable\ConditionTree;
 
 class BulkAction implements ActionContract, BulkPanelItemContract
@@ -45,9 +46,9 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         $this->label = $label ?? $id;
     }
 
-    public static function delete(string $id = 'delete', ?string $label = 'Удалить выбранные'): MassDeleteAction
+    public static function delete(string $id = 'delete', ?string $label = null): MassDeleteAction
     {
-        return MassDeleteAction::make($id, $label);
+        return MassDeleteAction::make($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete selected'));
     }
 
     public static function make(string $id, ?string $label = null): static
@@ -319,7 +320,7 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         $ids = $this->selectedIds($context);
 
         if ($ids === []) {
-            return BulkResult::failure('Не выбраны элементы');
+            return BulkResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_EMPTY_SELECTION', 'No items selected.'));
         }
 
         if ($this->data !== null) {
@@ -414,4 +415,5 @@ class BulkAction implements ActionContract, BulkPanelItemContract
 
         return $data;
     }
+
 }

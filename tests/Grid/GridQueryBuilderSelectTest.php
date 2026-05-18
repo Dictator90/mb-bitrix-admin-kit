@@ -9,7 +9,6 @@ use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
-use MB\Bitrix\AdminKit\Tests\Grid\GroupedRowsBuilderGroupResource;
 use PHPUnit\Framework\TestCase;
 
 final class GridQueryBuilderSelectTest extends TestCase

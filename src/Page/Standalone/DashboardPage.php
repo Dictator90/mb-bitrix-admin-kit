@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page\Standalone;
 
-use MB\Bitrix\AdminKit\Support\Enums\PageType;
-
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
+use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Widget\Dashboard\DashboardRenderer;
 
 /**

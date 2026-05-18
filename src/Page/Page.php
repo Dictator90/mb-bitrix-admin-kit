@@ -24,6 +24,9 @@ abstract class Page implements CorePageContract
     use HasPageResponse;
     use HasPageToolbar;
 
+    /** @var array<string,mixed> */
+    protected array $params = [];
+
     /** @param array<string,mixed> $params */
     public function __construct(array $params = [])
     {

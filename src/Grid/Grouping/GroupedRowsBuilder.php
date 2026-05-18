@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Grid\Grouping;
 
 use Closure;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
@@ -295,7 +296,7 @@ final class GroupedRowsBuilder
         }
         $row = $this->emptyFieldColumns($fields);
         if ($labelColumn !== null) {
-            $row[$labelColumn] = $label ?? 'Без группы';
+            $row[$labelColumn] = $label ?? LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_GROUPING_UNGROUPED', 'Ungrouped');
         }
         $row['__ROW_TYPE'] = 'group';
         $row['__GROUP_ID'] = self::UNGROUPED_ID;
@@ -410,4 +411,5 @@ final class GroupedRowsBuilder
 
         return $rows;
     }
+
 }

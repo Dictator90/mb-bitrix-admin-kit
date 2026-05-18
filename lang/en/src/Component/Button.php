@@ -1,0 +1,4 @@
+<?php
+$MESS['MB_ADMIN_KIT_BUTTON_SAVE'] = 'Save';
+$MESS['MB_ADMIN_KIT_BUTTON_CANCEL'] = 'Cancel';
+$MESS['MB_ADMIN_KIT_BUTTON_ADD'] = 'Add';

@@ -10,22 +10,23 @@ use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
 class MassDeleteAction extends BulkAction
 {
-    public function __construct(string $id = 'delete', ?string $label = 'Удалить выбранные')
+    public function __construct(string $id = 'delete', ?string $label = null)
     {
-        parent::__construct($id, $label);
+        parent::__construct($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete selected'));
         $this
-            ->confirm('Вы уверены, что хотите удалить выбранные записи?')
+            ->confirm(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_CONFIRM', 'Are you sure you want to delete selected records?'))
             ->danger()
-            ->group('danger', 'Удаление', 900)
+            ->group('danger', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_GROUP', 'Deletion'), 900)
             ->icon('ui-btn-icon-remove')
             ->sort(100);
     }
 
-    public static function make(string $id = 'delete', ?string $label = 'Удалить выбранные'): static
+    public static function make(string $id = 'delete', ?string $label = null): static
     {
         return new static($id, $label);
     }
@@ -43,7 +44,7 @@ class MassDeleteAction extends BulkAction
 
         $ids = $this->selectedIds($context);
         if ($ids === []) {
-            return BulkResult::failure('Не выбраны элементы');
+            return BulkResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_EMPTY_SELECTION', 'No items selected.'));
         }
 
         $context = $context->with(['selectedIds' => $ids, 'action' => $this]);
@@ -134,4 +135,5 @@ class MassDeleteAction extends BulkAction
 
         return array_chunk(AdminCollection::make($ids)->all(), $chunkSize);
     }
+
 }

@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Tests\Manager;
 
 use Bitrix\Main\HttpRequest;
-use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Manager\AdminKitMenuBuilder;
 use MB\Bitrix\AdminKit\Manager\AdminKitRegistry;
 use MB\Bitrix\AdminKit\Manager\AdminKitRouter;
 use MB\Bitrix\AdminKit\Manager\ResourcePage;
 use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
-use MB\Bitrix\AdminKit\Resource\Resource;
+use MB\Bitrix\AdminKit\Tests\Fixtures\ManagerBaseTestResource;
 use PHPUnit\Framework\TestCase;
 
 final class AdminKitV080Test extends TestCase
@@ -77,20 +76,7 @@ final class AdminKitV080Test extends TestCase
     }
 }
 
-abstract class BaseTestResource extends Resource
-{
-    protected string $title = 'Base';
-    public function indexFields(): iterable
-    {
-        return [Text::make('Name', 'NAME')];
-    }
-    public function formFields(): iterable
-    {
-        return [Text::make('Name', 'NAME')];
-    }
-}
-
-final class EarlyResource extends BaseTestResource
+final class EarlyResource extends ManagerBaseTestResource
 {
     protected string $title = 'Early';
     public static function getId(): string
@@ -107,7 +93,7 @@ final class EarlyResource extends BaseTestResource
     }
 }
 
-final class LateResource extends BaseTestResource
+final class LateResource extends ManagerBaseTestResource
 {
     protected string $title = 'Late';
     public static function getId(): string
@@ -120,7 +106,7 @@ final class LateResource extends BaseTestResource
     }
 }
 
-final class DeniedResource extends BaseTestResource
+final class DeniedResource extends ManagerBaseTestResource
 {
     protected string $title = 'Denied';
     public static function getId(): string

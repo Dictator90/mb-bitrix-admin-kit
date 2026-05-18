@@ -16,7 +16,7 @@ final class ResourceCoreTest extends TestCase
     {
         $resource = new CoreTestResource();
 
-        self::assertSame('core-test', CoreTestResource::getId());
+        self::assertSame('coretest', CoreTestResource::getId());
         self::assertSame('Core Test', $resource->getTitle());
         self::assertSame(100, CoreTestResource::getSort());
         self::assertSame('', CoreTestResource::getMenuIcon());

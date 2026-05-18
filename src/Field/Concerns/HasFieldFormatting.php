@@ -52,6 +52,6 @@ trait HasFieldFormatting
             return (string)($this->preview)($value);
         }
 
-        return (string)$this->displayValue($value);
+        return (string)$value;
     }
 }

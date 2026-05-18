@@ -7,7 +7,7 @@ namespace Vendor\Demo\Admin;
 use MB\Bitrix\AdminKit\Field\Select;
 use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Pages\OptionsPage;
+use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
 
 final class SettingsPage extends OptionsPage
 {

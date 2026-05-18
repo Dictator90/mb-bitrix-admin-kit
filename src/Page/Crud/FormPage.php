@@ -6,18 +6,17 @@ namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\Localization\Loc;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
-use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Component\ComponentContext;
+use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Component\Renderers\VisibilityWrapper;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
-use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\Page\FormPageContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\UI\FieldContainerContract;
 use MB\Bitrix\AdminKit\Contracts\UI\ItemAwareContract;
 use MB\Bitrix\AdminKit\Contracts\UI\PageTypeAwareContract;
-use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
@@ -27,10 +26,12 @@ use MB\Bitrix\AdminKit\Field\Renderers\FieldRowRenderer;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
+use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Bitrix\AdminKit\Support\ResponseTerminator;
 use Throwable;
 
 class FormPage extends CrudPage implements FormPageContract
@@ -70,6 +71,9 @@ class FormPage extends CrudPage implements FormPageContract
     {
         global $APPLICATION;
         Loc::loadMessages(__FILE__);
+        if (Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED') === null) {
+            Loc::loadMessages(dirname(__DIR__) . '/FormPage.php');
+        }
 
         $inPanel = $this->isSidePanelMode();
 
@@ -470,14 +474,14 @@ class FormPage extends CrudPage implements FormPageContract
             item: $this->item,
             pageType: $this->pageType,
             renderContext: new FieldRenderContext(
-            field: $field,
-            resource: $this->resource,
-            item: $this->item,
-            value: $value,
-            page: 'form',
-            row: $this->item?->toArray() ?? [],
-            errors: $this->fieldErrors[$field->getColumn()] ?? [],
-            meta: ['mode' => $this->mode],
+                field: $field,
+                resource: $this->resource,
+                item: $this->item,
+                value: $value,
+                page: 'form',
+                row: $this->item?->toArray() ?? [],
+                errors: $this->fieldErrors[$field->getColumn()] ?? [],
+                meta: ['mode' => $this->mode],
             ),
             errors: $this->fieldErrors[$field->getColumn()] ?? [],
         ));
@@ -589,12 +593,10 @@ class FormPage extends CrudPage implements FormPageContract
             $result[$field->getColumn()] = ['html' => $field->renderFormField($value)];
         }
 
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        ResponseTerminator::clearOutputBuffers();
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['status' => 'success', 'fields' => $result]);
-        die();
+        ResponseTerminator::terminate();
     }
 
     /**
@@ -695,9 +697,7 @@ class FormPage extends CrudPage implements FormPageContract
 
     protected function sendAsyncSaveResponse(): void
     {
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        ResponseTerminator::clearOutputBuffers();
 
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
@@ -708,7 +708,7 @@ class FormPage extends CrudPage implements FormPageContract
             'closeSidePanel' => $this->savedInSidePanel && $this->closeSidePanelAfterSave(),
             'reloadParentGrid' => $this->savedInSidePanel && !$this->closeSidePanelAfterSave(),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        die();
+        ResponseTerminator::terminate();
     }
 
     protected function renderAsyncSaveScript(): void

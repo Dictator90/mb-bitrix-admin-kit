@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 namespace {
+    if (!defined('B_PROLOG_INCLUDED')) {
+        define('B_PROLOG_INCLUDED', true);
+    }
+
+    putenv('MB_ADMIN_KIT_TESTING=1');
+
     spl_autoload_register(function (string $class): void {
         $prefix = 'MB\\Bitrix\\AdminKit\\Tests\\';
         if (str_starts_with($class, $prefix)) {
@@ -139,6 +145,15 @@ namespace Bitrix\Main {
             $headers = $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] ?? [];
 
             return $headers[$name] ?? $headers[strtolower($name)] ?? null;
+        }
+
+        /** @return array<string,mixed> */
+        public function toArray(): array
+        {
+            return array_merge(
+                $GLOBALS['MB_ADMIN_KIT_TEST_GET'] ?? [],
+                $GLOBALS['MB_ADMIN_KIT_TEST_POST'] ?? [],
+            );
         }
     }
     class Context

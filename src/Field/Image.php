@@ -50,7 +50,7 @@ class Image extends File
                     </a>
                     <label>
                         <input type="checkbox" name="{$name}_delete" value="Y">
-                        удалить изображение
+                        {$this->message('MB_ADMIN_KIT_IMAGE_DELETE', 'delete image')}
                     </label>
                 </div>
                 HTML;
@@ -65,7 +65,7 @@ class Image extends File
                 style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
             <div class="ui-ctl-label-text" style="padding:8px 16px;cursor:pointer;">
                 <span class="ui-icon-16 ui-icon-16-image" style="vertical-align:middle;margin-right:4px;"></span>
-                Выберите изображение
+                {$this->message('MB_ADMIN_KIT_IMAGE_SELECT', 'Choose image')}
             </div>
         </div>
         HTML;

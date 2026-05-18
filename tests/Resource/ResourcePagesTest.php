@@ -8,20 +8,19 @@ use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
 use MB\Bitrix\AdminKit\Page\Crud\FormPage;
 use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Page\Pages;
-use MB\Bitrix\AdminKit\Resource\CrudResource;
 use MB\Bitrix\AdminKit\Resource\Resource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use PHPUnit\Framework\TestCase;
 
 final class ResourcePagesTest extends TestCase
 {
-    public function testCoreResourcePagesDefaultIsEmpty(): void
+    public function testCoreResourcePagesDefaultIsCrudSet(): void
     {
         $resource = new class () extends Resource {
             protected string $title = 'Core only';
         };
 
-        self::assertSame([], iterator_to_array($resource->pages()));
+        self::assertSame([IndexPage::class, FormPage::class, DetailPage::class], iterator_to_array($resource->pages()));
     }
 
     public function testCrudResourceHasDefaultCrudPages(): void

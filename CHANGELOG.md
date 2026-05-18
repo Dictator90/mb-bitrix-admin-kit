@@ -2,7 +2,22 @@
 
 ## Unreleased
 
+### Stabilization
+- Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.
+- Restored legacy `Resource` behavior expected by v1 modules: default CRUD page helpers (`indexPage/formPage/detailPage`), menu/permission/grid defaults, and DataManager fallback compatibility for direct `Resource` + persistence-trait usage.
+- Restored legacy page aliases `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage` as compatibility wrappers over `Page\Crud\*` (deprecated wrappers retained).
+- Fixed standalone-page registration safety (`AdminKitRegistry` now validates type before calling standalone methods).
+- Fixed menu builder safety for non-CRUD resources (guarded calls to optional `canView`/`hasCrud`/`group`).
+- Fixed field display pipeline double-formatting (`displayUsing`/preview no longer double-applies formatting).
+- Fixed `UserListProvider` boolean filter conditions (`onlyWithEmail`, `invitedUsers`).
+- Fixed selected export filtering to use primary-key filtering compatible with existing resource expectations.
+- Added inline-edit BC bridge on `IndexPage::saveInlineRow()` and visibility-rule BC helper on `Pages\OptionsPage::checkVisibilityRule()`.
+- Updated JS extension tests/fixtures to current `mb.admin.kit` bundle layout and stabilized isolated test fixtures.
+- Refreshed PHPStan baseline (`phpstan-baseline.neon`) to separate current known issues from new regressions.
+
 ### Removed
+- Unused legacy field traits in `Field\Traits\*` (`HasValidation`, `HasFormat`, `HasVisibility`, `HasReactivity`, `Makeable`); use `Field\Concerns\*` instead.
+- Unused `Resource\Concerns\HasResourcePages` trait (superseded by `HasCrudResourcePages`).
 - Standalone Bitrix JS extensions `mb.ui.tabs` and `mb.ui.dialog-selector`; Tabs and DialogSelector runtime now ship inside `mb.admin.kit`.
 - Legacy contract aliases in `MB\Bitrix\AdminKit\Contracts\` (`IndexResourceContract`, `FormResourceContract`, `OrmResourceContract`, `ExportResourceContract`, and others) — use `Contracts\Resource\*` instead.
 - Legacy resource traits `HasCrud`, `HasPermissions`, `HasLifecycleEvents` — use `Resource\Concerns\*` instead.
@@ -13,6 +28,8 @@
 - Wide contracts `Contracts\FieldContract` and `Contracts\ComponentContract`; use `Contracts\Field\*`, `Contracts\UI\*`, and `Contracts\Widget\*`.
 
 ### Added
+- `Support\LocalizedMessage` — shared `Loc::getMessage` helper for user-facing strings (replaces duplicated private `message()` methods).
+- `Pages\Handlers\OptionsPagePostHandler` and `Pages\Handlers\OptionsPageFormRenderer` — extracted POST and form rendering from `Pages\OptionsPage`.
 - `Tabs::remember()` — stores the last active tab in session (per page id) and restores it on the next visit; hidden `adminkit_active_tab` field syncs tab clicks when remember is enabled.
 - `Field::preserveStoredValueWhenEmpty()` — used by `Password` so an empty submit keeps the stored option value instead of deleting it.
 - `Password::oldValue()` (default `true`) — shows the stored value with a show/hide toggle; `oldValue(false)` keeps the previous empty-field edit behavior.
@@ -53,6 +70,7 @@
 - `MassDeleteAction` now shares the delete factory UI defaults (`danger`, remove icon, danger group, confirmation, sort order).
 
 ### Fixed
+- Localized hardcoded user-facing messages in actions, bulk results, relation components, selectors, validation rules, import/export handlers, and CRUD page notifications by moving them to `Loc` message files (`lang/ru` and `lang/en` for the affected classes).
 - Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.
 - Options page: `Password` and other fields with `preserveStoredValueWhenEmpty()` no longer clear stored values when the posted value is empty.
 - Options page: remembered tab id is applied before render so the correct tab is active after reload.

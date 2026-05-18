@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Component\Relation;
 
 use Closure;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
@@ -13,19 +14,6 @@ use Throwable;
 
 /**
  * Renders a read-only table of related records inside a FormPage.
- *
- * Usage:
- *   HasMany::make('Заказы', OrderTable::class)
- *       ->foreignKey('USER_ID')         // column in OrderTable → current record's ID
- *       ->columns([
- *           ID::make('ID'),
- *           Text::make('Статус', 'STATUS'),
- *           Date::make('Дата', 'DATE_INSERT'),
- *       ])
- *       ->orderBy('DATE_INSERT', 'DESC')
- *       ->createUrl(fn($parentId) => '/bitrix/admin/order_edit.php?user_id=' . $parentId)
- *       ->editUrl(fn($row)   => '/bitrix/admin/order_edit.php?id=' . $row['ID'])
- *       ->deleteUrl(fn($row) => '/bitrix/admin/order_edit.php?delete=Y&id=' . $row['ID'])
  */
 class HasMany implements ComponentContract
 {
@@ -88,21 +76,21 @@ class HasMany implements ComponentContract
         return $this;
     }
 
-    /** Callback: fn(mixed $parentId): string — URL for "Add" button. */
+    /** Callback: fn(mixed $parentId): string - URL for "Add" button. */
     public function createUrl(Closure $callback): static
     {
         $this->createUrlCallback = $callback;
         return $this;
     }
 
-    /** Callback: fn(array $row): string — URL for row "Edit" button. */
+    /** Callback: fn(array $row): string - URL for row "Edit" button. */
     public function editUrl(Closure $callback): static
     {
         $this->editUrlCallback = $callback;
         return $this;
     }
 
-    /** Callback: fn(array $row): string — URL for row "Delete" button. */
+    /** Callback: fn(array $row): string - URL for row "Delete" button. */
     public function deleteUrl(Closure $callback): static
     {
         $this->deleteUrlCallback = $callback;
@@ -173,7 +161,7 @@ class HasMany implements ComponentContract
         $addBtn = '';
         if ($this->createUrlCallback !== null && $parentId !== null) {
             $addUrl = htmlspecialcharsbx(($this->createUrlCallback)($parentId));
-            $addBtn = ' <a href="' . $addUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border adminkit-hasmany__add-btn">+ Добавить</a>';
+            $addBtn = ' <a href="' . $addUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border adminkit-hasmany__add-btn">+ ' . LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_ADD', 'Add') . '</a>';
         }
 
         ob_start();
@@ -186,7 +174,7 @@ class HasMany implements ComponentContract
             <div class="adminkit-hasmany__body">
                 <?php
                 if (empty($this->columns)): ?>
-                    <div class="adminkit-hasmany__empty">Столбцы не заданы — используйте ->columns([...])</div>
+                    <div class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_COLUMNS_REQUIRED', 'Columns are not configured. Use ->columns([...]).') ?></div>
                 <?php else: ?>
                     <table class="adminkit-hasmany__table">
                         <thead>
@@ -206,7 +194,7 @@ class HasMany implements ComponentContract
                         <?php
                         if (empty($rows)): ?>
                             <tr>
-                                <td colspan="<?= $colCount ?>" class="adminkit-hasmany__empty">Нет записей</td>
+                                <td colspan="<?= $colCount ?>" class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_EMPTY', 'No records') ?></td>
                             </tr>
                         <?php else: ?>
                             <?php
@@ -223,14 +211,14 @@ class HasMany implements ComponentContract
                                             <?php
                                             if ($this->editUrlCallback): ?>
                                                 <a href="<?= htmlspecialcharsbx(($this->editUrlCallback)($row)) ?>"
-                                                   class="ui-btn ui-btn-xs ui-btn-light-border">Изменить</a>
+                                                   class="ui-btn ui-btn-xs ui-btn-light-border"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_EDIT', 'Edit') ?></a>
                                             <?php
                                             endif; ?>
                                             <?php
                                             if ($this->deleteUrlCallback): ?>
                                                 <a href="<?= htmlspecialcharsbx(($this->deleteUrlCallback)($row)) ?>"
                                                    class="ui-btn ui-btn-xs ui-btn-danger-light"
-                                                   onclick="return confirm('Удалить запись?')">Удалить</a>
+                                                   onclick="return confirm('<?= addslashes(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_DELETE_CONFIRM', 'Delete record?')) ?>')"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_DELETE', 'Delete') ?></a>
                                             <?php
                                             endif; ?>
                                         </td>
@@ -257,8 +245,9 @@ class HasMany implements ComponentContract
             return $field->previewValue($value);
         }
         if ($value === null || $value === '') {
-            return '<span style="color:#aab5c0">—</span>';
+            return '<span style="color:#aab5c0">&mdash;</span>';
         }
         return htmlspecialcharsbx((string)$value);
     }
+
 }
