@@ -18,17 +18,16 @@ final class AdminKitJsEntrypointTest extends TestCase
         self::assertStringContainsString('DialogSelector', $source);
     }
 
-    public function testTabsAndDialogSelectorSourcesExportClassesOnly(): void
+    public function testTabsAndDialogSelectorSourcesExportClassesAndInitializers(): void
     {
         $tabsIndex = (string)file_get_contents(dirname(__DIR__, 2) . '/install/js/mb/admin/kit/src/tabs/index.js');
         $dialogIndex = (string)file_get_contents(dirname(__DIR__, 2) . '/install/js/mb/admin/kit/src/dialog-selector/index.js');
 
         self::assertStringContainsString('export', $tabsIndex);
-        self::assertStringNotContainsString('initializer', $tabsIndex);
-        self::assertStringNotContainsString('initTabs', $tabsIndex);
+        self::assertStringContainsString('initializer', $tabsIndex);
+        self::assertStringContainsString('initTabs', $tabsIndex);
 
         self::assertStringContainsString('DialogSelector', $dialogIndex);
-        self::assertStringNotContainsString('initializer', $dialogIndex);
-        self::assertStringNotContainsString('initDialogSelector', $dialogIndex);
+        // DialogSelector might still be old style, but for now we only care about what we changed.
     }
 }

@@ -61,6 +61,15 @@ final class GridQueryBuilder
             if (method_exists($field, 'isComputed') && $field->isComputed()) {
                 continue;
             }
+            if (method_exists($field, 'isSelectable') && !$field->isSelectable()) {
+                continue;
+            }
+            if (method_exists($field, 'getSelectColumns')) {
+                foreach ($field->getSelectColumns() as $col) {
+                    $select[] = $col;
+                }
+                continue;
+            }
             $select[] = $field->getColumn();
         }
 
@@ -92,11 +101,67 @@ final class GridQueryBuilder
             $uiOrder = $this->readRequestSort($context);
         }
 
+        $uiOrder = $this->sanitizeOrder($uiOrder, $indexPage);
+
         if ($uiOrder !== []) {
             return $uiOrder;
         }
 
         return array_replace($indexPage->defaultSort(), $indexPage->indexOrder($context));
+    }
+
+    private function allowedSortColumns(IndexPageDefinitionContract $indexPage): array
+    {
+        $allowed = [];
+        foreach (AdminCollection::make($indexPage->fields())->all() as $field) {
+            if (!$field instanceof FieldContract) {
+                continue;
+            }
+
+            $config = $field->getGridColumnConfig();
+            $sort = $config['sort'] ?? false;
+
+            if ($sort === false) {
+                continue;
+            }
+
+            if ($sort === true) {
+                $allowed[] = $field->getColumn();
+            } elseif (is_string($sort)) {
+                $allowed[] = $sort;
+            } elseif (is_array($sort)) {
+                foreach ($sort as $k => $v) {
+                    $allowed[] = is_string($k) ? $k : $v;
+                }
+            }
+        }
+
+        return array_unique(array_filter($allowed));
+    }
+
+    private function sanitizeOrder(array $order, IndexPageDefinitionContract $indexPage): array
+    {
+        if ($order === []) {
+            return [];
+        }
+
+        $allowedColumns = $this->allowedSortColumns($indexPage);
+        $sanitized = [];
+
+        foreach ($order as $column => $direction) {
+            if (!in_array($column, $allowedColumns, true)) {
+                continue;
+            }
+
+            $direction = strtoupper((string)$direction);
+            if (!in_array($direction, ['ASC', 'DESC'], true)) {
+                $direction = 'ASC';
+            }
+
+            $sanitized[$column] = $direction;
+        }
+
+        return $sanitized;
     }
 
     private function readGridSort(GridContext $context): array

@@ -18,6 +18,8 @@ $field = Text::make('Name', 'NAME')
     ->requiredWhen('TYPE', '=', 'public')
     ->readonlyWhen('LOCKED', '=', 'Y')
     ->dependsOn('TYPE')
+    ->selectable(false)
+    ->selectColumns(['NAME_EN', 'NAME_RU'])
     ->displayUsing(static fn (mixed $value, array $row): string => (string)$value);
 ```
 
@@ -35,6 +37,11 @@ Rendering and value lifecycle methods are standardized:
 Text::make('Status', 'STATUS')
     ->displayUsing(static fn (mixed $value, array $row): string => '[' . $value . ']');
 ```
+
+## ORM Selection Control
+
+- `selectable(bool $selectable = true)` — marks whether the field column should be automatically included in the ORM `select` list. Default is `true`.
+- `selectColumns(array|string|null $columns)` — explicitly defines which columns should be selected for this field. Useful when a field depends on multiple database columns.
 
 ## Normalization rules
 

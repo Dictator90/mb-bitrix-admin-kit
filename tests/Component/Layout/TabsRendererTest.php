@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 final class TabsRendererTest extends TestCase
 {
-    public function testTabsRenderInitializesEachInstanceViaTabsClass(): void
+    public function testTabsRenderUsesDataAttributes(): void
     {
         $tabs = Tabs::make([
             Tab::make('Main', [Text::make('Name', 'NAME')])->active(),
@@ -22,13 +22,12 @@ final class TabsRendererTest extends TestCase
 
         $html = $tabs->render();
 
-        self::assertStringContainsString('adminkit-tabs-', $html);
+        self::assertStringContainsString('data-adminkit-tabs', $html);
+        self::assertStringContainsString('data-adminkit-tabs-config', $html);
         self::assertStringContainsString("BX.Runtime.loadExtension('mb.admin.kit')", $html);
-        self::assertStringContainsString('new MB.AdminKit.Tabs.Tabs({', $html);
-        self::assertStringContainsString('ui-form-row', $html);
+        self::assertStringContainsString('kit.Tabs.initAll(', $html);
+        self::assertStringNotContainsString('new MB.AdminKit.Tabs.Tabs({', $html);
         self::assertStringNotContainsString('mb.ui.tabs', $html);
-        self::assertStringNotContainsString('initAll', $html);
-        self::assertStringNotContainsString('data-adminkit-tabs', $html);
         self::assertCount(2, $tabs->extractFields());
     }
 }

@@ -265,82 +265,25 @@ final class BitrixGridActionPanelAdapter
 
     public function buildBulkActionCallbackJs(Grid $grid, string $actionId): string
     {
-        if ($actionId === 'export_selected') {
-            return $this->buildBulkExportCallbackJs($grid, $actionId);
-        }
+        $config = [
+            'gridId' => $grid->getId(),
+            'actionId' => $actionId,
+            'actionButtonKey' => 'action_button_' . $grid->getId(),
+            'forAllKey' => 'action_all_rows_' . $grid->getId(),
+        ];
 
-        $gridIdJs = $this->jsEscape($grid->getId());
-        $actionIdJs = $this->jsEscape($actionId);
-        $actionButtonKeyJs = $this->jsEscape('action_button_' . $grid->getId());
-        $forAllKeyJs = 'action_all_rows_' . $gridIdJs;
+        $method = ($actionId === 'export_selected') ? 'exportSelected' : 'runBulkAction';
+        $jsonConfig = json_encode($config, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
 
-        return
-            '(function(){' .
-                "var manager=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
-                'var grid=manager&&(manager.instance||manager.grid);' .
-                'if(!grid){return;}' .
-                "var rows=(typeof grid.getRows==='function')?grid.getRows():null;" .
-                "var ids=(rows&&typeof rows.getSelectedIds==='function')?rows.getSelectedIds():[];" .
-                "var panel=(typeof grid.getActionsPanel==='function')?grid.getActionsPanel():null;" .
-                "var values=(panel&&typeof panel.getValues==='function')?panel.getValues():{};" .
-                "var forAll=(values&&values['{$forAllKeyJs}']==='Y')?'Y':'N';" .
-                "if((!ids||ids.length===0)&&forAll!=='Y'){" .
-                    'if(BX.UI&&BX.UI.Notification&&BX.UI.Notification.Center){' .
-                        "BX.UI.Notification.Center.notify({content:'Select at least one row'});" .
-                    '}' .
-                    'return;' .
-                '}' .
-                'var data={};' .
-                "data['{$actionButtonKeyJs}']='{$actionIdJs}';" .
-                "data['{$forAllKeyJs}']=forAll;" .
-                "if(BX&&typeof BX.bitrix_sessid==='function'){" .
-                    "data['sessid']=BX.bitrix_sessid();" .
-                '}' .
-                'data.ID=ids;' .
-                'data.id=ids;' .
-                'data.rows=ids;' .
-                "if(typeof grid.reloadTable==='function'){" .
-                    "grid.reloadTable('POST',data);" .
-                '}' .
-            '})();';
+        return "BX.Runtime.loadExtension('mb.admin.kit').then(function(kit){" .
+            "if(kit&&kit.GridBulkActions&&kit.GridBulkActions.{$method}){" .
+            "kit.GridBulkActions.{$method}({$jsonConfig});" .
+            "}" .
+            "});";
     }
 
     private function buildBulkExportCallbackJs(Grid $grid, string $actionId): string
     {
-        $gridIdJs = $this->jsEscape($grid->getId());
-        $actionIdJs = $this->jsEscape($actionId);
-        $forAllKeyJs = 'action_all_rows_' . $gridIdJs;
-
-        return
-            '(function(){' .
-                "var manager=BX.Main.gridManager&&BX.Main.gridManager.getById('{$gridIdJs}');" .
-                'var grid=manager&&(manager.instance||manager.grid);' .
-                'if(!grid){return;}' .
-                "var rows=(typeof grid.getRows==='function')?grid.getRows():null;" .
-                "var ids=(rows&&typeof rows.getSelectedIds==='function')?rows.getSelectedIds():[];" .
-                'if(!ids||ids.length===0){' .
-                    'if(BX.UI&&BX.UI.Notification&&BX.UI.Notification.Center){' .
-                        "BX.UI.Notification.Center.notify({content:'Select at least one row'});" .
-                    '}' .
-                    'return;' .
-                '}' .
-                "var form=document.createElement('form');" .
-                "form.method='POST';" .
-                'form.action=window.location.pathname+window.location.search;' .
-                "var action=document.createElement('input');" .
-                "action.type='hidden';action.name='action';action.value='{$actionIdJs}';form.appendChild(action);" .
-                "var forAll=document.createElement('input');" .
-                "forAll.type='hidden';forAll.name='{$forAllKeyJs}';forAll.value='N';form.appendChild(forAll);" .
-                "if(BX&&typeof BX.bitrix_sessid==='function'){" .
-                    "var sessid=document.createElement('input');" .
-                    "sessid.type='hidden';sessid.name='sessid';sessid.value=BX.bitrix_sessid();form.appendChild(sessid);" .
-                '}' .
-                'for(var i=0;i<ids.length;i++){' .
-                    "var id=document.createElement('input');" .
-                    "id.type='hidden';id.name='ID[]';id.value=ids[i];form.appendChild(id);" .
-                '}' .
-                'document.body.appendChild(form);' .
-                'form.submit();' .
-            '})();';
+        return $this->buildBulkActionCallbackJs($grid, $actionId);
     }
 }

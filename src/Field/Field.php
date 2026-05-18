@@ -43,9 +43,40 @@ abstract class Field implements FieldContract
 
     protected bool $multiple = false;
 
+    protected bool $selectable = true;
+
+    /** @var string[]|null */
+    protected ?array $selectColumns = null;
+
     public function __construct(string $label, ?string $column = null)
     {
         $this->bootFieldIdentity($label, $column);
+    }
+
+    public function selectable(bool $selectable = true): static
+    {
+        $this->selectable = $selectable;
+
+        return $this;
+    }
+
+    public function isSelectable(): bool
+    {
+        return $this->selectable;
+    }
+
+    /** @param string[]|string|null $columns */
+    public function selectColumns(array|string|null $columns): static
+    {
+        $this->selectColumns = is_string($columns) ? [$columns] : $columns;
+
+        return $this;
+    }
+
+    /** @return string[] */
+    public function getSelectColumns(): array
+    {
+        return $this->selectColumns ?? [$this->getColumn()];
     }
 
     public function multiple(bool $multiple = true): static

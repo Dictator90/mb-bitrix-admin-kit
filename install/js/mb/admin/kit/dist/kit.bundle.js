@@ -1201,11 +1201,114 @@ this.MB = this.MB || {};
       headersEl.setAttribute('role', 'tablist');
     }
 
+    /**
+     * @typedef {Object} TabsConfig
+     * @property {string} id
+     * @property {Array} items
+     * @property {Array} bodies
+     * @property {boolean} remember
+     */
+
+    /**
+     * Initialize tabs from config
+     * @param {TabsConfig} config
+     */
+    function initTabs(config) {
+      if (!main_core.Type.isObject(config)) {
+        return;
+      }
+      var id = config.id,
+        items = config.items,
+        bodies = config.bodies,
+        remember = config.remember;
+      var tabs = new Tabs({
+        id: id,
+        items: items
+      });
+      var container = tabs.getContainer();
+      if (main_core.Type.isArray(bodies)) {
+        bodies.forEach(function (bodyData) {
+          var bodyInner = container.querySelector(".ui-tabs__tab-body_inner[data-id=\"".concat(bodyData.id, "\"]"));
+          if (!bodyInner) {
+            return;
+          }
+          var bodyContainer = bodyInner.querySelector('.ui-tabs__tab-body_data');
+          if (bodyContainer) {
+            bodyContainer.innerHTML = bodyData.html;
+            bodyContainer.querySelectorAll('script').forEach(function (oldScript) {
+              var s = document.createElement('script');
+              s.textContent = oldScript.textContent;
+              oldScript.parentNode.replaceChild(s, oldScript);
+            });
+          }
+          if (bodyData.active) {
+            bodyInner.classList.add('--body-active');
+            var header = container.querySelector("[data-bx-name=\"".concat(bodyData.id, "\"]"));
+            if (header) {
+              header.classList.add('--header-active');
+            }
+          }
+        });
+      }
+      var targetContainer = document.getElementById(id);
+      if (targetContainer) {
+        main_core.Dom.append(container, targetContainer);
+      }
+      if (window.BX && window.BX.UI && window.BX.UI.Hint) {
+        window.BX.UI.Hint.init(container);
+      }
+      if (remember) {
+        var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
+        container.addEventListener('click', function (event) {
+          var header = event.target.closest('[data-bx-name]');
+          if (!header || !activeTabInput) {
+            return;
+          }
+          var tabId = header.getAttribute('data-bx-name') || '';
+          if (tabId !== '') {
+            activeTabInput.value = tabId;
+          }
+        });
+      }
+    }
+
+    /**
+     * Initialize all tabs on the page
+     * @param {HTMLElement|Document} root
+     */
+    function initAll() {
+      var root = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+      var tabsContainers = [];
+      if (main_core.Type.isElementNode(root) && root.hasAttribute('data-adminkit-tabs')) {
+        tabsContainers.push(root);
+      }
+      root.querySelectorAll('[data-adminkit-tabs]').forEach(function (el) {
+        tabsContainers.push(el);
+      });
+      tabsContainers.forEach(function (container) {
+        if (container.dataset.adminkitTabsInitialized) {
+          return;
+        }
+        var configStr = container.getAttribute('data-adminkit-tabs-config');
+        if (configStr) {
+          try {
+            var config = JSON.parse(configStr);
+            initTabs(config);
+            container.dataset.adminkitTabsInitialized = 'true';
+          } catch (e) {
+            console.error('Failed to parse tabs config', e);
+          }
+        }
+      });
+    }
+
 
 
     var index = /*#__PURE__*/Object.freeze({
         Tabs: Tabs,
-        Tab: Tab
+        Tab: Tab,
+        initTabs: initTabs,
+        initAll: initAll
     });
 
     function _classPrivateMethodInitSpec$3(obj, privateSet) { _checkPrivateRedeclaration$3(obj, privateSet); privateSet.add(obj); }
@@ -1493,6 +1596,118 @@ this.MB = this.MB || {};
         DialogSelector: DialogSelector
     });
 
+    /**
+     * @typedef {Object} BulkActionConfig
+     * @property {string} gridId
+     * @property {string} actionId
+     * @property {string} actionButtonKey
+     * @property {string} forAllKey
+     * @property {string} [emptySelectionMessage]
+     */
+
+    /**
+     * Run bulk action
+     * @param {BulkActionConfig} config
+     */
+    function runBulkAction(config) {
+      var gridId = config.gridId,
+        actionId = config.actionId,
+        actionButtonKey = config.actionButtonKey,
+        forAllKey = config.forAllKey,
+        emptySelectionMessage = config.emptySelectionMessage;
+      var manager = window.BX && window.BX.Main && window.BX.Main.gridManager && window.BX.Main.gridManager.getById(gridId);
+      var grid = manager && (manager.instance || manager.grid);
+      if (!grid) {
+        return;
+      }
+      var rows = typeof grid.getRows === 'function' ? grid.getRows() : null;
+      var ids = rows && typeof rows.getSelectedIds === 'function' ? rows.getSelectedIds() : [];
+      var panel = typeof grid.getActionsPanel === 'function' ? grid.getActionsPanel() : null;
+      var values = panel && typeof panel.getValues === 'function' ? panel.getValues() : {};
+      var forAll = values && values[forAllKey] === 'Y' ? 'Y' : 'N';
+      if ((!ids || ids.length === 0) && forAll !== 'Y') {
+        if (window.BX.UI && window.BX.UI.Notification && window.BX.UI.Notification.Center) {
+          window.BX.UI.Notification.Center.notify({
+            content: emptySelectionMessage || 'Select at least one row'
+          });
+        }
+        return;
+      }
+      var data = {};
+      data[actionButtonKey] = actionId;
+      data[forAllKey] = forAll;
+      if (window.BX && typeof window.BX.bitrix_sessid === 'function') {
+        data['sessid'] = window.BX.bitrix_sessid();
+      }
+      data.ID = ids;
+      data.id = ids;
+      data.rows = ids;
+      if (typeof grid.reloadTable === 'function') {
+        grid.reloadTable('POST', data);
+      }
+    }
+
+    /**
+     * Export selected rows
+     * @param {BulkActionConfig} config
+     */
+    function exportSelected(config) {
+      var gridId = config.gridId,
+        actionId = config.actionId,
+        forAllKey = config.forAllKey,
+        emptySelectionMessage = config.emptySelectionMessage;
+      var manager = window.BX && window.BX.Main && window.BX.Main.gridManager && window.BX.Main.gridManager.getById(gridId);
+      var grid = manager && (manager.instance || manager.grid);
+      if (!grid) {
+        return;
+      }
+      var rows = typeof grid.getRows === 'function' ? grid.getRows() : null;
+      var ids = rows && typeof rows.getSelectedIds === 'function' ? rows.getSelectedIds() : [];
+      if (!ids || ids.length === 0) {
+        if (window.BX.UI && window.BX.UI.Notification && window.BX.UI.Notification.Center) {
+          window.BX.UI.Notification.Center.notify({
+            content: emptySelectionMessage || 'Select at least one row'
+          });
+        }
+        return;
+      }
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = window.location.pathname + window.location.search;
+      var actionInput = document.createElement('input');
+      actionInput.type = 'hidden';
+      actionInput.name = 'action';
+      actionInput.value = actionId;
+      form.appendChild(actionInput);
+      var forAllInput = document.createElement('input');
+      forAllInput.type = 'hidden';
+      forAllInput.name = forAllKey;
+      forAllInput.value = 'N';
+      form.appendChild(forAllInput);
+      if (window.BX && typeof window.BX.bitrix_sessid === 'function') {
+        var sessidInput = document.createElement('input');
+        sessidInput.type = 'hidden';
+        sessidInput.name = 'sessid';
+        sessidInput.value = window.BX.bitrix_sessid();
+        form.appendChild(sessidInput);
+      }
+      for (var i = 0; i < ids.length; i++) {
+        var idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'ID[]';
+        idInput.value = ids[i];
+        form.appendChild(idInput);
+      }
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+    }
+
+    var bulkActions = /*#__PURE__*/Object.freeze({
+        runBulkAction: runBulkAction,
+        exportSelected: exportSelected
+    });
+
     exports.Form = formSave;
     exports.Dependencies = dependencies;
     exports.Visibility = visibility;
@@ -1502,6 +1717,7 @@ this.MB = this.MB || {};
     exports.ChartWidget = chartWidget;
     exports.Tabs = index;
     exports.DialogSelector = index$1;
+    exports.GridBulkActions = bulkActions;
 
 }((this.MB.AdminKit = this.MB.AdminKit || {}),BX.Collections,BX.Event,BX,BX.UI.EntitySelector,BX));
 //# sourceMappingURL=kit.bundle.js.map

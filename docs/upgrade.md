@@ -40,6 +40,11 @@
 - `BulkAction::delete()` now returns `MassDeleteAction`, which defaults to `group('danger', 'Удаление')`, `icon('ui-btn-icon-remove')`, and `sort(100)`.
 - Form/options client scripts live in `mb.admin.kit` extension (`MB.AdminKit.Form`, `.Visibility`, `.OptionsPage`).
 - Tabs and DialogSelector runtime also live in `mb.admin.kit` (removed `mb.ui.tabs` / `mb.ui.dialog-selector`).
+- **JS Refactoring**: Heavy inline JS for Tabs and Grid bulk actions has been moved to the `mb.admin.kit` extension. `TabsRenderer` and `BitrixGridActionPanelAdapter` now use clean JS API calls.
+- **Runtime Validations**: `Grid::setBulkActions()` now validates that all items implement `BulkPanelItemContract`.
+- **Sort Validation**: `GridQueryBuilder` now validates and sanitizes sorting parameters against allowed sortable columns to prevent unsafe queries.
+- **ORM Selection Control**: `Field` now supports `selectable(false)` and `selectColumns([...])` to fine-tune DB queries.
+- **GridDataLoader count**: Total count now includes `runtime` fields and uses a safer `getCount()` call.
 
 **Before:**
 

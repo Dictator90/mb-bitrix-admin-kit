@@ -8,6 +8,8 @@ export {
 	Tab,
 }
 
+export { initTabs, initAll } from './initializer';
+
 export type {
 	TabsOptionsType,
 	TabHeadOptionsType,

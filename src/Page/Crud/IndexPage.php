@@ -204,6 +204,7 @@ class IndexPage extends CrudPage implements IndexPageContract
     {
         $gridId = $this->resource->getGridId();
         $result = $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$gridId] ?? null;
+
         if (!is_array($result)) {
             return;
         }

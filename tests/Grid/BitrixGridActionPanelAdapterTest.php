@@ -28,8 +28,8 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         self::assertTrue($items[1]['ONCHANGE'][0]['CONFIRM']);
         self::assertSame('Really?', $items[1]['ONCHANGE'][0]['CONFIRM_MESSAGE']);
         self::assertSame('ui-btn-danger', $items[1]['CLASS']);
-        self::assertStringContainsString("grid.reloadTable('POST',data)", $items[1]['ONCHANGE'][0]['DATA'][0]['JS']);
-        self::assertStringContainsString('data.ID=ids', $items[1]['ONCHANGE'][0]['DATA'][0]['JS']);
+        self::assertStringContainsString("kit.GridBulkActions.runBulkAction", $items[1]['ONCHANGE'][0]['DATA'][0]['JS']);
+        self::assertStringContainsString('"actionId":"delete"', $items[1]['ONCHANGE'][0]['DATA'][0]['JS']);
     }
 
     public function testItSupportsForAllCheckbox(): void
@@ -149,7 +149,7 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         self::assertSame('Activate', $item['ITEMS'][1]['NAME']);
         self::assertSame('activate', $item['ITEMS'][1]['VALUE']);
         self::assertTrue($item['ITEMS'][1]['ONCHANGE'][0]['CONFIRM']);
-        self::assertStringContainsString("'activate'", $item['ITEMS'][1]['ONCHANGE'][0]['DATA'][0]['JS']);
+        self::assertStringContainsString('"actionId":"activate"', $item['ITEMS'][1]['ONCHANGE'][0]['DATA'][0]['JS']);
 
         self::assertSame('Deactivate', $item['ITEMS'][2]['NAME']);
         self::assertSame('deactivate', $item['ITEMS'][2]['VALUE']);

@@ -92,7 +92,17 @@ class Grid
     /** @param BulkPanelItemContract[] $actions */
     public function setBulkActions(array $actions): void
     {
-        $this->bulkActions = $actions;
+        foreach ($actions as $action) {
+            if (!$action instanceof BulkPanelItemContract) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Grid bulk action must implement %s, %s given.',
+                    BulkPanelItemContract::class,
+                    get_debug_type($action)
+                ));
+            }
+        }
+
+        $this->bulkActions = array_values($actions);
     }
 
     /**

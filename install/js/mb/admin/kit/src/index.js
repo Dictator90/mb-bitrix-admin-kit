@@ -9,6 +9,7 @@ import * as Fields from './fields/password-field';
 import * as ChartWidget from './chart-widget';
 import * as Tabs from './tabs/index'
 import * as DialogSelector from './dialog-selector/index'
+import * as GridBulkActions from './grid/bulk-actions';
 
 export {
 	Form,
@@ -19,5 +20,6 @@ export {
 	Fields,
 	ChartWidget,
 	Tabs,
-	DialogSelector
+	DialogSelector,
+	GridBulkActions
 };

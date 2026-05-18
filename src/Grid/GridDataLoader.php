@@ -39,7 +39,7 @@ final class GridDataLoader
         $cacheUsed = false;
 
         if ($resource->useTotalCount($context)) {
-            [$count, $cacheUsed] = $this->resolveTotalCount($resource, $dataManagerClass, $context, $params['filter'] ?? []);
+            [$count, $cacheUsed] = $this->resolveTotalCount($resource, $dataManagerClass, $context, $params);
             $countQueryUsed = !$cacheUsed;
             $grid->setTotalCount($count);
         }
@@ -80,18 +80,21 @@ final class GridDataLoader
 
     /**
      * @param class-string $dataManagerClass
-     * @param array<string,mixed> $filter
+     * @param array<string,mixed> $params
      * @return array{0:int,1:bool}
      */
     private function resolveTotalCount(
         DataManagerResourceContract $resource,
         string $dataManagerClass,
         GridContext $context,
-        array $filter,
+        array $params,
     ): array {
+        $filter = $params['filter'] ?? [];
+        $runtime = $params['runtime'] ?? [];
         $ttl = $resource->countCacheTtl($context);
+
         if ($ttl <= 0) {
-            return [(int)$dataManagerClass::getCount($filter), false];
+            return [$this->countRows($dataManagerClass, $filter, $runtime), false];
         }
 
         $key = AdminString::cacheKey('adminkit_count', [
@@ -99,6 +102,7 @@ final class GridDataLoader
             'resource' => $resource::getId(),
             'grid' => $context->gridId,
             'filter' => $filter,
+            'runtime' => $this->normalizeRuntimeForCache($runtime),
             'user' => $this->currentUserId(),
         ]);
         $cached = ArrayTtlCache::get($key);
@@ -106,10 +110,46 @@ final class GridDataLoader
             return [(int)$cached, true];
         }
 
-        $count = (int)$dataManagerClass::getCount($filter);
+        $count = $this->countRows($dataManagerClass, $filter, $runtime);
         ArrayTtlCache::set($key, $count, $ttl);
 
         return [$count, false];
+    }
+
+    /**
+     * @param class-string $dataManagerClass
+     * @param array<string,mixed> $filter
+     * @param array<string,mixed> $runtime
+     */
+    private function countRows(string $dataManagerClass, array $filter, array $runtime = []): int
+    {
+        try {
+            if ($runtime !== []) {
+                // Bitrix D7 supports getCount($filter, $cacheParams, $runtime)
+                /** @noinspection PhpParamsInspection */
+                return (int)$dataManagerClass::getCount($filter, [], ['runtime' => $runtime]);
+            }
+
+            return (int)$dataManagerClass::getCount($filter);
+        } catch (\Throwable) {
+            return (int)$dataManagerClass::getCount($filter);
+        }
+    }
+
+    private function normalizeRuntimeForCache(array $runtime): array
+    {
+        $normalized = [];
+        foreach ($runtime as $key => $value) {
+            if (is_object($value)) {
+                $normalized[$key] = get_class($value);
+            } elseif (is_array($value)) {
+                $normalized[$key] = $this->normalizeRuntimeForCache($value);
+            } else {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 
     private function debugQuery(QueryPerformanceContext $context): void

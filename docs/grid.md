@@ -4,7 +4,7 @@ The grid layer is split into small services so Bitrix UI concerns stay separate 
 
 ## Responsibilities
 
-- `GridQueryBuilder` is the only source of ORM parameters. It builds `select`, `filter`, `order`, `runtime`, `limit`, and `offset` from Resource fields, filters, `GridContext`, default Resource query configuration, runtime fields, and index query hooks.
+- `GridQueryBuilder` is the only source of ORM parameters. It builds `select`, `filter`, `order`, `runtime`, `limit`, and `offset` from Resource fields, filters, `GridContext`, default Resource query configuration, runtime fields, and index query hooks. It also validates and sanitizes sorting parameters against allowed sortable columns to prevent unsafe queries.
 - `GridDataLoader` creates the `GridContext`, calls `GridQueryBuilder`, applies `QueryGuard`, resolves total counts and count cache, calls `DataManager::getList($params)`, feeds the result into `Grid::setRawRows()`, and returns `QueryPerformanceContext`.
 - `Grid` stores UI state: grid id, filter id, fields, filters, row actions, bulk actions, rows, total count, and `PageNavigation`. It does not build ORM params.
 - `BitrixGridAdapter` builds `bitrix:main.ui.grid` component params such as columns, rows, sorting UI state, navigation, total count, inline-edit flags, AJAX flags, and action-panel integration.
@@ -62,6 +62,17 @@ $APPLICATION->IncludeComponent('bitrix:main.ui.grid', '', (new BitrixGridAdapter
 ## Computed columns
 
 Computed columns are calculated after ORM rows are loaded and are not selected automatically from the database.
+
+## Selectable fields and custom columns
+
+By default, `GridQueryBuilder` selects all non-computed field columns. You can fine-tune this behavior:
+
+- `Field::selectable(false)` — prevents the field from being added to the ORM `select` list. Useful for virtual or display-only fields that should not trigger DB selection.
+- `Field::selectColumns(['COL_A', 'COL_B'])` — forces the selection of specific DB columns for this field instead of its main column.
+
+## Sort validation
+
+`GridQueryBuilder` validates the `order` parameter from the UI or request. It only allows sorting by columns that are explicitly marked as sortable in the field configuration (via `Field::sortable(true)` or custom `getGridColumnConfig()['sort']`). Sort directions are normalized to `ASC` or `DESC`.
 
 ## Grouped index rows
 
