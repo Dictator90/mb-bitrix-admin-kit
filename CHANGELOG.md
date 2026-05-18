@@ -3,12 +3,17 @@
 ## Unreleased
 
 ### Fixed
+- Grid inline-edit metadata now respects field readonly state: `readonly()` fields no longer publish editable config into `main.ui.grid` columns.
+- Relation and entity selector fields are now explicitly non-inline-editable in grid metadata to avoid unstable runtime editors and enforce form/sidepanel editing flows.
+- `Select` grid column metadata now exports editable `items` only when inline editing is actually enabled for the column.
+- `BelongsTo` (and `BelongsToMany`) grid metadata now explicitly disables inline editing, aligning relation-like selects with stable sidepanel/form editing flows and fixing failing tests/CI checks.
 - Fixed local CI failures by removing the debug-only Bitrix `Debug::writeToFile()` call from mass delete, restoring the `BulkAction::executeUsing()` callback alias, and adding missing PHPStan Bitrix stubs.
 - Bulk action AJAX payloads now include structured `status`, `errors`, `warnings`, `affected`, and summary data; non-AJAX flash rendering includes item-level errors/warnings so messages survive a reload.
 - `BitrixGridActionPanelAdapter` no longer chooses the export JavaScript handler by the magic `export_selected` id; bulk actions can now declare a `clientHandler()`.
 - Composer package stability is stable by default; the package no longer opts consumers into dev dependency resolution.
 
 ### Documentation
+- Documented field render lifecycle and inline-edit compatibility/limitations for base, select, relation, and entity selector fields.
 - Clarified that `CrudResource` is a DSL/page base without persistence and that ORM CRUD resources should extend `DataManagerResource`.
 - Synchronized import/export, grid, quick-start, and bulk-action docs with the current export-enabled/import-UI-disabled state.
 
@@ -83,6 +88,10 @@
 - `MassDeleteAction` now shares the delete factory UI defaults (`danger`, remove icon, danger group, confirmation, sort order).
 
 ### Fixed
+- Grid inline-edit metadata now respects field readonly state: `readonly()` fields no longer publish editable config into `main.ui.grid` columns.
+- Relation and entity selector fields are now explicitly non-inline-editable in grid metadata to avoid unstable runtime editors and enforce form/sidepanel editing flows.
+- `Select` grid column metadata now exports editable `items` only when inline editing is actually enabled for the column.
+- `BelongsTo` (and `BelongsToMany`) grid metadata now explicitly disables inline editing, aligning relation-like selects with stable sidepanel/form editing flows and fixing failing tests/CI checks.
 - Localized hardcoded user-facing messages in actions, bulk results, relation components, selectors, validation rules, import/export handlers, and CRUD page notifications by moving them to `Loc` message files (`lang/ru` and `lang/en` for the affected classes).
 - Updated key documentation files to Russian and synchronized quick-start/install/architecture/grid/import-export/backward-compatibility guides with the current package behavior.
 - Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.
@@ -113,6 +122,10 @@
 - Import UI and toolbar entrypoints removed from `IndexPage` (no `action=import`, no import SidePanel flow on index). Library `Import\*` classes remain for future re-enable.
 
 ### Fixed
+- Grid inline-edit metadata now respects field readonly state: `readonly()` fields no longer publish editable config into `main.ui.grid` columns.
+- Relation and entity selector fields are now explicitly non-inline-editable in grid metadata to avoid unstable runtime editors and enforce form/sidepanel editing flows.
+- `Select` grid column metadata now exports editable `items` only when inline editing is actually enabled for the column.
+- `BelongsTo` (and `BelongsToMany`) grid metadata now explicitly disables inline editing, aligning relation-like selects with stable sidepanel/form editing flows and fixing failing tests/CI checks.
 - CSRF: POST saves and options updates require valid sessid; AJAX returns JSON errors, normal POST shows alert.
 - `DetailPage` enforces `canView` before rendering a record.
 - `FormPage` validation/save lifecycle and permission checks (`canCreate` / `canUpdate`) on render and save.
