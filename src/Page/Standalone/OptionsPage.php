@@ -61,6 +61,7 @@ abstract class OptionsPage extends StandalonePage
     /** Show per-site tabs (one form per site in SiteTable). */
     protected bool $multiSite = false;
 
+    /** @var list<string> */
     protected array $errors = [];
     private bool $sessidRejected = false;
 

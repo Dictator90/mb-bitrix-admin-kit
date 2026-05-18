@@ -6,13 +6,13 @@ namespace MB\Bitrix\AdminKit\Grid\Grouping;
 
 use Closure;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
-use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
 use MB\Bitrix\AdminKit\Support\AdminCollection;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 final class GroupedRowsBuilder
 {
@@ -296,7 +296,7 @@ final class GroupedRowsBuilder
         }
         $row = $this->emptyFieldColumns($fields);
         if ($labelColumn !== null) {
-            $row[$labelColumn] = $label ?? LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_GROUPING_UNGROUPED', 'Ungrouped');
+            $row[$labelColumn] = $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_GROUPING_UNGROUPED', 'Ungrouped');
         }
         $row['__ROW_TYPE'] = 'group';
         $row['__GROUP_ID'] = self::UNGROUPED_ID;

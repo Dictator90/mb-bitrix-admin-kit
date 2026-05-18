@@ -35,6 +35,10 @@ final class BulkActionMetadataTest extends TestCase
         self::assertSame('my-class', $action->getButtonClass());
         self::assertSame('My Title', $action->getTitle());
         self::assertSame('DROPDOWN', $action->getPanelType());
+        self::assertSame('runBulkAction', $action->getClientHandler());
+
+        $action->clientHandler('customHandler');
+        self::assertSame('customHandler', $action->getClientHandler());
     }
 
     public function testDeleteActionHasDefaults(): void

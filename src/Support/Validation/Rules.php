@@ -20,7 +20,7 @@ class Rules
                 return $message ?: str_replace(
                     '#MIN#',
                     (string)$min,
-                    LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_MIN_LENGTH', 'Minimum length: #MIN# characters.'),
+                    LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_MIN_LENGTH', 'Minimum length: #MIN# characters.'),
                 );
             }
 
@@ -39,7 +39,7 @@ class Rules
                 return $message ?: str_replace(
                     '#MAX#',
                     (string)$max,
-                    LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_MAX_LENGTH', 'Maximum length: #MAX# characters.'),
+                    LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_MAX_LENGTH', 'Maximum length: #MAX# characters.'),
                 );
             }
 
@@ -55,7 +55,7 @@ class Rules
             }
 
             if (!filter_var((string)$value, FILTER_VALIDATE_EMAIL)) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_EMAIL', 'Enter a valid email address.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_EMAIL', 'Enter a valid email address.');
             }
 
             return true;
@@ -70,7 +70,7 @@ class Rules
             }
 
             if (!filter_var((string)$value, FILTER_VALIDATE_URL)) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_URL', 'Enter a valid URL.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_URL', 'Enter a valid URL.');
             }
 
             return true;
@@ -85,7 +85,7 @@ class Rules
             }
 
             if (!is_numeric($value)) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_NUMERIC', 'Field must contain a number.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_NUMERIC', 'Field must contain a number.');
             }
 
             return true;
@@ -100,7 +100,7 @@ class Rules
             }
 
             if (filter_var($value, FILTER_VALIDATE_INT) === false) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_INTEGER', 'Field must contain an integer.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_INTEGER', 'Field must contain an integer.');
             }
 
             return true;
@@ -118,7 +118,7 @@ class Rules
                 return $message ?: str_replace(
                     '#MIN#',
                     (string)$min,
-                    LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_MIN', 'Minimum value: #MIN#.'),
+                    LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_MIN', 'Minimum value: #MIN#.'),
                 );
             }
 
@@ -137,7 +137,7 @@ class Rules
                 return $message ?: str_replace(
                     '#MAX#',
                     (string)$max,
-                    LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_MAX', 'Maximum value: #MAX#.'),
+                    LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_MAX', 'Maximum value: #MAX#.'),
                 );
             }
 
@@ -153,7 +153,7 @@ class Rules
             }
 
             if (!preg_match($regex, (string)$value)) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_PATTERN', 'Value does not match the required format.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_PATTERN', 'Value does not match the required format.');
             }
 
             return true;
@@ -173,7 +173,7 @@ class Rules
                 return $message ?: str_replace(
                     '#VALUES#',
                     $allowedStr,
-                    LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_IN', 'Allowed values: #VALUES#.'),
+                    LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_IN', 'Allowed values: #VALUES#.'),
                 );
             }
 
@@ -189,7 +189,7 @@ class Rules
             }
 
             if (in_array($value, $forbidden, true)) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_NOT_IN', 'Invalid value.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_NOT_IN', 'Invalid value.');
             }
 
             return true;
@@ -200,7 +200,7 @@ class Rules
     {
         return function (mixed $value) use ($confirmFieldName, $confirmValue, $message): bool|string {
             if ($value !== $confirmValue) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_CONFIRMED', 'Field confirmation does not match.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_CONFIRMED', 'Field confirmation does not match.');
             }
 
             return true;
@@ -215,7 +215,7 @@ class Rules
             }
 
             if (!$checker($value)) {
-                return $message ?: LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_RULE_UNIQUE', 'Value is already in use.');
+                return $message ?: LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_RULE_UNIQUE', 'Value is already in use.');
             }
 
             return true;

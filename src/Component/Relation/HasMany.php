@@ -6,10 +6,10 @@ namespace MB\Bitrix\AdminKit\Component\Relation;
 
 use Closure;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
-use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
 /**
@@ -161,7 +161,7 @@ class HasMany implements ComponentContract
         $addBtn = '';
         if ($this->createUrlCallback !== null && $parentId !== null) {
             $addUrl = htmlspecialcharsbx(($this->createUrlCallback)($parentId));
-            $addBtn = ' <a href="' . $addUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border adminkit-hasmany__add-btn">+ ' . LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_ADD', 'Add') . '</a>';
+            $addBtn = ' <a href="' . $addUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border adminkit-hasmany__add-btn">+ ' . LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_MANY_ADD', 'Add') . '</a>';
         }
 
         ob_start();
@@ -174,7 +174,7 @@ class HasMany implements ComponentContract
             <div class="adminkit-hasmany__body">
                 <?php
                 if (empty($this->columns)): ?>
-                    <div class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_COLUMNS_REQUIRED', 'Columns are not configured. Use ->columns([...]).') ?></div>
+                    <div class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_MANY_COLUMNS_REQUIRED', 'Columns are not configured. Use ->columns([...]).') ?></div>
                 <?php else: ?>
                     <table class="adminkit-hasmany__table">
                         <thead>
@@ -194,7 +194,7 @@ class HasMany implements ComponentContract
                         <?php
                         if (empty($rows)): ?>
                             <tr>
-                                <td colspan="<?= $colCount ?>" class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_EMPTY', 'No records') ?></td>
+                                <td colspan="<?= $colCount ?>" class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_MANY_EMPTY', 'No records') ?></td>
                             </tr>
                         <?php else: ?>
                             <?php
@@ -211,14 +211,14 @@ class HasMany implements ComponentContract
                                             <?php
                                             if ($this->editUrlCallback): ?>
                                                 <a href="<?= htmlspecialcharsbx(($this->editUrlCallback)($row)) ?>"
-                                                   class="ui-btn ui-btn-xs ui-btn-light-border"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_EDIT', 'Edit') ?></a>
+                                                   class="ui-btn ui-btn-xs ui-btn-light-border"><?= LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_MANY_EDIT', 'Edit') ?></a>
                                             <?php
                                             endif; ?>
                                             <?php
                                             if ($this->deleteUrlCallback): ?>
                                                 <a href="<?= htmlspecialcharsbx(($this->deleteUrlCallback)($row)) ?>"
                                                    class="ui-btn ui-btn-xs ui-btn-danger-light"
-                                                   onclick="return confirm('<?= addslashes(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_DELETE_CONFIRM', 'Delete record?')) ?>')"><?= LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_HAS_MANY_DELETE', 'Delete') ?></a>
+                                                   onclick="return confirm('<?= addslashes(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_MANY_DELETE_CONFIRM', 'Delete record?')) ?>')"><?= LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_MANY_DELETE', 'Delete') ?></a>
                                             <?php
                                             endif; ?>
                                         </td>

@@ -164,7 +164,7 @@ final class BitrixGridActionPanelAdapter
             'ONCHANGE' => [[
                 'ACTION' => Actions::CALLBACK,
                 'DATA' => [[
-                    'JS' => $this->buildBulkActionCallbackJs($grid, $action->getId()),
+                    'JS' => $this->buildBulkActionCallbackJs($grid, $action),
                 ]],
             ]],
         ];
@@ -230,7 +230,7 @@ final class BitrixGridActionPanelAdapter
             'ONCHANGE' => [[
                 'ACTION' => Actions::CALLBACK,
                 'DATA' => [[
-                    'JS' => $this->buildBulkActionCallbackJs($grid, $action->getId()),
+                    'JS' => $this->buildBulkActionCallbackJs($grid, $action),
                 ]],
             ]],
         ];
@@ -258,13 +258,12 @@ final class BitrixGridActionPanelAdapter
         }
     }
 
-    private function jsEscape(string $value): string
+    public function buildBulkActionCallbackJs(Grid $grid, BulkAction|string $action): string
     {
-        return addslashes($value);
-    }
+        $actionId = $action instanceof BulkAction ? $action->getId() : $action;
+        $method = $action instanceof BulkAction ? $action->getClientHandler() : 'runBulkAction';
+        $method = preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', $method) ? $method : 'runBulkAction';
 
-    public function buildBulkActionCallbackJs(Grid $grid, string $actionId): string
-    {
         $config = [
             'gridId' => $grid->getId(),
             'actionId' => $actionId,
@@ -272,18 +271,12 @@ final class BitrixGridActionPanelAdapter
             'forAllKey' => 'action_all_rows_' . $grid->getId(),
         ];
 
-        $method = ($actionId === 'export_selected') ? 'exportSelected' : 'runBulkAction';
         $jsonConfig = json_encode($config, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
 
         return "BX.Runtime.loadExtension('mb.admin.kit').then(function(kit){" .
             "if(kit&&kit.GridBulkActions&&kit.GridBulkActions.{$method}){" .
             "kit.GridBulkActions.{$method}({$jsonConfig});" .
-            "}" .
-            "});";
-    }
-
-    private function buildBulkExportCallbackJs(Grid $grid, string $actionId): string
-    {
-        return $this->buildBulkActionCallbackJs($grid, $actionId);
+            '}' .
+            '});';
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Action;
 
-use Bitrix\Main\Diag\Debug;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
@@ -114,7 +113,6 @@ class MassDeleteAction extends BulkAction
             }
         }
 
-        Debug::writeToFile([$result]);
         return $result;
     }
 

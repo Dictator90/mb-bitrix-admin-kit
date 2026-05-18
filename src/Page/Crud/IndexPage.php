@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page\Crud;
 
-use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
@@ -212,9 +211,31 @@ class IndexPage extends CrudPage implements IndexPageContract
         unset($_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$gridId]);
 
         echo Notification::alert(
-            (string)($result['message'] ?? ''),
+            $this->formatBulkResultMessage($result),
             ($result['success'] ?? false) ? Notification::TYPE_SUCCESS : Notification::TYPE_WARNING,
         );
+    }
+
+
+    /** @param array<string,mixed> $result */
+    protected function formatBulkResultMessage(array $result): string
+    {
+        $parts = [(string)($result['message'] ?? '')];
+
+        foreach (['errors', 'warnings', 'skipped'] as $key) {
+            if (!isset($result[$key]) || !is_array($result[$key])) {
+                continue;
+            }
+
+            foreach (array_slice($result[$key], 0, 10, true) as $id => $messages) {
+                $messages = is_array($messages) ? implode(', ', array_map('strval', $messages)) : (string)$messages;
+                if ($messages !== '') {
+                    $parts[] = '#' . (string)$id . ': ' . $messages;
+                }
+            }
+        }
+
+        return trim(implode("\n", array_filter($parts, static fn (string $part): bool => $part !== '')));
     }
 
     /** @return iterable<FieldContract> */
@@ -299,7 +320,8 @@ class IndexPage extends CrudPage implements IndexPageContract
             }
         }
 
-        $actions[] = BulkAction::make('export_selected', $this->message('MB_ADMIN_KIT_INDEX_EXPORT_SELECTED_CSV', 'Export selected CSV'));
+        $actions[] = BulkAction::make('export_selected', $this->message('MB_ADMIN_KIT_INDEX_EXPORT_SELECTED_CSV', 'Export selected CSV'))
+            ->clientHandler('exportSelected');
 
         return $actions;
     }

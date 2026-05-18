@@ -110,6 +110,7 @@ final class GridQueryBuilder
         return array_replace($indexPage->defaultSort(), $indexPage->indexOrder($context));
     }
 
+    /** @return array<int|string,string> */
     private function allowedSortColumns(IndexPageDefinitionContract $indexPage): array
     {
         $allowed = [];
@@ -139,6 +140,10 @@ final class GridQueryBuilder
         return array_unique(array_filter($allowed));
     }
 
+    /**
+     * @param array<string,string> $order
+     * @return array<string,string>
+     */
     private function sanitizeOrder(array $order, IndexPageDefinitionContract $indexPage): array
     {
         if ($order === []) {

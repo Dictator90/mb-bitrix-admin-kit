@@ -68,7 +68,7 @@ final class OptionsPagePostHandler
             if (!method_exists($field, 'hasDependency') || !$field->hasDependency()) {
                 continue;
             }
-            $field->applyDependency($formData);
+            $field->{'applyDependency'}($formData);
             $result[$field->getColumn()] = ['html' => $field->renderFormField(null)];
         }
 
@@ -102,7 +102,7 @@ final class OptionsPagePostHandler
 
         foreach ($page->collectEditableFields() as $field) {
             $value = $field->serializePostValue($page->resolvePostedFieldValue($field->getColumn()));
-            $fieldErrors = $field->runValidation($value);
+            $fieldErrors = $field->{'runValidation'}($value);
 
             if ($fieldErrors !== []) {
                 $errors = array_merge($errors, $fieldErrors);

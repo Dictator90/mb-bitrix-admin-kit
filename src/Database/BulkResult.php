@@ -70,14 +70,18 @@ final class BulkResult
         return $this->failedCount === 0;
     }
 
+    /** @return array<string,mixed> */
     public function toArray(): array
     {
         return [
             'success' => $this->isSuccess(),
+            'status' => $this->isSuccess() ? 'success' : 'error',
             'message' => $this->message(),
             'summary' => $this->summary(),
             'errors' => $this->errorsById,
+            'warnings' => $this->skippedIds,
             'skipped' => $this->skippedIds,
+            'affected' => $this->successCount,
             'successfulIds' => $this->successfulIds,
         ];
     }

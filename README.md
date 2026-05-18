@@ -15,6 +15,8 @@
 - Import UI на index-страницах временно отключён.
 - Экспорт остаётся CSV-first (`MB\Bitrix\AdminKit\Export\CsvExporter`).
 - Для новых ORM-ресурсов рекомендуется `DataManagerResource`.
+- `CrudResource` — DSL/страничная база без persistence; для рабочего ORM CRUD используйте `DataManagerResource`.
+- Bulk AJAX возвращает структурированный результат (`status`, `message`, `errors`, `warnings`, `affected`) и показывает ошибки сразу через `mb.admin.kit`.
 
 ## Требования
 

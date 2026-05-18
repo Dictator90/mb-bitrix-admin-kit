@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Grid;
 
+use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Grid\GridDataLoader;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
-use MB\Bitrix\AdminKit\Support\AdminString;
-use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
 use MB\Bitrix\AdminKit\Page\IndexPageDefinition;
 use MB\Bitrix\AdminKit\Resource\DataManagerResource;
+use MB\Bitrix\AdminKit\Support\AdminString;
 use PHPUnit\Framework\TestCase;
 
 final class GridDataLoaderCountRuntimeTest extends TestCase
@@ -18,19 +18,34 @@ final class GridDataLoaderCountRuntimeTest extends TestCase
     public function testCountCacheKeyIncludesRuntime(): void
     {
         ArrayTtlCache::clear();
-        $resource = new class extends DataManagerResource {
-            public static function getId(): string { return 'test'; }
-            public function dataManagerClass(): string { return MockDataManager::class; }
-            public function getPrimaryKey(): string { return 'ID'; }
-            public function useTotalCount(\MB\Bitrix\AdminKit\Grid\GridContext $ctx): bool { return true; }
-            public function countCacheTtl(\MB\Bitrix\AdminKit\Grid\GridContext $ctx): int { return 60; }
+        $resource = new class () extends DataManagerResource {
+            public static function getId(): string
+            {
+                return 'test';
+            }
+            public function dataManagerClass(): string
+            {
+                return MockDataManager::class;
+            }
+            public function getPrimaryKey(): string
+            {
+                return 'ID';
+            }
+            public function useTotalCount(\MB\Bitrix\AdminKit\Grid\GridContext $ctx): bool
+            {
+                return true;
+            }
+            public function countCacheTtl(\MB\Bitrix\AdminKit\Grid\GridContext $ctx): int
+            {
+                return 60;
+            }
         };
 
         $grid = new Grid('test');
         $loader = new GridDataLoader();
 
         $def1 = $this->makeDefinition([
-            'indexRuntime' => fn() => ['F1' => 'V1'],
+            'indexRuntime' => fn () => ['F1' => 'V1'],
         ]);
 
         $ctx = $loader->makeContext($resource, $grid);
@@ -54,7 +69,7 @@ final class GridDataLoaderCountRuntimeTest extends TestCase
 
         // Runtime 2 - should NOT use cache from Runtime 1
         $def2 = $this->makeDefinition([
-            'indexRuntime' => fn() => ['F2' => 'V2'],
+            'indexRuntime' => fn () => ['F2' => 'V2'],
         ]);
 
         $loader->load($resource, $grid, null, null, $def2);
@@ -65,22 +80,22 @@ final class GridDataLoaderCountRuntimeTest extends TestCase
     private function makeDefinition(array $overrides): IndexPageDefinition
     {
         $defaults = [
-            'fields' => fn() => [],
-            'filters' => fn() => [],
-            'rowActions' => fn() => [],
-            'bulkActions' => fn() => [],
-            'defaultSort' => fn() => [],
-            'defaultFilter' => fn() => [],
-            'defaultSelect' => fn() => [],
-            'runtimeFields' => fn() => [],
-            'indexSelect' => fn() => [],
-            'indexFilter' => fn() => [],
-            'indexOrder' => fn() => [],
-            'indexRuntime' => fn() => [],
-            'beforeIndexQueryParams' => fn($p) => $p,
-            'afterIndexRows' => fn($r) => $r,
-            'mapIndexRow' => fn($r) => $r,
-            'modifyIndexParams' => fn($p) => $p,
+            'fields' => fn () => [],
+            'filters' => fn () => [],
+            'rowActions' => fn () => [],
+            'bulkActions' => fn () => [],
+            'defaultSort' => fn () => [],
+            'defaultFilter' => fn () => [],
+            'defaultSelect' => fn () => [],
+            'runtimeFields' => fn () => [],
+            'indexSelect' => fn () => [],
+            'indexFilter' => fn () => [],
+            'indexOrder' => fn () => [],
+            'indexRuntime' => fn () => [],
+            'beforeIndexQueryParams' => fn ($p) => $p,
+            'afterIndexRows' => fn ($r) => $r,
+            'mapIndexRow' => fn ($r) => $r,
+            'modifyIndexParams' => fn ($p) => $p,
         ];
 
         return new IndexPageDefinition(array_merge($defaults, $overrides));
@@ -96,9 +111,15 @@ class MockDataManager
 
     public static function getList($params): object
     {
-        return new class {
-            public function fetch() { return false; }
-            public function getSelectedRowsCount() { return 0; }
+        return new class () {
+            public function fetch()
+            {
+                return false;
+            }
+            public function getSelectedRowsCount()
+            {
+                return 0;
+            }
         };
     }
 }

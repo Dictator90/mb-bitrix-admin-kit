@@ -2,8 +2,6 @@
   "name": "mb4it/bitrix-admin-kit",
   "description": "Admin Kit Library for 1C-Bitrix",
   "type": "library",
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "license": "MIT",
   "require": {
     "php": "^8.2",

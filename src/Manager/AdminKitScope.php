@@ -36,9 +36,10 @@ final class AdminKitScope
             $libPath = $basePath . '/lib';
         }
 
-        return new self($scopeId, $libPath !== null ? [$libPath] : []);
+        return new self($scopeId, [$libPath]);
     }
 
+    /** @param string|array<int,string> $discoveryPath */
     public static function fromModuleId(string $moduleId, string|array $discoveryPath = 'lib/Admin'): self
     {
         $modulePath = self::resolveModulePath($moduleId);

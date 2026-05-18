@@ -8,4 +8,5 @@ parameters:
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false
     bootstrapFiles:
+        - phpstan/functions.php
         - phpstan/bootstrap.php

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Component\Relation;
 
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
 /**
@@ -37,11 +38,11 @@ class HasOne extends HasMany
         $editBtn = '';
         if ($this->editUrlCallback !== null && $row !== null) {
             $editUrl = htmlspecialcharsbx(($this->editUrlCallback)($row));
-            $editBtn = ' <a href="' . $editUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border">' . $this->message('MB_ADMIN_KIT_HAS_ONE_EDIT', 'Edit') . '</a>';
+            $editBtn = ' <a href="' . $editUrl . '" class="ui-btn ui-btn-xs ui-btn-light-border">' . LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_ONE_EDIT', 'Edit') . '</a>';
         }
         if ($this->createUrlCallback !== null && $row === null && $parentId !== null) {
             $createUrl = htmlspecialcharsbx(($this->createUrlCallback)($parentId));
-            $editBtn = ' <a href="' . $createUrl . '" class="ui-btn ui-btn-xs ui-btn-success-light">' . $this->message('MB_ADMIN_KIT_HAS_ONE_CREATE', 'Create') . '</a>';
+            $editBtn = ' <a href="' . $createUrl . '" class="ui-btn ui-btn-xs ui-btn-success-light">' . LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_ONE_CREATE', 'Create') . '</a>';
         }
 
         ob_start();
@@ -54,9 +55,9 @@ class HasOne extends HasMany
             <div class="adminkit-hasmany__body">
                 <?php
                 if ($row === null): ?>
-                    <div class="adminkit-hasmany__empty"><?= $this->message('MB_ADMIN_KIT_HAS_ONE_NOT_FOUND', 'Record not found') ?></div>
+                    <div class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_ONE_NOT_FOUND', 'Record not found') ?></div>
                 <?php elseif (empty($this->columns)): ?>
-                    <div class="adminkit-hasmany__empty"><?= $this->message('MB_ADMIN_KIT_HAS_MANY_COLUMNS_REQUIRED', 'Columns are not configured. Use ->columns([...]).') ?></div>
+                    <div class="adminkit-hasmany__empty"><?= LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_HAS_MANY_COLUMNS_REQUIRED', 'Columns are not configured. Use ->columns([...]).') ?></div>
                 <?php else: ?>
                     <div class="ui-form">
                         <?php

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed local CI failures by removing the debug-only Bitrix `Debug::writeToFile()` call from mass delete, restoring the `BulkAction::executeUsing()` callback alias, and adding missing PHPStan Bitrix stubs.
+- Bulk action AJAX payloads now include structured `status`, `errors`, `warnings`, `affected`, and summary data; non-AJAX flash rendering includes item-level errors/warnings so messages survive a reload.
+- `BitrixGridActionPanelAdapter` no longer chooses the export JavaScript handler by the magic `export_selected` id; bulk actions can now declare a `clientHandler()`.
+- Composer package stability is stable by default; the package no longer opts consumers into dev dependency resolution.
+
+### Documentation
+- Clarified that `CrudResource` is a DSL/page base without persistence and that ORM CRUD resources should extend `DataManagerResource`.
+- Synchronized import/export, grid, quick-start, and bulk-action docs with the current export-enabled/import-UI-disabled state.
+
 ### Stabilization
 - Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.
 - Restored legacy `Resource` behavior expected by v1 modules: default CRUD page helpers (`indexPage/formPage/detailPage`), menu/permission/grid defaults, and DataManager fallback compatibility for direct `Resource` + persistence-trait usage.

@@ -70,7 +70,7 @@ final class OptionsPageFormRenderer
         }
         foreach ($allFields as $field) {
             if (method_exists($field, 'hasDependency') && $field->hasDependency()) {
-                $field->applyDependency($formData);
+                $field->{'applyDependency'}($formData);
             }
         }
 
@@ -144,8 +144,8 @@ final class OptionsPageFormRenderer
 
         foreach ($page->collectEditableFields() as $field) {
             if (method_exists($field, 'hasDependency') && $field->hasDependency()) {
-                $dependsMap[$field->getColumn()] = $field->getDependsOn();
-                foreach ($field->getDependsOn() as $col) {
+                $dependsMap[$field->getColumn()] = $field->{'getDependsOn'}();
+                foreach ($field->{'getDependsOn'}() as $col) {
                     $sourceCols[$col] = true;
                 }
             }

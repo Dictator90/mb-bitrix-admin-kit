@@ -63,7 +63,7 @@ class BelongsTo extends Field
     /** Add a blank first option. */
     public function emptyOption(string $label = ''): static
     {
-        $this->emptyLabel = $label !== '' ? $label : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BELONGS_TO_EMPTY_OPTION', '— select —');
+        $this->emptyLabel = $label !== '' ? $label : LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BELONGS_TO_EMPTY_OPTION', '— select —');
         return $this;
     }
 
@@ -136,7 +136,7 @@ class BelongsTo extends Field
     public function previewValue(mixed $value): string
     {
         if ($value === null || $value === '') {
-            return LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BELONGS_TO_EMPTY_PREVIEW', '—');
+            return LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BELONGS_TO_EMPTY_PREVIEW', '—');
         }
         if ($this->optionsCallback !== null) {
             $options = ($this->optionsCallback)();

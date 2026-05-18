@@ -63,6 +63,9 @@ The action validates sessid, rejects empty selections with `Не выбраны 
 
 ## Callback bulk action
 
+`handle()` и совместимый alias `executeUsing()` регистрируют callback. Callback должен возвращать `BulkResult`; это позволяет UI показать частичные ошибки, skipped-записи и affected count.
+
+
 Use `handle()` when the operation cannot be represented as a simple update:
 
 ```php
@@ -228,3 +231,19 @@ BulkAction::make('activate_all_by_filter')
 ```
 
 Only explicitly selected IDs are processed unless an action opts in with `allowRunByFilter()` and the surrounding application deliberately supplies filtered IDs.
+
+
+## Custom client handler
+
+По умолчанию action panel вызывает `kit.GridBulkActions.runBulkAction(config)`. Если действию нужен другой client-side flow, задайте metadata на action, не проверяя конкретный id в адаптере:
+
+```php
+BulkAction::make('export_csv', 'Export CSV')
+    ->clientHandler('exportSelected');
+```
+
+Handler должен быть функцией в namespace `GridBulkActions` extension `mb.admin.kit`. Небезопасное имя handler автоматически откатывается к `runBulkAction`.
+
+## User-visible results
+
+`BulkResult::toArray()` отдаёт `success`, `status`, `message`, `summary`, `errors`, `warnings`, `skipped`, `affected` и `successfulIds`. AJAX flow показывает ошибки сразу через `ui.notification`, затем обновляет таблицу. Non-AJAX fallback сохраняет тот же payload во flash session и рендерит `ui.alerts` на следующей загрузке.
