@@ -60,20 +60,14 @@ final class IndexBulkActionHandler
 
         $guardErrors = (new QueryGuard())->validateBulkOperation($context);
         if ($guardErrors !== []) {
-            $payload = [
-                'message' => implode(' ', $guardErrors),
-                'success' => false,
-            ];
+            $payload = BulkResult::failure($guardErrors)->toArray();
             $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$resource->getGridId()] = $payload;
 
             return $payload;
         }
 
         $result = $action->execute($context);
-        $payload = [
-            'message' => $result->message(),
-            'success' => $result->isSuccess(),
-        ];
+        $payload = $result->toArray();
         $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$resource->getGridId()] = $payload;
 
         return $payload;

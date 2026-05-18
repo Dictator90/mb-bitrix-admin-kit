@@ -100,7 +100,7 @@ class IndexPage extends CrudPage implements IndexPageContract
             if ($bulkAction !== null) {
                 $result = (new IndexBulkActionHandler())->handle($this, $bulkAction);
 
-                if ($result !== null && $this->isLegacyBulkAjaxRequest()) {
+                if ($result !== null && $this->isBulkAjaxRequest()) {
                     $this->sendJson($result);
                     return;
                 }
@@ -497,9 +497,16 @@ class IndexPage extends CrudPage implements IndexPageContract
         return (new IndexInlineEditHandler())->saveInlineRow($this, $id, $payload);
     }
 
+    public function isBulkAjaxRequest(): bool
+    {
+        return (string)($_POST['adminkit_bulk_ajax'] ?? '') === 'Y'
+            || (string)($_POST['adminkit_bulk_action'] ?? '') !== '';
+    }
+
+    /** @deprecated use isBulkAjaxRequest() */
     public function isLegacyBulkAjaxRequest(): bool
     {
-        return (string)($_POST['adminkit_bulk_action'] ?? '') !== '';
+        return $this->isBulkAjaxRequest();
     }
 
     protected function canViewIndex(): bool

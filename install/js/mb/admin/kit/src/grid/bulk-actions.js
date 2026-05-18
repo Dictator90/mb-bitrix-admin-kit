@@ -43,6 +43,8 @@ export function runBulkAction(config) {
 	const data = {};
 	data[actionButtonKey] = actionId;
 	data[forAllKey] = forAll;
+	data['adminkit_bulk_action'] = actionId;
+	data['adminkit_bulk_ajax'] = 'Y';
 
 	if (window.BX && typeof window.BX.bitrix_sessid === 'function')
 	{
@@ -53,10 +55,63 @@ export function runBulkAction(config) {
 	data.id = ids;
 	data.rows = ids;
 
-	if (typeof grid.reloadTable === 'function')
-	{
-		grid.reloadTable('POST', data);
-	}
+	const showResult = (response) => {
+		if (!window.BX.UI || !window.BX.UI.Notification || !window.BX.UI.Notification.Center)
+		{
+			return;
+		}
+
+		let content = response.message || '';
+		let details = [];
+
+		if (response.errors && Object.keys(response.errors).length > 0)
+		{
+			details.push('<strong>Errors:</strong>');
+			Object.entries(response.errors).slice(0, 10).forEach(([id, errors]) => {
+				details.push(`#${id}: ${errors.join(', ')}`);
+			});
+		}
+
+		if (response.skipped && Object.keys(response.skipped).length > 0)
+		{
+			details.push('<strong>Skipped:</strong>');
+			Object.entries(response.skipped).slice(0, 10).forEach(([id, reason]) => {
+				details.push(`#${id}: ${reason}`);
+			});
+		}
+
+		if (details.length > 0)
+		{
+			content += '<div style="margin-top: 10px; font-size: 12px; max-height: 200px; overflow-y: auto;">' + details.join('<br>') + '</div>';
+		}
+
+		window.BX.UI.Notification.Center.notify({
+			content: content,
+			autoClose: response.success ? 5000 : 0,
+			category: 'adminkit-bulk-result'
+		});
+	};
+
+	window.BX.ajax({
+		method: 'POST',
+		dataType: 'json',
+		url: window.location.pathname + window.location.search,
+		data: data,
+		onsuccess: (response) => {
+			showResult(response);
+			if (typeof grid.reloadTable === 'function')
+			{
+				grid.reloadTable();
+			}
+		},
+		onfailure: () => {
+			showResult({ success: false, message: 'Server error occurred during bulk operation.' });
+			if (typeof grid.reloadTable === 'function')
+			{
+				grid.reloadTable();
+			}
+		}
+	});
 }
 
 /**

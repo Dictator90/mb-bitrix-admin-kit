@@ -1636,15 +1636,68 @@ this.MB = this.MB || {};
       var data = {};
       data[actionButtonKey] = actionId;
       data[forAllKey] = forAll;
+      data['adminkit_bulk_action'] = actionId;
+      data['adminkit_bulk_ajax'] = 'Y';
       if (window.BX && typeof window.BX.bitrix_sessid === 'function') {
         data['sessid'] = window.BX.bitrix_sessid();
       }
       data.ID = ids;
       data.id = ids;
       data.rows = ids;
-      if (typeof grid.reloadTable === 'function') {
-        grid.reloadTable('POST', data);
-      }
+      var showResult = function showResult(response) {
+        if (!window.BX.UI || !window.BX.UI.Notification || !window.BX.UI.Notification.Center) {
+          return;
+        }
+        var content = response.message || '';
+        var details = [];
+        if (response.errors && Object.keys(response.errors).length > 0) {
+          details.push('<strong>Errors:</strong>');
+          Object.entries(response.errors).slice(0, 10).forEach(function (_ref) {
+            var _ref2 = babelHelpers.slicedToArray(_ref, 2),
+              id = _ref2[0],
+              errors = _ref2[1];
+            details.push("#".concat(id, ": ").concat(errors.join(', ')));
+          });
+        }
+        if (response.skipped && Object.keys(response.skipped).length > 0) {
+          details.push('<strong>Skipped:</strong>');
+          Object.entries(response.skipped).slice(0, 10).forEach(function (_ref3) {
+            var _ref4 = babelHelpers.slicedToArray(_ref3, 2),
+              id = _ref4[0],
+              reason = _ref4[1];
+            details.push("#".concat(id, ": ").concat(reason));
+          });
+        }
+        if (details.length > 0) {
+          content += '<div style="margin-top: 10px; font-size: 12px; max-height: 200px; overflow-y: auto;">' + details.join('<br>') + '</div>';
+        }
+        window.BX.UI.Notification.Center.notify({
+          content: content,
+          autoClose: response.success ? 5000 : 0,
+          category: 'adminkit-bulk-result'
+        });
+      };
+      window.BX.ajax({
+        method: 'POST',
+        dataType: 'json',
+        url: window.location.pathname + window.location.search,
+        data: data,
+        onsuccess: function onsuccess(response) {
+          showResult(response);
+          if (typeof grid.reloadTable === 'function') {
+            grid.reloadTable();
+          }
+        },
+        onfailure: function onfailure() {
+          showResult({
+            success: false,
+            message: 'Server error occurred during bulk operation.'
+          });
+          if (typeof grid.reloadTable === 'function') {
+            grid.reloadTable();
+          }
+        }
+      });
     }
 
     /**
