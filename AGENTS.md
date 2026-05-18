@@ -101,6 +101,3 @@
 - Import UI is currently disabled on `IndexPage`; keep `Import\*` as a library/service layer until a dedicated UI task reconnects it.
 - `CrudResource` is a DSL/page base without persistence; use `DataManagerResource` for Bitrix D7 ORM CRUD.
 
-## Agent maintenance notes
-- Before running project checks locally, run `composer install` so `phpunit` and `phpstan` binaries are available.
-- CI/static analysis command is `composer analyse` (not `composer phpstan`).
