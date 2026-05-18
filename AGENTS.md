@@ -75,6 +75,7 @@
 
 
 ## Discovery notes
+- Keep module bootstrap and discovery separate: `Loader::includeModule()` loads Bitrix module code, while `AdminKitScope::fromModuleId()` only resolves module-relative discovery paths and must not call `Loader::includeModule()`.
 - Keep class discovery in `MB\Bitrix\AdminKit\Discovery\ClassDiscovery`; `Manager\AdminKitRegistry` must not parse PHP tokens or walk directories directly.
 - Use `mb4it/filesystem` `MB\Filesystem\Finder\ClassFinder` as the shared class lookup engine and keep final Resource/standalone Page checks Reflection-based.
 
