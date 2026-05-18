@@ -56,3 +56,10 @@ Grid-слой разделён на сервисы, чтобы UI и ORM-лог�
 `BitrixGridActionPanelAdapter` остаётся Bitrix-native адаптером для `main.ui.grid` и `Bitrix\Main\Grid\Panel\Types/Actions`. Он не знает о бизнес-id действий: стандартные bulk actions используют JS handler `runBulkAction`, а специальные сценарии задают handler через `BulkAction::clientHandler()` (например, export использует `exportSelected`).
 
 AJAX bulk response содержит `success`, `status`, `message`, `summary`, `errors`, `warnings`, `skipped`, `affected` и `successfulIds`; JS показывает ошибки до `reloadTable()`, а PHP flash используется для non-AJAX fallback.
+
+## Inline edit compatibility matrix
+
+- Supported stable inline types: `text`, `list`, `date`, `checkbox` (when field returns corresponding `getGridColumnType()`).
+- A column is considered inline editable only when its `editable` config is non-false after readonly checks.
+- Readonly fields (`readonly()` and readonly defaults in relation fields) always disable inline edit metadata in the resulting grid column config.
+- Complex relation/entity selector fields are intentionally excluded from inline editing to avoid unstable grid runtime behaviour; use sidepanel edit links instead.

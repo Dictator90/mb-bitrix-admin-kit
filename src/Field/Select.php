@@ -61,7 +61,7 @@ class Select extends Field implements OptionFieldContract
     {
         $config = parent::getGridColumnConfig();
 
-        if ($this->editable) {
+        if ($this->isInlineEditable()) {
             $config['editable'] = ['items' => $this->getOptions()];
         }
 

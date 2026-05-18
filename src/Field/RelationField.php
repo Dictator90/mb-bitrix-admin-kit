@@ -133,6 +133,11 @@ abstract class RelationField extends Field implements RelationFieldContract, New
         return $this->filter;
     }
 
+    protected function supportsInlineEdit(): bool
+    {
+        return false;
+    }
+
     public function relationOrder(): array
     {
         return $this->order;
