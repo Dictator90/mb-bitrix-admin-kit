@@ -35,3 +35,8 @@
 
 - `@deprecated` должен содержать понятную альтернативу.
 - Deprecated-API сохраняется минимум до следующего major-релиза, если нет критической причины удалить раньше.
+
+
+### Bulk action client handlers
+
+`BitrixGridActionPanelAdapter` больше не выбирает export-поведение по id `export_selected`. Для нестандартного JS flow задавайте `BulkAction::clientHandler('handlerName')`; стандартные действия продолжают использовать `runBulkAction`.

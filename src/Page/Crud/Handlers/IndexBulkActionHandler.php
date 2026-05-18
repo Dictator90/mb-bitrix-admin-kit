@@ -9,6 +9,7 @@ use MB\Bitrix\AdminKit\Action\BulkActionDropdown;
 use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
+use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Database\Performance\QueryGuard;
 use MB\Bitrix\AdminKit\Grid\GridDataLoader;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;
@@ -19,24 +20,22 @@ final class IndexBulkActionHandler
     /** @return array{success:bool,message:string}|null */
     public function handle(IndexPage $page, string $actionId): ?array
     {
-        if ($actionId === 'export_selected') {
-            (new IndexExportHandler())->handle($page, $page->resolveSelectedIds());
-
-            return null;
-        }
-
         if (!$page->hasResource() || !$page->resource() instanceof DataManagerResourceContract) {
             return null;
         }
 
         $resource = $page->resource();
-        $bulkAction = $this->findBulkActionById($page->bulkActions(), $actionId);
+        $action = $this->findBulkActionById($page->bulkActions(), $actionId);
 
-        if ($bulkAction === null) {
+        if ($action === null) {
             return null;
         }
 
-        $action = $bulkAction;
+        if ($action->getClientHandler() === 'exportSelected') {
+            (new IndexExportHandler())->handle($page, $page->resolveSelectedIds());
+
+            return null;
+        }
 
         $forAll = $page->isForAllRowsSelected();
         $selectedIds = $forAll ? [] : $page->resolveSelectedIds();

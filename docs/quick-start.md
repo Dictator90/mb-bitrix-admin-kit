@@ -2,6 +2,9 @@
 
 AdminKit можно использовать двумя способами:
 
+> Важно: для ORM CRUD используйте `DataManagerResource`. `CrudResource` хранит DSL страниц/полей/действий, но сам по себе не включает persistence и возвращает `hasCrud(): false`.
+
+
 - внутри собственного Bitrix-модуля;
 - вне модуля, например через `local/admin`, `local/classes` и Composer autoload проекта.
 

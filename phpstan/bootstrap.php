@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 
-
 namespace MB\Bitrix\Foundation;
 
 if (!class_exists(ServiceProvider::class)) {
@@ -236,6 +235,43 @@ if (!class_exists(HttpRequest::class)) {
         public function getHeader(string $name): ?string
         {
             return null;
+        }
+    }
+}
+
+namespace Bitrix\Main;
+
+if (!class_exists(SiteTable::class)) {
+    final class SiteTable
+    {
+        public static function getList(array $params): object
+        {
+            return new class {
+                public function fetchAll(): array
+                {
+                    return [];
+                }
+            };
+        }
+    }
+}
+
+namespace Bitrix\Main\Config;
+
+if (!class_exists(Option::class)) {
+    final class Option
+    {
+        public static function get(string $moduleId, string $name, mixed $default = null, string $siteId = ''): mixed
+        {
+            return $default;
+        }
+
+        public static function set(string $moduleId, string $name, mixed $value = '', string $siteId = ''): void
+        {
+        }
+
+        public static function delete(string $moduleId, array $filter = []): void
+        {
         }
     }
 }

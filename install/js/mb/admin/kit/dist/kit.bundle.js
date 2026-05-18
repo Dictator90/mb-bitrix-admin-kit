@@ -1669,7 +1669,7 @@ this.MB = this.MB || {};
           });
         }
         if (details.length > 0) {
-          content += '<div style="margin-top: 10px; font-size: 12px; max-height: 200px; overflow-y: auto;">' + details.join('<br>') + '</div>';
+          content += '<div class="adminkit-bulk-result-notification__details">' + details.join('<br>') + '</div>';
         }
         window.BX.UI.Notification.Center.notify({
           content: content,

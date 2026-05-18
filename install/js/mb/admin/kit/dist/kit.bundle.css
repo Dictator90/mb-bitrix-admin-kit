@@ -1169,3 +1169,6 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
     margin: 2px !important;
     height: 30px !important;
 }
+
+.adminkit-bulk-result-notification__details{margin-top:10px;max-height:200px;overflow-y:auto;font-size:12px}
+.adminkit-image-current{display:flex;align-items:center;gap:12px;margin-bottom:8px}.adminkit-image-current__preview{max-width:100%;max-height:100%;border:1px solid #ddd;border-radius:4px;object-fit:contain}.adminkit-image-upload{position:relative}.adminkit-image-upload__input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.adminkit-image-upload__label{padding:8px 16px;cursor:pointer}.adminkit-image-upload__icon{margin-right:4px;vertical-align:middle}

@@ -95,3 +95,8 @@
 - Keep grouped index rows inside the existing `IndexPage` / `IndexPageDefinitionContract` flow; do not add a separate tree-grid loader.
 - Keep `HasMany` / `HasOne` relation fields batch-loaded after base rows are fetched and avoid ORM JOINs that duplicate grid rows.
 - Preserve synthetic grid row IDs (`group:*`, `item:*`) and filter group IDs out of item bulk/inline operations.
+
+## Current maintenance notes
+- Bulk actions can choose custom JS execution through `BulkAction::clientHandler()`; do not hardcode business action IDs in `BitrixGridActionPanelAdapter`.
+- Import UI is currently disabled on `IndexPage`; keep `Import\*` as a library/service layer until a dedicated UI task reconnects it.
+- `CrudResource` is a DSL/page base without persistence; use `DataManagerResource` for Bitrix D7 ORM CRUD.

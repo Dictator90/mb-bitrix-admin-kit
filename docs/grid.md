@@ -49,3 +49,10 @@ Grid-слой разделён на сервисы, чтобы UI и ORM-лог�
 ## Relation-поля в гриде
 
 `HasMany`/`HasOne` не добавляют JOIN к базовому запросу списка и не должны дублировать строки грида. Загрузка связанных значений выполняется отдельным этапом после выборки базовых строк.
+
+
+## Bulk action panel
+
+`BitrixGridActionPanelAdapter` остаётся Bitrix-native адаптером для `main.ui.grid` и `Bitrix\Main\Grid\Panel\Types/Actions`. Он не знает о бизнес-id действий: стандартные bulk actions используют JS handler `runBulkAction`, а специальные сценарии задают handler через `BulkAction::clientHandler()` (например, export использует `exportSelected`).
+
+AJAX bulk response содержит `success`, `status`, `message`, `summary`, `errors`, `warnings`, `skipped`, `affected` и `successfulIds`; JS показывает ошибки до `reloadTable()`, а PHP flash используется для non-AJAX fallback.

@@ -39,6 +39,8 @@ class BulkAction implements ActionContract, BulkPanelItemContract
     protected mixed $canRunCondition = null;
     protected ?Closure $handler = null;
     protected ?array $data = null;
+    protected string $clientHandler = 'runBulkAction';
+
 
     public function __construct(string $id, ?string $label = null)
     {
@@ -172,6 +174,32 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         $this->handler = $handler;
 
         return $this;
+    }
+
+    /**
+     * Backward-compatible alias for callback bulk actions.
+     */
+    public function executeUsing(Closure $handler): static
+    {
+        return $this->handle($handler);
+    }
+
+    /**
+     * Selects the JavaScript function from the mb.admin.kit GridBulkActions namespace.
+     */
+    public function clientHandler(string $handler): static
+    {
+        $handler = trim($handler);
+        if ($handler !== '') {
+            $this->clientHandler = $handler;
+        }
+
+        return $this;
+    }
+
+    public function getClientHandler(): string
+    {
+        return $this->clientHandler;
     }
 
     /** @param array<string,mixed> $data */

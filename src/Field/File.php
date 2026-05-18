@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use CFile;
-use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class File extends Field
 {

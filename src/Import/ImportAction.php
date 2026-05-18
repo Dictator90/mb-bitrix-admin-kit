@@ -21,7 +21,7 @@ final class ImportAction
         ?ImporterInterface $importer = null,
     ) {
         $this->id = $id;
-        $this->label = $label ?? LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_LABEL', 'Import');
+        $this->label = $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMPORT_LABEL', 'Import');
         $this->importer = $importer ?? new CsvImporter();
     }
 
@@ -40,7 +40,7 @@ final class ImportAction
     public function parse(mixed $file, ImportContext $context): ImportResult
     {
         if (!$this->isRunnable($context)) {
-            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
+            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
         }
 
         return $this->importer->parseUploadedFile($file, $context);
@@ -62,7 +62,7 @@ final class ImportAction
     public function validateOnly(ImportContext $context): ImportResult
     {
         if (!$this->isRunnable($context)) {
-            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
+            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
         }
 
         return $this->importer->validateRows($context);
@@ -71,11 +71,11 @@ final class ImportAction
     public function import(ImportContext $context): ImportResult
     {
         if (!$this->isRunnable($context)) {
-            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
+            return (new ImportResult())->addError('action', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMPORT_ACTION_NOT_ALLOWED', 'Import action is not allowed.'));
         }
 
         if (!$this->hasBasePermission($context)) {
-            return (new ImportResult())->addError('permission', LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_IMPORT_PERMISSION_DENIED', 'Import permission denied.'));
+            return (new ImportResult())->addError('permission', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMPORT_PERMISSION_DENIED', 'Import permission denied.'));
         }
 
         return $this->importer->importRows($context);

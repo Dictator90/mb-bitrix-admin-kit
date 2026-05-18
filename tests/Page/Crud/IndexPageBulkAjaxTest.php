@@ -16,7 +16,7 @@ final class IndexPageBulkAjaxTest extends TestCase
 
     public function testItRecognizesBulkAjaxRequest(): void
     {
-        $page = new class extends IndexPage {};
+        $page = new class () extends IndexPage {};
 
         self::assertFalse($page->isBulkAjaxRequest());
 
@@ -30,7 +30,7 @@ final class IndexPageBulkAjaxTest extends TestCase
 
     public function testLegacyMethodDelegatesToNewOne(): void
     {
-        $page = new class extends IndexPage {};
+        $page = new class () extends IndexPage {};
 
         $_POST['adminkit_bulk_ajax'] = 'Y';
         self::assertTrue($page->isLegacyBulkAjaxRequest());

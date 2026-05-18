@@ -10,7 +10,7 @@ class Button
 {
     public static function save(string $text = '', array $attrs = []): string
     {
-        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BUTTON_SAVE', 'Save');
+        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BUTTON_SAVE', 'Save');
 
         return static::render(
             'submit',
@@ -22,14 +22,14 @@ class Button
 
     public static function cancel(string $text = '', string $onclick = 'window.history.back()'): string
     {
-        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BUTTON_CANCEL', 'Cancel');
+        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BUTTON_CANCEL', 'Cancel');
 
         return static::render('button', $text, 'ui-btn ui-btn-link', ['onclick' => $onclick]);
     }
 
     public static function add(string $url, string $text = ''): string
     {
-        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_BUTTON_ADD', 'Add');
+        $text = $text !== '' ? $text : LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BUTTON_ADD', 'Add');
         $escapedUrl = htmlspecialcharsbx($url);
 
         return '<a href="' . $escapedUrl . '" class="ui-btn ui-btn-primary ui-btn-icon-add">' . htmlspecialcharsbx(

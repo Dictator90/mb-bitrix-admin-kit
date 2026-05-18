@@ -66,11 +66,11 @@ final class ExportAction
     public function execute(ExportContext $context): ExportResult
     {
         if (!$context->resource->canView(new PermissionContext($context->userId, null, $context->resource, 'export'))) {
-            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_PERMISSION_DENIED', 'Export permission denied.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_EXPORT_PERMISSION_DENIED', 'Export permission denied.'));
         }
 
         if (!$this->isRunnable($context)) {
-            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export action is not allowed.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export action is not allowed.'));
         }
 
         if (
@@ -79,7 +79,7 @@ final class ExportAction
             && !$this->allowRunAll
             && !$context->resource->allowExportAll()
         ) {
-            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_ALL_DISABLED', 'Exporting all records is disabled by default. Select records or pass an explicit filter.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_EXPORT_ALL_DISABLED', 'Exporting all records is disabled by default. Select records or pass an explicit filter.'));
         }
 
         if (
@@ -90,12 +90,12 @@ final class ExportAction
                 || !$context->resource->allowExportByFilter()
             )
         ) {
-            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_FILTER_DISABLED', 'Export by filter is disabled for this action.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_EXPORT_FILTER_DISABLED', 'Export by filter is disabled for this action.'));
         }
 
         $maxRows = $this->maxExportRows($context);
         if ($maxRows <= 0) {
-            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export is disabled for this resource.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_EXPORT_ACTION_NOT_ALLOWED', 'Export is disabled for this resource.'));
         }
 
         $rowCount = $this->countExportRows($context);
@@ -105,7 +105,7 @@ final class ExportAction
 
         $exporter = $this->resolveExporter($context->format);
         if ($exporter === null) {
-            return ExportResult::failure(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_EXPORT_UNSUPPORTED_FORMAT', 'Unsupported export format.'));
+            return ExportResult::failure(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_EXPORT_UNSUPPORTED_FORMAT', 'Unsupported export format.'));
         }
 
         return $exporter->export($this->rows($context), $context);

@@ -15,14 +15,23 @@ final class GridQueryBuilderSelectableFieldsTest extends TestCase
 {
     public function testSelectRespectsSelectableAndSelectColumns(): void
     {
-        $resource = new class extends DataManagerResource {
-            public static function getId(): string { return 'test'; }
-            public function getPrimaryKey(): string { return 'ID'; }
-            public function dataManagerClass(): string { return 'SomeTable'; }
+        $resource = new class () extends DataManagerResource {
+            public static function getId(): string
+            {
+                return 'test';
+            }
+            public function getPrimaryKey(): string
+            {
+                return 'ID';
+            }
+            public function dataManagerClass(): string
+            {
+                return 'SomeTable';
+            }
         };
 
         $definition = $this->makeDefinition([
-            'fields' => fn() => [
+            'fields' => fn () => [
                 Text::make('A', 'COL_A'),
                 Text::make('B', 'COL_B')->selectable(false),
                 Text::make('C', 'COL_C')->selectColumns(['COL_C1', 'COL_C2']),
@@ -44,22 +53,22 @@ final class GridQueryBuilderSelectableFieldsTest extends TestCase
     private function makeDefinition(array $overrides): IndexPageDefinition
     {
         $defaults = [
-            'fields' => fn() => [],
-            'filters' => fn() => [],
-            'rowActions' => fn() => [],
-            'bulkActions' => fn() => [],
-            'defaultSort' => fn() => [],
-            'defaultFilter' => fn() => [],
-            'defaultSelect' => fn() => [],
-            'runtimeFields' => fn() => [],
-            'indexSelect' => fn() => [],
-            'indexFilter' => fn() => [],
-            'indexOrder' => fn() => [],
-            'indexRuntime' => fn() => [],
-            'beforeIndexQueryParams' => fn($p) => $p,
-            'afterIndexRows' => fn($r) => $r,
-            'mapIndexRow' => fn($r) => $r,
-            'modifyIndexParams' => fn($p) => $p,
+            'fields' => fn () => [],
+            'filters' => fn () => [],
+            'rowActions' => fn () => [],
+            'bulkActions' => fn () => [],
+            'defaultSort' => fn () => [],
+            'defaultFilter' => fn () => [],
+            'defaultSelect' => fn () => [],
+            'runtimeFields' => fn () => [],
+            'indexSelect' => fn () => [],
+            'indexFilter' => fn () => [],
+            'indexOrder' => fn () => [],
+            'indexRuntime' => fn () => [],
+            'beforeIndexQueryParams' => fn ($p) => $p,
+            'afterIndexRows' => fn ($r) => $r,
+            'mapIndexRow' => fn ($r) => $r,
+            'modifyIndexParams' => fn ($p) => $p,
         ];
 
         return new IndexPageDefinition(array_merge($defaults, $overrides));

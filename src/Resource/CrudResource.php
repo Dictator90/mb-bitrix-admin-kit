@@ -42,6 +42,10 @@ abstract class CrudResource extends Resource implements CrudResourceContract
     use HasResourceExport;
     use HasResourceLifecycle;
 
+    /**
+     * CrudResource defines the admin-page DSL but intentionally has no persistence backend.
+     * ORM-backed resources must extend DataManagerResource, which returns true here.
+     */
     public function hasCrud(): bool
     {
         return false;

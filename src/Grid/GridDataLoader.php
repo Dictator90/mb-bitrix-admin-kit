@@ -136,6 +136,10 @@ final class GridDataLoader
         }
     }
 
+    /**
+     * @param array<mixed> $runtime
+     * @return array<mixed>
+     */
     private function normalizeRuntimeForCache(array $runtime): array
     {
         $normalized = [];
