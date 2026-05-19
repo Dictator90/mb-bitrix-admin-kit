@@ -8,6 +8,8 @@ use Closure;
 use LogicException;
 use MB\Bitrix\AdminKit\Contracts\Field\RelationFieldContract as NewRelationFieldContract;
 use MB\Bitrix\AdminKit\Grid\Relations\RelationFieldContract;
+use MB\Bitrix\AdminKit\Relation\RelationMetadata;
+use MB\Bitrix\AdminKit\Relation\RelationType;
 
 abstract class RelationField extends Field implements RelationFieldContract, NewRelationFieldContract
 {
@@ -21,6 +23,16 @@ abstract class RelationField extends Field implements RelationFieldContract, New
     /** @var array<string,string> */
     protected array $order = [];
     protected mixed $relationDefault = null;
+    protected ?string $relationName = null;
+    protected ?string $relatedTableClass = null;
+    protected ?string $ownerKeyName = null;
+    protected ?string $relatedKeyName = null;
+    protected ?string $pivotTableClass = null;
+    protected ?string $foreignPivotKeyName = null;
+    protected ?string $relatedPivotKeyName = null;
+    protected bool $cascadeSaveEnabled = false;
+    protected bool $cascadeDeleteEnabled = false;
+    protected bool $orphanRemovalEnabled = false;
 
     /** @param class-string $tableClass */
     public function table(string $tableClass): static
@@ -147,4 +159,57 @@ abstract class RelationField extends Field implements RelationFieldContract, New
     {
         return $this->relationDefault;
     }
+
+    public function relation(string $name): static
+    {
+        $this->relationName = $name;
+
+        return $this;
+    }
+
+    public function relationName(): ?string
+    {
+        return $this->relationName;
+    }
+
+    public function relatedTable(string $class): static { $this->relatedTableClass = $class; return $this; }
+    public function ownerKey(string $key): static { $this->ownerKeyName = $key; return $this; }
+    public function relatedKey(string $key): static { $this->relatedKeyName = $key; return $this; }
+    public function pivotTable(string $class): static { $this->pivotTableClass = $class; return $this; }
+    public function foreignPivotKey(string $key): static { $this->foreignPivotKeyName = $key; return $this; }
+    public function relatedPivotKey(string $key): static { $this->relatedPivotKeyName = $key; return $this; }
+    public function cascadeSave(bool $enabled = true): static { $this->cascadeSaveEnabled = $enabled; return $this; }
+    public function cascadeDelete(bool $enabled = true): static { $this->cascadeDeleteEnabled = $enabled; return $this; }
+    public function orphanRemoval(bool $enabled = true): static { $this->orphanRemovalEnabled = $enabled; return $this; }
+    public function isCascadeSaveEnabled(): bool { return $this->cascadeSaveEnabled; }
+    public function isCascadeDeleteEnabled(): bool { return $this->cascadeDeleteEnabled; }
+    public function isOrphanRemovalEnabled(): bool { return $this->orphanRemovalEnabled; }
+
+    public function hasExplicitRelationDefinition(): bool
+    {
+        return $this->relatedTableClass !== null || $this->pivotTableClass !== null;
+    }
+
+    public function buildExplicitRelationMetadata(string $ownerDataManagerClass): RelationMetadata
+    {
+        return new RelationMetadata(
+            relationType: $this->relationType(),
+            ownerEntity: $ownerDataManagerClass,
+            relatedEntity: (string) $this->relatedTableClass,
+            mediatorEntity: $this->pivotTableClass,
+            foreignKey: $this->foreignKey,
+            ownerKey: $this->ownerKeyName ?? $this->localKey,
+            relatedKey: $this->relatedKeyName ?? 'ID',
+            foreignPivotKey: $this->foreignPivotKeyName,
+            relatedPivotKey: $this->relatedPivotKeyName,
+            multiple: $this->isToMany(),
+            cascadeSave: $this->cascadeSaveEnabled,
+            cascadeDelete: $this->cascadeDeleteEnabled,
+            orphanRemoval: $this->orphanRemovalEnabled,
+            relationName: $this->relationName ?? $this->column,
+        );
+    }
+
+    abstract public function relationType(): RelationType;
 }
+

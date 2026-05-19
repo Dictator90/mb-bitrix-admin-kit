@@ -307,3 +307,9 @@
 - Added the initial Resource/CRUD skeleton for Bitrix admin pages.
 - Added base Field, Filter, Action, Grid, and Page abstractions.
 - Added initial README and PHPUnit smoke coverage for early CRUD/grid behavior.
+
+## Unreleased
+- Added foundational ORM-native relation layer primitives: `RelationMetadata`, `RelationType`, `OrmRelationResolver`, `ExplicitRelationResolver`, and `RuntimeRelationRegistrar` scaffolding for relation resolution/registration flow.
+- Extended relation fields with relation DSL building blocks (`relation()`, explicit related/pivot keys, cascade flags) and added relation type declaration API for `BelongsTo`, `HasOne`, `HasMany`, `BelongsToMany`.
+- Added BC-safe `BelongsToMany::storedAsCsv()` and save strategy toggles (`saveUsingOrm()`, `saveUsingManualSync()`) to prepare ORM-object and manual-sync modes.
+- Added `DataManagerResource::queryObject()`, `findObject()`, and `usesEntityObjectForm()` default hook for object-graph form flow.
