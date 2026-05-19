@@ -8,6 +8,10 @@ use MB\Bitrix\AdminKit\Field\RelationField;
 
 final class RuntimeRelationRegistrar
 {
+    public function __construct(private readonly RuntimeRelationBuilder $builder = new RuntimeRelationBuilder())
+    {
+    }
+
     public function register(string $ownerDataManagerClass, RelationField $field): void
     {
         if (!method_exists($ownerDataManagerClass, 'getEntity')) {
@@ -24,7 +28,6 @@ final class RuntimeRelationRegistrar
             return;
         }
 
-        // Runtime relation registration hook.
-        // Concrete Bitrix relation field objects are created by dedicated builders/resolvers.
+        $entity->addField($this->builder->build($field));
     }
 }

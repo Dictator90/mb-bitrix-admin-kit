@@ -22,6 +22,7 @@ class BelongsToMany extends BelongsTo
 {
     protected bool $storedAsCsv = true;
     protected string $saveStrategy = 'orm';
+    protected bool $ormSaveExplicit = false;
 
     protected bool $asCheckboxes = false;
 
@@ -42,6 +43,7 @@ class BelongsToMany extends BelongsTo
     public function saveUsingOrm(): static
     {
         $this->saveStrategy = 'orm';
+        $this->ormSaveExplicit = true;
 
         return $this;
     }
@@ -161,6 +163,12 @@ class BelongsToMany extends BelongsTo
 
     public function serializePostValue(mixed $value): mixed
     {
+        $ormMode = $this->relationName() !== null || $this->pivotTableClass !== null || $this->relatedTableClass !== null || $this->ormSaveExplicit;
+
+        if ($ormMode && is_array($value)) {
+            return array_values(array_filter(array_map('strval', $value), static fn (string $id): bool => $id !== ''));
+        }
+
         if (is_array($value)) {
             return implode(',', array_filter(array_map('strval', $value)));
         }
