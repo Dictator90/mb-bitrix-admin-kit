@@ -52,7 +52,7 @@ abstract class DataManagerResource extends CrudResource implements DataManagerRe
         $class = $this->getDataManagerClass();
 
         return $class::query()
-            ->setSelect(["*"])
+            ->setSelect(['*'])
             ->where($this->getPrimaryKey(), $id)
             ->fetchObject();
     }
@@ -62,4 +62,3 @@ abstract class DataManagerResource extends CrudResource implements DataManagerRe
         return false;
     }
 }
-

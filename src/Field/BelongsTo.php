@@ -22,7 +22,7 @@ class BelongsTo extends RelationField
     protected array|Closure|null $filter = [];
     protected array $order = [];
     protected ?Closure $optionsCallback = null;
-    protected string $renderMode = "select";
+    protected string $renderMode = 'select';
 
     public function __construct(string $label, ?string $column = null, string $dataManagerClass = '')
     {
@@ -120,10 +120,26 @@ class BelongsTo extends RelationField
         return RelationType::BELONGS_TO;
     }
 
-    public function asSelect(): static { $this->renderMode = "select"; return $this; }
-    public function asEntitySelector(): static { $this->renderMode = "entity_selector"; return $this; }
-    public function asRadio(): static { $this->renderMode = "radio"; return $this; }
-    public function asLink(): static { $this->renderMode = "link"; return $this; }
+    public function asSelect(): static
+    {
+        $this->renderMode = 'select';
+        return $this;
+    }
+    public function asEntitySelector(): static
+    {
+        $this->renderMode = 'entity_selector';
+        return $this;
+    }
+    public function asRadio(): static
+    {
+        $this->renderMode = 'radio';
+        return $this;
+    }
+    public function asLink(): static
+    {
+        $this->renderMode = 'link';
+        return $this;
+    }
 
     public function renderFormField(mixed $value = null): string
     {

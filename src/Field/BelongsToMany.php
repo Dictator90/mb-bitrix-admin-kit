@@ -21,7 +21,7 @@ use Throwable;
 class BelongsToMany extends BelongsTo
 {
     protected bool $storedAsCsv = true;
-    protected string $saveStrategy = "orm";
+    protected string $saveStrategy = 'orm';
 
     protected bool $asCheckboxes = false;
 
@@ -41,14 +41,14 @@ class BelongsToMany extends BelongsTo
 
     public function saveUsingOrm(): static
     {
-        $this->saveStrategy = "orm";
+        $this->saveStrategy = 'orm';
 
         return $this;
     }
 
     public function saveUsingManualSync(): static
     {
-        $this->saveStrategy = "manual";
+        $this->saveStrategy = 'manual';
 
         return $this;
     }

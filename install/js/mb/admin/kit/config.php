@@ -3,7 +3,8 @@ defined('B_PROLOG_INCLUDED') || die();
 
 return [
     'js' => [
-        'dist/kit.bundle.js'
+        'vendor/chart.js',
+        'dist/kit.bundle.js',
     ],
     'css' => [
         'dist/kit.bundle.css'

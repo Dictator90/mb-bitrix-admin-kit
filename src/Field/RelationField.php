@@ -172,18 +172,63 @@ abstract class RelationField extends Field implements RelationFieldContract, New
         return $this->relationName;
     }
 
-    public function relatedTable(string $class): static { $this->relatedTableClass = $class; return $this; }
-    public function ownerKey(string $key): static { $this->ownerKeyName = $key; return $this; }
-    public function relatedKey(string $key): static { $this->relatedKeyName = $key; return $this; }
-    public function pivotTable(string $class): static { $this->pivotTableClass = $class; return $this; }
-    public function foreignPivotKey(string $key): static { $this->foreignPivotKeyName = $key; return $this; }
-    public function relatedPivotKey(string $key): static { $this->relatedPivotKeyName = $key; return $this; }
-    public function cascadeSave(bool $enabled = true): static { $this->cascadeSaveEnabled = $enabled; return $this; }
-    public function cascadeDelete(bool $enabled = true): static { $this->cascadeDeleteEnabled = $enabled; return $this; }
-    public function orphanRemoval(bool $enabled = true): static { $this->orphanRemovalEnabled = $enabled; return $this; }
-    public function isCascadeSaveEnabled(): bool { return $this->cascadeSaveEnabled; }
-    public function isCascadeDeleteEnabled(): bool { return $this->cascadeDeleteEnabled; }
-    public function isOrphanRemovalEnabled(): bool { return $this->orphanRemovalEnabled; }
+    public function relatedTable(string $class): static
+    {
+        $this->relatedTableClass = $class;
+        return $this;
+    }
+    public function ownerKey(string $key): static
+    {
+        $this->ownerKeyName = $key;
+        return $this;
+    }
+    public function relatedKey(string $key): static
+    {
+        $this->relatedKeyName = $key;
+        return $this;
+    }
+    public function pivotTable(string $class): static
+    {
+        $this->pivotTableClass = $class;
+        return $this;
+    }
+    public function foreignPivotKey(string $key): static
+    {
+        $this->foreignPivotKeyName = $key;
+        return $this;
+    }
+    public function relatedPivotKey(string $key): static
+    {
+        $this->relatedPivotKeyName = $key;
+        return $this;
+    }
+    public function cascadeSave(bool $enabled = true): static
+    {
+        $this->cascadeSaveEnabled = $enabled;
+        return $this;
+    }
+    public function cascadeDelete(bool $enabled = true): static
+    {
+        $this->cascadeDeleteEnabled = $enabled;
+        return $this;
+    }
+    public function orphanRemoval(bool $enabled = true): static
+    {
+        $this->orphanRemovalEnabled = $enabled;
+        return $this;
+    }
+    public function isCascadeSaveEnabled(): bool
+    {
+        return $this->cascadeSaveEnabled;
+    }
+    public function isCascadeDeleteEnabled(): bool
+    {
+        return $this->cascadeDeleteEnabled;
+    }
+    public function isOrphanRemovalEnabled(): bool
+    {
+        return $this->orphanRemovalEnabled;
+    }
 
     public function hasExplicitRelationDefinition(): bool
     {
@@ -212,4 +257,3 @@ abstract class RelationField extends Field implements RelationFieldContract, New
 
     abstract public function relationType(): RelationType;
 }
-
