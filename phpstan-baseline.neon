@@ -721,6 +721,11 @@ parameters:
 			path: src/Field/BelongsToMany.php
 
 		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: src/Field/Relation/BelongsTo.php
+
+		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 1
 			path: src/Field/Checkbox.php

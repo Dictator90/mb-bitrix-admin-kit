@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Relation;
 
 final class ManualPivotSynchronizer
 {
+    /** @param list<string|int> $incomingIds */
     public function sync(string $pivotTableClass, string $ownerColumn, mixed $ownerId, string $relatedColumn, array $incomingIds): void
     {
         $current = [];

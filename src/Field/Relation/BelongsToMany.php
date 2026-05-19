@@ -79,6 +79,7 @@ class BelongsToMany extends BelongsTo
         return $this->renderMultiSelect($name, $options, $selected);
     }
 
+    /** @return list<string> */
     protected function parseIds(mixed $value): array
     {
         if (is_array($value)) {
@@ -90,6 +91,10 @@ class BelongsToMany extends BelongsTo
         return [];
     }
 
+    /**
+     * @param array<string, string> $options
+     * @param list<string> $selected
+     */
     protected function renderMultiSelect(string $name, array $options, array $selected): string
     {
         $inputName = htmlspecialcharsbx($name) . '[]';
@@ -107,6 +112,10 @@ class BelongsToMany extends BelongsTo
         HTML;
     }
 
+    /**
+     * @param array<string, string> $options
+     * @param list<string> $selected
+     */
     protected function renderCheckboxes(string $name, array $options, array $selected): string
     {
         $html = '<div class="adminkit-checkbox-list">';
@@ -141,6 +150,10 @@ class BelongsToMany extends BelongsTo
         return htmlspecialcharsbx(implode(', ', $labels));
     }
 
+    /**
+     * @param list<string> $ids
+     * @return list<string>
+     */
     protected function loadLabels(array $ids): array
     {
         if (!$this->dataManagerClass || !class_exists($this->dataManagerClass)) {

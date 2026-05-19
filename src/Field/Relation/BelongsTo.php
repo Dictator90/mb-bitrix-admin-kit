@@ -78,6 +78,7 @@ class BelongsTo extends RelationField
         return $this;
     }
 
+    /** @return array<string, string> */
     protected function loadOptions(): array
     {
         if ($this->optionsCallback !== null) {

@@ -48,6 +48,89 @@ if (!class_exists(DataManager::class)) {
     }
 }
 
+namespace Bitrix\Main\ORM\Objectify;
+
+if (!class_exists(EntityObject::class)) {
+    class EntityObject
+    {
+        public function set(string $fieldName, mixed $value): self
+        {
+            return $this;
+        }
+    }
+}
+
+namespace Bitrix\Main\ORM\Query;
+
+if (!class_exists(Join::class)) {
+    class Join
+    {
+        /** @return array<string, string> */
+        public static function on(string $left, string $right): array
+        {
+            return [];
+        }
+    }
+}
+
+namespace Bitrix\Main\ORM\Fields\Relations;
+
+if (!class_exists(Reference::class)) {
+    class Reference
+    {
+        /**
+         * @param array<string, string> $referenceFilter
+         * @param array<string, mixed> $parameters
+         */
+        public function __construct(string $name, string $referenceEntity, array $referenceFilter, array $parameters = [])
+        {
+        }
+    }
+}
+
+if (!class_exists(OneToMany::class)) {
+    class OneToMany
+    {
+        public function __construct(string $name, string $relatedEntity, string $foreignKey)
+        {
+        }
+    }
+}
+
+if (!class_exists(ManyToMany::class)) {
+    class ManyToMany
+    {
+        public function __construct(string $name, string $relatedEntity)
+        {
+        }
+
+        public function configureMediatorEntity(string $entity): self
+        {
+            return $this;
+        }
+
+        public function configureLocalPrimary(string $key): self
+        {
+            return $this;
+        }
+
+        public function configureRemotePrimary(string $key): self
+        {
+            return $this;
+        }
+
+        public function configureLocalReference(string $key): self
+        {
+            return $this;
+        }
+
+        public function configureRemoteReference(string $key): self
+        {
+            return $this;
+        }
+    }
+}
+
 namespace Bitrix\Main\Grid;
 
 if (!class_exists(Options::class)) {
