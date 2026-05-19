@@ -39,4 +39,27 @@ abstract class DataManagerResource extends CrudResource implements DataManagerRe
     {
         return true;
     }
+
+    public function queryObject(): mixed
+    {
+        $class = $this->getDataManagerClass();
+
+        return $class::query();
+    }
+
+    public function findObject(mixed $id): mixed
+    {
+        $class = $this->getDataManagerClass();
+
+        return $class::query()
+            ->setSelect(["*"])
+            ->where($this->getPrimaryKey(), $id)
+            ->fetchObject();
+    }
+
+    public function usesEntityObjectForm(): bool
+    {
+        return false;
+    }
 }
+

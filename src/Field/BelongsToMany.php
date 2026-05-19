@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use MB\Bitrix\AdminKit\Relation\RelationType;
 use Throwable;
 
 /**
@@ -19,6 +20,9 @@ use Throwable;
  */
 class BelongsToMany extends BelongsTo
 {
+    protected bool $storedAsCsv = true;
+    protected string $saveStrategy = "orm";
+
     protected bool $asCheckboxes = false;
 
     /** Render as a vertical checkbox list instead of a multi-select. */
@@ -26,6 +30,37 @@ class BelongsToMany extends BelongsTo
     {
         $this->asCheckboxes = $v;
         return $this;
+    }
+
+    public function storedAsCsv(bool $enabled = true): static
+    {
+        $this->storedAsCsv = $enabled;
+
+        return $this;
+    }
+
+    public function saveUsingOrm(): static
+    {
+        $this->saveStrategy = "orm";
+
+        return $this;
+    }
+
+    public function saveUsingManualSync(): static
+    {
+        $this->saveStrategy = "manual";
+
+        return $this;
+    }
+
+    public function saveStrategy(): string
+    {
+        return $this->saveStrategy;
+    }
+
+    public function relationType(): RelationType
+    {
+        return RelationType::BELONGS_TO_MANY;
     }
 
     public function renderFormField(mixed $value = null): string

@@ -5,21 +5,24 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use Closure;
+use MB\Bitrix\AdminKit\Relation\RelationType;
 use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
 /**
  * Select one record from a DataManager table (foreign-key select).
  */
-class BelongsTo extends Field
+class BelongsTo extends RelationField
 {
     protected string $dataManagerClass;
     protected string $titleColumn = 'NAME';
     protected string $valueColumn = 'ID';
     protected string $emptyLabel = '';
-    protected array $filter = [];
+    /** @var array<string,mixed>|Closure|null */
+    protected array|Closure|null $filter = [];
     protected array $order = [];
     protected ?Closure $optionsCallback = null;
+    protected string $renderMode = "select";
 
     public function __construct(string $label, ?string $column = null, string $dataManagerClass = '')
     {
@@ -47,7 +50,8 @@ class BelongsTo extends Field
     }
 
     /** Filter applied when loading options. */
-    public function filter(array $filter): static
+    /** @param array<string,mixed>|Closure|null $filter */
+    public function filter(array|Closure|null $filter): static
     {
         $this->filter = $filter;
         return $this;
@@ -87,7 +91,7 @@ class BelongsTo extends Field
         $params = [
             'select' => array_unique([$this->valueColumn, $this->titleColumn]),
         ];
-        if (!empty($this->filter)) {
+        if (is_array($this->filter) && !empty($this->filter)) {
             $params['filter'] = $this->filter;
         }
         if (!empty($this->order)) {
@@ -105,6 +109,21 @@ class BelongsTo extends Field
 
         return $options;
     }
+
+    public function isToMany(): bool
+    {
+        return false;
+    }
+
+    public function relationType(): RelationType
+    {
+        return RelationType::BELONGS_TO;
+    }
+
+    public function asSelect(): static { $this->renderMode = "select"; return $this; }
+    public function asEntitySelector(): static { $this->renderMode = "entity_selector"; return $this; }
+    public function asRadio(): static { $this->renderMode = "radio"; return $this; }
+    public function asLink(): static { $this->renderMode = "link"; return $this; }
 
     public function renderFormField(mixed $value = null): string
     {

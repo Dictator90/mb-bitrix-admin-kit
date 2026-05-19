@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use MB\Bitrix\AdminKit\Relation\RelationType;
+
 final class HasOne extends RelationField
 {
     public function isToMany(): bool
@@ -16,6 +18,11 @@ final class HasOne extends RelationField
         $this->relationDefault = $value;
 
         return parent::default($value);
+    }
+
+    public function relationType(): RelationType
+    {
+        return RelationType::HAS_ONE;
     }
 
     public function renderFormField(mixed $value = null): string
