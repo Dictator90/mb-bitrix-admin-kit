@@ -297,10 +297,6 @@ abstract class OptionsPage extends StandalonePage
 
     public function isAjaxRequest(): bool
     {
-        if ($this->request->getPost('adminkit_ajax') === 'Y') {
-            return true;
-        }
-
         return strtolower((string)$this->request->getHeader('X-Requested-With')) === 'xmlhttprequest';
     }
 

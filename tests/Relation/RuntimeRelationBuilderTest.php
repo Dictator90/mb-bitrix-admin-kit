@@ -7,11 +7,11 @@ namespace MB\Bitrix\AdminKit\Tests\Relation;
 use Bitrix\Main\ORM\Fields\Relations\ManyToMany;
 use Bitrix\Main\ORM\Fields\Relations\OneToMany;
 use Bitrix\Main\ORM\Fields\Relations\Reference;
+use InvalidArgumentException;
 use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
 use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Field\Relation\HasMany;
 use MB\Bitrix\AdminKit\Field\Relation\HasOne;
-use InvalidArgumentException;
 use MB\Bitrix\AdminKit\Relation\RuntimeRelationBuilder;
 use PHPUnit\Framework\TestCase;
 

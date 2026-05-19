@@ -18,7 +18,7 @@ final class EntityObjectFormSaverTest extends TestCase
         $method = new ReflectionMethod(EntityObjectFormSaver::class, 'resolveSavedId');
         $method->setAccessible(true);
 
-        $entity = new class {
+        $entity = new class () {
             public function getId(): ?int
             {
                 return null;
@@ -30,7 +30,7 @@ final class EntityObjectFormSaverTest extends TestCase
             }
         };
 
-        $saveResult = new class {
+        $saveResult = new class () {
             public function getPrimary(): ?array
             {
                 return null;

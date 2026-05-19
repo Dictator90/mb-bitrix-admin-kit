@@ -11,6 +11,7 @@
 - Тесты relation-слоя: namespace, runtime builder/registrar, метаданные resolver, value loader, object mutator, manual pivot sync, маршрутизация веток FormPage.
 
 ### Fixed
+- `OptionsPage`: вкладки `Tabs` снова отдают поля в HTML без JS (`TabsRenderer` server-prerendered fallback); обычный POST сохраняет и редиректит (AJAX только по `X-Requested-With`, убран всегда включённый hidden `adminkit_ajax`).
 - `GridDataLoader`: подсчёт строк (`useTotalCount`) регистрирует `runtime` через ORM `query()`, как `getList()` — фильтры вроде `PROPERTY.IBLOCK_ID` больше не падают в `getCount()`.
 - `BelongsTo` по умолчанию writable (`readonly = false`): FK-поля снова попадают в `collectAllFields()` и сохраняются через EntityObject.
 - `Switcher::normalize()` / `serializePostValue()` трактуют отсутствие POST-значения как unchecked; `EntityObjectFormSaver::extractRaw()` сериализует все поля, даже если ключ не пришёл в POST.

@@ -9,6 +9,66 @@ import { Dom, Type } from 'main.core';
  * @property {boolean} remember
  */
 
+function bindRememberActiveTab(root, remember) {
+	if (!remember)
+	{
+		return;
+	}
+
+	const activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
+	if (!activeTabInput)
+	{
+		return;
+	}
+
+	root.addEventListener('click', (event) => {
+		const header = event.target.closest('[data-bx-role="tab-header"]');
+		if (!header)
+		{
+			return;
+		}
+
+		const tabId = header.getAttribute('data-bx-name') || '';
+		if (tabId !== '')
+		{
+			activeTabInput.value = tabId;
+		}
+	});
+}
+
+function activatePrerenderedTab(root, tabId) {
+	root.querySelectorAll('.ui-tabs__tab-body_inner').forEach((body) => {
+		body.classList.toggle('--body-active', body.dataset.id === tabId);
+	});
+
+	root.querySelectorAll('[data-bx-role="tab-header"]').forEach((header) => {
+		header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
+	});
+}
+
+function initPrerenderedTabs(targetContainer, config) {
+	const root = targetContainer.querySelector('.ui-tabs__tabs-container') || targetContainer;
+
+	root.querySelectorAll('[data-bx-role="tab-header"]').forEach((header) => {
+		header.addEventListener('click', () => {
+			const tabId = header.getAttribute('data-bx-name') || '';
+			if (tabId === '')
+			{
+				return;
+			}
+
+			activatePrerenderedTab(root, tabId);
+		});
+	});
+
+	bindRememberActiveTab(root, config.remember === true);
+
+	if (window.BX && window.BX.UI && window.BX.UI.Hint)
+	{
+		window.BX.UI.Hint.init(root);
+	}
+}
+
 /**
  * Initialize tabs from config
  * @param {TabsConfig} config
@@ -20,6 +80,19 @@ export function initTabs(config) {
 	}
 
 	const { id, items, bodies, remember } = config;
+	const targetContainer = document.getElementById(id);
+	if (!targetContainer)
+	{
+		return;
+	}
+
+	if (targetContainer.dataset.adminkitTabsPrerendered === 'Y')
+	{
+		initPrerenderedTabs(targetContainer, config);
+
+		return;
+	}
+
 	const tabs = new Tabs({ id, items });
 	const container = tabs.getContainer();
 
@@ -55,33 +128,14 @@ export function initTabs(config) {
 		});
 	}
 
-	const targetContainer = document.getElementById(id);
-	if (targetContainer)
-	{
-		Dom.append(container, targetContainer);
-	}
+	Dom.append(container, targetContainer);
 
 	if (window.BX && window.BX.UI && window.BX.UI.Hint)
 	{
 		window.BX.UI.Hint.init(container);
 	}
 
-	if (remember)
-	{
-		const activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
-		container.addEventListener('click', (event) => {
-			const header = event.target.closest('[data-bx-name]');
-			if (!header || !activeTabInput)
-			{
-				return;
-			}
-			const tabId = header.getAttribute('data-bx-name') || '';
-			if (tabId !== '')
-			{
-				activeTabInput.value = tabId;
-			}
-		});
-	}
+	bindRememberActiveTab(container, remember === true);
 }
 
 /**

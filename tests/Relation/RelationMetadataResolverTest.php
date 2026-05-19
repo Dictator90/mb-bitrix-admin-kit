@@ -79,7 +79,7 @@ final class MetadataResolverFakeManyToManyField
 
     public function getMediatorEntity(): object
     {
-        return new class {
+        return new class () {
             public function getDataClass(): string
             {
                 return MetadataResolverFakePivotTable::class;

@@ -77,7 +77,6 @@ final class OptionsPageFormRenderer
         echo '<form id="' . $formId . '" method="POST" action="' . htmlspecialcharsbx($action) . '">';
         echo bitrix_sessid_post();
         echo '<input type="hidden" name="site_id" value="' . htmlspecialcharsbx($siteId) . '">';
-        echo '<input type="hidden" name="adminkit_ajax" value="Y">';
         echo '<input type="hidden" name="adminkit_active_tab" value="' . htmlspecialcharsbx($activeTabId ?? '') . '">';
 
         $resolver = static fn (string $col) => $wrapper->get($col);

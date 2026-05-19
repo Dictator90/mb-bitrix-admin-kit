@@ -23,6 +23,7 @@ final class TabsRenderer
         }
 
         $bodyRenderer = new TabBodyRenderer();
+        $headerRenderer = new TabHeaderRenderer();
         $items = [];
         foreach ($tabs as $sort => $tab) {
             $items[] = [
@@ -31,18 +32,27 @@ final class TabsRenderer
                 'active' => $tab->isActive(),
                 'head' => $tab->getHeadOptions(),
                 'body' => $bodyRenderer->render($tab, $context),
+                'tab' => $tab,
             ];
         }
 
         $jsItems = [];
-        $bodyInjects = [];
+        $headersHtml = '';
+        $bodiesHtml = '';
         foreach ($items as $item) {
-            $bodyInjects[] = [
-                'id' => $item['id'],
-                'html' => $item['body'],
-                'active' => $item['active'],
-            ];
-            unset($item['body']);
+            $tab = $item['tab'];
+            assert($tab instanceof Tab);
+
+            $headersHtml .= $headerRenderer->render($tab);
+
+            $activeClass = $item['active'] ? ' --body-active' : '';
+            $tabId = htmlspecialchars($item['id'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $bodiesHtml .= '<div class="ui-tabs__tab-body_inner' . $activeClass
+                . '" data-id="' . $tabId . '" data-role="body">'
+                . '<div class="ui-tabs__tab-body_data">' . $item['body'] . '</div>'
+                . '</div>';
+
+            unset($item['body'], $item['tab']);
             $jsItems[] = $item;
         }
 
@@ -50,7 +60,6 @@ final class TabsRenderer
         $jsConfig = json_encode([
             'id' => $config->containerId,
             'items' => $jsItems,
-            'bodies' => $bodyInjects,
             'remember' => $config->remember,
         ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
 
@@ -58,13 +67,52 @@ final class TabsRenderer
         <div
             id="{$cid}"
             data-adminkit-tabs
+            data-adminkit-tabs-prerendered="Y"
             data-adminkit-tabs-config='{$jsConfig}'
-        ></div>
+        >
+            <div class="ui-tabs__tabs-container">
+                <div class="ui-tabs__tabs-header-container" data-bx-role="headers">{$headersHtml}</div>
+                <div class="ui-tabs__tabs-body-container" data-bx-role="bodies">{$bodiesHtml}</div>
+            </div>
+        </div>
         <script>
         BX.ready(function() {
+            var el = document.getElementById('{$cid}');
+            if (!el) {
+                return;
+            }
+
+            if (el.dataset.adminkitTabsPrerendered === 'Y') {
+                var root = el.querySelector('.ui-tabs__tabs-container') || el;
+                var activateTab = function(tabId) {
+                    root.querySelectorAll('.ui-tabs__tab-body_inner').forEach(function(body) {
+                        body.classList.toggle('--body-active', body.getAttribute('data-id') === tabId);
+                    });
+                    root.querySelectorAll('[data-bx-role="tab-header"]').forEach(function(header) {
+                        header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
+                    });
+                };
+                root.querySelectorAll('[data-bx-role="tab-header"]').forEach(function(header) {
+                    header.addEventListener('click', function() {
+                        var tabId = header.getAttribute('data-bx-name') || '';
+                        if (tabId !== '') {
+                            activateTab(tabId);
+                            var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
+                            if (activeTabInput) {
+                                activeTabInput.value = tabId;
+                            }
+                        }
+                    });
+                });
+                if (window.BX && window.BX.UI && window.BX.UI.Hint) {
+                    window.BX.UI.Hint.init(root);
+                }
+                return;
+            }
+
             BX.Runtime.loadExtension('mb.admin.kit').then(function(kit) {
                 if (kit && kit.Tabs && kit.Tabs.initAll) {
-                    kit.Tabs.initAll(document.getElementById('{$cid}'));
+                    kit.Tabs.initAll(el);
                 }
             });
         });

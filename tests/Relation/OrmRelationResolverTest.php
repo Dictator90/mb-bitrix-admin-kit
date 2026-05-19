@@ -59,11 +59,11 @@ final class FakeEntity
 
     public function getField(string $name): object
     {
-        return new FakeReferenceField();
+        return new OrmResolverFakeReferenceField();
     }
 }
 
-final class FakeReferenceField
+final class OrmResolverFakeReferenceField
 {
     public function getRefEntity(): object
     {
