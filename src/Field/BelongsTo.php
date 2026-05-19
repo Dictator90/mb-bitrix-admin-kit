@@ -160,6 +160,12 @@ class BelongsTo extends Field
         return htmlspecialcharsbx((string)$value);
     }
 
+
+    protected function supportsInlineEdit(): bool
+    {
+        return false;
+    }
+
     public function getFilterType(): ?string
     {
         return 'list';
