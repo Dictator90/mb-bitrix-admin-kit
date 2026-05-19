@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Field;
 
-use MB\Bitrix\AdminKit\Field\BelongsTo;
 use MB\Bitrix\AdminKit\Field\EntitySelect;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
 use MB\Bitrix\AdminKit\Field\Select;
 use MB\Bitrix\AdminKit\Field\Text;
 use PHPUnit\Framework\TestCase;

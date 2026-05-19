@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Relation;
 
-use MB\Bitrix\AdminKit\Field\BelongsTo;
-use MB\Bitrix\AdminKit\Field\BelongsToMany;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Relation\OrmRelationResolver;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

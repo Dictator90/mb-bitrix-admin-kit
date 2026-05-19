@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Relation;
 
 use MB\Bitrix\AdminKit\Contracts\Relation\RelationResolverInterface;
-use MB\Bitrix\AdminKit\Field\RelationField;
+use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 
 final class ExplicitRelationResolver implements RelationResolverInterface
 {

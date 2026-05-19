@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Field;
+namespace MB\Bitrix\AdminKit\Field\Relation;
 
 use Closure;
 use MB\Bitrix\AdminKit\Relation\RelationType;

@@ -319,3 +319,8 @@
 - Added runtime explicit relation builder/registrar wiring and validation for missing explicit config parts.
 - Added ORM-aware `BelongsToMany` serialization mode: relation/pivot mode now keeps array IDs, legacy CSV mode remains supported.
 - Added unit tests for relation resolver, runtime registrar, and BelongsToMany serialization behavior.
+
+## Unreleased
+- Migrated relation field classes to `MB\Bitrix\AdminKit\Field\Relation` namespace and updated internal imports.
+- Reworked runtime relation builder/registrar to use Bitrix ORM relation field objects and explicit registration result.
+- Added initial ORM relation services: `RelationValueLoader`, `RelationObjectMutator`, `OrmObjectRelationSynchronizer`, `ManualPivotSynchronizer`, and synchronizer interface.
