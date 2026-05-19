@@ -1,8 +1,8 @@
-# Pages v0.8.0
+# Страницы v0.8.0
 
-AdminKit v0.8.0 treats standalone pages as first-class admin module pages. Extend `MB\Bitrix\AdminKit\Pages\CustomPage`, `OptionsPage`, or `DashboardPage` and register it through `AdminKitManager::registerPage()` or module discovery.
+В AdminKit v0.8.0 standalone-страницы — полноценные страницы admin-модуля. Расширяйте `MB\Bitrix\AdminKit\Pages\CustomPage`, `OptionsPage` или `DashboardPage` и регистрируйте через `AdminKitManager::registerPage()` или discovery модуля.
 
-Every standalone page exposes the unified instance API:
+Каждая standalone-страница предоставляет единый instance API:
 
 - `id(): string`
 - `title(): string`
@@ -13,32 +13,32 @@ Every standalone page exposes the unified instance API:
 - `render()`
 - `url(array $params = []): string`
 
-The legacy static API (`getId()`, `getTitle()`, `getSort()`, `getMenuIcon()`, `getParentMenuId()`) remains supported.
+Устаревший static API (`getId()`, `getTitle()`, `getSort()`, `getMenuIcon()`, `getParentMenuId()`) по-прежнему поддерживается.
 
 
-## Responsibility map
+## Карта ответственности
 
-- Current page resolution: `AdminKitRouter` reads request `page` / `action` parameters and returns either a standalone page, a resource page wrapper, or a not-found page.
-- URL building: `UrlGenerator` owns page, resource, CRUD, action, bulk, import, and export URLs.
-- Menu building: `AdminKitMenuBuilder` reads `AdminKitRegistry`, applies visibility and permission checks, groups, sorts, and returns Bitrix menu arrays.
-- Toolbar rendering: standalone pages can return `ToolbarAction` objects; CRUD pages keep their existing toolbar rendering and can migrate actions incrementally.
-- SidePanel behavior: `SidePanelAdapter` owns iframe parameters, slider opening JavaScript, close-after-save behavior, and grid refresh hooks.
-- Asset loading: `AssetManager` owns Bitrix extension/CSS/JS registration for page-layer code.
-- Rendering current page: `AdminKitRenderer` captures `render()` output for manager-driven rendering.
+- Разрешение текущей страницы: `AdminKitRouter` читает параметры запроса `page` / `action` и возвращает standalone-страницу, обёртку resource page или страницу not-found.
+- Построение URL: `UrlGenerator` отвечает за URL страниц, ресурсов, CRUD, действий, bulk, import и export.
+- Построение меню: `AdminKitMenuBuilder` читает `AdminKitRegistry`, применяет видимость и проверки прав, группирует, сортирует и возвращает массивы меню Bitrix.
+- Рендер toolbar: standalone-страницы могут возвращать объекты `ToolbarAction`; CRUD-страницы сохраняют существующий рендер toolbar и могут переносить действия постепенно.
+- Поведение SidePanel: `SidePanelAdapter` владеет параметрами iframe, JS открытия слайдера, закрытием после сохранения и хуками обновления грида.
+- Загрузка ассетов: `AssetManager` регистрирует расширения/CSS/JS Bitrix для page-слоя.
+- Рендер текущей страницы: `AdminKitRenderer` захватывает вывод `render()` для manager-driven рендера.
 
-## UI layer model
+## Модель UI-слоя
 
-- Fields describe data/behavior and implement `Contracts\Field\FieldContract`.
-- `FieldRowRenderer` is the single place that renders Bitrix `ui-form-row` markup.
-- `ComponentContract` is render-only; container behavior lives in `LayoutComponentContract`.
-- Layout components (`Box`, `Grid`, `Column`, `Tabs`) render children through `ChildrenRenderer`.
-- Widgets are leaf components (`AbstractWidget` no longer inherits layout containers); dashboard composition uses `DashboardRenderer`.
+- Поля описывают данные/поведение и реализуют `Contracts\Field\FieldContract`.
+- `FieldRowRenderer` — единственное место рендера разметки Bitrix `ui-form-row`.
+- `ComponentContract` — только рендер; поведение контейнеров в `LayoutComponentContract`.
+- Layout-компоненты (`Box`, `Grid`, `Column`, `Tabs`) рендерят дочерние элементы через `ChildrenRenderer`.
+- Виджеты — листовые компоненты (`AbstractWidget` больше не наследует layout-контейнеры); композиция dashboard идёт через `DashboardRenderer`.
 
-## Resource pages model
+## Модель resource pages
 
-Resources describe the data entity. Pages describe a concrete presentation of that entity.
+Ресурсы описывают сущность данных. Страницы — конкретное представление этой сущности.
 
-`Resource::pages()` is now the primary extension point for CRUD page customization. The default resource pages are:
+`Resource::pages()` — основная точка расширения для кастомизации CRUD-страниц. Страницы ресурса по умолчанию:
 
 ```php
 public function pages(): iterable
@@ -51,7 +51,7 @@ public function pages(): iterable
 }
 ```
 
-Keep `indexFields()`, `formFields()`, and `detailFields()` for simple resources: they are shortcuts used by the default pages. For advanced UI behavior, register page classes instead of creating `indexResource()`, `formResource()`, `detailResource()`, `IndexResource`, `FormResource`, or `DetailResource` abstractions.
+Оставляйте `indexFields()`, `formFields()` и `detailFields()` для простых ресурсов: это shortcuts, которые используют страницы по умолчанию. Для сложного UI регистрируйте классы страниц вместо `indexResource()`, `formResource()`, `detailResource()`, `IndexResource`, `FormResource` или `DetailResource`.
 
 ```php
 final class ProductResource extends DataManagerResource
@@ -67,9 +67,9 @@ final class ProductResource extends DataManagerResource
 }
 ```
 
-### Custom IndexPage
+### Кастомный IndexPage
 
-`IndexPage` owns grid definitions. The grid query builder, data loader, and row assembler receive definitions from the page, while the resource remains the fallback shortcut source.
+`IndexPage` владеет определениями грида. Grid query builder, data loader и row assembler получают определения со страницы, а ресурс остаётся fallback-источником shortcut.
 
 ```php
 final class ProductIndexPage extends IndexPage
@@ -103,11 +103,11 @@ final class ProductIndexPage extends IndexPage
 }
 ```
 
-`IndexPage` also exposes protected hooks for `rowActions()`, `bulkActions()`, default select/filter/sort/runtime values, query customization, and row mapping.
+`IndexPage` также предоставляет protected-хуки для `rowActions()`, `bulkActions()`, значений select/filter/sort/runtime по умолчанию, кастомизации запроса и маппинга строк.
 
-### Custom FormPage
+### Кастомный FormPage
 
-`FormPage` takes form fields and tabs from the page. The default implementation falls back to `resource->formFields()` and `resource->formTabs()`.
+`FormPage` берёт поля формы и вкладки со страницы. Реализация по умолчанию откатывается к `resource->formFields()` и `resource->formTabs()`.
 
 ```php
 final class ProductFormPage extends FormPage
@@ -131,11 +131,11 @@ final class ProductFormPage extends FormPage
 }
 ```
 
-Form pages support `mode=create` and `mode=edit`. Override `beforeSave()`, `afterSave()`, or `redirectAfterSave()` for page-specific save behavior.
+Form pages поддерживают `mode=create` и `mode=edit`. Переопределите `beforeSave()`, `afterSave()` или `redirectAfterSave()` для поведения сохранения на странице.
 
-### Custom DetailPage
+### Кастомный DetailPage
 
-`DetailPage` reads display fields from the page and falls back to `resource->detailFields()`.
+`DetailPage` читает поля отображения со страницы и откатывается к `resource->detailFields()`.
 
 ```php
 final class ProductDetailPage extends DetailPage
@@ -151,9 +151,9 @@ final class ProductDetailPage extends DetailPage
 }
 ```
 
-### Routing parameters
+### Параметры маршрутизации
 
-The manager keeps legacy `page=<resource>&action=...` routing working, but also understands distinct resource/page parameters:
+Менеджер сохраняет работу legacy-маршрутизации `page=<resource>&action=...`, но также понимает отдельные параметры resource/page:
 
 ```text
 admin_resource=product&admin_page=index
@@ -162,30 +162,30 @@ admin_resource=product&admin_page=form&mode=edit&id=123
 admin_resource=product&admin_page=detail&id=123
 ```
 
-Internally, `ResourcePageResolver` resolves `admin_page` through `Resource::pages()` and creates the page through `PageFactory`.
+Внутри `ResourcePageResolver` разрешает `admin_page` через `Resource::pages()` и создаёт страницу через `PageFactory`.
 
 ### FieldRenderContext
 
-Index, form, and detail rendering now pass `FieldRenderContext` into field render methods. The context contains the field, resource, item, value, page name (`index`, `form`, or `detail`), row data, validation errors, and metadata. Existing fields that accept raw values remain backward compatible.
+Рендер index, form и detail передаёт в методы полей `FieldRenderContext`. Контекст содержит поле, ресурс, элемент, значение, имя страницы (`index`, `form` или `detail`), данные строки, ошибки валидации и метаданные. Существующие поля, принимающие «сырые» значения, остаются обратно совместимыми.
 
-## Security
+## Безопасность
 
-| Page | Checks |
+| Страница | Проверки |
 |------|--------|
-| `IndexPage` | `canView` before grid/export; `canUpdate`/`canDelete` for inline/bulk; CSRF on POST actions |
-| `FormPage` | `canView`; `canCreate` (create) / `canUpdate` (edit); sessid on save; async save → JSON |
-| `DetailPage` | `canView` before rendering a record |
-| `Pages\OptionsPage` | `canView`; invalid sessid blocks `Option::set` (AJAX → JSON, normal POST → alert) |
+| `IndexPage` | `canView` перед grid/export; `canUpdate`/`canDelete` для inline/bulk; CSRF на POST-действиях |
+| `FormPage` | `canView`; `canCreate` (create) / `canUpdate` (edit); sessid при сохранении; async save → JSON |
+| `DetailPage` | `canView` перед рендером записи |
+| `Pages\OptionsPage` | `canView`; неверный sessid блокирует `Option::set` (AJAX → JSON, обычный POST → alert) |
 
-## Export on index
+## Экспорт на index
 
-CSV export is available when the Resource registers an export action and the user has `canView`. Import toolbar/flow on `IndexPage` is **temporarily removed**; export uses `ExportAction` with `maxExportRows()` pre-flight.
+CSV-экспорт доступен, когда ресурс регистрирует export action и у пользователя есть `canView`. Import toolbar/flow на `IndexPage` **временно удалён**; экспорт использует `ExportAction` с pre-flight `maxExportRows()`.
 
-## Standalone vs resource pages
+## Standalone-страницы и страницы ресурса
 
-| Type | Classes | Menu |
+| Тип | Классы | Меню |
 |------|---------|------|
-| Resource CRUD | `Page\IndexPage`, `FormPage`, `DetailPage` (via `Resource::pages()`) | Under resource menu item |
-| Standalone | `Pages\OptionsPage`, `DashboardPage`, `CustomPage` | Registered/discovered separately |
+| Resource CRUD | `Page\IndexPage`, `FormPage`, `DetailPage` (через `Resource::pages()`) | Под пунктом меню ресурса |
+| Standalone | `Pages\OptionsPage`, `DashboardPage`, `CustomPage` | Регистрируются/discovered отдельно |
 
-Do not register resource page subclasses as standalone menu entries unless they implement the standalone page API explicitly.
+Не регистрируйте подклассы resource page как standalone-пункты меню, если они явно не реализуют standalone page API.

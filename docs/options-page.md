@@ -1,14 +1,14 @@
 # OptionsPage
 
-`MB\Bitrix\AdminKit\Pages\OptionsPage` is a standalone page that saves values
-to Bitrix `b_option` / `b_option_site` via `Bitrix\Main\Config\Option`.
+`MB\Bitrix\AdminKit\Pages\OptionsPage` — standalone-страница, сохраняющая значения
+в Bitrix `b_option` / `b_option_site` через `Bitrix\Main\Config\Option`.
 
-> **Note:** `MB\Bitrix\AdminKit\Page\OptionsPage` (singular `Page`) is deprecated.
-> Always extend `Pages\OptionsPage` (plural).
+> **Примечание:** `MB\Bitrix\AdminKit\Page\OptionsPage` (единственное `Page`) устарел.
+> Всегда расширяйте `Pages\OptionsPage` (множественное число).
 
 ---
 
-## Minimal example
+## Минимальный пример
 
 ```php
 <?php
@@ -38,7 +38,7 @@ final class ModuleSettingsPage extends OptionsPage
 }
 ```
 
-Register in the admin file:
+Регистрация в admin-файле:
 
 ```php
 <?php
@@ -56,8 +56,8 @@ require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.p
 
 ## `fields()` vs `components()`
 
-`fields()` is the public API — override it and return any mix of fields and
-layout components. `components()` is an internal alias that calls `fields()`.
+`fields()` — публичный API: переопределите его и верните любую смесь полей и
+layout-компонентов. `components()` — внутренний alias, вызывающий `fields()`.
 
 ```php
 public function fields(): iterable
@@ -71,10 +71,10 @@ public function fields(): iterable
 
 ---
 
-## Layout components inside `fields()`
+## Layout-компоненты внутри `fields()`
 
-Any `ComponentContract` (Box, Collapse, Tabs, …) may appear in the list.
-Fields inside layout components are discovered automatically for save/load.
+В списке может быть любой `ComponentContract` (Box, Collapse, Tabs, …).
+Поля внутри layout-компонентов автоматически участвуют в save/load.
 
 ### Box
 
@@ -106,9 +106,9 @@ Collapse::make('Advanced', [
 
 ---
 
-## Tabbed layout
+## Вкладочная раскладка
 
-Wrap tabs in `Tabs::make([...])` — `Tab` cannot render standalone.
+Оборачивайте вкладки в `Tabs::make([...])` — `Tab` не рендерится отдельно.
 
 ```php
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
@@ -136,23 +136,23 @@ public function fields(): iterable
 }
 ```
 
-**Tab options:**
+**Опции Tab:**
 
-| Method | Description |
+| Метод | Описание |
 |--------|-------------|
-| `active()` | Mark as initially active (first tab is active by default if none set) |
-| `id(string)` | Explicit DOM/routing ID; auto-derived from title otherwise |
-| `description(string)` | Tooltip shown on the tab header |
-| `icon(string)` | Icon-set CSS class (`'--settings'`, `'--lock'`, …); rendered via `mb.admin.kit` Tabs |
-| `count(int\|string)` | Badge counter (`3`, `'99+'`); rendered via `mb.admin.kit` Tabs |
-| `field(...)` / `fields(...)` / `with([...])` | Add items after construction |
+| `active()` | Активна при загрузке (первая вкладка активна по умолчанию, если ни одна не задана) |
+| `id(string)` | Явный DOM/routing ID; иначе выводится из title |
+| `description(string)` | Подсказка в заголовке вкладки |
+| `icon(string)` | CSS-класс icon-set (`'--settings'`, `'--lock'`, …); рендер через Tabs `mb.admin.kit` |
+| `count(int\|string)` | Счётчик-бейдж (`3`, `'99+'`); рендер через Tabs `mb.admin.kit` |
+| `field(...)` / `fields(...)` / `with([...])` | Добавить элементы после создания |
 
 ---
 
-## Per-site options (`multiSite`)
+## Опции по сайтам (`multiSite`)
 
-When `$multiSite = true`, the page renders one form tab per active Bitrix site.
-Values are saved to `b_option_site` scoped to the site ID.
+При `$multiSite = true` страница рендерит одну вкладку формы на каждый активный сайт Bitrix.
+Значения сохраняются в `b_option_site` с привязкой к ID сайта.
 
 ```php
 final class SiteOptionsPage extends OptionsPage
@@ -175,10 +175,10 @@ final class SiteOptionsPage extends OptionsPage
 
 ---
 
-## Reactive fields (`dependsOn` / `onChange`)
+## Реактивные поля (`dependsOn` / `onChange`)
 
-Fields with `dependsOn()` are re-rendered via AJAX when the source field changes.
-`OptionsPage` handles the AJAX endpoint automatically — no additional routing is needed.
+Поля с `dependsOn()` перерисовываются по AJAX при смене исходного поля.
+`OptionsPage` обрабатывает AJAX endpoint автоматически — дополнительная маршрутизация не нужна.
 
 ```php
 use MB\Bitrix\AdminKit\Field\IblockElementSelect;
@@ -208,20 +208,20 @@ public function fields(): iterable
 
 ---
 
-## `visibleWhen` — conditional field display
+## `visibleWhen` — условный показ полей
 
-Fields (and layout components that implement `getVisibleWhen()`) are hidden
-or shown based on another field's value. The toggle is client-side (CSS + JS
-driven by `data-visible-when`).
+Поля (и layout-компоненты с `getVisibleWhen()`) скрываются или показываются
+по значению другого поля. Переключение на клиенте (CSS + JS
+через `data-visible-when`).
 
 ```php
 Switcher::make('Use proxy', 'use_proxy')->values('Y', 'N'),
 
 Text::make('Proxy host', 'proxy_host')
-    ->visibleWhen('use_proxy', 'Y'),        // 2-arg shorthand: column, value
+    ->visibleWhen('use_proxy', 'Y'),        // краткая форма: колонка, значение
 
 Text::make('Proxy port', 'proxy_port')
-    ->visibleWhen('use_proxy', '=', 'Y'),  // explicit operator form
+    ->visibleWhen('use_proxy', '=', 'Y'),  // явный оператор
 
 Select::make('Auth type', 'auth_type')
     ->visibleWhen('use_proxy', 'Y'),
@@ -234,13 +234,13 @@ Box::make('Proxy credentials', [
 
 ---
 
-## Abstract requirements
+## Абстрактные требования
 
-`OptionsPage` only requires two static methods:
+`OptionsPage` требует только два static-метода:
 
 ```php
-public static function getId(): string;     // unique page slug
-public static function getTitle(): string;  // admin panel title
+public static function getId(): string;     // уникальный slug страницы
+public static function getTitle(): string;  // заголовок admin-панели
 ```
 
-And `$moduleId` must be set. Everything else is optional.
+И нужно задать `$moduleId`. Остальное опционально.

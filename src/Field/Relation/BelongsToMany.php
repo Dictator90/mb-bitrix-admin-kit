@@ -60,6 +60,40 @@ class BelongsToMany extends BelongsTo
         return $this->saveStrategy;
     }
 
+    public function isOrmRelationMode(): bool
+    {
+        if (!$this->storedAsCsv) {
+            return true;
+        }
+
+        if ($this->ormSaveExplicit) {
+            return true;
+        }
+
+        if ($this->saveStrategy === 'manual') {
+            return true;
+        }
+
+        if ($this->relationName() !== null && $this->relationName() !== '') {
+            return true;
+        }
+
+        if ($this->relatedTableClass !== null && $this->relatedTableClass !== '') {
+            return true;
+        }
+
+        if ($this->pivotTableClass !== null && $this->pivotTableClass !== '') {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isStoredAsCsv(): bool
+    {
+        return !$this->isOrmRelationMode();
+    }
+
     public function relationType(): RelationType
     {
         return RelationType::BELONGS_TO_MANY;
@@ -176,15 +210,14 @@ class BelongsToMany extends BelongsTo
 
     public function serializePostValue(mixed $value): mixed
     {
-        $ormMode = $this->relationName() !== null || $this->pivotTableClass !== null || $this->relatedTableClass !== null || $this->ormSaveExplicit;
-
-        if ($ormMode && is_array($value)) {
+        if ($this->isOrmRelationMode() && is_array($value)) {
             return array_values(array_filter(array_map('strval', $value), static fn (string $id): bool => $id !== ''));
         }
 
         if (is_array($value)) {
             return implode(',', array_filter(array_map('strval', $value)));
         }
+
         return $value;
     }
 }

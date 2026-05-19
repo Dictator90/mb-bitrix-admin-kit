@@ -1,16 +1,16 @@
-# Resource export
+# Экспорт ресурса
 
-v0.7.0 adds a CSV-first export layer for CRUD resources.
+В v0.7.0 добавлен CSV-first слой экспорта для CRUD-ресурсов.
 
-## Components
+## Компоненты
 
-- `ExportAction` checks permissions and decides whether selected rows, filtered rows, or all rows may be exported.
-- `ExportContext` carries the resource, selected IDs, filter, export fields, user ID, format, and optional `GridContext`.
-- `CsvExporter` writes UTF-8 CSV with a BOM by default and uses safe `fputcsv()` escaping.
+- `ExportAction` проверяет права и решает, можно ли экспортировать выбранные строки, строки по фильтру или все строки.
+- `ExportContext` передаёт resource, selected IDs, filter, поля экспорта, user ID, format и опциональный `GridContext`.
+- `CsvExporter` пишет UTF-8 CSV с BOM по умолчанию и использует безопасное экранирование `fputcsv()`.
 
-## Selected export
+## Экспорт выбранных
 
-Pass explicit selected IDs in `ExportContext`. The action adds a primary-key filter and exports only those rows.
+Передайте явные selected IDs в `ExportContext`. Действие добавляет фильтр по первичному ключу и экспортирует только эти строки.
 
 ```php
 $result = ExportAction::make()->execute(new ExportContext(
@@ -19,9 +19,9 @@ $result = ExportAction::make()->execute(new ExportContext(
 ));
 ```
 
-## Filter export
+## Экспорт по фильтру
 
-Pass the current filter and, when available, a `GridContext`. Export by filter is enabled by default, but a resource can disable it with `allowExportByFilter(): bool`.
+Передайте текущий filter и при наличии `GridContext`. Экспорт по фильтру включён по умолчанию, но resource может отключить его через `allowExportByFilter(): bool`.
 
 ```php
 $result = ExportAction::make()->execute(new ExportContext(
@@ -31,14 +31,14 @@ $result = ExportAction::make()->execute(new ExportContext(
 ));
 ```
 
-## Full export
+## Полный экспорт
 
-Exporting all records is blocked by default. Opt in explicitly on the action with `allowRunAll()` or on the resource with `allowExportAll(): bool`.
+Экспорт всех записей по умолчанию заблокирован. Явно включите на действии через `allowRunAll()` или на resource через `allowExportAll(): bool`.
 
-## Fields and permissions
+## Поля и права
 
-- The resource must pass `canView()` for export.
-- The action `canRun()` condition must pass.
-- `CsvExporter` uses `indexFields()` unless fields are provided in the context.
-- Fields hidden from the index, marked `exportable(false)`, `private()`, or `system()` are not exported.
-- Computed fields and `displayUsing()` are honored in CSV output.
+- Resource должен проходить `canView()` для экспорта.
+- Условие `canRun()` действия должно выполняться.
+- `CsvExporter` использует `indexFields()`, если поля не переданы в context.
+- Поля, скрытые с индекса, с `exportable(false)`, `private()` или `system()`, не экспортируются.
+- Вычисляемые поля и `displayUsing()` учитываются в CSV-выводе.

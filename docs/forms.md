@@ -1,11 +1,25 @@
-# Forms
+# Формы
 
-Forms render `formFields()`, normalize incoming request data through Field objects, validate values, run lifecycle hooks, check permissions, and persist through `CrudPersister`.
+Формы рендерят `formFields()`, нормализуют входящие данные запроса через объекты Field, валидируют значения, выполняют lifecycle-хуки, проверяют права и сохраняют через `CrudPersister`.
 
 ## FormData
 
-`FormData` is stage-aware and keeps separate raw, normalized, validated, and errors data. Its format is stable for v1.x and must not be changed in minor or patch releases.
+`FormData` учитывает стадии и хранит отдельно raw, normalized, validated и errors. Его формат стабилен для v1.x и не должен меняться в minor или patch релизах.
 
-## Validation and saving
+## Режим формы EntityObject
 
-Use Field `normalize()` and validation APIs for all create/edit/import flows. Avoid duplicating import-only normalization rules when the same behavior belongs to a Field.
+По умолчанию `FormPage` сохраняет скалярные массивы через `updateItemResult()` / `createItemResult()`.
+
+Подключение на ресурсе:
+
+```php
+$this->enableEntityObjectForm(true);
+```
+
+Тогда `FormPage` использует `EntityObjectFormSaver`: скалярные поля проходят через `DataPipeline`, поля связей синхронизируются через `RelationObjectMutator`, владелец сохраняется через Bitrix `$entityObject->save()`.
+
+См. [relations.md](relations.md) для режимов полей связей и ограничений.
+
+## Валидация и сохранение
+
+Используйте `normalize()` и API валидации Field для всех потоков create/edit/import. Не дублируйте правила нормализации только для импорта, если то же поведение должно быть в Field.

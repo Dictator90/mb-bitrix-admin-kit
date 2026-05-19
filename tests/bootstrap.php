@@ -28,6 +28,8 @@ namespace {
         }
     });
 
+    require_once __DIR__ . '/Relation/RelationTestFixtures.php';
+
     $bitrixMainLib = getenv('MB_BITRIX_MAIN_LIB') ?: 'F:/Projects/mb/engineering-experts.ru/bitrix/modules/main/lib';
     $bitrixMainLib = rtrim(str_replace('\\', '/', $bitrixMainLib), '/');
     $GLOBALS['MB_ADMIN_KIT_BITRIX_ORM_AVAILABLE'] = is_dir($bitrixMainLib);

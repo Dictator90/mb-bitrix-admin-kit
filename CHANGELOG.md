@@ -2,20 +2,31 @@
 
 ## Unreleased
 
+### Added
+- Режим формы EntityObject на `FormPage` (opt-in через `DataManagerResource::enableEntityObjectForm()`): скалярные поля через `DataPipeline`, relation-поля через `EntityObjectFormSaver` / `RelationObjectMutator`, сохранение через Bitrix `$entityObject->save()`.
+- Явные хелперы `BelongsToMany::isOrmRelationMode()` / `isStoredAsCsv()` и разделение ORM-aware `serializePostValue()`.
+- Режимы рендера формы `BelongsTo`: `asSelect()` (по умолчанию), `asRadio()`, `asLink()` (preview).
+- Тесты relation-слоя: namespace, runtime builder/registrar, метаданные resolver, value loader, object mutator, manual pivot sync, маршрутизация веток FormPage.
+
 ### Fixed
-- Grid inline-edit metadata now respects field readonly state: `readonly()` fields no longer publish editable config into `main.ui.grid` columns.
-- Relation and entity selector fields are now explicitly non-inline-editable in grid metadata to avoid unstable runtime editors and enforce form/sidepanel editing flows.
-- `Select` grid column metadata now exports editable `items` only when inline editing is actually enabled for the column.
-- `BelongsTo` (and `BelongsToMany`) grid metadata now explicitly disables inline editing, aligning relation-like selects with stable sidepanel/form editing flows and fixing failing tests/CI checks.
-- Fixed local CI failures by removing the debug-only Bitrix `Debug::writeToFile()` call from mass delete, restoring the `BulkAction::executeUsing()` callback alias, and adding missing PHPStan Bitrix stubs.
-- Bulk action AJAX payloads now include structured `status`, `errors`, `warnings`, `affected`, and summary data; non-AJAX flash rendering includes item-level errors/warnings so messages survive a reload.
-- `BitrixGridActionPanelAdapter` no longer chooses the export JavaScript handler by the magic `export_selected` id; bulk actions can now declare a `clientHandler()`.
-- Composer package stability is stable by default; the package no longer opts consumers into dev dependency resolution.
+- `RelationValueLoader` корректно разворачивает строки-массивы, duck-typed entity objects и Bitrix `Collection` для BelongsToMany в ORM-режиме.
+- `RelationObjectMutator` применяет BelongsTo FK, BelongsToMany collection/manual sync и защищённые обновления HasOne/HasMany (без тихого удаления без явных флагов).
+- `ManualPivotSynchronizer` реализует `RelationSynchronizerInterface` с diff pivot (insert/delete/keep).
+- `OrmRelationResolver` извлекает ключи метаданных связей из API полей Bitrix ORM, где это доступно.
+- `RuntimeRelationBuilder`: корректный обратный Reference для BelongsTo/HasOne, OneToMany, ManyToMany с явными pivot keys.
+- Метаданные inline-редактирования грида учитывают readonly полей: поля с `readonly()` больше не публикуют editable-конфиг в колонках `main.ui.grid`.
+- Relation и entity selector поля явно помечены как non-inline-editable в метаданных грида, чтобы избежать нестабильных runtime-редакторов и направить редактирование в form/sidepanel.
+- Метаданные колонки `Select` экспортируют editable `items` только когда inline-редактирование для колонки реально включено.
+- Метаданные грида `BelongsTo` (и `BelongsToMany`) явно отключают inline-редактирование, согласуя relation-подобные select со стабильными flow sidepanel/form и исправляя падающие тесты/CI.
+- Исправлены локальные сбои CI: удалён отладочный вызов Bitrix `Debug::writeToFile()` из mass delete, восстановлен алиас колбэка `BulkAction::executeUsing()`, добавлены недостающие PHPStan-стабы Bitrix.
+- AJAX-ответы bulk actions теперь содержат структурированные `status`, `errors`, `warnings`, `affected` и сводку; non-AJAX flash включает ошибки/предупреждения по строкам, чтобы сообщения сохранялись после перезагрузки.
+- `BitrixGridActionPanelAdapter` больше не выбирает JavaScript-обработчик export по магическому id `export_selected`; bulk actions могут объявлять `clientHandler()`.
+- Стабильность Composer-пакета по умолчанию `stable`; пакет больше не подталкивает потребителей к разрешению dev-зависимостей.
 
 ### Documentation
-- Documented field render lifecycle and inline-edit compatibility/limitations for base, select, relation, and entity selector fields.
-- Clarified that `CrudResource` is a DSL/page base without persistence and that ORM CRUD resources should extend `DataManagerResource`.
-- Synchronized import/export, grid, quick-start, and bulk-action docs with the current export-enabled/import-UI-disabled state.
+- Задокументирован lifecycle рендера полей и совместимость/ограничения inline-редактирования для базовых, select, relation и entity selector полей.
+- Уточнено, что `CrudResource` — DSL/база страниц без persistence, а ORM CRUD-ресурсы должны расширять `DataManagerResource`.
+- Синхронизирована документация import/export, grid, quick-start и bulk-action с текущим состоянием: export включён, import UI отключён.
 
 ### Stabilization
 - Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.

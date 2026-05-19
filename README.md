@@ -17,6 +17,8 @@
 - Для новых ORM-ресурсов рекомендуется `DataManagerResource`.
 - `CrudResource` — DSL/страничная база без persistence; для рабочего ORM CRUD используйте `DataManagerResource`.
 - Bulk AJAX возвращает структурированный результат (`status`, `message`, `errors`, `warnings`, `affected`) и показывает ошибки сразу через `mb.admin.kit`.
+- Поля связей находятся только в `MB\Bitrix\AdminKit\Field\Relation` (старый namespace `Field\BelongsTo` и т.п. не поддерживается).
+- Режим формы EntityObject (`enableEntityObjectForm()`) — opt-in для сохранения scalar-полей и ORM-связей через `$entityObject->save()`. Подробнее: [docs/relations.md](docs/relations.md).
 
 ## Требования
 
@@ -106,7 +108,7 @@ final class ProductResource extends DataManagerResource
 - Scope и discovery: [docs/discovery.md](docs/discovery.md)
 - Ресурсы и страницы: [docs/resources.md](docs/resources.md), [docs/pages.md](docs/pages.md)
 - Грид: [docs/grid.md](docs/grid.md)
-- Поля и фильтры: [docs/fields.md](docs/fields.md), [docs/filters.md](docs/filters.md)
+- Поля и фильтры: [docs/fields.md](docs/fields.md), [docs/filters.md](docs/filters.md), [docs/relations.md](docs/relations.md)
 - Действия: [docs/actions.md](docs/actions.md), [docs/bulk-actions.md](docs/bulk-actions.md)
 - Экспорт/импорт: [docs/import-export.md](docs/import-export.md), [docs/import.md](docs/import.md)
 - Совместимость: [docs/backward-compatibility.md](docs/backward-compatibility.md)

@@ -48,6 +48,18 @@ if (!class_exists(DataManager::class)) {
     }
 }
 
+namespace Bitrix\Main\ORM\Entity;
+
+if (!class_exists(Entity::class)) {
+    class Entity
+    {
+        public function hasField(string $fieldName): bool
+        {
+            return false;
+        }
+    }
+}
+
 namespace Bitrix\Main\ORM\Objectify;
 
 if (!class_exists(EntityObject::class)) {
@@ -56,6 +68,42 @@ if (!class_exists(EntityObject::class)) {
         public function set(string $fieldName, mixed $value): self
         {
             return $this;
+        }
+
+        public function get(string $fieldName): mixed
+        {
+            return null;
+        }
+
+        public function getId(): mixed
+        {
+            return null;
+        }
+
+        public function getEntity(): \Bitrix\Main\ORM\Entity\Entity
+        {
+            return new \Bitrix\Main\ORM\Entity\Entity();
+        }
+
+        public function save(): object
+        {
+            return new class {
+                public function isSuccess(): bool
+                {
+                    return true;
+                }
+
+                /** @return list<string> */
+                public function getErrorMessages(): array
+                {
+                    return [];
+                }
+
+                public function getId(): mixed
+                {
+                    return null;
+                }
+            };
         }
     }
 }
@@ -109,12 +157,12 @@ if (!class_exists(ManyToMany::class)) {
             return $this;
         }
 
-        public function configureLocalPrimary(string $key): self
+        public function configureLocalPrimary(string $fieldName, string $mediatorFieldName = ''): self
         {
             return $this;
         }
 
-        public function configureRemotePrimary(string $key): self
+        public function configureRemotePrimary(string $fieldName, string $mediatorFieldName = ''): self
         {
             return $this;
         }

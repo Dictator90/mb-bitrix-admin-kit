@@ -144,6 +144,16 @@ class BelongsTo extends RelationField
 
     public function renderFormField(mixed $value = null): string
     {
+        return match ($this->renderMode) {
+            'radio' => $this->renderRadioField($value),
+            'entity_selector' => $this->renderEntitySelectorUnsupported(),
+            'link' => $this->renderLinkPreview($value),
+            default => $this->renderSelectField($value),
+        };
+    }
+
+    protected function renderSelectField(mixed $value = null): string
+    {
         $current = (string)($this->resolveValue($value) ?? '');
         $name = htmlspecialcharsbx($this->column);
         $options = $this->loadOptions();
@@ -167,6 +177,48 @@ class BelongsTo extends RelationField
             <select class="ui-ctl-element" name="{$name}"{$required}{$reactive}>{$optionsHtml}</select>
         </div>
         HTML;
+    }
+
+    protected function renderRadioField(mixed $value = null): string
+    {
+        $current = (string)($this->resolveValue($value) ?? '');
+        $name = htmlspecialcharsbx($this->column);
+        $options = $this->loadOptions();
+        $reactive = $this->renderReactiveAttrs();
+        $required = $this->required ? ' required' : '';
+        $html = '<div class="adminkit-radio-list">';
+
+        if ($this->emptyLabel !== '') {
+            $checked = $current === '' ? ' checked' : '';
+            $html .= '<label class="ui-ctl ui-ctl-radio adminkit-radio-list__item">'
+                . '<input type="radio" class="ui-ctl-element" name="' . $name . '" value=""' . $checked . $required . $reactive . '>'
+                . '<div class="ui-ctl-label-text">' . htmlspecialcharsbx($this->emptyLabel) . '</div>'
+                . '</label>';
+        }
+
+        foreach ($options as $optVal => $optLabel) {
+            $checked = (string) $optVal === $current ? ' checked' : '';
+            $html .= '<label class="ui-ctl ui-ctl-radio adminkit-radio-list__item">'
+                . '<input type="radio" class="ui-ctl-element" name="' . $name . '" value="' . htmlspecialcharsbx((string) $optVal) . '"' . $checked . $required . $reactive . '>'
+                . '<div class="ui-ctl-label-text">' . htmlspecialcharsbx($optLabel) . '</div>'
+                . '</label>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    protected function renderLinkPreview(mixed $value = null): string
+    {
+        return '<span class="adminkit-relation-link-preview">' . $this->previewValue($value) . '</span>';
+    }
+
+    protected function renderEntitySelectorUnsupported(): string
+    {
+        return '<div class="ui-alert ui-alert-warning"><span class="ui-alert-message">'
+            . htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BELONGS_TO_ENTITY_SELECTOR_UNSUPPORTED', 'Entity selector mode is not configured for this field.'))
+            . '</span></div>';
     }
 
     public function previewValue(mixed $value): string

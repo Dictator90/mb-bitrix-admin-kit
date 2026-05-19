@@ -1,12 +1,12 @@
-# Lifecycle
+# Жизненный цикл (Lifecycle)
 
-Lifecycle hooks allow Resources to customize create, update, delete, import, and bulk operations without replacing the persistence pipeline.
+Lifecycle-хуки позволяют Resource настраивать create, update, delete, import и массовые операции без замены pipeline сохранения.
 
-## Recommended use
+## Рекомендуемое использование
 
-- Prepare values before save in Resource/Field hooks.
-- Validate business rules before persistence.
-- React after successful persistence.
-- Keep permission checks in `PermissionContext` and Resource methods.
+- Подготавливать значения перед сохранением в хуках Resource/Field.
+- Валидировать бизнес-правила до persistence.
+- Реагировать после успешного сохранения.
+- Проверки прав держите в `PermissionContext` и методах Resource.
 
-Hooks should be additive and backward-compatible. Removing or renaming public/protected lifecycle methods requires deprecation first.
+Хуки должны быть аддитивными и обратно совместимыми. Удаление или переименование публичных/защищённых lifecycle-методов требует предварительного `@deprecated`.

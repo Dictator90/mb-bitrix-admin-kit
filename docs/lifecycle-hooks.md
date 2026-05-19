@@ -1,6 +1,6 @@
-# Lifecycle hooks
+# Lifecycle-хуки
 
-CRUD resources may override the v0.3.0 lifecycle hooks:
+CRUD-ресурсы могут переопределить lifecycle-хуки v0.3.0:
 
 - `beforeValidate(FormData $data, DbOperationContext $context)`
 - `afterValidate(FormData $data, DbOperationContext $context)`
@@ -9,4 +9,4 @@ CRUD resources may override the v0.3.0 lifecycle hooks:
 - `beforeDelete()` / `afterDelete()`
 - `beforeMassDelete()` / `afterMassDelete()`
 
-Legacy `beforeCreating`, `afterCreated`, `beforeUpdating`, `afterUpdated`, `beforeDeleting`, `afterDeleted`, `beforeMassDeleting`, and `afterMassDeleted` hooks are still called by the new hooks for backward compatibility.
+Устаревшие хуки `beforeCreating`, `afterCreated`, `beforeUpdating`, `afterUpdated`, `beforeDeleting`, `afterDeleted`, `beforeMassDeleting` и `afterMassDeleted` по-прежнему вызываются новыми хуками для обратной совместимости.

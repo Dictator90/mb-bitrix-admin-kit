@@ -1,9 +1,9 @@
-# CrudPersister and ORM errors
+# CrudPersister и ошибки ORM
 
-`MB\Bitrix\AdminKit\Database\CrudPersister` is the single low-level persistence entry point for CRUD operations.
+`MB\Bitrix\AdminKit\Database\CrudPersister` — единая точка низкоуровневого сохранения для CRUD-операций.
 
-- `create()` calls `DataManager::add()`.
-- `update()` calls `DataManager::update()`.
-- `delete()` calls `DataManager::delete()`.
+- `create()` вызывает `DataManager::add()`.
+- `update()` вызывает `DataManager::update()`.
+- `delete()` вызывает `DataManager::delete()`.
 
-Bitrix ORM `Result` errors are converted to `DbResult::error()` with all available messages. Form pages render these messages as user-visible errors and never treat failed ORM results as successful saves.
+Ошибки Bitrix ORM `Result` преобразуются в `DbResult::error()` со всеми доступными сообщениями. Страницы форм показывают эти сообщения пользователю и никогда не считают неуспешный ORM-результат успешным сохранением.

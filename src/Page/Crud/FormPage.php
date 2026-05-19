@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\ORM\Data\DataManager;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\ComponentContext;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
@@ -21,12 +22,15 @@ use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
+use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 use MB\Bitrix\AdminKit\Field\Renderers\FieldRowContext;
 use MB\Bitrix\AdminKit\Field\Renderers\FieldRowRenderer;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Page\CrudPage;
+use MB\Bitrix\AdminKit\Relation\EntityObjectFormSaver;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
@@ -37,6 +41,7 @@ use Throwable;
 class FormPage extends CrudPage implements FormPageContract
 {
     protected ?DataWrapper $item = null;
+    protected ?object $entityItem = null;
     /** @var array<int,string> */
     protected array $globalErrors = [];
     protected bool $hasValidationErrors = false;
@@ -99,7 +104,17 @@ class FormPage extends CrudPage implements FormPageContract
             if (!$this->resource instanceof ResourcePersistenceContract) {
                 $this->globalErrors[] = 'Resource does not support persistence.';
             } else {
-                $row = $this->resource->findItem($this->id);
+                if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm()) {
+                    $select = $this->resource->relationSelectForFields($this->resource->formFields());
+                    $this->entityItem = $this->resource->findObject($this->id, $select);
+                    $row = null;
+                    if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
+                        $row = $this->entityItem->collectValues();
+                    }
+                } else {
+                    $row = $this->resource->findItem($this->id);
+                }
+
                 if ($row === null) {
                     $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_NOT_FOUND');
                 } else {
@@ -187,6 +202,12 @@ class FormPage extends CrudPage implements FormPageContract
     protected function handlePost(): void
     {
         if ($this->isEditNotFound()) {
+            return;
+        }
+
+        if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm()) {
+            $this->handleEntityObjectPost();
+
             return;
         }
 
@@ -279,6 +300,109 @@ class FormPage extends CrudPage implements FormPageContract
                 }
                 $this->redirect($redirectUrl);
             }
+        }
+    }
+
+    protected function handleEntityObjectPost(): void
+    {
+        if (!$this->resource instanceof DataManagerResource) {
+            return;
+        }
+
+        /** @var DataManagerResource<DataManager> $resource */
+        $resource = $this->resource;
+
+        $fields = $this->collectAllFields();
+        $raw = [];
+        foreach ($fields as $field) {
+            $column = $field->getColumn();
+            $raw[$column] = $this->request->getPost($column);
+        }
+        $this->submittedValues = $raw;
+
+        $context = new DbOperationContext(
+            resource: $resource,
+            operation: $this->id ? 'update' : 'create',
+            itemId: $this->id,
+            oldData: $this->item?->toArray() ?? [],
+            newData: [],
+            rawData: $raw,
+            normalizedData: [],
+            validatedData: [],
+            request: $this->request,
+        );
+
+        try {
+            $this->assertSavePermission($context);
+
+            $saver = new EntityObjectFormSaver();
+            [$scalarFields] = $saver->splitFields($fields);
+            $rawScalar = [];
+            foreach ($scalarFields as $field) {
+                $column = $field->getColumn();
+                $rawScalar[$column] = $field->serializePostValue($raw[$column] ?? null);
+            }
+
+            $formData = (new DataPipeline())->process($scalarFields, $rawScalar);
+            $this->syncFormErrors($formData);
+
+            $resource->beforeValidate($formData, $context);
+            $this->syncFormErrors($formData);
+            $this->beforeSave($formData, $context);
+            $this->syncFormErrors($formData);
+
+            if ($formData->hasErrors() || $this->hasValidationErrors) {
+                return;
+            }
+
+            $resource->afterValidate($formData, $context);
+
+            $result = $saver->save($resource, $this->id, $fields, $raw, $context);
+            if (!$result->success) {
+                foreach ($result->globalErrors as $error) {
+                    $this->globalErrors[] = $error;
+                }
+                foreach ($result->fieldErrors as $column => $messages) {
+                    foreach ($messages as $message) {
+                        $existing = $this->fieldErrors[$column] ?? [];
+                        if (!in_array($message, $existing, true)) {
+                            $this->fieldErrors[$column][] = $message;
+                        }
+                        $this->hasValidationErrors = true;
+                    }
+                }
+
+                return;
+            }
+
+            $savedId = $result->savedId;
+            if ($savedId !== null) {
+                $this->afterSave($formData, $context, $savedId);
+            }
+
+            if ($this->isSidePanelMode()) {
+                $this->savedInSidePanel = true;
+                if (!$this->closeSidePanelAfterSave()) {
+                    $this->showSavedNotice = true;
+                    $this->reloadItemAfterSave($savedId);
+                }
+            } else {
+                $redirectUrl = $this->redirectAfterSave($savedId);
+                if ($redirectUrl === null) {
+                    $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
+                    $sep = str_contains($backUrl, '?') ? '&' : '?';
+                    $redirectUrl = $backUrl . $sep . 'saved=1';
+                }
+                $this->redirect($redirectUrl);
+            }
+        } catch (AdminKitException $exception) {
+            $this->globalErrors[] = $exception->getMessage();
+        } catch (Throwable $exception) {
+            $message = trim($exception->getMessage());
+            if ($message === '') {
+                $message = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
+            }
+            $this->globalErrors[] = $message;
         }
     }
 
@@ -658,7 +782,21 @@ class FormPage extends CrudPage implements FormPageContract
     }
     protected function resolveFieldValue(string $column, mixed $fallback): mixed
     {
-        return array_key_exists($column, $this->submittedValues) ? $this->submittedValues[$column] : $fallback;
+        if (array_key_exists($column, $this->submittedValues)) {
+            return $this->submittedValues[$column];
+        }
+
+        if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm() && $this->entityItem !== null) {
+            foreach ($this->collectAllFields() as $field) {
+                if ($field->getColumn() !== $column || !$field instanceof RelationField) {
+                    continue;
+                }
+
+                return $this->resource->resolveRelationValue($this->entityItem, $field);
+            }
+        }
+
+        return $fallback;
     }
 
     protected function closeSidePanelAfterSave(): bool
@@ -674,9 +812,17 @@ class FormPage extends CrudPage implements FormPageContract
         }
 
         if ($this->resource instanceof ResourcePersistenceContract) {
-            $row = $this->resource->findItem($this->id);
-            if ($row !== null) {
-                $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+            if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm()) {
+                $select = $this->resource->relationSelectForFields($this->resource->formFields());
+                $this->entityItem = $this->resource->findObject($this->id, $select);
+                if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
+                    $this->item = DataWrapper::fromArray($this->entityItem->collectValues(), $this->resource->getPrimaryKey());
+                }
+            } else {
+                $row = $this->resource->findItem($this->id);
+                if ($row !== null) {
+                    $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+                }
             }
         }
     }

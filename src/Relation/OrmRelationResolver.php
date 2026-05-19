@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Relation;
 
+use Bitrix\Main\ORM\Fields\Relations\ManyToMany;
+use Bitrix\Main\ORM\Fields\Relations\OneToMany;
+use Bitrix\Main\ORM\Fields\Relations\Reference;
 use MB\Bitrix\AdminKit\Contracts\Relation\RelationResolverInterface;
 use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 use RuntimeException;
@@ -37,17 +40,23 @@ final class OrmRelationResolver implements RelationResolverInterface
             : '';
 
         $multiple = method_exists($ormField, 'isMultiple') ? (bool) $ormField->isMultiple() : false;
+        $keys = $this->extractRelationKeys($ormField, $fieldClass);
 
         return new RelationMetadata(
             relationType: $field->relationType(),
             ownerEntity: $ownerDataManagerClass,
             relatedEntity: $relatedEntity,
-            mediatorEntity: str_contains($fieldClass, 'ManyToMany') ? ($ormField->getMediatorEntity()?->getDataClass() ?? null) : null,
+            mediatorEntity: $keys['mediatorEntity'],
+            foreignKey: $keys['foreignKey'],
+            ownerKey: $keys['ownerKey'],
+            relatedKey: $keys['relatedKey'],
+            foreignPivotKey: $keys['foreignPivotKey'],
+            relatedPivotKey: $keys['relatedPivotKey'],
             multiple: $multiple,
-            relationName: $relationName,
             cascadeSave: $field->isCascadeSaveEnabled(),
             cascadeDelete: $field->isCascadeDeleteEnabled(),
             orphanRemoval: $field->isOrphanRemovalEnabled(),
+            relationName: $relationName,
             ormFieldClass: $fieldClass,
             ormDetectedType: $ormType,
         );
@@ -55,15 +64,15 @@ final class OrmRelationResolver implements RelationResolverInterface
 
     private function detectOrmRelationType(string $fieldClass, object $ormField): ?RelationType
     {
-        if (str_contains($fieldClass, 'ManyToMany')) {
+        if ($ormField instanceof ManyToMany || str_contains($fieldClass, 'ManyToMany')) {
             return RelationType::BELONGS_TO_MANY;
         }
 
-        if (str_contains($fieldClass, 'OneToMany')) {
+        if ($ormField instanceof OneToMany || str_contains($fieldClass, 'OneToMany')) {
             return RelationType::HAS_MANY;
         }
 
-        if (str_contains($fieldClass, 'Reference')) {
+        if ($ormField instanceof Reference || str_contains($fieldClass, 'Reference')) {
             if (method_exists($ormField, 'isOneToOne') && (bool) $ormField->isOneToOne()) {
                 return RelationType::HAS_ONE;
             }
@@ -72,6 +81,65 @@ final class OrmRelationResolver implements RelationResolverInterface
         }
 
         return null;
+    }
+
+    /**
+     * @return array{
+     *     mediatorEntity: ?string,
+     *     foreignKey: ?string,
+     *     ownerKey: string,
+     *     relatedKey: string,
+     *     foreignPivotKey: ?string,
+     *     relatedPivotKey: ?string
+     * }
+     */
+    private function extractRelationKeys(object $ormField, string $fieldClass): array
+    {
+        $result = [
+            'mediatorEntity' => null,
+            'foreignKey' => null,
+            'ownerKey' => 'ID',
+            'relatedKey' => 'ID',
+            'foreignPivotKey' => null,
+            'relatedPivotKey' => null,
+        ];
+
+        if ($ormField instanceof Reference || str_contains($fieldClass, 'Reference')) {
+            $elementals = method_exists($ormField, 'getElementals') ? $ormField->getElementals() : false;
+            if (is_array($elementals) && $elementals !== []) {
+                $localField = (string) array_key_first($elementals);
+                $remoteField = (string) reset($elementals);
+                $result['foreignKey'] = $localField;
+                $result['relatedKey'] = $remoteField;
+            }
+        }
+
+        if ($ormField instanceof OneToMany || str_contains($fieldClass, 'OneToMany')) {
+            if (method_exists($ormField, 'getReferenceName')) {
+                $result['foreignKey'] = (string) $ormField->getReferenceName();
+            }
+        }
+
+        if ($ormField instanceof ManyToMany || str_contains($fieldClass, 'ManyToMany')) {
+            if (method_exists($ormField, 'getMediatorEntity')) {
+                $mediator = $ormField->getMediatorEntity();
+                if (is_object($mediator) && method_exists($mediator, 'getDataClass')) {
+                    $result['mediatorEntity'] = (string) $mediator->getDataClass();
+                }
+            }
+
+            if (method_exists($ormField, 'getLocalReferenceName')) {
+                $result['foreignPivotKey'] = (string) $ormField->getLocalReferenceName();
+            }
+
+            if (method_exists($ormField, 'getRemoteReferenceName')) {
+                $result['relatedPivotKey'] = (string) $ormField->getRemoteReferenceName();
+            }
+
+            // Bitrix auto-generated mediator keys are not always exposed; explicit pivot keys may still be required.
+        }
+
+        return $result;
     }
 
     private function assertCompatibleTypes(RelationType $declaredType, ?RelationType $ormType, string $relationName): void

@@ -51,15 +51,15 @@ Grid-слой разделён на сервисы, чтобы UI и ORM-лог�
 `HasMany`/`HasOne` не добавляют JOIN к базовому запросу списка и не должны дублировать строки грида. Загрузка связанных значений выполняется отдельным этапом после выборки базовых строк.
 
 
-## Bulk action panel
+## Панель массовых действий
 
-`BitrixGridActionPanelAdapter` остаётся Bitrix-native адаптером для `main.ui.grid` и `Bitrix\Main\Grid\Panel\Types/Actions`. Он не знает о бизнес-id действий: стандартные bulk actions используют JS handler `runBulkAction`, а специальные сценарии задают handler через `BulkAction::clientHandler()` (например, export использует `exportSelected`).
+`BitrixGridActionPanelAdapter` остаётся нативным Bitrix-адаптером для `main.ui.grid` и `Bitrix\Main\Grid\Panel\Types/Actions`. Он не знает о бизнес-id действий: стандартные bulk actions используют JS-обработчик `runBulkAction`, а специальные сценарии задают обработчик через `BulkAction::clientHandler()` (например, export использует `exportSelected`).
 
-AJAX bulk response содержит `success`, `status`, `message`, `summary`, `errors`, `warnings`, `skipped`, `affected` и `successfulIds`; JS показывает ошибки до `reloadTable()`, а PHP flash используется для non-AJAX fallback.
+AJAX-ответ bulk содержит `success`, `status`, `message`, `summary`, `errors`, `warnings`, `skipped`, `affected` и `successfulIds`; JS показывает ошибки до `reloadTable()`, а PHP flash используется для non-AJAX fallback.
 
-## Inline edit compatibility matrix
+## Матрица совместимости inline-редактирования
 
-- Supported stable inline types: `text`, `list`, `date`, `checkbox` (when field returns corresponding `getGridColumnType()`).
-- A column is considered inline editable only when its `editable` config is non-false after readonly checks.
-- Readonly fields (`readonly()` and readonly defaults in relation fields) always disable inline edit metadata in the resulting grid column config.
-- Complex relation/entity selector fields are intentionally excluded from inline editing to avoid unstable grid runtime behaviour; use sidepanel edit links instead.
+- Стабильные inline-типы: `text`, `list`, `date`, `checkbox` (когда поле возвращает соответствующий `getGridColumnType()`).
+- Колонка считается inline-редактируемой только если её конфиг `editable` не `false` после проверок readonly.
+- Поля readonly (`readonly()` и readonly по умолчанию у relation-полей) всегда отключают метаданные inline-редактирования в итоговом конфиге колонки грида.
+- Сложные relation/entity selector поля намеренно исключены из inline-редактирования, чтобы избежать нестабильного поведения runtime грида; используйте ссылки редактирования в sidepanel.

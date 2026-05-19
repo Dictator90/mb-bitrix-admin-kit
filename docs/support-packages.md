@@ -1,4 +1,4 @@
-# Support packages
+# Вспомогательные пакеты (support packages)
 
 AdminKit зависит от четырех небольших support-пакетов:
 

@@ -1,10 +1,10 @@
-# Query performance tools
+# Инструменты производительности запросов
 
-v0.6.0 adds small, opt-in performance controls for resource grids and field lookups.
+В v0.6.0 добавлены небольшие opt-in механизмы производительности для гридов ресурсов и lookup полей.
 
-## Disable total count
+## Отключение total count
 
-Heavy `getCount()` queries can be disabled per resource:
+Тяжёлые запросы `getCount()` можно отключить на ресурсе:
 
 ```php
 public function useTotalCount(GridContext $context): bool
@@ -13,11 +13,11 @@ public function useTotalCount(GridContext $context): bool
 }
 ```
 
-When disabled, the grid data query still runs, but the exact total count query is skipped.
+При отключении запрос данных грида всё равно выполняется, но точный total count не запрашивается.
 
-## Count cache
+## Кэш count
 
-Count queries can be cached per grid/filter/user key:
+Запросы count можно кэшировать по ключу grid/filter/user:
 
 ```php
 public function countCacheTtl(GridContext $context): int
@@ -26,11 +26,11 @@ public function countCacheTtl(GridContext $context): int
 }
 ```
 
-Cache keys are generated through `AdminString::cacheKey()` from module id, resource id, grid id, filter hash data, and current user id.
+Ключи кэша генерируются через `AdminString::cacheKey()` из id модуля, id ресурса, id грида, данных хэша фильтра и id текущего пользователя.
 
-## Select options cache
+## Кэш опций Select
 
-`Select` supports cached option providers:
+`Select` поддерживает кэшированные провайдеры опций:
 
 ```php
 Select::make('Статус', 'STATUS')
@@ -38,22 +38,22 @@ Select::make('Статус', 'STATUS')
     ->cache(3600);
 ```
 
-Static arrays and callable option providers are both supported.
+Поддерживаются статические массивы и callable-провайдеры.
 
-## Lookup cache
+## Кэш lookup
 
-`RelationResolver` keeps request-level cache and can also use a TTL cache:
+`RelationResolver` держит кэш на уровне запроса и может использовать TTL-кэш:
 
 ```php
 $resolver = (new RelationResolver())->cache(3600);
 $resolver->preload(ProductTable::class, [1, 2, 3], 'ID', ['ID', 'NAME']);
 ```
 
-Use `preload()` to batch relation labels and avoid N+1 queries.
+Используйте `preload()` для батчевой подгрузки подписей связей и избежания N+1.
 
-## Query guard and max page size
+## Query guard и max page size
 
-`QueryGuard` caps grid limits and validates unsafe bulk operation input. By default `CrudResource::maxPageSize()` returns `200`:
+`QueryGuard` ограничивает limit грида и проверяет небезопасный ввод массовых операций. По умолчанию `CrudResource::maxPageSize()` возвращает `200`:
 
 ```php
 public function maxPageSize(): int
@@ -62,8 +62,8 @@ public function maxPageSize(): int
 }
 ```
 
-Bulk actions still require explicit selected IDs unless the action calls `allowRunByFilter()`.
+Массовые действия по-прежнему требуют явно выбранные ID, пока действие не вызовет `allowRunByFilter()`.
 
-## Debug information
+## Отладочная информация
 
-When `ADMIN_KIT_DEBUG` is `true` and the current Bitrix user is an administrator, grid query diagnostics are logged with ORM params, execution time, row count placeholder, count usage, and cache usage. Debug data is not shown to regular users.
+Когда `ADMIN_KIT_DEBUG` равен `true` и текущий пользователь Bitrix — администратор, диагностика запросов грида логируется с ORM params, временем выполнения, placeholder числа строк, использованием count и кэша. Обычным пользователям отладочные данные не показываются.

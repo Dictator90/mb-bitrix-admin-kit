@@ -1,5 +1,5 @@
-# Toolbar v0.8.0
+# Тулбар v0.8.0
 
-`ToolbarAction` provides a small reusable action object for standalone pages and future CRUD toolbars. It supports stable ids through `AdminString`, URLs, CSS classes, and `canSee()` visibility powered by `AdminCondition`.
+`ToolbarAction` — небольшой переиспользуемый объект действия для standalone-страниц и будущих CRUD-тулбаров. Поддерживает стабильные id через `AdminString`, URL, CSS-классы и видимость `canSee()` на базе `AdminCondition`.
 
-Use toolbar actions for create, back, save/apply, import/export, bulk, and custom page actions.
+Используйте действия тулбара для create, back, save/apply, import/export, bulk и пользовательских действий страницы.
