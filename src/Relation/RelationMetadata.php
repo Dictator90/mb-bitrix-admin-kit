@@ -20,7 +20,9 @@ final readonly class RelationMetadata
         public bool $cascadeSave = false,
         public bool $cascadeDelete = false,
         public bool $orphanRemoval = false,
-        public string $relationName = ''
+        public string $relationName = '',
+        public ?string $ormFieldClass = null,
+        public ?RelationType $ormDetectedType = null,
     ) {
     }
 }

@@ -313,3 +313,9 @@
 - Extended relation fields with relation DSL building blocks (`relation()`, explicit related/pivot keys, cascade flags) and added relation type declaration API for `BelongsTo`, `HasOne`, `HasMany`, `BelongsToMany`.
 - Added BC-safe `BelongsToMany::storedAsCsv()` and save strategy toggles (`saveUsingOrm()`, `saveUsingManualSync()`) to prepare ORM-object and manual-sync modes.
 - Added `DataManagerResource::queryObject()`, `findObject()`, and `usesEntityObjectForm()` default hook for object-graph form flow.
+
+## Unreleased
+- Improved ORM relation metadata detection and type validation in `OrmRelationResolver` (Reference/OneToMany/ManyToMany heuristics).
+- Added runtime explicit relation builder/registrar wiring and validation for missing explicit config parts.
+- Added ORM-aware `BelongsToMany` serialization mode: relation/pivot mode now keeps array IDs, legacy CSV mode remains supported.
+- Added unit tests for relation resolver, runtime registrar, and BelongsToMany serialization behavior.
