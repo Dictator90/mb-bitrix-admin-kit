@@ -17,6 +17,8 @@ use MB\Bitrix\AdminKit\Resource\Concerns\HasDataManagerPersistence;
 /**
  * Resource class for Bitrix D7 ORM-backed CRUD sections.
  *
+ * Form saves always use Bitrix EntityObject persistence (see FormPage).
+ *
  * @template T of DataManager
  * @extends CrudResource<T>
  */
@@ -25,8 +27,6 @@ abstract class DataManagerResource extends CrudResource implements DataManagerRe
     /** @use HasDataManager<T> */
     use HasDataManager;
     use HasDataManagerPersistence;
-
-    protected bool $entityObjectForm = false;
 
     /** @return class-string<T> */
     abstract public function dataManagerClass(): string;
@@ -46,43 +46,62 @@ abstract class DataManagerResource extends CrudResource implements DataManagerRe
         return true;
     }
 
-    public function enableEntityObjectForm(bool $enabled = true): static
-    {
-        $this->entityObjectForm = $enabled;
-
-        return $this;
-    }
-
-    public function usesEntityObjectForm(): bool
-    {
-        return $this->entityObjectForm;
-    }
-
     /**
-     * @param list<string> $relations
+     * @param list<string> $select
      */
-    public function queryObject(array $relations = []): mixed
+    public function queryObject(array $select = ['*']): mixed
     {
-        $class = $this->getDataManagerClass();
+        $class = $this->requireConfiguredDataManagerClass();
+        if (!method_exists($class, 'query')) {
+            throw new LogicException(static::class . ' DataManager must support query() for EntityObject persistence.');
+        }
+
+        /** @phpstan-ignore method.static */
         $query = $class::query();
 
-        if ($relations !== []) {
-            $query->setSelect(array_values(array_unique($relations)));
+        if ($select !== [] && $select !== ['*']) {
+            $query->setSelect(array_values(array_unique($select)));
         }
 
         return $query;
     }
 
     /**
-     * @param list<string> $relations
+     * @param list<string> $select
      */
-    public function findObject(mixed $id, array $relations = []): mixed
+    public function findObject(mixed $id, array $select = ['*']): mixed
     {
-        $select = $relations === [] ? ['*'] : array_values(array_unique($relations));
+        $this->assertSinglePrimaryKey();
+
+        $primaryKey = $this->getPrimaryKey();
 
         return $this->queryObject($select)
-            ->where($this->getPrimaryKey(), $id)
+            ->where($primaryKey, $id)
             ->fetchObject();
+    }
+
+    public function newObject(): object
+    {
+        $class = $this->requireConfiguredDataManagerClass();
+
+        if (method_exists($class, 'createObject')) {
+            $object = $class::createObject();
+            if (is_object($object) && method_exists($object, 'set') && method_exists($object, 'save')) {
+                return $object;
+            }
+        }
+
+        $entity = $this->getEntity();
+        if (method_exists($entity, 'createObject')) {
+            $object = $entity->createObject();
+            if (is_object($object) && method_exists($object, 'set') && method_exists($object, 'save')) {
+                return $object;
+            }
+        }
+
+        throw new LogicException(
+            static::class . ' DataManager must support createObject() for EntityObject form persistence.',
+        );
     }
 
     /**
@@ -119,5 +138,35 @@ abstract class DataManagerResource extends CrudResource implements DataManagerRe
         }
 
         return (new RelationValueLoader())->load($item, $field, $metadata);
+    }
+
+    protected function assertSinglePrimaryKey(): void
+    {
+        $entity = $this->getEntity();
+        if (!method_exists($entity, 'getPrimaryArray')) {
+            return;
+        }
+
+        $primary = $entity->getPrimaryArray();
+        if (!is_array($primary)) {
+            return;
+        }
+
+        if (count($primary) > 1) {
+            throw new LogicException(
+                static::class . ' does not support composite primary keys in EntityObject form persistence.',
+            );
+        }
+    }
+
+    /** @return class-string<T> */
+    private function requireConfiguredDataManagerClass(): string
+    {
+        $class = $this->getDataManagerClass();
+        if ($class === null || $class === '') {
+            throw new LogicException(static::class . ' must declare a non-empty dataManagerClass().');
+        }
+
+        return $class;
     }
 }

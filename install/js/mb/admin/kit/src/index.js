@@ -10,6 +10,7 @@ import * as ChartWidget from './chart-widget';
 import * as Tabs from './tabs/index'
 import * as DialogSelector from './dialog-selector/index'
 import * as GridBulkActions from './grid/bulk-actions';
+import * as RelationTileGrid from './relation-tilegrid';
 
 export {
 	Form,
@@ -21,5 +22,6 @@ export {
 	ChartWidget,
 	Tabs,
 	DialogSelector,
-	GridBulkActions
+	GridBulkActions,
+	RelationTileGrid,
 };

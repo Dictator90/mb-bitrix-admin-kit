@@ -49,12 +49,15 @@ final class FormPageSidePanelAsyncTest extends TestCase
         $closeMethod = new ReflectionMethod(FormPage::class, 'closeSidePanelAfterSave');
         $closeMethod->setAccessible(true);
 
+        $success = !$hasValidationErrors->getValue($page) && $globalErrors->getValue($page) === [];
         $payload = [
-            'success' => !$hasValidationErrors->getValue($page) && $globalErrors->getValue($page) === [],
-            'closeSidePanel' => $savedFlag->getValue($page) && $closeMethod->invoke($page),
+            'success' => $success,
+            'closeSidePanel' => $success && $savedFlag->getValue($page) && $closeMethod->invoke($page),
+            'reloadParentGrid' => $success && $savedFlag->getValue($page),
         ];
 
         self::assertTrue($payload['success']);
         self::assertTrue($payload['closeSidePanel']);
+        self::assertTrue($payload['reloadParentGrid']);
     }
 }

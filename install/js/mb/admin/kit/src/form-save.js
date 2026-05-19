@@ -20,8 +20,61 @@ function clearFormErrors(form) {
 function appendGlobalError(form, message) {
 	const top = document.createElement('div');
 	top.className = 'ui-alert ui-alert-danger adminkit-alert';
-	top.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(String(message)) + '</span>';
-	form.parentNode.insertBefore(top, form);
+	const text = String(message);
+
+	if (text.indexOf('\n') !== -1) {
+		const pre = document.createElement('pre');
+		pre.className = 'adminkit-error-trace';
+		pre.textContent = text;
+		top.appendChild(pre);
+	} else {
+		top.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(text) + '</span>';
+	}
+
+	if (form.parentNode) {
+		form.parentNode.insertBefore(top, form);
+	}
+}
+
+function hasSaveErrors(resp) {
+	if (!resp || resp.validationError) {
+		return true;
+	}
+
+	if (Array.isArray(resp.globalErrors) && resp.globalErrors.length > 0) {
+		return true;
+	}
+
+	const fieldErrors = resp.fieldErrors || {};
+
+	return Object.keys(fieldErrors).some(function(column) {
+		const messages = fieldErrors[column];
+
+		return Array.isArray(messages) && messages.length > 0;
+	});
+}
+
+function scrollToFirstError(form) {
+	if (!form.parentNode) {
+		return;
+	}
+
+	const first = form.parentNode.querySelector('.adminkit-alert, .adminkit-field-error');
+	if (first && typeof first.scrollIntoView === 'function') {
+		first.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	}
+}
+
+function resolveErrorNotification(resp, messages) {
+	if (Array.isArray(resp.globalErrors) && resp.globalErrors.length > 0) {
+		return String(resp.globalErrors[0]);
+	}
+
+	if (resp.validationError) {
+		return messages.validationError || '';
+	}
+
+	return messages.saveFailed || '';
 }
 
 function renderValidationErrors(form, messages) {
@@ -30,21 +83,54 @@ function renderValidationErrors(form, messages) {
 	});
 }
 
-function reloadParentGrid(gridId) {
-	if (!gridId || !window.top || !window.top.BX || !window.top.BX.Main || !window.top.BX.Main.gridManager) {
-		return;
+function resolveGridWindow() {
+	if (window.parent && window.parent !== window && window.parent.BX) {
+		return window.parent;
 	}
 
-	const manager = window.top.BX.Main.gridManager;
+	if (window.top && window.top.BX) {
+		return window.top;
+	}
+
+	return window;
+}
+
+function findGridInstance(manager, gridId) {
+	if (!manager || !gridId) {
+		return null;
+	}
+
 	let grid = manager.getInstanceById ? manager.getInstanceById(gridId) : null;
 	if (!grid && manager.getById) {
 		const pair = manager.getById(gridId);
 		grid = pair && (pair.instance || pair.grid) ? (pair.instance || pair.grid) : null;
 	}
 
-	if (grid && typeof grid.reload === 'function') {
-		grid.reload();
+	return grid;
+}
+
+function reloadParentGrid(gridId) {
+	const win = resolveGridWindow();
+	const manager = win.BX && win.BX.Main && win.BX.Main.gridManager;
+	const grid = findGridInstance(manager, gridId);
+
+	if (!grid) {
+		return false;
 	}
+
+	if (typeof grid.reloadTable === 'function') {
+		grid.reloadTable();
+
+		return true;
+	}
+
+	if (typeof grid.reload === 'function') {
+		grid.reload();
+
+		return true;
+	}
+
+	return false;
 }
 
 function renderFieldErrors(form, fieldErrors) {
@@ -63,7 +149,7 @@ function renderFieldErrors(form, fieldErrors) {
 	});
 }
 
-function submitAsync(form, submitBtn, messages) {
+function submitAsync(form, submitBtn, messages, gridId) {
 	if (submitBtn) {
 		submitBtn.disabled = true;
 		submitBtn.classList.add('ui-btn-wait');
@@ -98,15 +184,26 @@ function submitAsync(form, submitBtn, messages) {
 			renderValidationErrors(form, resp.globalErrors);
 			renderFieldErrors(form, resp.fieldErrors);
 
-			if (resp.success) {
-				if (resp.closeSidePanel && window.top && window.top.BX && window.top.BX.SidePanel) {
-					window.top.BX.SidePanel.Instance.getTopSlider().close();
-				} else {
-					notify(messages.saved || '');
-					if (resp.reloadParentGrid && config.gridId) {
-						reloadParentGrid(config.gridId);
-					}
+			if (hasSaveErrors(resp) || !resp.success) {
+				const errorMessage = resolveErrorNotification(resp, messages);
+				if (errorMessage) {
+					notify(errorMessage);
 				}
+				scrollToFirstError(form);
+
+				return;
+			}
+
+			const effectiveGridId = gridId || resp.gridId || '';
+			if (resp.reloadParentGrid && effectiveGridId) {
+				reloadParentGrid(effectiveGridId);
+			}
+
+			const panelWindow = resolveGridWindow();
+			if (resp.closeSidePanel && panelWindow.BX && panelWindow.BX.SidePanel) {
+				panelWindow.BX.SidePanel.Instance.getTopSlider().close();
+			} else {
+				notify(messages.saved || '');
 			}
 		})
 		.catch(function(err) {
@@ -130,7 +227,7 @@ export function init(config) {
 
 	const onSubmit = function(event) {
 		event.preventDefault();
-		submitAsync(form, submitBtn, messages);
+		submitAsync(form, submitBtn, messages, config.gridId);
 	};
 
 	form.addEventListener('submit', onSubmit);
@@ -141,7 +238,7 @@ export function init(config) {
 				return;
 			}
 			event.preventDefault();
-			submitAsync(form, submitBtn, messages);
+			submitAsync(form, submitBtn, messages, config.gridId);
 		});
 	}
 }

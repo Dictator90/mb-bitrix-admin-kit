@@ -80,14 +80,14 @@ final class RuntimeRelationBuilder
         $relation = new ManyToMany($name, $metadata->relatedEntity);
         $relation->configureMediatorEntity($metadata->mediatorEntity);
 
-        if ($metadata->foreignPivotKey === null || $metadata->relatedPivotKey === null) {
-            throw new RuntimeException('ManyToMany runtime relation requires foreignPivotKey() and relatedPivotKey().');
+        if ($metadata->localMediatorReference === '' || $metadata->remoteMediatorReference === '') {
+            throw new InvalidArgumentException(
+                'ManyToMany runtime relation requires mediatorReferences() with Reference field names on the pivot entity.',
+            );
         }
 
-        $relation->configureLocalPrimary($metadata->ownerKey, $metadata->foreignPivotKey);
-        $relation->configureRemotePrimary($metadata->relatedKey, $metadata->relatedPivotKey);
-        $relation->configureLocalReference($metadata->foreignPivotKey);
-        $relation->configureRemoteReference($metadata->relatedPivotKey);
+        $relation->configureLocalReference($metadata->localMediatorReference);
+        $relation->configureRemoteReference($metadata->remoteMediatorReference);
 
         return $relation;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Relation;
 
+use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 
 final class RuntimeRelationRegistrar
@@ -19,6 +20,10 @@ final class RuntimeRelationRegistrar
         }
 
         if (!$field->hasExplicitRelationDefinition()) {
+            return false;
+        }
+
+        if ($field instanceof BelongsToMany && !$field->hasMediatorReferences()) {
             return false;
         }
 

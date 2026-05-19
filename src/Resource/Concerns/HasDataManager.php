@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Resource\Concerns;
 
 use Bitrix\Main\ORM\Data\DataManager;
+use LogicException;
 
 /**
  * @template T of DataManager
@@ -60,5 +61,31 @@ trait HasDataManager
         }
 
         return '';
+    }
+
+    /**
+     * Returns Bitrix ORM entity for the configured DataManager class.
+     */
+    public function getEntity(): object
+    {
+        $class = $this->getDataManagerClass();
+        if ($class === null || $class === '') {
+            throw new LogicException(static::class . ' must declare a non-empty dataManagerClass().');
+        }
+
+        if (!method_exists($class, 'getEntity')) {
+            throw new LogicException(
+                sprintf('%s DataManager %s must implement getEntity().', static::class, $class),
+            );
+        }
+
+        $entity = $class::getEntity();
+        if (!is_object($entity)) {
+            throw new LogicException(
+                sprintf('%s::getEntity() must return an object.', $class),
+            );
+        }
+
+        return $entity;
     }
 }

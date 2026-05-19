@@ -17,6 +17,8 @@ $field = Text::make('Name', 'NAME')
     ->visibleWhen('TYPE', '=', 'public')
     ->requiredWhen('TYPE', '=', 'public')
     ->readonlyWhen('LOCKED', '=', 'Y')
+    ->readonlyOnUpdate()
+    ->readonlyOnCreate()
     ->dependsOn('TYPE')
     ->selectable(false)
     ->selectColumns(['NAME_EN', 'NAME_RU'])
@@ -302,6 +304,23 @@ Text::make('External URL', 'EXTERNAL_URL')
 
 Условиями могут быть также замыкания или объекты `ConditionTree`. `requiredWhen()`
 участвует в валидации; `readonlyWhen()` проверяется через `isReadOnlyFor($data)`.
+
+На форме в `$data` доступны служебные ключи `_mode` (`create` / `edit`) и `_id` (ID записи).
+Удобные сокращения:
+
+- `readonlyOnUpdate()` — только при редактировании (preview/link на create остаётся с hidden input и `default()`).
+- `readonlyOnCreate()` — только при создании.
+
+```php
+BelongsTo::make('Инфоблок', 'IBLOCK_ID', IblockTable::class)
+    ->titleColumn('NAME')
+    ->valueColumn('ID')
+    ->default($iblockId)
+    ->asLink()
+    ->readonlyOnUpdate();
+```
+
+`default()` подставляется в значение поля на create (в том числе в `asLink()` preview и hidden input).
 
 ## Зависимости
 

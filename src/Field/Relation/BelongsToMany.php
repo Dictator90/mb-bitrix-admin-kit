@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field\Relation;
 
+use MB\Bitrix\AdminKit\Relation\MediatorPivotKeyResolver;
+use MB\Bitrix\AdminKit\Relation\RelationMetadata;
 use MB\Bitrix\AdminKit\Relation\RelationType;
 use Throwable;
 
@@ -60,6 +62,68 @@ class BelongsToMany extends BelongsTo
         return $this->saveStrategy;
     }
 
+    /**
+     * Persist via pivot table instead of EntityObject::set() on a ManyToMany relation.
+     *
+     * Required for runtime-registered ManyToMany fields: Bitrix can load them in queries,
+     * but EO_* system setter does not accept ManyToMany values assigned through addField().
+     */
+    public function persistsViaPivotTable(?RelationMetadata $metadata = null): bool
+    {
+        if ($this->saveStrategy === 'manual') {
+            return true;
+        }
+
+        if (!$this->hasExplicitRelationDefinition()) {
+            return false;
+        }
+
+        if ($metadata !== null) {
+            return $this->canPersistViaPivotTable(
+                $metadata->mediatorEntity,
+                $metadata->foreignPivotKey,
+                $metadata->relatedPivotKey,
+                $metadata->localMediatorReference,
+                $metadata->remoteMediatorReference,
+            );
+        }
+
+        return $this->canPersistViaPivotTable(
+            $this->pivotTableClass,
+            $this->foreignPivotKeyName,
+            $this->relatedPivotKeyName,
+            (string) ($this->localMediatorReferenceName ?? ''),
+            (string) ($this->remoteMediatorReferenceName ?? ''),
+        );
+    }
+
+    private function canPersistViaPivotTable(
+        ?string $mediatorEntity,
+        ?string $foreignPivotKey,
+        ?string $relatedPivotKey,
+        string $localMediatorReference,
+        string $remoteMediatorReference,
+    ): bool {
+        if ($mediatorEntity === null || $mediatorEntity === '') {
+            return false;
+        }
+
+        if (
+            $foreignPivotKey !== null
+            && $foreignPivotKey !== ''
+            && $relatedPivotKey !== null
+            && $relatedPivotKey !== ''
+        ) {
+            return true;
+        }
+
+        if ($localMediatorReference === '' || $remoteMediatorReference === '') {
+            return false;
+        }
+
+        return MediatorPivotKeyResolver::resolve($mediatorEntity, $localMediatorReference, $remoteMediatorReference) !== null;
+    }
+
     public function isOrmRelationMode(): bool
     {
         if (!$this->storedAsCsv) {
@@ -101,7 +165,7 @@ class BelongsToMany extends BelongsTo
 
     public function renderFormField(mixed $value = null): string
     {
-        $rawValue = $this->resolveValue($value);
+        $rawValue = $this->resolveFormValue($value);
         $selected = $this->parseIds($rawValue);
         $options = $this->loadOptions();
         $name = htmlspecialcharsbx($this->column);
@@ -167,9 +231,18 @@ class BelongsToMany extends BelongsTo
         return $html;
     }
 
+    protected function resolveFormValue(mixed $value): mixed
+    {
+        if (is_array($value) && array_is_list($value)) {
+            return $value;
+        }
+
+        return $this->resolveValue($value);
+    }
+
     public function previewValue(mixed $value): string
     {
-        $ids = $this->parseIds($value);
+        $ids = $this->parseIds($this->resolveFormValue($value));
         if (empty($ids)) {
             return '—';
         }
@@ -208,6 +281,19 @@ class BelongsToMany extends BelongsTo
         }
     }
 
+    public function normalize(mixed $value): mixed
+    {
+        if ($this->isOrmRelationMode()) {
+            return $this->normalizeOrmIdList($value);
+        }
+
+        if (is_array($value)) {
+            return implode(',', array_values(array_filter(array_map('strval', $value), static fn (string $id): bool => $id !== '')));
+        }
+
+        return parent::normalize($value);
+    }
+
     public function serializePostValue(mixed $value): mixed
     {
         if ($this->isOrmRelationMode() && is_array($value)) {
@@ -219,5 +305,30 @@ class BelongsToMany extends BelongsTo
         }
 
         return $value;
+    }
+
+    /**
+     * @return list<int|string>
+     */
+    private function normalizeOrmIdList(mixed $value): array
+    {
+        if ($value === null || $value === '' || $value === false) {
+            return [];
+        }
+
+        if (is_array($value)) {
+            $ids = [];
+            foreach ($value as $id) {
+                if ($id === null || $id === '' || $id === false) {
+                    continue;
+                }
+
+                $ids[] = is_numeric($id) ? (int) $id : (string) $id;
+            }
+
+            return array_values($ids);
+        }
+
+        return [is_numeric($value) ? (int) $value : (string) $value];
     }
 }

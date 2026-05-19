@@ -11,9 +11,9 @@ use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
 use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Field\Relation\HasMany;
 use MB\Bitrix\AdminKit\Field\Relation\HasOne;
+use InvalidArgumentException;
 use MB\Bitrix\AdminKit\Relation\RuntimeRelationBuilder;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 final class RuntimeRelationBuilderTest extends TestCase
 {
@@ -58,6 +58,7 @@ final class RuntimeRelationBuilderTest extends TestCase
         $field = BelongsToMany::make('Tags', 'TAGS')
             ->relatedTable(BuilderFakeRelatedTable::class)
             ->pivotTable(BuilderFakePivotTable::class)
+            ->mediatorReferences('OWNER_REF', 'TAG_REF')
             ->foreignPivotKey('OWNER_ID')
             ->relatedPivotKey('TAG_ID')
             ->relation('TAGS');
@@ -67,9 +68,9 @@ final class RuntimeRelationBuilderTest extends TestCase
         self::assertInstanceOf(ManyToMany::class, $built);
     }
 
-    public function testManyToManyRequiresPivotKeys(): void
+    public function testManyToManyRequiresMediatorReferenceNames(): void
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $field = BelongsToMany::make('Tags', 'TAGS')
             ->relatedTable(BuilderFakeRelatedTable::class)

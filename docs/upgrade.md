@@ -46,7 +46,7 @@
 - Используйте только `MB\Bitrix\AdminKit\Field\Relation\{BelongsTo,HasOne,HasMany,BelongsToMany}`.
 - Старый namespace `MB\Bitrix\AdminKit\Field\BelongsTo`, deprecated wrappers и `class_alias` не поддерживаются.
 - `BelongsToMany` по умолчанию хранит ID в scalar-колонке в формате CSV; ORM ManyToMany включается через `relation()`, `relatedTable()`/`pivotTable()`, `saveUsingOrm()` или `saveUsingManualSync()`.
-- Режим формы EntityObject: `$this->enableEntityObjectForm(true)` на `DataManagerResource`. Режим массивов остаётся по умолчанию.
+- `DataManagerResource` всегда использует EntityObject persistence на `FormPage`. Методы `enableEntityObjectForm()` / `usesEntityObjectForm()` удалены; array persistence mode для ORM-форм не поддерживается.
 
 Подробнее: [relations.md](relations.md), [forms.md](forms.md).
 

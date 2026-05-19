@@ -23,7 +23,10 @@ final class OrmObjectRelationSynchronizer implements RelationSynchronizerInterfa
         mixed $value,
         DbOperationContext $context,
     ): void {
-        if ($field instanceof BelongsToMany && $field->saveStrategy() === 'manual') {
+        if (
+            $field instanceof BelongsToMany
+            && ($field->saveStrategy() === 'manual' || $field->persistsViaPivotTable($metadata))
+        ) {
             (new ManualPivotSynchronizer())->sync($owner, $field, $metadata, $value, $context);
 
             return;
@@ -32,6 +35,21 @@ final class OrmObjectRelationSynchronizer implements RelationSynchronizerInterfa
         try {
             $this->mutator->mutate($owner, $field, $metadata, $value, $context);
         } catch (Throwable $exception) {
+            if (
+                $field instanceof BelongsToMany
+                && !$field->persistsViaPivotTable($metadata)
+                && $metadata->mediatorEntity !== null
+                && $metadata->mediatorEntity !== ''
+                && $metadata->foreignPivotKey !== null
+                && $metadata->foreignPivotKey !== ''
+                && $metadata->relatedPivotKey !== null
+                && $metadata->relatedPivotKey !== ''
+            ) {
+                (new ManualPivotSynchronizer())->sync($owner, $field, $metadata, $value, $context);
+
+                return;
+            }
+
             if ($field instanceof BelongsToMany && $field->saveStrategy() === 'orm' && $metadata->mediatorEntity !== null) {
                 throw new RuntimeException(
                     'BelongsToMany ORM sync failed: ' . $exception->getMessage(),

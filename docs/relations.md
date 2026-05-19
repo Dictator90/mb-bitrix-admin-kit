@@ -43,9 +43,29 @@ BelongsToMany::make('Tags', 'TAGS')
 
 - `isOrmRelationMode()` → `true`
 - `serializePostValue(['1','2'])` → `['1','2']`
-- Значения связей исключаются из скалярного payload `FormPage` в режиме формы EntityObject.
+- Значения связей исключаются из скалярного payload `FormPage` для `DataManagerResource`.
 
 Ручная синхронизация pivot доступна через `saveUsingManualSync()` и использует `ManualPivotSynchronizer`.
+
+### Pivot без Reference-полей (manual only)
+
+Таблицы вроде `EventMessageSiteTable` содержат только колонки связи (`EVENT_MESSAGE_ID`, `SITE_ID`) **без** ORM `Reference` на mediator.
+Для них **не** вызывайте `mediatorReferences()` и **не** ожидайте runtime `ManyToMany` — AdminKit читает/пишет pivot напрямую:
+
+```php
+BelongsToMany::make('Сайты', 'SITES')
+    ->relatedTable(SiteTable::class) // или список LID через options()
+    ->pivotTable(EventMessageSiteTable::class)
+    ->foreignPivotKey('EVENT_MESSAGE_ID')
+    ->relatedPivotKey('SITE_ID')
+    ->saveUsingManualSync(); // или saveUsingOrm() + pivot keys — sync через ManualPivotSynchronizer
+```
+
+Runtime `ManyToMany` регистрируется **только** если заданы `mediatorReferences('LOCAL_REF', 'REMOTE_REF')` — имена Reference на pivot-сущности (как `IBLOCK_ELEMENT` / `IBLOCK_SECTION` у `SectionElementTable`).
+
+Имена scalar-колонок pivot (`USER_ID`, `GROUP_ID` и т.п.) можно не дублировать в DSL: при наличии `mediatorReferences()` AdminKit выводит их из Reference-полей mediator-сущности и сохраняет связь через `ManualPivotSynchronizer` (а не через `EntityObject::set()` на runtime ManyToMany).
+
+Порядок в `mediatorReferences($local, $remote)`: **local** — Reference на mediator к владельцу формы (owner), **remote** — к связанной сущности. Для `UserTable` → `GroupTable` это `('USER', 'GROUP')`; для `GroupTable` → `UserTable` — `('GROUP', 'USER')`. Если порядок указан наоборот, AdminKit переупорядочит ссылки по `ownerEntity` / `relatedEntity` перед регистрацией runtime `ManyToMany`.
 
 ## Runtime-связи с явной конфигурацией
 
@@ -54,31 +74,20 @@ BelongsToMany::make('Tags', 'TAGS')
 - `BelongsTo` → `Reference` (`this.FK = ref.ID`)
 - `HasOne` → обратный `Reference` (`this.ID = ref.FK`)
 - `HasMany` → `OneToMany`
-- `BelongsToMany` → `ManyToMany` (требуются явные pivot keys)
+- `BelongsToMany` → `ManyToMany` (требуются `mediatorReferences()` с именами Reference на pivot)
 
-## Режим формы EntityObject (opt-in)
+## Сохранение через EntityObject (DataManagerResource)
 
-Включение на `DataManagerResource`:
-
-```php
-final class ProductResource extends DataManagerResource
-{
-    public function __construct()
-    {
-        $this->enableEntityObjectForm(true);
-    }
-}
-```
-
-`FormPage` затем:
+Для `DataManagerResource` `FormPage` **всегда** использует object-graph flow:
 
 1. разделяет скалярные поля и поля связей;
-2. валидирует скаляры через `DataPipeline`;
-3. загружает/создаёт `EntityObject` через `findObject()` / `createObject()`;
-4. синхронизирует связи через `OrmObjectRelationSynchronizer` / `RelationObjectMutator`;
-5. сохраняет через `$entityObject->save()`.
+2. валидирует скаляры и связи через `DataPipeline`;
+3. регистрирует runtime-связи (explicit config) до `findObject()`;
+4. загружает/создаёт объект через `findObject()` / `newObject()`;
+5. синхронизирует связи через `OrmObjectRelationSynchronizer` / `RelationObjectMutator`;
+6. сохраняет через `$entityObject->save()`.
 
-Режим массива остаётся по умолчанию (`usesEntityObjectForm()` → `false`).
+`CrudResource` с ручной persistence по-прежнему использует `createItemResult()` / `updateItemResult()`.
 
 ## Режимы отображения
 
@@ -90,7 +99,7 @@ final class ProductResource extends DataManagerResource
 | BelongsTo | `asEntitySelector()` | не настроен (показывается предупреждение) |
 | HasOne | `asPreview()` | только чтение |
 | HasOne | `asEmbeddedForm()` | только вложенное превью |
-| HasMany | `asTable()` | превью таблицы, только чтение |
+| HasMany | `asTable($columns)` | превью таблицы, только чтение; `$columns` — список полей или map `поле => подпись` (без подписи — `getTitle()` из related ORM) |
 | HasMany | `asEmbeddedForm()` / `asGrid()` | ограничено; задокументировано |
 
 ## Текущие ограничения

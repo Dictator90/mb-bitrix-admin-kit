@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Tests\Relation;
 
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Relation\ManualPivotSynchronizer;
 use MB\Bitrix\AdminKit\Relation\RelationMetadata;
 use MB\Bitrix\AdminKit\Relation\RelationObjectMutator;
@@ -36,5 +37,45 @@ final class RelationObjectMutatorTest extends TestCase
         );
 
         self::assertSame('9', $owner->get('CATEGORY_ID'));
+    }
+
+    public function testExplicitBelongsToManySyncsPivotWithoutEntitySet(): void
+    {
+        FakePivotTableForSync::reset();
+
+        $owner = new MutatorFakeEntityObject(['ID' => 10]);
+        $field = BelongsToMany::make('Sections', 'SECTIONS')
+            ->relatedTable('Related')
+            ->pivotTable(FakePivotTableForSync::class)
+            ->foreignPivotKey('OWNER_ID')
+            ->relatedPivotKey('TAG_ID')
+            ->saveUsingOrm();
+        $metadata = new RelationMetadata(
+            relationType: RelationType::BELONGS_TO_MANY,
+            ownerEntity: 'Owner',
+            relatedEntity: 'Related',
+            mediatorEntity: FakePivotTableForSync::class,
+            foreignPivotKey: 'OWNER_ID',
+            relatedPivotKey: 'TAG_ID',
+            relationName: 'SECTIONS',
+            multiple: true,
+        );
+
+        (new RelationObjectMutator())->mutate(
+            $owner,
+            $field,
+            $metadata,
+            ['1', '2'],
+            new DbOperationContext(new ProductResource(), 'update'),
+        );
+
+        self::assertNull($owner->get('SECTIONS'));
+        self::assertEqualsCanonicalizing(
+            [
+                ['OWNER_ID' => 10, 'TAG_ID' => '1'],
+                ['OWNER_ID' => 10, 'TAG_ID' => '2'],
+            ],
+            FakePivotTableForSync::$rows,
+        );
     }
 }

@@ -18,7 +18,7 @@
 - `CrudResource` — DSL/страничная база без persistence; для рабочего ORM CRUD используйте `DataManagerResource`.
 - Bulk AJAX возвращает структурированный результат (`status`, `message`, `errors`, `warnings`, `affected`) и показывает ошибки сразу через `mb.admin.kit`.
 - Поля связей находятся только в `MB\Bitrix\AdminKit\Field\Relation` (старый namespace `Field\BelongsTo` и т.п. не поддерживается).
-- Режим формы EntityObject (`enableEntityObjectForm()`) — opt-in для сохранения scalar-полей и ORM-связей через `$entityObject->save()`. Подробнее: [docs/relations.md](docs/relations.md).
+- `DataManagerResource` всегда сохраняет формы через Bitrix EntityObject (`findObject()` / `newObject()` / `$entityObject->save()`). Array persistence mode для ORM-ресурсов не поддерживается. Подробнее: [docs/relations.md](docs/relations.md), [docs/forms.md](docs/forms.md).
 
 ## Требования
 

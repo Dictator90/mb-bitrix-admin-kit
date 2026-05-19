@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Relation;
 
-use Bitrix\Main\ORM\Data\DataManager;
-use Bitrix\Main\ORM\Objectify\EntityObject;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
-use MB\Bitrix\AdminKit\Resource\DataManagerResource;
+use MB\Bitrix\AdminKit\Support\ExceptionDiagnostics;
 use RuntimeException;
 use Throwable;
 
@@ -25,30 +24,48 @@ final class EntityObjectFormSaver
     }
 
     /**
-     * @param DataManagerResource<DataManager> $resource
+     * @param DataManagerResourceContract&object $resource
      * @param list<FieldContract> $fields
      * @param array<string,mixed> $rawPost
      */
+    /**
+     * @param array<string,mixed> $validatedScalars Values from FormPage hooks (e.g. beforeValidate), including readonly defaults.
+     */
     public function save(
-        DataManagerResource $resource,
+        DataManagerResourceContract $resource,
         mixed $itemId,
         array $fields,
         array $rawPost,
         DbOperationContext $context,
+        array $validatedScalars = [],
     ): EntityObjectSaveResult {
         [$scalarFields, $relationFields] = $this->splitFields($fields);
         $rawScalar = $this->extractRaw($scalarFields, $rawPost);
         $rawRelations = $this->extractRaw($relationFields, $rawPost);
 
-        $formData = (new DataPipeline())->process($scalarFields, $rawScalar);
-        if ($formData->hasErrors()) {
-            return new EntityObjectSaveResult(false, fieldErrors: $formData->errors());
+        $scalarFormData = (new DataPipeline())->process($scalarFields, $rawScalar);
+        if ($scalarFormData->hasErrors()) {
+            return new EntityObjectSaveResult(false, fieldErrors: $scalarFormData->errors());
+        }
+
+        $relationFormData = $relationFields === []
+            ? new FormData([], [], [])
+            : (new DataPipeline())->process($relationFields, $rawRelations);
+
+        if ($relationFormData->hasErrors()) {
+            return new EntityObjectSaveResult(false, fieldErrors: $relationFormData->errors());
         }
 
         try {
             $entityObject = $this->loadOrCreateObject($resource, $itemId, $relationFields);
-            $this->applyScalarValues($entityObject, $formData);
-            $this->syncRelations($resource, $entityObject, $relationFields, $rawRelations, $context);
+
+            $this->applyScalarValues($entityObject, $scalarFormData, $resource, $scalarFields, $itemId, $validatedScalars);
+
+            $primaryKey = $resource->getPrimaryKey();
+            $deferRelationSync = $this->shouldDeferRelationSync($itemId, $entityObject, $primaryKey);
+            if (!$deferRelationSync) {
+                $this->syncRelations($resource, $entityObject, $relationFields, $relationFormData, $context);
+            }
 
             $saveResult = $entityObject->save();
             if (method_exists($saveResult, 'isSuccess') && !$saveResult->isSuccess()) {
@@ -58,13 +75,24 @@ final class EntityObjectFormSaver
                 );
             }
 
-            $savedId = method_exists($saveResult, 'getId') ? $saveResult->getId() : $this->extractOwnerId($entityObject, $resource->getPrimaryKey());
+            if ($deferRelationSync) {
+                $this->syncRelations($resource, $entityObject, $relationFields, $relationFormData, $context);
+                $saveResult = $entityObject->save();
+                if (method_exists($saveResult, 'isSuccess') && !$saveResult->isSuccess()) {
+                    return new EntityObjectSaveResult(
+                        false,
+                        globalErrors: $this->extractSaveErrors($saveResult),
+                    );
+                }
+            }
+
+            $savedId = $this->resolveSavedId($saveResult, $entityObject, $primaryKey, $itemId);
 
             return new EntityObjectSaveResult(true, $savedId);
         } catch (Throwable $exception) {
             return new EntityObjectSaveResult(
                 false,
-                globalErrors: [$exception->getMessage() !== '' ? $exception->getMessage() : 'EntityObject save failed.'],
+                globalErrors: ExceptionDiagnostics::toGlobalErrors($exception, 'EntityObject save failed.'),
             );
         }
     }
@@ -110,20 +138,21 @@ final class EntityObjectFormSaver
         $raw = [];
         foreach ($fields as $field) {
             $column = $field->getColumn();
-            if (array_key_exists($column, $rawPost)) {
-                $raw[$column] = $field->serializePostValue($rawPost[$column]);
-            }
+            $raw[$column] = $field->serializePostValue($rawPost[$column] ?? null);
         }
 
         return $raw;
     }
 
     /**
-     * @param DataManagerResource<DataManager> $resource
+     * @param DataManagerResourceContract&object $resource
      * @param list<RelationField> $relationFields
      */
-    private function loadOrCreateObject(DataManagerResource $resource, mixed $itemId, array $relationFields): EntityObject
-    {
+    private function loadOrCreateObject(
+        DataManagerResourceContract $resource,
+        mixed $itemId,
+        array $relationFields,
+    ): object {
         $dataManagerClass = $resource->getDataManagerClass();
         if ($dataManagerClass === null) {
             throw new RuntimeException('DataManager class is not configured.');
@@ -133,37 +162,78 @@ final class EntityObjectFormSaver
 
         if ($itemId !== null && $itemId !== '') {
             $object = $resource->findObject($itemId, $select);
-            if ($object === null) {
+            if (!is_object($object) || !method_exists($object, 'set') || !method_exists($object, 'save')) {
                 throw new RuntimeException('Item was not found.');
             }
 
             return $object;
         }
 
-        if (!method_exists($dataManagerClass, 'createObject')) {
-            throw new RuntimeException('DataManager does not support createObject().');
-        }
-
-        return $dataManagerClass::createObject();
+        return $resource->newObject();
     }
 
-    private function applyScalarValues(EntityObject $entityObject, FormData $formData): void
-    {
-        foreach ($formData->validated() as $column => $value) {
-            $entityObject->set((string) $column, $value);
+    /**
+     * @param list<FieldContract> $scalarFields
+     */
+    /**
+     * @param array<string,mixed> $validatedScalars
+     */
+    private function applyScalarValues(
+        object $entityObject,
+        FormData $formData,
+        DataManagerResourceContract $resource,
+        array $scalarFields,
+        mixed $itemId,
+        array $validatedScalars = [],
+    ): void {
+        $primaryKey = $resource->getPrimaryKey();
+        $formContext = array_merge($formData->validated(), $validatedScalars, [
+            '_mode' => ($itemId !== null && $itemId !== '') ? 'edit' : 'create',
+            '_id' => $itemId ?? '',
+            $primaryKey => $itemId,
+        ]);
+        $readonlyColumns = [];
+        foreach ($scalarFields as $field) {
+            if ($field->isReadOnlyFor($formContext)) {
+                $readonlyColumns[] = $field->getColumn();
+            }
+        }
+
+        $writableColumns = [];
+        foreach ($scalarFields as $field) {
+            $writableColumns[] = $field->getColumn();
+        }
+
+        $forcedColumns = array_keys($validatedScalars);
+        $values = array_merge($formData->validated(), $validatedScalars);
+
+        foreach ($values as $column => $value) {
+            $column = (string) $column;
+            if (!in_array($column, $writableColumns, true)) {
+                continue;
+            }
+
+            if ($itemId !== null && $itemId !== '' && $column === $primaryKey) {
+                continue;
+            }
+
+            if (in_array($column, $readonlyColumns, true) && !in_array($column, $forcedColumns, true)) {
+                continue;
+            }
+
+            $entityObject->set($column, $value);
         }
     }
 
     /**
-     * @param DataManagerResource<DataManager> $resource
+     * @param DataManagerResourceContract&object $resource
      * @param list<RelationField> $relationFields
-     * @param array<string,mixed> $rawRelations
      */
     private function syncRelations(
-        DataManagerResource $resource,
-        EntityObject $entityObject,
+        DataManagerResourceContract $resource,
+        object $entityObject,
         array $relationFields,
-        array $rawRelations,
+        FormData $relationFormData,
         DbOperationContext $context,
     ): void {
         $dataManagerClass = (string) $resource->getDataManagerClass();
@@ -174,28 +244,79 @@ final class EntityObjectFormSaver
                 throw new RuntimeException('Relation metadata could not be resolved for "' . $field->getColumn() . '".');
             }
 
-            $value = $rawRelations[$field->getColumn()] ?? null;
+            $value = $relationFormData->validated()[$field->getColumn()] ?? null;
             $this->relationSynchronizer->sync($entityObject, $field, $metadata, $value, $context);
         }
     }
 
-    private function extractOwnerId(EntityObject $entityObject, string $primaryKey): mixed
+    private function shouldDeferRelationSync(mixed $itemId, object $entityObject, string $primaryKey): bool
+    {
+        if ($itemId === null || $itemId === '') {
+            return true;
+        }
+
+        $ownerId = $this->extractOwnerId($entityObject, $primaryKey);
+
+        return $ownerId === null || $ownerId === '';
+    }
+
+    private function extractOwnerId(object $entityObject, string $primaryKey): mixed
     {
         if (method_exists($entityObject, 'getId')) {
             $id = $entityObject->getId();
-            if ($id !== null) {
+            if ($id !== null && $id !== '') {
                 return $id;
             }
         }
 
-        return $entityObject->get($primaryKey);
+        if (method_exists($entityObject, 'get')) {
+            return $entityObject->get($primaryKey);
+        }
+
+        return null;
+    }
+
+    private function resolveSavedId(object $saveResult, object $entityObject, string $primaryKey, mixed $itemId): mixed
+    {
+        $savedId = $this->extractOwnerId($entityObject, $primaryKey);
+        if ($savedId !== null && $savedId !== '') {
+            return $savedId;
+        }
+
+        if ($itemId !== null && $itemId !== '') {
+            return $itemId;
+        }
+
+        return $this->extractSaveResultId($saveResult);
+    }
+
+    private function extractSaveResultId(object $saveResult): mixed
+    {
+        if (!method_exists($saveResult, 'getPrimary')) {
+            return null;
+        }
+
+        $primary = $saveResult->getPrimary();
+        if (!is_array($primary) || $primary === []) {
+            return null;
+        }
+
+        if (!method_exists($saveResult, 'getId')) {
+            return count($primary) === 1 ? reset($primary) : $primary;
+        }
+
+        return $saveResult->getId();
     }
 
     /** @return list<string> */
     private function extractSaveErrors(object $saveResult): array
     {
         if (method_exists($saveResult, 'getErrorMessages')) {
-            return array_values(array_map('strval', $saveResult->getErrorMessages()));
+            $messages = $saveResult->getErrorMessages();
+
+            return is_array($messages)
+                ? array_values(array_map('strval', $messages))
+                : ['EntityObject save failed.'];
         }
 
         return ['EntityObject save failed.'];

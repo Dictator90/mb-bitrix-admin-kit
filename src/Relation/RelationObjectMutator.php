@@ -36,6 +36,9 @@ final class RelationObjectMutator
     {
         $relationName = $this->relationName($field, $metadata);
         $scalarValue = $this->normalizeScalarId($value);
+        if ($scalarValue === '') {
+            $scalarValue = null;
+        }
 
         if ($metadata->foreignKey !== null && $metadata->foreignKey !== '') {
             $owner->set($metadata->foreignKey, $scalarValue);
@@ -71,7 +74,7 @@ final class RelationObjectMutator
         $ids = $this->normalizeIdList($value);
         $relationName = $this->relationName($field, $metadata);
 
-        if ($field->saveStrategy() === 'manual') {
+        if ($field->persistsViaPivotTable($metadata)) {
             $this->manualPivot->sync($owner, $field, $metadata, $ids, $context);
 
             return;
@@ -211,11 +214,7 @@ final class RelationObjectMutator
     private function fetchRelatedCollection(string $relatedEntity, string $relatedKey, array $ids): object
     {
         if ($ids === []) {
-            if (method_exists($relatedEntity, 'createCollection')) {
-                return $relatedEntity::createCollection();
-            }
-
-            throw new RuntimeException('Related entity "' . $relatedEntity . '" does not support empty collection creation.');
+            return $this->createEmptyRelatedCollection($relatedEntity);
         }
 
         if (!method_exists($relatedEntity, 'query')) {
@@ -232,6 +231,22 @@ final class RelationObjectMutator
         }
 
         return $collection;
+    }
+
+    private function createEmptyRelatedCollection(string $relatedEntity): object
+    {
+        if (method_exists($relatedEntity, 'createCollection')) {
+            return $relatedEntity::createCollection();
+        }
+
+        if (method_exists($relatedEntity, 'getEntity')) {
+            $entity = $relatedEntity::getEntity();
+            if (is_object($entity) && method_exists($entity, 'createCollection')) {
+                return $entity->createCollection();
+            }
+        }
+
+        throw new RuntimeException('Related entity "' . $relatedEntity . '" does not support empty collection creation.');
     }
 
     private function resolveExistingRelatedObject(object $owner, string $relationName): ?object

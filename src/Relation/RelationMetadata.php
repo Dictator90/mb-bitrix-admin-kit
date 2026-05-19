@@ -16,6 +16,8 @@ final readonly class RelationMetadata
         public string $relatedKey = 'ID',
         public ?string $foreignPivotKey = null,
         public ?string $relatedPivotKey = null,
+        public string $localMediatorReference = '',
+        public string $remoteMediatorReference = '',
         public bool $multiple = false,
         public bool $cascadeSave = false,
         public bool $cascadeDelete = false,

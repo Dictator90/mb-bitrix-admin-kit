@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid;
 
+use Bitrix\Main\ORM\Fields\ExpressionField;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Database\Performance\ArrayTtlCache;
@@ -123,17 +124,36 @@ final class GridDataLoader
      */
     private function countRows(string $dataManagerClass, array $filter, array $runtime = []): int
     {
-        try {
-            if ($runtime !== []) {
-                // Bitrix D7 supports getCount($filter, $cacheParams, $runtime)
-                /** @noinspection PhpParamsInspection */
-                return (int)$dataManagerClass::getCount($filter, [], ['runtime' => $runtime]);
-            }
-
-            return (int)$dataManagerClass::getCount($filter);
-        } catch (\Throwable) {
-            return (int)$dataManagerClass::getCount($filter);
+        if ($runtime !== [] && method_exists($dataManagerClass, 'query')) {
+            return $this->countRowsWithRuntime($dataManagerClass, $filter, $runtime);
         }
+
+        return (int) $dataManagerClass::getCount($filter);
+    }
+
+    /**
+     * Bitrix {@see DataManager::getCount()} does not accept runtime fields; mirror getList() setup.
+     *
+     * @param class-string $dataManagerClass
+     * @param array<string, mixed> $filter
+     * @param array<int|string, mixed> $runtime
+     */
+    private function countRowsWithRuntime(string $dataManagerClass, array $filter, array $runtime): int
+    {
+        $query = $dataManagerClass::query();
+
+        foreach ($runtime as $name => $fieldInfo) {
+            $query->registerRuntimeField($name, $fieldInfo);
+        }
+
+        if ($filter !== []) {
+            $query->setFilter($filter);
+        }
+
+        $query->addSelect(new ExpressionField('CNT', 'COUNT(1)'));
+        $result = $query->exec()->fetch();
+
+        return (int) ($result['CNT'] ?? 0);
     }
 
     /**

@@ -44,6 +44,21 @@ final class ProductTable
         return 'vendor_product';
     }
 
+    public static function query(): ProductOrmQuery
+    {
+        return new ProductOrmQuery();
+    }
+
+    public static function createObject(): ProductOrmEntityObject
+    {
+        return new ProductOrmEntityObject(['ID' => null, 'NAME' => '']);
+    }
+
+    public static function getEntity(): ProductOrmEntity
+    {
+        return new ProductOrmEntity();
+    }
+
     public static function getList(array $params = []): FakeQueryResult
     {
         self::$listCalls++;

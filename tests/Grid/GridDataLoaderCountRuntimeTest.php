@@ -15,9 +15,49 @@ use PHPUnit\Framework\TestCase;
 
 final class GridDataLoaderCountRuntimeTest extends TestCase
 {
+    public function testCountWithRuntimeUsesQueryInsteadOfGetCount(): void
+    {
+        MockDataManager::$runtimeCountCalls = 0;
+        $resource = new class () extends DataManagerResource {
+            public static function getId(): string
+            {
+                return 'test_runtime_count';
+            }
+            public function dataManagerClass(): string
+            {
+                return MockDataManager::class;
+            }
+            public function getPrimaryKey(): string
+            {
+                return 'ID';
+            }
+            public function useTotalCount(\MB\Bitrix\AdminKit\Grid\GridContext $ctx): bool
+            {
+                return true;
+            }
+            public function countCacheTtl(\MB\Bitrix\AdminKit\Grid\GridContext $ctx): int
+            {
+                return 0;
+            }
+        };
+
+        $grid = new Grid('test_runtime_count');
+        $loader = new GridDataLoader();
+        $definition = $this->makeDefinition([
+            'indexRuntime' => fn () => ['PROPERTY' => 'runtime-field'],
+            'indexFilter' => fn () => ['=PROPERTY.IBLOCK_ID' => 8],
+        ]);
+
+        $loader->load($resource, $grid, null, null, $definition);
+
+        self::assertGreaterThan(0, MockDataManager::$runtimeCountCalls);
+        self::assertSame(7, $grid->getTotalCount());
+    }
+
     public function testCountCacheKeyIncludesRuntime(): void
     {
         ArrayTtlCache::clear();
+        MockDataManager::$runtimeCountCalls = 0;
         $resource = new class () extends DataManagerResource {
             public static function getId(): string
             {
@@ -74,7 +114,7 @@ final class GridDataLoaderCountRuntimeTest extends TestCase
 
         $loader->load($resource, $grid, null, null, $def2);
 
-        self::assertEquals(100, $grid->getTotalCount()); // MockDataManager returns 100
+        self::assertEquals(7, $grid->getTotalCount());
     }
 
     private function makeDefinition(array $overrides): IndexPageDefinition
@@ -104,9 +144,16 @@ final class GridDataLoaderCountRuntimeTest extends TestCase
 
 class MockDataManager
 {
-    public static function getCount($filter = [], $cache = [], $params = []): int
+    public static int $runtimeCountCalls = 0;
+
+    public static function getCount($filter = [], $cache = []): int
     {
         return 100;
+    }
+
+    public static function query(): MockCountQuery
+    {
+        return new MockCountQuery();
     }
 
     public static function getList($params): object
@@ -119,6 +166,46 @@ class MockDataManager
             public function getSelectedRowsCount()
             {
                 return 0;
+            }
+        };
+    }
+}
+
+final class MockCountQuery
+{
+    /** @var array<int|string, mixed> */
+    public array $runtime = [];
+
+    /** @var array<string, mixed> */
+    public array $filter = [];
+
+    public function registerRuntimeField(mixed $name, mixed $fieldInfo = null): self
+    {
+        ++MockDataManager::$runtimeCountCalls;
+        $this->runtime[$name] = $fieldInfo;
+
+        return $this;
+    }
+
+    /** @param array<string, mixed> $filter */
+    public function setFilter(array $filter): self
+    {
+        $this->filter = $filter;
+
+        return $this;
+    }
+
+    public function addSelect(mixed $field): self
+    {
+        return $this;
+    }
+
+    public function exec(): object
+    {
+        return new class () {
+            public function fetch(): array
+            {
+                return ['CNT' => 7];
             }
         };
     }

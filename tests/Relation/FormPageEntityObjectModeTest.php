@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Relation;
 
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
+use MB\Bitrix\AdminKit\Database\DbOperationContext;
+use MB\Bitrix\AdminKit\Database\DbResult;
 use MB\Bitrix\AdminKit\Field\Text;
+use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Page\Crud\FormPage;
+use MB\Bitrix\AdminKit\Resource\CrudResource;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductTable;
@@ -23,9 +28,9 @@ final class FormPageEntityObjectModeTest extends TestCase
         $_POST = $GLOBALS['MB_ADMIN_KIT_TEST_POST'];
     }
 
-    public function testArrayModeStillUsesLegacyHandlePost(): void
+    public function testCrudResourceUsesLegacyHandlePost(): void
     {
-        $resource = new ProductResource();
+        $resource = new ManualPersistenceCrudResource();
         $page = new EntityObjectFormTestPage($resource, 1);
         $page->setLoadedItem(DataWrapper::fromArray(['ID' => 1, 'NAME' => 'One']));
 
@@ -33,12 +38,13 @@ final class FormPageEntityObjectModeTest extends TestCase
         $method->setAccessible(true);
         $method->invoke($page);
 
-        self::assertContains(1, ProductTable::$updatedIds);
+        self::assertTrue(ManualPersistenceCrudResource::$updateCalled);
+        self::assertFalse($page->dataManagerObjectBranchUsed());
     }
 
-    public function testEntityObjectModeUsesDedicatedBranch(): void
+    public function testDataManagerResourceUsesEntityObjectBranch(): void
     {
-        $resource = new EntityObjectEnabledResource();
+        $resource = new ProductResource();
         $page = new EntityObjectFormTestPage($resource, 1);
         $page->setLoadedItem(DataWrapper::fromArray(['ID' => 1, 'NAME' => 'One']));
         $page->setEntityItem(new FakeFormEntityObject(['ID' => 1, 'NAME' => 'One']));
@@ -47,20 +53,79 @@ final class FormPageEntityObjectModeTest extends TestCase
         $method->setAccessible(true);
         $method->invoke($page);
 
-        self::assertTrue($page->entityObjectBranchUsed());
+        self::assertTrue($page->dataManagerObjectBranchUsed());
+        self::assertNotContains(1, ProductTable::$updatedIds);
     }
 }
 
-final class EntityObjectEnabledResource extends ProductResource
+final class ManualPersistenceCrudResource extends CrudResource implements ResourcePersistenceContract
 {
-    public function __construct()
+    public static bool $updateCalled = false;
+
+    public function findItem(mixed $id): ?array
     {
-        $this->enableEntityObjectForm(true);
+        return ['ID' => $id, 'NAME' => 'One'];
     }
 
-    public function findObject(mixed $id, array $relations = []): mixed
+    public function getList(array $params = []): array
     {
-        return new FakeFormEntityObject(['ID' => $id, 'NAME' => 'One']);
+        return [];
+    }
+
+    public function getCount(array $filter = []): int
+    {
+        return 0;
+    }
+
+    public function createItem(array $data): mixed
+    {
+        return 1;
+    }
+
+    public function createItemResult(FormData|array $data, ?DbOperationContext $context = null): DbResult
+    {
+        return DbResult::success(1);
+    }
+
+    public function updateItem(mixed $id, array $data): bool
+    {
+        return true;
+    }
+
+    public function updateItemResult(mixed $id, FormData|array $data, ?DbOperationContext $context = null): DbResult
+    {
+        self::$updateCalled = true;
+
+        return DbResult::success($id);
+    }
+
+    public function deleteItem(mixed $id): bool
+    {
+        return true;
+    }
+
+    public function deleteItemResult(mixed $id, ?DbOperationContext $context = null): DbResult
+    {
+        return DbResult::success($id);
+    }
+
+    public function massDelete(array $ids): void
+    {
+    }
+
+    public function save(DataWrapper $item): DataWrapper
+    {
+        return $item;
+    }
+
+    public function delete(int|string $id): bool
+    {
+        return true;
+    }
+
+    public function useTransactions(): bool
+    {
+        return false;
     }
 
     public function formFields(): iterable
@@ -71,7 +136,7 @@ final class EntityObjectEnabledResource extends ProductResource
 
 final class EntityObjectFormTestPage extends FormPage
 {
-    private bool $entityObjectBranch = false;
+    private bool $dataManagerObjectBranch = false;
 
     public function setLoadedItem(DataWrapper $item): void
     {
@@ -83,14 +148,14 @@ final class EntityObjectFormTestPage extends FormPage
         $this->entityItem = $entity;
     }
 
-    public function entityObjectBranchUsed(): bool
+    public function dataManagerObjectBranchUsed(): bool
     {
-        return $this->entityObjectBranch;
+        return $this->dataManagerObjectBranch;
     }
 
-    protected function handleEntityObjectPost(): void
+    protected function handleDataManagerObjectPost(): void
     {
-        $this->entityObjectBranch = true;
+        $this->dataManagerObjectBranch = true;
     }
 }
 

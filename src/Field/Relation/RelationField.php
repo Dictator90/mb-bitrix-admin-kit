@@ -31,6 +31,8 @@ abstract class RelationField extends Field implements RelationFieldContract, New
     protected ?string $pivotTableClass = null;
     protected ?string $foreignPivotKeyName = null;
     protected ?string $relatedPivotKeyName = null;
+    protected ?string $localMediatorReferenceName = null;
+    protected ?string $remoteMediatorReferenceName = null;
     protected bool $cascadeSaveEnabled = false;
     protected bool $cascadeDeleteEnabled = false;
     protected bool $orphanRemovalEnabled = false;
@@ -203,6 +205,28 @@ abstract class RelationField extends Field implements RelationFieldContract, New
         $this->relatedPivotKeyName = $key;
         return $this;
     }
+
+    /**
+     * Reference field names on the pivot/mediator entity (not pivot column names).
+     *
+     * Example for Bitrix iblock: mediatorReferences('IBLOCK_ELEMENT', 'IBLOCK_SECTION').
+     */
+    public function mediatorReferences(string $localReference, string $remoteReference): static
+    {
+        $this->localMediatorReferenceName = $localReference;
+        $this->remoteMediatorReferenceName = $remoteReference;
+
+        return $this;
+    }
+
+    public function hasMediatorReferences(): bool
+    {
+        return $this->localMediatorReferenceName !== null
+            && $this->localMediatorReferenceName !== ''
+            && $this->remoteMediatorReferenceName !== null
+            && $this->remoteMediatorReferenceName !== '';
+    }
+
     public function cascadeSave(bool $enabled = true): static
     {
         $this->cascadeSaveEnabled = $enabled;
@@ -248,6 +272,8 @@ abstract class RelationField extends Field implements RelationFieldContract, New
             relatedKey: $this->relatedKeyName ?? 'ID',
             foreignPivotKey: $this->foreignPivotKeyName,
             relatedPivotKey: $this->relatedPivotKeyName,
+            localMediatorReference: (string) ($this->localMediatorReferenceName ?? ''),
+            remoteMediatorReference: (string) ($this->remoteMediatorReferenceName ?? ''),
             multiple: $this->isToMany(),
             cascadeSave: $this->cascadeSaveEnabled,
             cascadeDelete: $this->cascadeDeleteEnabled,

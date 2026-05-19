@@ -3,12 +3,41 @@
 ## Unreleased
 
 ### Added
-- Режим формы EntityObject на `FormPage` (opt-in через `DataManagerResource::enableEntityObjectForm()`): скалярные поля через `DataPipeline`, relation-поля через `EntityObjectFormSaver` / `RelationObjectMutator`, сохранение через Bitrix `$entityObject->save()`.
+- `DataManagerResource` / `DataManagerResourceContract::getEntity()` — ORM Entity из `dataManagerClass()` (`DataManager::getEntity()`).
+- `DataManagerResource` всегда сохраняет формы через Bitrix EntityObject: `queryObject()`, `findObject()`, `newObject()`, `EntityObjectFormSaver` / `RelationObjectMutator`, `$entityObject->save()`.
+- `FormPage` маршрутизирует `DataManagerResource` в object-graph flow, `CrudResource` с ручной persistence — в `createItemResult()` / `updateItemResult()`.
 - Явные хелперы `BelongsToMany::isOrmRelationMode()` / `isStoredAsCsv()` и разделение ORM-aware `serializePostValue()`.
 - Режимы рендера формы `BelongsTo`: `asSelect()` (по умолчанию), `asRadio()`, `asLink()` (preview).
 - Тесты relation-слоя: namespace, runtime builder/registrar, метаданные resolver, value loader, object mutator, manual pivot sync, маршрутизация веток FormPage.
 
 ### Fixed
+- `GridDataLoader`: подсчёт строк (`useTotalCount`) регистрирует `runtime` через ORM `query()`, как `getList()` — фильтры вроде `PROPERTY.IBLOCK_ID` больше не падают в `getCount()`.
+- `BelongsTo` по умолчанию writable (`readonly = false`): FK-поля снова попадают в `collectAllFields()` и сохраняются через EntityObject.
+- `Switcher::normalize()` / `serializePostValue()` трактуют отсутствие POST-значения как unchecked; `EntityObjectFormSaver::extractRaw()` сериализует все поля, даже если ключ не пришёл в POST.
+- `BelongsToMany` без `mediatorReferences()` (pivot только с колонками, как `EventMessageSiteTable`) не регистрирует runtime ManyToMany; загрузка/сохранение через manual pivot sync.
+- `readonlyOnUpdate()` / `readonlyOnCreate()` и контекст формы (`_mode`, `_id`) для `readonlyWhen()` / `isReadOnlyFor()`; `collectAllFields()` и `EntityObjectFormSaver` учитывают условный readonly.
+- `BelongsTo::asLink()` на create с `default()` рендерит preview + hidden input; на edit с `readonlyOnUpdate()` — только preview.
+- `FormPage::resolveFieldValueForField()` применяет `default()` при открытии формы создания.
+- `Switcher::isCheckedValue()` понимает boolean/`1` из Bitrix ORM (`ACTIVE` в SectionTable) — форма и грид больше не показывают «Активен» всегда выключенным.
+- SidePanel async save: перезагрузка грида через `window.parent`, `reloadTable()` и `gridId` в JSON-ответе (раньше искали только `window.top` и `reload()`).
+- `FormPage`: при `adminkit_async_save=Y` успешное сохранение больше не вызывает `LocalRedirect` — ответ отдаётся JSON (`sendAsyncSaveResponse`), исправлена ошибка `Unexpected token '<'` в async-форме.
+- `EntityObjectFormSaver`: после update не вызывается `UpdateResult::getId()` с пустым `primary` — ID берётся из EntityObject, `itemId` или `getPrimary()` на Result.
+- `FormPage` / `EntityObjectFormSaver`: при исключениях сохранения в глобальные ошибки выводятся сообщение, файл:строка и stack trace (`ExceptionDiagnostics`).
+- SidePanel async save: перед закрытием слайдера выполняется `reloadItemAfterSave()` — ошибки пост-загрузки (в т.ч. relation) попадают в JSON `globalErrors`, панель не закрывается; `form-save.js` показывает алерты, уведомление и не считает ответ успешным при `globalErrors` / `fieldErrors`.
+- `BelongsToMany::normalize()` в ORM-режиме сохраняет список ID (раньше наследовался `BelongsTo::normalize()` и оставлял только первый элемент).
+- `MediatorPivotKeyResolver`: pivot-колонки (`USER_ID`, `GROUP_ID`) выводятся из `mediatorReferences()` на pivot-сущности; `RelationMetadataResolver` и `persistsViaPivotTable()` используют manual pivot sync без обязательного `foreignPivotKey()` / `relatedPivotKey()` в DSL.
+- `MediatorReferenceOrientation`: `mediatorReferences()` на `GroupTable` с `('USER', 'GROUP')` автоматически приводится к `('GROUP', 'USER')` — исправлена ошибка `Unknown field definition UserGroup:USER for Group Entity` при `findObject()`.
+- `HasMany` preview: `RelationValueLoader` разворачивает `EntityObject` / коллекции в скалярные массивы; при явном `relatedTable()` + `foreignKey()` подгружает все pivot-строки через `getList`, если ORM отдал меньше записей; `renderTablePreview()` больше не приводит объекты к string.
+- `RelationTileGrid` preview: уникальные id строк (`row_0`, `row_1`, …), чтобы tilegrid не схлопывал строки с одинаковым `ID`; подписи колонок всегда приводятся к строке (ORM title / JSON), в заголовке больше не отображается `[object Object]`.
+- `HasMany::asTable()`: превью связей через Bitrix `ui.tilegrid` (`RelationTileGridPreviewRenderer`, `BX.TileGrid.Grid`, кастомные `BX.AdminKit.RelationTileGrid.*Item`); в `asTable()` можно задать колонки и подписи (без подписи — `getTitle()` из ORM related-таблицы).
+- `BelongsTo::normalize()` приводит пустой FK к `null` и числовые ID к `int`, чтобы `EntityObject::save()` не получал `''` для integer-полей.
+- `FormPage` передаёт validated-значения из `beforeValidate()` (например `IBLOCK_ID` на create) в `EntityObjectFormSaver`, в том числе для readonly-полей.
+- `DataManagerResource::assertSinglePrimaryKey()` не вызывает `count()` при `getPrimaryArray() === null`.
+- `RuntimeRelationBuilder` для ManyToMany: `configureLocalReference` / `configureRemoteReference` принимают имена Reference на mediator-сущности, а не имена pivot-колонок; обязателен DSL `mediatorReferences()` (без привязки к конкретным Bitrix-модулям).
+- `BelongsTo::relatedTable()` синхронизирует `dataManagerClass` для загрузки опций в `BelongsToMany`; `BelongsToMany::renderFormField()` принимает список ID из `resolveRelationValue()`.
+- `EntityObjectFormSaver` откладывает sync связей до первого `save()` при создании записи; `RelationObjectMutator` создаёт пустую коллекцию через `DataManager::getEntity()->createCollection()`.
+- `BelongsToMany` с явным `pivotTable()` / pivot keys сохраняется через pivot sync (`persistsViaPivotTable()`): runtime ManyToMany в Bitrix доступен для чтения, но `EntityObject::set()` для него не поддерживается.
+- `RelationMetadataResolver` отдаёт приоритет явным `foreignPivotKey()` / `relatedPivotKey()` над ORM metadata; `OrmRelationResolver` больше не пишет имена Reference (`IBLOCK_ELEMENT`) в pivot-колонки.
 - `RelationValueLoader` корректно разворачивает строки-массивы, duck-typed entity objects и Bitrix `Collection` для BelongsToMany в ORM-режиме.
 - `RelationObjectMutator` применяет BelongsTo FK, BelongsToMany collection/manual sync и защищённые обновления HasOne/HasMany (без тихого удаления без явных флагов).
 - `ManualPivotSynchronizer` реализует `RelationSynchronizerInterface` с diff pivot (insert/delete/keep).

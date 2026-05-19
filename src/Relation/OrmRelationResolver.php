@@ -129,14 +129,14 @@ final class OrmRelationResolver implements RelationResolverInterface
             }
 
             if (method_exists($ormField, 'getLocalReferenceName')) {
-                $result['foreignPivotKey'] = (string) $ormField->getLocalReferenceName();
+                $result['localMediatorReference'] = (string) $ormField->getLocalReferenceName();
             }
 
             if (method_exists($ormField, 'getRemoteReferenceName')) {
-                $result['relatedPivotKey'] = (string) $ormField->getRemoteReferenceName();
+                $result['remoteMediatorReference'] = (string) $ormField->getRemoteReferenceName();
             }
 
-            // Bitrix auto-generated mediator keys are not always exposed; explicit pivot keys may still be required.
+            // Scalar pivot column names are not exposed by Bitrix ManyToMany; use foreignPivotKey() on the field DSL.
         }
 
         return $result;

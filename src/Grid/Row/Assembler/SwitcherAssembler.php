@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Grid\Row\Assembler;
 
+use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 
 class SwitcherAssembler implements FieldAssembler
@@ -20,7 +21,7 @@ class SwitcherAssembler implements FieldAssembler
     {
         foreach ($this->columnIds as $id) {
             $raw = $row['data'][$id] ?? null;
-            $isChecked = (string)$raw === $this->checkedValue;
+            $isChecked = Switcher::isCheckedValue($raw, $this->checkedValue);
             $color = $isChecked ? '#4caf50' : '#aaa';
             $icon = $isChecked ? '●' : '○';
             $row['columns'][$id] = '<span style="color:' . $color . ';font-size:14px;" title="' . htmlspecialcharsbx(

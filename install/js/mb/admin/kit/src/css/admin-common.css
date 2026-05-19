@@ -114,6 +114,64 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
 }
 
 
+.adminkit-relation-tilegrid {
+    margin-top: 8px;
+}
+
+.adminkit-relation-tilegrid .ui-grid-tile {
+    margin: 0;
+}
+
+.adminkit-relation-tilegrid .ui-grid-tile-item {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid #e6e9ec;
+}
+
+.adminkit-relation-tilegrid .ui-grid-tile-item:before {
+    display: none;
+}
+
+.adminkit-relation-tilegrid .ui-grid-tile-item-content {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.adminkit-relation-tilegrid__row {
+    display: flex;
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.adminkit-relation-tilegrid__row--head {
+    font-weight: 600;
+}
+
+.adminkit-relation-tilegrid__cell {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 10px 12px;
+    font: 13px/16px var(--ui-font-family-primary, var(--ui-font-family-helvetica));
+    color: #535c69;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.adminkit-relation-tilegrid__cell--head {
+    color: #828b95;
+    background: #f1f4f6;
+}
+
+.adminkit-relation-tilegrid .ui-grid-tile-item-selected {
+    outline: none;
+    box-shadow: inset 0 0 0 1px #c6e2fa;
+}
+
 .main-grid {
     border-radius: var(--ui-border-radius-lg);
     overflow: clip;

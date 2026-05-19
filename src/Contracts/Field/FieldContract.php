@@ -23,7 +23,14 @@ interface FieldContract extends
 
     public function readonlyWhen(string|\MB\Support\Conditionable\ConditionTree|\Closure $condition, ?string $operator = null, mixed $value = null): static;
 
+    public function readonlyOnUpdate(bool $readonly = true): static;
+
+    public function readonlyOnCreate(bool $readonly = true): static;
+
     public function isReadOnly(): bool;
+
+    /** @param array<string,mixed> $data */
+    public function isReadOnlyFor(array $data = []): bool;
 
     public function multiple(bool $multiple = true): static;
 

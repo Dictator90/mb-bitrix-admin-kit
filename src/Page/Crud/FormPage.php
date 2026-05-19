@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\Localization\Loc;
-use Bitrix\Main\ORM\Data\DataManager;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\ComponentContext;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Component\Renderers\VisibilityWrapper;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Page\FormPageContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
@@ -30,10 +30,10 @@ use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Relation\EntityObjectFormSaver;
-use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
+use MB\Bitrix\AdminKit\Support\ExceptionDiagnostics;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use MB\Bitrix\AdminKit\Support\ResponseTerminator;
 use Throwable;
@@ -104,7 +104,7 @@ class FormPage extends CrudPage implements FormPageContract
             if (!$this->resource instanceof ResourcePersistenceContract) {
                 $this->globalErrors[] = 'Resource does not support persistence.';
             } else {
-                if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm()) {
+                if ($this->resource instanceof DataManagerResourceContract) {
                     $select = $this->resource->relationSelectForFields($this->resource->formFields());
                     $this->entityItem = $this->resource->findObject($this->id, $select);
                     $row = null;
@@ -205,12 +205,17 @@ class FormPage extends CrudPage implements FormPageContract
             return;
         }
 
-        if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm()) {
-            $this->handleEntityObjectPost();
+        if ($this->resource instanceof DataManagerResourceContract) {
+            $this->handleDataManagerObjectPost();
 
             return;
         }
 
+        $this->handleCrudResourcePost();
+    }
+
+    protected function handleCrudResourcePost(): void
+    {
         $fields = $this->collectAllFields();
         $raw = [];
 
@@ -269,11 +274,9 @@ class FormPage extends CrudPage implements FormPageContract
             $this->globalErrors[] = $exception->getMessage();
             return;
         } catch (Throwable $exception) {
-            $message = trim($exception->getMessage());
-            if ($message === '') {
-                $message = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
-            }
-            $this->globalErrors[] = $message;
+            $fallback = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
+            array_push($this->globalErrors, ...ExceptionDiagnostics::toGlobalErrors($exception, $fallback));
+
             return;
         }
 
@@ -285,31 +288,16 @@ class FormPage extends CrudPage implements FormPageContract
         }
 
         if ($savedId) {
-            if ($this->isSidePanelMode()) {
-                $this->savedInSidePanel = true;
-                if (!$this->closeSidePanelAfterSave()) {
-                    $this->showSavedNotice = true;
-                    $this->reloadItemAfterSave($savedId);
-                }
-            } else {
-                $redirectUrl = $this->redirectAfterSave($savedId);
-                if ($redirectUrl === null) {
-                    $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
-                    $sep = str_contains($backUrl, '?') ? '&' : '?';
-                    $redirectUrl = $backUrl . $sep . 'saved=1';
-                }
-                $this->redirect($redirectUrl);
-            }
+            $this->finishSuccessfulSave($savedId);
         }
     }
 
-    protected function handleEntityObjectPost(): void
+    protected function handleDataManagerObjectPost(): void
     {
-        if (!$this->resource instanceof DataManagerResource) {
+        if (!$this->resource instanceof DataManagerResourceContract) {
             return;
         }
 
-        /** @var DataManagerResource<DataManager> $resource */
         $resource = $this->resource;
 
         $fields = $this->collectAllFields();
@@ -342,6 +330,8 @@ class FormPage extends CrudPage implements FormPageContract
                 $column = $field->getColumn();
                 $rawScalar[$column] = $field->serializePostValue($raw[$column] ?? null);
             }
+            $rawScalar['_mode'] = $this->mode;
+            $rawScalar['_id'] = $this->id ?? '';
 
             $formData = (new DataPipeline())->process($scalarFields, $rawScalar);
             $this->syncFormErrors($formData);
@@ -357,7 +347,7 @@ class FormPage extends CrudPage implements FormPageContract
 
             $resource->afterValidate($formData, $context);
 
-            $result = $saver->save($resource, $this->id, $fields, $raw, $context);
+            $result = $saver->save($resource, $this->id, $fields, $raw, $context, $formData->validated());
             if (!$result->success) {
                 foreach ($result->globalErrors as $error) {
                     $this->globalErrors[] = $error;
@@ -380,32 +370,62 @@ class FormPage extends CrudPage implements FormPageContract
                 $this->afterSave($formData, $context, $savedId);
             }
 
+            $this->finishSuccessfulSave($savedId);
+        } catch (AdminKitException $exception) {
+            $this->globalErrors[] = $exception->getMessage();
+        } catch (Throwable $exception) {
+            $fallback = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
+            array_push($this->globalErrors, ...ExceptionDiagnostics::toGlobalErrors($exception, $fallback));
+        }
+    }
+
+    protected function finishSuccessfulSave(mixed $savedId): void
+    {
+        if ($savedId === null || $savedId === '') {
+            return;
+        }
+
+        if ($this->isAsyncSaveRequest()) {
+            if (!$this->tryReloadItemAfterSave($savedId)) {
+                return;
+            }
+
             if ($this->isSidePanelMode()) {
                 $this->savedInSidePanel = true;
                 if (!$this->closeSidePanelAfterSave()) {
                     $this->showSavedNotice = true;
-                    $this->reloadItemAfterSave($savedId);
                 }
-            } else {
-                $redirectUrl = $this->redirectAfterSave($savedId);
-                if ($redirectUrl === null) {
-                    $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
-                    $sep = str_contains($backUrl, '?') ? '&' : '?';
-                    $redirectUrl = $backUrl . $sep . 'saved=1';
-                }
-                $this->redirect($redirectUrl);
-            }
-        } catch (AdminKitException $exception) {
-            $this->globalErrors[] = $exception->getMessage();
-        } catch (Throwable $exception) {
-            $message = trim($exception->getMessage());
-            if ($message === '') {
-                $message = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
-            }
-            $this->globalErrors[] = $message;
-        }
-    }
 
+                return;
+            }
+
+            $this->showSavedNotice = true;
+
+            return;
+        }
+
+        if ($this->isSidePanelMode()) {
+            $this->savedInSidePanel = true;
+            if (!$this->closeSidePanelAfterSave()) {
+                if (!$this->tryReloadItemAfterSave($savedId)) {
+                    return;
+                }
+
+                $this->showSavedNotice = true;
+            }
+
+            return;
+        }
+
+        $redirectUrl = $this->redirectAfterSave($savedId);
+        if ($redirectUrl === null) {
+            $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
+            $sep = str_contains($backUrl, '?') ? '&' : '?';
+            $redirectUrl = $backUrl . $sep . 'saved=1';
+        }
+
+        $this->redirect($redirectUrl);
+    }
 
     /** @return iterable<FieldContract|ComponentContract> */
     public function fields(): iterable
@@ -422,6 +442,10 @@ class FormPage extends CrudPage implements FormPageContract
     protected function syncFormErrors(FormData $formData): void
     {
         foreach ($formData->errors() as $column => $messages) {
+            if (!is_array($messages)) {
+                continue;
+            }
+
             foreach ($messages as $message) {
                 $existing = $this->fieldErrors[$column] ?? [];
                 if (!in_array($message, $existing, true)) {
@@ -473,7 +497,7 @@ class FormPage extends CrudPage implements FormPageContract
         if (!empty($this->globalErrors)) {
             echo '<div class="ui-alert ui-alert-danger adminkit-alert">';
             foreach ($this->globalErrors as $error) {
-                echo '<span class="ui-alert-message">' . htmlspecialcharsbx((string)$error) . '</span><br>';
+                $this->renderGlobalErrorMessage((string) $error);
             }
             echo '</div>';
         }
@@ -482,6 +506,18 @@ class FormPage extends CrudPage implements FormPageContract
             echo '<div class="ui-alert ui-alert-success adminkit-alert"><span class="ui-alert-message">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED')) . '</span></div>';
         }
     }
+
+    protected function renderGlobalErrorMessage(string $error): void
+    {
+        if (str_contains($error, "\n")) {
+            echo '<pre class="adminkit-error-trace ui-alert-message">' . htmlspecialcharsbx($error) . '</pre>';
+
+            return;
+        }
+
+        echo '<span class="ui-alert-message">' . htmlspecialcharsbx($error) . '</span><br>';
+    }
+
     protected function renderForm(): void
     {
         $action = $this->request->getRequestUri();
@@ -519,8 +555,7 @@ class FormPage extends CrudPage implements FormPageContract
                 $inner = $item->render();
                 echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($this->item, PageType::FORM));
             } elseif ($item instanceof FieldContract) {
-                $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
-                $this->renderFormRow($item, $value);
+                $this->renderFormRow($item, $this->resolveFieldValueForField($item));
             }
         }
         echo '</div>';
@@ -577,8 +612,7 @@ class FormPage extends CrudPage implements FormPageContract
                     $inner = $item->render();
                     echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($this->item, PageType::FORM));
                 } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
-                    $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
-                    $this->renderFormRow($item, $value);
+                    $this->renderFormRow($item, $this->resolveFieldValueForField($item));
                 }
             }
 
@@ -605,7 +639,10 @@ class FormPage extends CrudPage implements FormPageContract
                 page: 'form',
                 row: $this->item?->toArray() ?? [],
                 errors: $this->fieldErrors[$field->getColumn()] ?? [],
-                meta: ['mode' => $this->mode],
+                meta: [
+                    'mode' => $this->mode,
+                    'formData' => $this->formConditionContext(),
+                ],
             ),
             errors: $this->fieldErrors[$field->getColumn()] ?? [],
         ));
@@ -678,7 +715,7 @@ class FormPage extends CrudPage implements FormPageContract
         $formData = [];
         foreach ($allFields as $field) {
             $column = $field->getColumn();
-            $formData[$column] = $this->resolveFieldValue($column, $this->item?->get($column));
+            $formData[$column] = $this->resolveFieldValueForField($field);
         }
 
         foreach ($allFields as $field) {
@@ -778,30 +815,69 @@ class FormPage extends CrudPage implements FormPageContract
             $fields = $this->getVisibleFields();
         }
 
-        return array_values(array_filter($fields, fn (FieldContract $f) => !$f->isReadOnly()));
+        $formData = $this->formConditionContext();
+
+        return array_values(array_filter(
+            $fields,
+            static fn (FieldContract $field): bool => !$field->isReadOnlyFor($formData),
+        ));
     }
-    protected function resolveFieldValue(string $column, mixed $fallback): mixed
+
+    /** @return array<string,mixed> */
+    protected function formConditionContext(): array
     {
+        $context = $this->item?->toArray() ?? [];
+        $context['_mode'] = $this->mode;
+        $context['_id'] = $this->id ?? '';
+
+        if ($this->id !== null && $this->id !== '') {
+            $context[$this->resource->getPrimaryKey()] = $this->id;
+        }
+
+        return array_merge($context, $this->submittedValues);
+    }
+
+    protected function resolveFieldValueForField(FieldContract $field): mixed
+    {
+        $column = $field->getColumn();
+
         if (array_key_exists($column, $this->submittedValues)) {
             return $this->submittedValues[$column];
         }
 
-        if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm() && $this->entityItem !== null) {
-            foreach ($this->collectAllFields() as $field) {
-                if ($field->getColumn() !== $column || !$field instanceof RelationField) {
-                    continue;
-                }
+        $row = $this->formConditionContext();
 
-                return $this->resource->resolveRelationValue($this->entityItem, $field);
+        if (
+            $field instanceof RelationField
+            && $this->resource instanceof DataManagerResourceContract
+            && $this->entityItem !== null
+        ) {
+            $resolved = $this->resource->resolveRelationValue($this->entityItem, $field);
+            if ($resolved !== null && $resolved !== '') {
+                return $resolved;
             }
         }
 
-        return $fallback;
+        return $field->resolveValue($this->item, $row);
     }
 
     protected function closeSidePanelAfterSave(): bool
     {
         return $this->resource->closeSidePanelAfterSave();
+    }
+
+    protected function tryReloadItemAfterSave(mixed $savedId): bool
+    {
+        try {
+            $this->reloadItemAfterSave($savedId);
+        } catch (Throwable $exception) {
+            $fallback = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
+            array_push($this->globalErrors, ...ExceptionDiagnostics::toGlobalErrors($exception, $fallback));
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function reloadItemAfterSave(mixed $savedId): void
@@ -812,7 +888,7 @@ class FormPage extends CrudPage implements FormPageContract
         }
 
         if ($this->resource instanceof ResourcePersistenceContract) {
-            if ($this->resource instanceof DataManagerResource && $this->resource->usesEntityObjectForm()) {
+            if ($this->resource instanceof DataManagerResourceContract) {
                 $select = $this->resource->relationSelectForFields($this->resource->formFields());
                 $this->entityItem = $this->resource->findObject($this->id, $select);
                 if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
@@ -846,13 +922,15 @@ class FormPage extends CrudPage implements FormPageContract
         ResponseTerminator::clearOutputBuffers();
 
         header('Content-Type: application/json; charset=utf-8');
+        $success = !$this->hasValidationErrors && $this->globalErrors === [];
         echo json_encode([
-            'success' => !$this->hasValidationErrors && $this->globalErrors === [],
+            'success' => $success,
             'validationError' => $this->hasValidationErrors,
             'globalErrors' => $this->globalErrors,
             'fieldErrors' => $this->fieldErrors,
-            'closeSidePanel' => $this->savedInSidePanel && $this->closeSidePanelAfterSave(),
-            'reloadParentGrid' => $this->savedInSidePanel && !$this->closeSidePanelAfterSave(),
+            'gridId' => $this->resource->getGridId(),
+            'closeSidePanel' => $success && $this->savedInSidePanel && $this->closeSidePanelAfterSave(),
+            'reloadParentGrid' => $success && $this->savedInSidePanel,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         ResponseTerminator::terminate();
     }
@@ -864,6 +942,7 @@ class FormPage extends CrudPage implements FormPageContract
             'gridId' => $this->resource->getGridId(),
             'messages' => [
                 'validationError' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR'),
+                'saveFailed' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED'),
                 'saved' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED'),
             ],
         ]);

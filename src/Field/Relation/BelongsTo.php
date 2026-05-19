@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field\Relation;
 
 use Closure;
+use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Relation\RelationType;
 use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
@@ -14,6 +15,8 @@ use Throwable;
  */
 class BelongsTo extends RelationField
 {
+    protected bool $readonly = false;
+
     protected string $dataManagerClass;
     protected string $titleColumn = 'NAME';
     protected string $valueColumn = 'ID';
@@ -33,6 +36,15 @@ class BelongsTo extends RelationField
     public static function make(string $label, ?string $column = null, string $dataManagerClass = ''): static
     {
         return new static($label, $column, $dataManagerClass);
+    }
+
+    /** @param class-string $class */
+    public function relatedTable(string $class): static
+    {
+        parent::relatedTable($class);
+        $this->dataManagerClass = $class;
+
+        return $this;
     }
 
     /** Column in the related table to display as option label (default: NAME). */
@@ -142,12 +154,34 @@ class BelongsTo extends RelationField
         return $this;
     }
 
+    public function renderForm(mixed $context = null, array $data = []): string
+    {
+        if ($context instanceof FieldRenderContext) {
+            $formData = $context->meta['formData'] ?? array_merge(
+                $context->row,
+                ['_mode' => $context->meta['mode'] ?? ''],
+            );
+
+            if ($this->renderMode === 'link') {
+                $resolved = $this->resolveValue($context->value, $formData);
+
+                return $this->renderLinkField($resolved, $formData);
+            }
+
+            if ($this->isReadOnlyFor($formData) && $this->renderMode === 'select') {
+                return $this->renderLinkField($this->resolveValue($context->value, $formData), $formData);
+            }
+        }
+
+        return parent::renderForm($context, $data);
+    }
+
     public function renderFormField(mixed $value = null): string
     {
         return match ($this->renderMode) {
             'radio' => $this->renderRadioField($value),
             'entity_selector' => $this->renderEntitySelectorUnsupported(),
-            'link' => $this->renderLinkPreview($value),
+            'link' => $this->renderLinkField($this->resolveValue($value), []),
             default => $this->renderSelectField($value),
         };
     }
@@ -209,9 +243,20 @@ class BelongsTo extends RelationField
         return $html;
     }
 
-    protected function renderLinkPreview(mixed $value = null): string
+    /**
+     * @param array<string,mixed> $formData
+     */
+    protected function renderLinkField(mixed $value, array $formData = []): string
     {
-        return '<span class="adminkit-relation-link-preview">' . $this->previewValue($value) . '</span>';
+        $html = '<span class="adminkit-relation-link-preview">' . $this->previewValue($value) . '</span>';
+
+        if (!$this->isReadOnlyFor($formData)) {
+            $name = htmlspecialcharsbx($this->column);
+            $html .= '<input type="hidden" class="adminkit-relation-link-value" name="' . $name . '" value="'
+                . htmlspecialcharsbx((string) ($value ?? '')) . '">';
+        }
+
+        return $html;
     }
 
     protected function renderEntitySelectorUnsupported(): string
@@ -219,6 +264,21 @@ class BelongsTo extends RelationField
         return '<div class="ui-alert ui-alert-warning"><span class="ui-alert-message">'
             . htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BELONGS_TO_ENTITY_SELECTOR_UNSUPPORTED', 'Entity selector mode is not configured for this field.'))
             . '</span></div>';
+    }
+
+    public function normalize(mixed $value): mixed
+    {
+        $value = parent::normalize($value);
+
+        if ($value === '' || $value === false) {
+            return null;
+        }
+
+        if ($value !== null && is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return $value;
     }
 
     public function previewValue(mixed $value): string

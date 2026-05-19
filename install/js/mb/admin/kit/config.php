@@ -5,6 +5,7 @@ return [
     'js' => [
         'vendor/chart.js',
         'dist/kit.bundle.js',
+        'src/relation-tilegrid.js',
     ],
     'css' => [
         'dist/kit.bundle.css'
