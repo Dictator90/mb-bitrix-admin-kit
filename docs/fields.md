@@ -256,7 +256,7 @@ loaded at render time via `getList()`.
 ### BelongsTo — single foreign-key select
 
 ```php
-use MB\Bitrix\AdminKit\Field\BelongsTo;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
 
 BelongsTo::make('Category', 'CATEGORY_ID', CategoryTable::class)
     ->titleColumn('NAME')           // column shown in the dropdown (default: 'NAME')
@@ -269,7 +269,7 @@ BelongsTo::make('Category', 'CATEGORY_ID', CategoryTable::class)
 ### BelongsToMany — multi-select from a table
 
 ```php
-use MB\Bitrix\AdminKit\Field\BelongsToMany;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 
 BelongsToMany::make('Tags', 'TAG_IDS', TagTable::class)
     ->titleColumn('NAME')

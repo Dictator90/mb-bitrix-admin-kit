@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Relation;
 
-use MB\Bitrix\AdminKit\Field\BelongsTo;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
 use MB\Bitrix\AdminKit\Relation\RuntimeRelationBuilder;
 use MB\Bitrix\AdminKit\Relation\RuntimeRelationRegistrar;
 use PHPUnit\Framework\TestCase;

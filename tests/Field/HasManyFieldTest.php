@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Field;
 
-use MB\Bitrix\AdminKit\Field\HasMany;
+use MB\Bitrix\AdminKit\Field\Relation\HasMany;
 use MB\Bitrix\AdminKit\Tests\Grid\RelationSiteTable;
 use PHPUnit\Framework\TestCase;
 

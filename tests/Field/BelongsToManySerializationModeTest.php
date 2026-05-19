@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Field;
 
-use MB\Bitrix\AdminKit\Field\BelongsToMany;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use PHPUnit\Framework\TestCase;
 
 final class BelongsToManySerializationModeTest extends TestCase

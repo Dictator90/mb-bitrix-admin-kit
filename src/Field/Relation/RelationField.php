@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Field;
+namespace MB\Bitrix\AdminKit\Field\Relation;
 
 use Closure;
 use LogicException;
 use MB\Bitrix\AdminKit\Contracts\Field\RelationFieldContract as NewRelationFieldContract;
+use MB\Bitrix\AdminKit\Field\Field;
 use MB\Bitrix\AdminKit\Grid\Relations\RelationFieldContract;
 use MB\Bitrix\AdminKit\Relation\RelationMetadata;
 use MB\Bitrix\AdminKit\Relation\RelationType;
