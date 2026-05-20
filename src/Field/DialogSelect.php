@@ -76,7 +76,8 @@ class DialogSelect extends EntitySelect
         return $this;
     }
 
-    public function renderFormField(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
         $ids = $this->parseIds($this->resolveValue($value));
         $titles = $this->resolveTitles($ids);

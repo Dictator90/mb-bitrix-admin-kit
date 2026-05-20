@@ -8,6 +8,7 @@ use Bitrix\Main\Localization\Loc;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\ComponentContext;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
+use MB\Bitrix\AdminKit\Component\Layout\Tabs;
 use MB\Bitrix\AdminKit\Component\Renderers\VisibilityWrapper;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Page\FormPageContract;
@@ -564,17 +565,6 @@ class FormPage extends CrudPage implements FormPageContract
     /** @param array<int,Tab> $tabs */
     protected function renderTabbedForm(array $tabs): void
     {
-        $hasActive = false;
-        foreach ($tabs as $tab) {
-            if ($tab->isActive()) {
-                $hasActive = true;
-                break;
-            }
-        }
-        if (!$hasActive && !empty($tabs)) {
-            $tabs[0]->active();
-        }
-
         // Collect all tab items and apply dependencies before rendering
         $allTabItems = [];
         foreach ($tabs as $tab) {
@@ -584,44 +574,10 @@ class FormPage extends CrudPage implements FormPageContract
         }
         $this->applyInitialDependencies($allTabItems);
 
-        echo '<div class="ui-tabs" id="adminkit-form-tabs">';
-        echo '<div class="ui-tabs-nav">';
-        foreach ($tabs as $tab) {
-            $activeClass = $tab->isActive() ? ' ui-tabs-nav-item-active' : '';
-            $tabId = htmlspecialcharsbx('tab_' . $tab->getId());
-            $title = htmlspecialcharsbx($tab->getTitle());
-            echo '<a class="ui-tabs-nav-item' . $activeClass . '" href="#' . $tabId . '">' . $title . '</a>';
-        }
-        echo '</div>';
-
-        foreach ($tabs as $tab) {
-            $activeClass = $tab->isActive() ? ' ui-tabs-panel-active' : '';
-            $tabId = htmlspecialcharsbx('tab_' . $tab->getId());
-
-            echo '<div id="' . $tabId . '" class="ui-tabs-panel' . $activeClass . '">';
-            echo '<div class="ui-form">';
-
-            foreach ($tab->getItems() as $item) {
-                if ($item instanceof ComponentContract) {
-                    if ($item instanceof PageTypeAwareContract) {
-                        $item = $item->withPageType(PageType::FORM);
-                    }
-                    if ($item instanceof ItemAwareContract) {
-                        $item = $item->withItem($this->item);
-                    }
-                    $inner = $item->render();
-                    echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($this->item, PageType::FORM));
-                } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
-                    $this->renderFormRow($item, $this->resolveFieldValueForField($item));
-                }
-            }
-
-            echo '</div>';
-            echo '</div>';
-        }
-
-        echo '</div>';
-        echo '<script>BX.ready(function(){ if(MB.UI && MB.UI.Tabs) { new MB.UI.Tabs({node: BX("adminkit-form-tabs")}); } });</script>';
+        echo Tabs::make($tabs)
+            ->withItem($this->item)
+            ->withPageType(PageType::FORM)
+            ->render();
     }
 
     protected function renderFormRow(FieldContract $field, mixed $value): void

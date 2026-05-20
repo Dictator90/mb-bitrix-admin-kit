@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Relation;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
+use MB\Bitrix\AdminKit\Database\TransactionManager;
 use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
@@ -56,45 +57,72 @@ final class EntityObjectFormSaver
             return new EntityObjectSaveResult(false, fieldErrors: $relationFormData->errors());
         }
 
+        $useTransactions = method_exists($resource, 'useTransactions') && $resource->useTransactions();
+
         try {
-            $entityObject = $this->loadOrCreateObject($resource, $itemId, $relationFields);
-
-            $this->applyScalarValues($entityObject, $scalarFormData, $resource, $scalarFields, $itemId, $validatedScalars);
-
-            $primaryKey = $resource->getPrimaryKey();
-            $deferRelationSync = $this->shouldDeferRelationSync($itemId, $entityObject, $primaryKey);
-            if (!$deferRelationSync) {
-                $this->syncRelations($resource, $entityObject, $relationFields, $relationFormData, $context);
-            }
-
-            $saveResult = $entityObject->save();
-            if (method_exists($saveResult, 'isSuccess') && !$saveResult->isSuccess()) {
-                return new EntityObjectSaveResult(
-                    false,
-                    globalErrors: $this->extractSaveErrors($saveResult),
-                );
-            }
-
-            if ($deferRelationSync) {
-                $this->syncRelations($resource, $entityObject, $relationFields, $relationFormData, $context);
-                $saveResult = $entityObject->save();
-                if (method_exists($saveResult, 'isSuccess') && !$saveResult->isSuccess()) {
-                    return new EntityObjectSaveResult(
-                        false,
-                        globalErrors: $this->extractSaveErrors($saveResult),
-                    );
-                }
-            }
-
-            $savedId = $this->resolveSavedId($saveResult, $entityObject, $primaryKey, $itemId);
-
-            return new EntityObjectSaveResult(true, $savedId);
+            return (new TransactionManager())->run(
+                fn (): EntityObjectSaveResult => $this->persistEntityObject(
+                    $resource,
+                    $itemId,
+                    $scalarFields,
+                    $relationFields,
+                    $scalarFormData,
+                    $relationFormData,
+                    $context,
+                    $validatedScalars,
+                ),
+                $useTransactions,
+            );
         } catch (Throwable $exception) {
             return new EntityObjectSaveResult(
                 false,
                 globalErrors: ExceptionDiagnostics::toGlobalErrors($exception, 'EntityObject save failed.'),
             );
         }
+    }
+
+    /**
+     * @param DataManagerResourceContract&object $resource
+     * @param list<FieldContract> $scalarFields
+     * @param list<RelationField> $relationFields
+     * @param array<string,mixed> $validatedScalars
+     */
+    private function persistEntityObject(
+        DataManagerResourceContract $resource,
+        mixed $itemId,
+        array $scalarFields,
+        array $relationFields,
+        FormData $scalarFormData,
+        FormData $relationFormData,
+        DbOperationContext $context,
+        array $validatedScalars,
+    ): EntityObjectSaveResult {
+        $entityObject = $this->loadOrCreateObject($resource, $itemId, $relationFields);
+
+        $this->applyScalarValues($entityObject, $scalarFormData, $resource, $scalarFields, $itemId, $validatedScalars);
+
+        $primaryKey = $resource->getPrimaryKey();
+        $deferRelationSync = $this->shouldDeferRelationSync($itemId, $entityObject, $primaryKey);
+        if (!$deferRelationSync) {
+            $this->syncRelations($resource, $entityObject, $relationFields, $relationFormData, $context);
+        }
+
+        $saveResult = $entityObject->save();
+        if (method_exists($saveResult, 'isSuccess') && !$saveResult->isSuccess()) {
+            throw new RuntimeException(implode('; ', $this->extractSaveErrors($saveResult)));
+        }
+
+        if ($deferRelationSync) {
+            $this->syncRelations($resource, $entityObject, $relationFields, $relationFormData, $context);
+            $saveResult = $entityObject->save();
+            if (method_exists($saveResult, 'isSuccess') && !$saveResult->isSuccess()) {
+                throw new RuntimeException(implode('; ', $this->extractSaveErrors($saveResult)));
+            }
+        }
+
+        $savedId = $this->resolveSavedId($saveResult, $entityObject, $primaryKey, $itemId);
+
+        return new EntityObjectSaveResult(true, $savedId);
     }
 
     /**

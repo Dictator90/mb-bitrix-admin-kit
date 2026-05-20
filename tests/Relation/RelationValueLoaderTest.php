@@ -181,13 +181,13 @@ final class FakeUserGroupEntityObject
         return $this->values['ID'] ?? null;
     }
 
-    public function getEntity(): FakeUserGroupEntity
+    public function getEntity(): FakeUserGroupEntityForValueLoader
     {
-        return new FakeUserGroupEntity();
+        return new FakeUserGroupEntityForValueLoader();
     }
 }
 
-final class FakeUserGroupEntity
+final class FakeUserGroupEntityForValueLoader
 {
     /** @return list<FakeUserGroupField>
      */

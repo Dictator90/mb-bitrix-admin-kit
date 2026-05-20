@@ -106,9 +106,46 @@ abstract class Field implements FieldContract
 
     public function renderForm(mixed $context = null, array $data = []): string
     {
-        $value = $context instanceof FieldRenderContext ? $context->value : $context;
+        if ($context instanceof FieldRenderContext) {
+            return $this->renderFormField($context->value, $this->formDataFromRenderContext($context, $data));
+        }
 
-        return $this->renderFormField($value);
+        return $this->renderFormField($context, $data);
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     * @return array<string,mixed>
+     */
+    protected function formDataFromRenderContext(FieldRenderContext $context, array $data = []): array
+    {
+        $formData = array_merge($context->row, $data);
+        $metaFormData = $context->meta['formData'] ?? null;
+        if (is_array($metaFormData)) {
+            $formData = array_merge($formData, $metaFormData);
+        }
+
+        $mode = $context->meta['mode'] ?? null;
+        if (is_string($mode) && $mode !== '') {
+            $formData['_mode'] = $mode;
+        }
+
+        $itemId = $context->item;
+        if (is_object($itemId) && method_exists($itemId, 'getId')) {
+            $id = $itemId->getId();
+            if ($id !== null && $id !== '') {
+                $formData['_id'] = (string)$id;
+                $formData['ID'] ??= $id;
+            }
+        }
+
+        return $formData;
+    }
+
+    /** @param array<string,mixed> $formData */
+    protected function formReadonlyAttr(array $formData = []): string
+    {
+        return $this->isReadOnlyFor($formData) ? ' readonly disabled' : '';
     }
 
     public function renderDetail(mixed $context, array $row = []): string

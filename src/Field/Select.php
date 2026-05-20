@@ -68,13 +68,14 @@ class Select extends Field implements OptionFieldContract
         return $config;
     }
 
-    public function renderFormField(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
         $currentValue = $this->resolveValue($value);
         $name = htmlspecialcharsbx($this->column . ($this->multiple ? '[]' : ''));
         $multipleAttr = $this->multiple ? ' multiple' : '';
         $reqAttr = $this->required ? ' required' : '';
-        $disabledAttr = $this->readonly ? ' disabled' : '';
+        $disabledAttr = $this->isReadOnlyFor($formData) ? ' disabled' : '';
         $optionsHtml = '';
 
         if ($this->placeholder !== null && !$this->multiple) {

@@ -170,14 +170,7 @@ final class OptionsPageFormRenderer
 
     public function renderInlineCss(): void
     {
-        echo <<<'CSS'
-        <style>
-        .adminkit-conditional-hidden { display: none !important; }
-        .adminkit-visibility-wrapper.adminkit-conditional-hidden { display: none !important; }
-        .adminkit-field-disabled { pointer-events: none; opacity: 0.42; filter: grayscale(20%); }
-        .adminkit-field-loading { position: relative; pointer-events: none; min-height: 36px; }
-        </style>
-        CSS;
+        // Styles live in install/js/mb/admin/kit/src/css/admin-common.css (mb.admin.kit bundle).
     }
 
     public function renderHintInit(): void

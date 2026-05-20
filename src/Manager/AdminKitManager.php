@@ -23,6 +23,8 @@ final class AdminKitManager
     private DiscoveryConfig $discovery;
     private HttpRequest $request;
 
+    private ?string $discoveredPathsFingerprint = null;
+
     /** @param string|object|AdminKitScope $scope */
     public function __construct(string|object $scope)
     {
@@ -45,6 +47,7 @@ final class AdminKitManager
     public function discoverIn(string ...$paths): static
     {
         $this->discovery->addPaths($paths);
+        $this->discoveredPathsFingerprint = null;
 
         return $this;
     }
@@ -53,6 +56,7 @@ final class AdminKitManager
     public function discoverPaths(array $paths): static
     {
         $this->discovery->addPaths($paths);
+        $this->discoveredPathsFingerprint = null;
 
         return $this;
     }
@@ -118,7 +122,15 @@ final class AdminKitManager
 
     private function discover(): AdminKitRegistry
     {
-        return $this->registry->discoverPaths($this->discovery->paths());
+        $paths = $this->discovery->paths();
+        $fingerprint = implode("\0", $paths);
+        if ($this->discoveredPathsFingerprint === $fingerprint) {
+            return $this->registry;
+        }
+
+        $this->discoveredPathsFingerprint = $fingerprint;
+
+        return $this->registry->discoverPaths($paths);
     }
 
     private function resolveBaseUrl(): string

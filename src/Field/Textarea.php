@@ -15,12 +15,13 @@ class Textarea extends Field
         return $this;
     }
 
-    public function renderFormField(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
         $val = htmlspecialcharsbx((string)$this->resolveValue($value));
         $name = htmlspecialcharsbx($this->column);
         $reqAttr = $this->required ? ' required' : '';
-        $readonlyAttr = $this->readonly ? ' readonly' : '';
+        $readonlyAttr = $this->formReadonlyAttr($formData);
         $placeholderAttr = $this->placeholder !== null ? ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"' : '';
         $reactiveAttrs = $this->renderReactiveAttrs();
 

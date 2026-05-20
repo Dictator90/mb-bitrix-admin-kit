@@ -69,12 +69,14 @@ class EntitySelect extends Field
         return $this;
     }
 
-    public function renderFormField(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
-        return $this->renderFormFieldWithTagSelector($value);
+        return $this->renderFormFieldWithTagSelector($value, $formData);
     }
 
-    protected function renderFormFieldWithTagSelector(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    protected function renderFormFieldWithTagSelector(mixed $value = null, array $formData = []): string
     {
         $ids = $this->parseIds($this->resolveValue($value));
         $titles = $this->resolveTitles($ids);
@@ -86,7 +88,7 @@ class EntitySelect extends Field
         ]];
 
         return (new TagSelectorRenderer())->render(
-            config: $this->selectorConfig(),
+            config: $this->selectorConfig($formData),
             ids: $ids,
             titles: $titles,
             entities: $entities,
@@ -214,7 +216,8 @@ class EntitySelect extends Field
         return (new EntitySelectorProviderResolver())->resolveProviderClass($this->entityId, $this->entities);
     }
 
-    protected function selectorConfig(): EntitySelectorConfig
+    /** @param array<string,mixed> $formData */
+    protected function selectorConfig(array $formData = []): EntitySelectorConfig
     {
         return new EntitySelectorConfig(
             column: $this->column,
@@ -222,7 +225,7 @@ class EntitySelect extends Field
             entityOptions: $this->entityOptions,
             entities: $this->entities,
             multiple: $this->multiple,
-            readonly: $this->readonly,
+            readonly: $this->isReadOnlyFor($formData),
             placeholder: $this->placeholder,
         );
     }

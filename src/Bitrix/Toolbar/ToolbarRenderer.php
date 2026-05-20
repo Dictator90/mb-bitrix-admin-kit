@@ -12,6 +12,7 @@ use Bitrix\UI\Toolbar\ButtonLocation;
 use Bitrix\UI\Toolbar\Facade\Toolbar;
 use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
+use MB\Bitrix\AdminKit\Manager\SidePanelAdapter;
 use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\LocalizedMessage;
@@ -107,26 +108,13 @@ final class ToolbarRenderer
 
     public function createButtonJs(CrudResourceContract $resource, Grid $grid, string $createUrl): string
     {
-        if (method_exists($resource, 'createInSidePanel') && !$resource->createInSidePanel()) {
+        $adapter = new SidePanelAdapter($resource);
+
+        if (!$adapter->shouldOpen('create')) {
             return 'window.location.href=' . json_encode($createUrl, JSON_UNESCAPED_SLASHES) . ';';
         }
 
-        $options = [
-            'cacheable' => false,
-            'allowChangeHistory' => false,
-            'events' => [
-                'onCloseComplete' => '__ADMIN_KIT_RELOAD_GRID__',
-            ],
-        ];
-
-        if (method_exists($resource, 'sidePanelWidth')) {
-            $options['width'] = $resource->sidePanelWidth();
-        }
-
-        $json = json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $json = str_replace('"__ADMIN_KIT_RELOAD_GRID__"', 'function(){' . $this->reloadGridJs($grid) . '}', (string)$json);
-
-        return 'BX.SidePanel.Instance.open(' . json_encode($createUrl) . ', ' . $json . ')';
+        return $adapter->openJs($createUrl, $grid->getId());
     }
 
     private function reloadGridJs(Grid $grid): string

@@ -77,6 +77,11 @@ final class ManualPersistenceCrudResource extends CrudResource implements Resour
         return 0;
     }
 
+    public function getPrimaryKey(): string
+    {
+        return 'ID';
+    }
+
     public function createItem(array $data): mixed
     {
         return 1;

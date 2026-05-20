@@ -36,7 +36,8 @@ class Number extends Field
         return 'number';
     }
 
-    public function renderFormField(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
         $val = htmlspecialcharsbx((string)$this->resolveValue($value));
         $name = htmlspecialcharsbx($this->column);
@@ -53,8 +54,8 @@ class Number extends Field
         if ($this->required) {
             $attrs .= ' required';
         }
-        if ($this->readonly) {
-            $attrs .= ' readonly';
+        if ($this->isReadOnlyFor($formData)) {
+            $attrs .= ' readonly disabled';
         }
         if ($this->placeholder !== null) {
             $attrs .= ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"';

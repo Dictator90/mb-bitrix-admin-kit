@@ -24,9 +24,8 @@ final class TabsRendererTest extends TestCase
 
         self::assertStringContainsString('data-adminkit-tabs', $html);
         self::assertStringContainsString('data-adminkit-tabs-config', $html);
-        self::assertStringContainsString("BX.Runtime.loadExtension('mb.admin.kit')", $html);
-        self::assertStringContainsString('kit.Tabs.initAll(', $html);
-        self::assertStringNotContainsString('new MB.AdminKit.Tabs.Tabs({', $html);
+        self::assertStringContainsString('data-adminkit-tabs-prerendered="Y"', $html);
+        self::assertStringContainsString('data-bx-role="tab-header"', $html);
         self::assertStringNotContainsString('mb.ui.tabs', $html);
         self::assertCount(2, $tabs->extractFields());
     }
