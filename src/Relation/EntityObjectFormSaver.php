@@ -292,6 +292,12 @@ final class EntityObjectFormSaver
         FormData $relationFormData,
         DbOperationContext $context,
     ): void {
+        if (method_exists($resource, 'getRelationSyncStrategies')) {
+            foreach ($resource->getRelationSyncStrategies() as $strategy) {
+                $this->relationSynchronizer->registerStrategy($strategy);
+            }
+        }
+
         $dataManagerClass = (string) $resource->getDataManagerClass();
 
         foreach ($relationFields as $field) {
