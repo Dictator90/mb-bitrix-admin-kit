@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Field\Relation;
+namespace MB\Bitrix\AdminKit\Relation;
 
 use MB\Bitrix\AdminKit\Support\AdminString;
 
@@ -11,7 +11,7 @@ use MB\Bitrix\AdminKit\Support\AdminString;
  */
 final class RelationTileGridPreviewRenderer
 {
-    private const int ROW_HEIGHT = 40;
+    private const  ROW_HEIGHT = 40;
 
     /**
      * @param list<array<string, mixed>> $rows

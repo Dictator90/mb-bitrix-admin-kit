@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field\Relation;
 
+use MB\Bitrix\AdminKit\Relation\RelationOrmFieldLabelResolver;
+use MB\Bitrix\AdminKit\Relation\RelationTileGridPreviewRenderer;
 use MB\Bitrix\AdminKit\Relation\RelationType;
 
 final class HasMany extends RelationField

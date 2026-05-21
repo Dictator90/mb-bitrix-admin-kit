@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MB\Bitrix\AdminKit\Field\Relation;
+namespace MB\Bitrix\AdminKit\Relation;
 
 use Throwable;
 

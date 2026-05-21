@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Field;
 
-use MB\Bitrix\AdminKit\Field\Relation\RelationTileGridPreviewRenderer;
+use MB\Bitrix\AdminKit\Relation\RelationTileGridPreviewRenderer;
 use PHPUnit\Framework\TestCase;
 
 final class RelationTileGridPreviewRendererTest extends TestCase
