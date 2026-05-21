@@ -18,7 +18,7 @@ final class BulkActionDeleteTest extends TestCase
         self::assertTrue($action->needsConfirm());
         self::assertTrue($action->isDanger());
         self::assertSame('danger', $action->getGroup());
-        self::assertSame('Удаление', $action->getGroupLabel());
+        self::assertSame('Deletion', $action->getGroupLabel());
         self::assertSame(900, $action->getGroupSort());
         self::assertSame('ui-btn-icon-remove', $action->getIcon());
         self::assertSame(100, $action->getSort());

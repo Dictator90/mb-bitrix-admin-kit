@@ -14,7 +14,7 @@ final class GridQueryBuilderRuntimeTest extends TestCase
 {
     public function testItPassesRuntimeObjectsThrough(): void
     {
-        $runtime = new Reference('USER');
+        $runtime = new Reference('USER', 'UserTable', ['=this.USER_ID' => 'ref.ID']);
         $resource = new class ($runtime) extends ProductResource {
             public function __construct(private object $runtime)
             {

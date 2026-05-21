@@ -27,7 +27,7 @@ final class ExportLimitsTest extends TestCase
         $result = ExportAction::make()->execute(new ExportContext(new ProductResource()));
 
         self::assertFalse($result->isSuccess());
-        self::assertStringContainsString('умолчанию', $result->errors[0] ?? '');
+        self::assertStringContainsString('Exporting all records', $result->errors[0] ?? '');
     }
 
     public function testExportAllIsAllowedWhenResourceAllowsIt(): void
@@ -58,7 +58,7 @@ final class ExportLimitsTest extends TestCase
         $result = ExportAction::make()->execute(new ExportContext($resource, filter: ['NAME' => 'One']));
 
         self::assertFalse($result->isSuccess());
-        self::assertStringContainsString('фильтру отключен', $result->errors[0] ?? '');
+        self::assertStringContainsString('Export by filter is disabled', $result->errors[0] ?? '');
     }
 
     public function testSelectedExportWorksWithoutExplicitFilter(): void
@@ -80,7 +80,8 @@ final class ExportLimitsTest extends TestCase
         $result = ExportAction::make()->execute(new ExportContext($resource, selectedIds: [1, 2, 3]));
 
         self::assertFalse($result->isSuccess());
-        self::assertStringContainsString('Максимум: 2', $result->errors[0] ?? '');
+        $error = $result->errors[0] ?? '';
+        self::assertTrue(str_contains($error, 'Maximum: 2') || str_contains($error, '��������: 2'));
         self::assertSame(0, ProductTable::$listCalls);
     }
 

@@ -1,18 +1,18 @@
-# Database integration
+# Интеграция с базой данных
 
-AdminKit is designed around Bitrix D7 ORM `DataManager` classes. A `CrudResource` exposes its ORM class with `dataManagerClass()` and the grid/form/persister layers build parameter arrays that are passed to documented ORM APIs.
+AdminKit спроектирован вокруг классов Bitrix D7 ORM `DataManager`. `CrudResource` отдаёт свой ORM-класс через `dataManagerClass()`, а слои grid/form/persister собирают массивы параметров для документированных ORM API.
 
-## Result objects
+## Объекты результатов
 
-- `DbOperationContext` carries operation metadata such as operation type, id, data, Resource, and permission context.
-- `DbResult` wraps successful ids or low-level ORM errors.
-- `BulkOperationContext` carries selected ids, filter mode, request data, and Resource metadata for bulk actions.
-- `BulkResult` reports processed, skipped, failed, and error rows without aborting an entire batch on a single skipped record.
+- `DbOperationContext` несёт метаданные операции: тип операции, id, data, Resource и permission context.
+- `DbResult` оборачивает успешные id или низкоуровневые ошибки ORM.
+- `BulkOperationContext` несёт selected ids, режим фильтра, данные запроса и метаданные Resource для массовых действий.
+- `BulkResult` сообщает обработанные, пропущенные, неуспешные строки и ошибки без прерывания всей пачки из-за одной пропущенной записи.
 
 ## Runtime fields
 
-Pass Bitrix runtime field objects through Resource hooks. AdminKit should not create business-specific joins in the grid layer.
+Передавайте runtime field-объекты Bitrix через хуки Resource. AdminKit не должен создавать бизнес-специфичные JOIN в слое грида.
 
-## Read-only diagnostics
+## Диагностика только для чтения
 
-Database health helpers inspect expected and actual schema. Admin pages must not create, drop, or alter tables on ordinary page open.
+Хелперы состояния БД сравнивают ожидаемую и фактическую схему. Обычное открытие админ-страницы не должно создавать, удалять или изменять таблицы.

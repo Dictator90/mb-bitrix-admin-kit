@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Database;
 
 use Bitrix\Main\HttpRequest;
-use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
+use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 
 final class DbOperationContext
 {
     public function __construct(
-        public readonly DataManagerResourceContract $resource,
+        public readonly ResourceContract $resource,
         public readonly string $operation,
         public readonly mixed $itemId = null,
         public readonly array $oldData = [],

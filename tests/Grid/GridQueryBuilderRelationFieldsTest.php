@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Grid;
 
-use MB\Bitrix\AdminKit\Field\HasMany;
-use MB\Bitrix\AdminKit\Field\HasOne;
+use MB\Bitrix\AdminKit\Field\Relation\HasMany;
+use MB\Bitrix\AdminKit\Field\Relation\HasOne;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Grid\GridQueryBuilder;

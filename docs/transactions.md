@@ -1,7 +1,7 @@
-# Transactions
+# Транзакции
 
-CRUD resources use transactions by default. Override `CrudResource::useTransactions(): bool` to disable them for a resource.
+CRUD-ресурсы по умолчанию используют транзакции. Переопределите `CrudResource::useTransactions(): bool`, чтобы отключить их для ресурса.
 
-When transactions are enabled, create, update, delete, and mass delete operations run through `TransactionManager`, which uses Bitrix D7 connection methods: `Application::getConnection()->startTransaction()`, `commitTransaction()`, and `rollbackTransaction()`.
+При включённых транзакциях create, update, delete и массовое удаление выполняются через `TransactionManager`, который использует методы соединения Bitrix D7: `Application::getConnection()->startTransaction()`, `commitTransaction()` и `rollbackTransaction()`.
 
-If a lifecycle hook throws an Admin Kit exception, the operation is stopped and the transaction is rolled back.
+Если lifecycle-хук выбрасывает исключение Admin Kit, операция останавливается и транзакция откатывается.

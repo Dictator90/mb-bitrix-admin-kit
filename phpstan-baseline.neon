@@ -721,6 +721,11 @@ parameters:
 			path: src/Field/BelongsToMany.php
 
 		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: src/Field/Relation/BelongsTo.php
+
+		-
 			message: "#^Function htmlspecialcharsbx not found\\.$#"
 			count: 1
 			path: src/Field/Checkbox.php
@@ -1707,12 +1712,12 @@ parameters:
 
 		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:afterValidate\\(\\)\\.$#"
-			count: 1
+			count: 2
 			path: src/Page/Crud/FormPage.php
 
 		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:beforeValidate\\(\\)\\.$#"
-			count: 1
+			count: 2
 			path: src/Page/Crud/FormPage.php
 
 		-

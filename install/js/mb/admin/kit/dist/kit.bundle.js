@@ -23,27 +23,94 @@ this.MB = this.MB || {};
     function appendGlobalError(form, message) {
       var top = document.createElement('div');
       top.className = 'ui-alert ui-alert-danger adminkit-alert';
-      top.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(String(message)) + '</span>';
-      form.parentNode.insertBefore(top, form);
+      var text = String(message);
+      if (text.indexOf('\n') !== -1) {
+        var pre = document.createElement('pre');
+        pre.className = 'adminkit-error-trace';
+        pre.textContent = text;
+        top.appendChild(pre);
+      } else {
+        top.innerHTML = '<span class="ui-alert-message">' + BX.util.htmlspecialchars(text) + '</span>';
+      }
+      if (form.parentNode) {
+        form.parentNode.insertBefore(top, form);
+      }
+    }
+    function hasSaveErrors(resp) {
+      if (!resp || resp.validationError) {
+        return true;
+      }
+      if (Array.isArray(resp.globalErrors) && resp.globalErrors.length > 0) {
+        return true;
+      }
+      var fieldErrors = resp.fieldErrors || {};
+      return Object.keys(fieldErrors).some(function (column) {
+        var messages = fieldErrors[column];
+        return Array.isArray(messages) && messages.length > 0;
+      });
+    }
+    function scrollToFirstError(form) {
+      if (!form.parentNode) {
+        return;
+      }
+      var first = form.parentNode.querySelector('.adminkit-alert, .adminkit-field-error');
+      if (first && typeof first.scrollIntoView === 'function') {
+        first.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }
+    }
+    function resolveErrorNotification(resp, messages) {
+      if (Array.isArray(resp.globalErrors) && resp.globalErrors.length > 0) {
+        return String(resp.globalErrors[0]);
+      }
+      if (resp.validationError) {
+        return messages.validationError || '';
+      }
+      return messages.saveFailed || '';
     }
     function renderValidationErrors(form, messages) {
       (messages || []).forEach(function (message) {
         appendGlobalError(form, message);
       });
     }
-    function reloadParentGrid(gridId) {
-      if (!gridId || !window.top || !window.top.BX || !window.top.BX.Main || !window.top.BX.Main.gridManager) {
-        return;
+    function resolveGridWindow() {
+      if (window.parent && window.parent !== window && window.parent.BX) {
+        return window.parent;
       }
-      var manager = window.top.BX.Main.gridManager;
+      if (window.top && window.top.BX) {
+        return window.top;
+      }
+      return window;
+    }
+    function findGridInstance(manager, gridId) {
+      if (!manager || !gridId) {
+        return null;
+      }
       var grid = manager.getInstanceById ? manager.getInstanceById(gridId) : null;
       if (!grid && manager.getById) {
         var pair = manager.getById(gridId);
         grid = pair && (pair.instance || pair.grid) ? pair.instance || pair.grid : null;
       }
-      if (grid && typeof grid.reload === 'function') {
-        grid.reload();
+      return grid;
+    }
+    function reloadParentGrid(gridId) {
+      var win = resolveGridWindow();
+      var manager = win.BX && win.BX.Main && win.BX.Main.gridManager;
+      var grid = findGridInstance(manager, gridId);
+      if (!grid) {
+        return false;
       }
+      if (typeof grid.reloadTable === 'function') {
+        grid.reloadTable();
+        return true;
+      }
+      if (typeof grid.reload === 'function') {
+        grid.reload();
+        return true;
+      }
+      return false;
     }
     function renderFieldErrors(form, fieldErrors) {
       Object.keys(fieldErrors || {}).forEach(function (column) {
@@ -59,7 +126,7 @@ this.MB = this.MB || {};
         });
       });
     }
-    function submitAsync(form, submitBtn, messages) {
+    function submitAsync(form, submitBtn, messages, gridId) {
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.classList.add('ui-btn-wait');
@@ -88,15 +155,23 @@ this.MB = this.MB || {};
         }
         renderValidationErrors(form, resp.globalErrors);
         renderFieldErrors(form, resp.fieldErrors);
-        if (resp.success) {
-          if (resp.closeSidePanel && window.top && window.top.BX && window.top.BX.SidePanel) {
-            window.top.BX.SidePanel.Instance.getTopSlider().close();
-          } else {
-            notify(messages.saved || '');
-            if (resp.reloadParentGrid && config.gridId) {
-              reloadParentGrid(config.gridId);
-            }
+        if (hasSaveErrors(resp) || !resp.success) {
+          var errorMessage = resolveErrorNotification(resp, messages);
+          if (errorMessage) {
+            notify(errorMessage);
           }
+          scrollToFirstError(form);
+          return;
+        }
+        var effectiveGridId = gridId || resp.gridId || '';
+        if (resp.reloadParentGrid && effectiveGridId) {
+          reloadParentGrid(effectiveGridId);
+        }
+        var panelWindow = resolveGridWindow();
+        if (resp.closeSidePanel && panelWindow.BX && panelWindow.BX.SidePanel) {
+          panelWindow.BX.SidePanel.Instance.getTopSlider().close();
+        } else {
+          notify(messages.saved || '');
         }
       })["catch"](function (err) {
         if (submitBtn) {
@@ -115,7 +190,7 @@ this.MB = this.MB || {};
       var messages = config.messages || {};
       var onSubmit = function onSubmit(event) {
         event.preventDefault();
-        submitAsync(form, submitBtn, messages);
+        submitAsync(form, submitBtn, messages, config.gridId);
       };
       form.addEventListener('submit', onSubmit);
       if (submitBtn) {
@@ -124,7 +199,7 @@ this.MB = this.MB || {};
             return;
           }
           event.preventDefault();
-          submitAsync(form, submitBtn, messages);
+          submitAsync(form, submitBtn, messages, config.gridId);
         });
       }
     }
@@ -1169,7 +1244,9 @@ this.MB = this.MB || {};
     }
     function _attachKeyboardNavigation2(headersEl) {
       main_core.Event.bind(headersEl, 'keydown', function (e) {
-        var headers = Array.from(headersEl.querySelectorAll('[data-bx-role="tab-header"]'));
+        var headers = Array.from(headersEl.children).filter(function (el) {
+          return el.getAttribute('data-bx-role') === 'tab-header';
+        });
         var activeIdx = headers.findIndex(function (h) {
           return h.classList.contains('--header-active');
         });
@@ -1209,6 +1286,75 @@ this.MB = this.MB || {};
      * @property {boolean} remember
      */
 
+    function bindRememberActiveTab(root, remember) {
+      if (!remember) {
+        return;
+      }
+      var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
+      if (!activeTabInput) {
+        return;
+      }
+      root.addEventListener('click', function (event) {
+        var header = event.target.closest('[data-bx-role="tab-header"]');
+        if (!header) {
+          return;
+        }
+        var headersContainer = root.querySelector('[data-bx-role="headers"]');
+        if (!headersContainer || !headersContainer.contains(header)) {
+          return;
+        }
+
+        // Double check it's a direct child of OUR headers container
+        if (header.parentElement !== headersContainer) {
+          return;
+        }
+        var tabId = header.getAttribute('data-bx-name') || '';
+        if (tabId !== '') {
+          activeTabInput.value = tabId;
+        }
+      });
+    }
+    function activatePrerenderedTab(root, tabId) {
+      var bodiesContainer = root.querySelector('[data-bx-role="bodies"]');
+      if (bodiesContainer) {
+        Array.from(bodiesContainer.children).forEach(function (body) {
+          if (body.classList.contains('ui-tabs__tab-body_inner')) {
+            body.classList.toggle('--body-active', body.dataset.id === tabId);
+          }
+        });
+      }
+      var headersContainer = root.querySelector('[data-bx-role="headers"]');
+      if (headersContainer) {
+        Array.from(headersContainer.children).forEach(function (header) {
+          if (header.getAttribute('data-bx-role') === 'tab-header') {
+            header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
+          }
+        });
+      }
+    }
+    function initPrerenderedTabs(targetContainer, config) {
+      var root = targetContainer.querySelector('.ui-tabs__tabs-container') || targetContainer;
+      var headersContainer = root.querySelector('[data-bx-role="headers"]');
+      if (headersContainer) {
+        Array.from(headersContainer.children).forEach(function (header) {
+          if (header.getAttribute('data-bx-role') !== 'tab-header') {
+            return;
+          }
+          header.addEventListener('click', function () {
+            var tabId = header.getAttribute('data-bx-name') || '';
+            if (tabId === '') {
+              return;
+            }
+            activatePrerenderedTab(root, tabId);
+          });
+        });
+      }
+      bindRememberActiveTab(root, config.remember === true);
+      if (window.BX && window.BX.UI && window.BX.UI.Hint) {
+        window.BX.UI.Hint.init(root);
+      }
+    }
+
     /**
      * Initialize tabs from config
      * @param {TabsConfig} config
@@ -1221,6 +1367,14 @@ this.MB = this.MB || {};
         items = config.items,
         bodies = config.bodies,
         remember = config.remember;
+      var targetContainer = document.getElementById(id);
+      if (!targetContainer) {
+        return;
+      }
+      if (targetContainer.dataset.adminkitTabsPrerendered === 'Y') {
+        initPrerenderedTabs(targetContainer, config);
+        return;
+      }
       var tabs = new Tabs({
         id: id,
         items: items
@@ -1250,26 +1404,11 @@ this.MB = this.MB || {};
           }
         });
       }
-      var targetContainer = document.getElementById(id);
-      if (targetContainer) {
-        main_core.Dom.append(container, targetContainer);
-      }
+      main_core.Dom.append(container, targetContainer);
       if (window.BX && window.BX.UI && window.BX.UI.Hint) {
         window.BX.UI.Hint.init(container);
       }
-      if (remember) {
-        var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
-        container.addEventListener('click', function (event) {
-          var header = event.target.closest('[data-bx-name]');
-          if (!header || !activeTabInput) {
-            return;
-          }
-          var tabId = header.getAttribute('data-bx-name') || '';
-          if (tabId !== '') {
-            activeTabInput.value = tabId;
-          }
-        });
-      }
+      bindRememberActiveTab(container, remember === true);
     }
 
     /**
@@ -1669,7 +1808,7 @@ this.MB = this.MB || {};
           });
         }
         if (details.length > 0) {
-          content += '<div style="margin-top: 10px; font-size: 12px; max-height: 200px; overflow-y: auto;">' + details.join('<br>') + '</div>';
+          content += '<div class="adminkit-bulk-result-notification__details">' + details.join('<br>') + '</div>';
         }
         window.BX.UI.Notification.Center.notify({
           content: content,
@@ -1761,6 +1900,167 @@ this.MB = this.MB || {};
         exportSelected: exportSelected
     });
 
+    /**
+     * Read-only HasMany preview as a table using Bitrix ui.tilegrid (BX.TileGrid.Grid).
+     */
+
+    function isColumnDefinition(value) {
+      return babelHelpers["typeof"](value) === 'object' && value !== null && typeof value.id === 'string' && value.id !== '';
+    }
+    function columnId(columnDef) {
+      if (typeof columnDef === 'string') {
+        return columnDef;
+      }
+      return isColumnDefinition(columnDef) ? columnDef.id : '';
+    }
+    function columnLabel(columnDef) {
+      if (typeof columnDef === 'string') {
+        return columnDef;
+      }
+      if (!isColumnDefinition(columnDef)) {
+        return '';
+      }
+      var label = columnDef.label;
+      if (typeof label === 'string') {
+        return label;
+      }
+      if (label === null || label === undefined) {
+        return columnDef.id;
+      }
+      if (typeof label === 'number' || typeof label === 'boolean') {
+        return String(label);
+      }
+      if (babelHelpers["typeof"](label) === 'object') {
+        if (typeof label.message === 'string') {
+          return label.message;
+        }
+        if (typeof label.MESSAGE === 'string') {
+          return label.MESSAGE;
+        }
+        if (typeof label.text === 'string') {
+          return label.text;
+        }
+        if (typeof label.TEXT === 'string') {
+          return label.TEXT;
+        }
+      }
+      return columnDef.id;
+    }
+    function normalizeColumns(columns) {
+      if (!columns || !columns.length) {
+        return [];
+      }
+      if (isColumnDefinition(columns[0])) {
+        return columns.map(function (columnDef) {
+          return {
+            id: columnId(columnDef),
+            label: columnLabel(columnDef)
+          };
+        });
+      }
+      return columns.map(function (column) {
+        var id = columnId(column);
+        return {
+          id: id,
+          label: columnLabel(column) || id
+        };
+      });
+    }
+    function createRow(columnDefs, cells, isHeader) {
+      var row = BX.create('div', {
+        props: {
+          className: isHeader ? 'adminkit-relation-tilegrid__row adminkit-relation-tilegrid__row--head' : 'adminkit-relation-tilegrid__row'
+        }
+      });
+      columnDefs.forEach(function (columnDef) {
+        var id = columnId(columnDef);
+        var text = isHeader ? columnLabel(columnDef) : cells[id] === null || cells[id] === undefined || cells[id] === '' ? '—' : String(cells[id]);
+        row.appendChild(BX.create('div', {
+          props: {
+            className: isHeader ? 'adminkit-relation-tilegrid__cell adminkit-relation-tilegrid__cell--head' : 'adminkit-relation-tilegrid__cell',
+            title: text
+          },
+          text: text
+        }));
+      });
+      return row;
+    }
+    function registerItemTypes() {
+      BX.namespace('BX.AdminKit.RelationTileGrid');
+      BX.AdminKit.RelationTileGrid.TableItem = function (options) {
+        BX.TileGrid.Item.apply(this, arguments);
+        this.columns = normalizeColumns(options.columns || []);
+        this.cells = options.cells || {};
+      };
+      BX.extend(BX.AdminKit.RelationTileGrid.TableItem, BX.TileGrid.Item);
+      BX.AdminKit.RelationTileGrid.TableItem.prototype.getContent = function () {
+        return createRow(this.columns, this.cells, false);
+      };
+      BX.AdminKit.RelationTileGrid.TableItem.prototype.handleClick = function () {};
+      BX.AdminKit.RelationTileGrid.TableItem.prototype.handleDblClick = function () {};
+      BX.AdminKit.RelationTileGrid.HeaderItem = function (options) {
+        BX.TileGrid.Item.apply(this, arguments);
+        this.columns = normalizeColumns(options.columns || []);
+      };
+      BX.extend(BX.AdminKit.RelationTileGrid.HeaderItem, BX.TileGrid.Item);
+      BX.AdminKit.RelationTileGrid.HeaderItem.prototype.getContent = function () {
+        return createRow(this.columns, {}, true);
+      };
+      BX.AdminKit.RelationTileGrid.HeaderItem.prototype.handleClick = function () {};
+      BX.AdminKit.RelationTileGrid.HeaderItem.prototype.handleDblClick = function () {};
+    }
+    function buildItems(config) {
+      var columns = normalizeColumns(config.columns || []);
+      var items = [{
+        id: 'header',
+        itemType: 'BX.AdminKit.RelationTileGrid.HeaderItem',
+        columns: columns
+      }];
+      (config.rows || []).forEach(function (row, index) {
+        items.push({
+          id: 'row_' + index,
+          itemType: 'BX.AdminKit.RelationTileGrid.TableItem',
+          columns: columns,
+          cells: row
+        });
+      });
+      return items;
+    }
+    function init$6(config) {
+      var _container$parentNode;
+      if (!BX.TileGrid || !BX.TileGrid.Grid) {
+        return;
+      }
+      registerItemTypes();
+      var container = document.getElementById(config.containerId);
+      if (!container) {
+        return;
+      }
+      var width = container.offsetWidth || ((_container$parentNode = container.parentNode) === null || _container$parentNode === void 0 ? void 0 : _container$parentNode.offsetWidth) || 800;
+      var itemMinWidth = Math.max(Math.floor(width * 0.95), 280);
+      var grid = new BX.TileGrid.Grid({
+        id: config.gridId,
+        container: container,
+        items: buildItems(config),
+        checkBoxing: false,
+        itemHeight: config.itemHeight || 40,
+        itemMinWidth: itemMinWidth,
+        tileMargin: 0
+      });
+      grid.draw();
+    }
+    if (typeof window !== 'undefined') {
+      window.MB = window.MB || {};
+      window.MB.AdminKit = window.MB.AdminKit || {};
+      window.MB.AdminKit.RelationTileGrid = {
+        init: init$6
+      };
+    }
+
+    var relationTilegrid = /*#__PURE__*/Object.freeze({
+
+    });
+
     exports.Form = formSave;
     exports.Dependencies = dependencies;
     exports.Visibility = visibility;
@@ -1771,6 +2071,7 @@ this.MB = this.MB || {};
     exports.Tabs = index;
     exports.DialogSelector = index$1;
     exports.GridBulkActions = bulkActions;
+    exports.RelationTileGrid = relationTilegrid;
 
 }((this.MB.AdminKit = this.MB.AdminKit || {}),BX.Collections,BX.Event,BX,BX.UI.EntitySelector,BX));
 //# sourceMappingURL=kit.bundle.js.map

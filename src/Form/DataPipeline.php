@@ -30,12 +30,14 @@ final class DataPipeline
             $normalized[$column] = $field->normalize($rawData[$column]);
         }
 
+        $formContext = $this->formContextForReadonly($raw, $normalized);
+
         foreach (AdminCollection::make($fields)->all() as $field) {
             if (!$field instanceof FieldContract) {
                 continue;
             }
 
-            if (method_exists($field, 'isReadOnlyFor') ? $field->isReadOnlyFor($normalized) : $field->isReadOnly()) {
+            if ($field->isReadOnlyFor($formContext)) {
                 continue;
             }
 
@@ -48,5 +50,22 @@ final class DataPipeline
         }
 
         return new FormData($rawData, $normalized, $validated, $errors);
+    }
+
+    /**
+     * @param array<string,mixed> $raw
+     * @param array<string,mixed> $normalized
+     * @return array<string,mixed>
+     */
+    private function formContextForReadonly(array $raw, array $normalized): array
+    {
+        $context = $normalized;
+        foreach (['_mode', '_id', 'ID'] as $key) {
+            if (array_key_exists($key, $raw)) {
+                $context[$key] = $raw[$key];
+            }
+        }
+
+        return $context;
     }
 }

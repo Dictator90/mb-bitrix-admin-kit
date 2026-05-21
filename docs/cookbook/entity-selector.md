@@ -1,48 +1,48 @@
-# Entity Selector Fields
+# Поля Entity Selector
 
-AdminKit provides a layered family of selector fields built on Bitrix's
-`ui.entity-selector` and the package `mb.ui.dialog-selector` extension.
+AdminKit предоставляет многоуровневое семейство полей-селекторов на базе Bitrix
+`ui.entity-selector` и расширения пакета `mb.ui.dialog-selector`.
 
-## Class hierarchy
+## Иерархия классов
 
 ```
 Field
-└── EntitySelect          — base: Bitrix TagSelector (ui.entity-selector)
-    ├── TagSelect         — thin alias for EntitySelect
-    └── DialogSelect      — static-items selector (mb.ui.dialog-selector)
-        ├── UserSelect        — pre-wired for Bitrix users
-        ├── IblockSelect      — pre-wired for iblock list
-        ├── IblockElementSelect — pre-wired for iblock elements
-        └── IblockSectionSelect — pre-wired for iblock sections
+└── EntitySelect          — база: Bitrix TagSelector (ui.entity-selector)
+    ├── TagSelect         — тонкий алиас для EntitySelect
+    └── DialogSelect      — селектор со статическими элементами (mb.ui.dialog-selector)
+        ├── UserSelect        — преднастроен для пользователей Bitrix
+        ├── IblockSelect      — преднастроен для списка инфоблоков
+        ├── IblockElementSelect — преднастроен для элементов инфоблока
+        └── IblockSectionSelect — преднастроен для разделов инфоблока
 ```
 
-All classes inherit the common `Field` fluent API (`required()`, `readonly()`,
+Все классы наследуют общий fluent API `Field` (`required()`, `readonly()`,
 `visibleWhen()`, `dependsOn()`, `displayUsing()`, …).
 
 ---
 
 ## UserSelect
 
-Select one or many Bitrix users. Labels are resolved automatically via
+Выбор одного или нескольких пользователей Bitrix. Подписи разрешаются автоматически через
 `Bitrix\Main\UserTable`.
 
 ```php
 use MB\Bitrix\AdminKit\Field\UserSelect;
 
-// Single user (default)
+// Один пользователь (по умолчанию)
 UserSelect::make('Responsible', 'RESPONSIBLE_ID');
 
-// Multiple users
+// Несколько пользователей
 UserSelect::make('Executors', 'EXECUTOR_IDS')->multiple();
 ```
 
-Values are stored as comma-separated IDs in a single column (e.g. `"1,42,7"`).
+Значения хранятся как ID через запятую в одной колонке (например, `"1,42,7"`).
 
 ---
 
 ## IblockSelect
 
-Select an information-block from the iblock module.
+Выбор информационного блока из модуля iblock.
 
 ```php
 use MB\Bitrix\AdminKit\Field\IblockSelect;
@@ -54,25 +54,25 @@ IblockSelect::make('Catalog', 'IBLOCK_ID');
 
 ## IblockElementSelect
 
-Select elements from an iblock. Supports `dependsOn()` to filter by iblock.
+Выбор элементов инфоблока. Поддерживает `dependsOn()` для фильтрации по инфоблоку.
 
 ```php
 use MB\Bitrix\AdminKit\Field\IblockElementSelect;
 
-// Static iblock
+// Статический инфоблок
 IblockElementSelect::make('Product', 'PRODUCT_ID')
     ->iblockId(5);
 
-// Dynamic — filter by sibling field IBLOCK_ID
+// Динамический — фильтр по соседнему полю IBLOCK_ID
 IblockElementSelect::make('Element', 'ELEMENT_ID')
-    ->dependsOn('IBLOCK_ID');  // iblockId() is applied automatically on change
+    ->dependsOn('IBLOCK_ID');  // iblockId() применяется автоматически при изменении
 ```
 
 ---
 
 ## IblockSectionSelect
 
-Select sections from an iblock.
+Выбор разделов инфоблока.
 
 ```php
 use MB\Bitrix\AdminKit\Field\IblockSectionSelect;
@@ -82,7 +82,7 @@ IblockSectionSelect::make('Section', 'SECTION_ID')
     ->multiple();
 ```
 
-Register the provider in the module `.settings.php` (`ui.entity-selector`):
+Зарегистрируйте провайдер в `.settings.php` модуля (`ui.entity-selector`):
 
 ```php
 [
@@ -94,32 +94,32 @@ Register the provider in the module `.settings.php` (`ui.entity-selector`):
 ],
 ```
 
-Options: `iblockId` (int), `activeFilter` (bool, only `ACTIVE = Y`).
+Опции: `iblockId` (int), `activeFilter` (bool, только `ACTIVE = Y`).
 
 ---
 
-## EntitySelect / TagSelect — generic Bitrix entity
+## EntitySelect / TagSelect — универсальная сущность Bitrix
 
-Use `EntitySelect` (or its `TagSelect` alias) when the target entity is
-registered in Bitrix's entity-selector registry and you want the standard
-TagSelector UI.
+Используйте `EntitySelect` (или алиас `TagSelect`), когда целевая сущность
+зарегистрирована в реестре entity-selector Bitrix и нужен стандартный
+UI TagSelector.
 
 ```php
 use MB\Bitrix\AdminKit\Field\EntitySelect;
 
 EntitySelect::make('Department', 'DEPARTMENT_ID')
-    ->entityId('department')           // Bitrix entity-selector entity ID
+    ->entityId('department')           // ID сущности Bitrix entity-selector
     ->multiple(false);
 
-// Multiple entities in one dialog
+// Несколько сущностей в одном диалоге
 EntitySelect::make('Participants', 'PARTICIPANT_IDS')
     ->entity('user')
     ->entity('department')
     ->multiple();
 ```
 
-**Built-in label resolvers** — for the entity IDs listed below, labels are
-resolved automatically without calling `resolveLabels()`:
+**Встроенные резолверы подписей** — для перечисленных entity ID подписи
+разрешаются автоматически без вызова `resolveLabels()`:
 
 | Entity ID | Provider |
 |-----------|----------|
@@ -130,7 +130,7 @@ resolved automatically without calling `resolveLabels()`:
 | `iblock-section`, `iblock-section-list` | `IblockSectionListProvider` |
 | `iblock-property`, `iblock-property-list` | `IblockPropertyListProvider` |
 
-For other entities, supply a resolver:
+Для других сущностей укажите резолвер:
 
 ```php
 EntitySelect::make('Warehouse', 'WAREHOUSE_ID')
@@ -143,23 +143,22 @@ EntitySelect::make('Warehouse', 'WAREHOUSE_ID')
 
 ---
 
-## DialogSelect — static item list
+## DialogSelect — статический список элементов
 
-`DialogSelect` uses `MB.AdminKit.DialogSelector` (from the `mb.admin.kit`
-extension). Use it when you have a finite set
-of known items and no server-side search is needed.
+`DialogSelect` использует `MB.AdminKit.DialogSelector` (из расширения `mb.admin.kit`).
+Подходит, когда есть конечный набор известных элементов и серверный поиск не нужен.
 
 ```php
 use MB\Bitrix\AdminKit\Field\DialogSelect;
 
-// Simple flat list
+// Простой плоский список
 DialogSelect::make('Country', 'COUNTRY_CODE')
     ->items([
         ['id' => 'ru', 'entityId' => 'mbDialogEntity', 'title' => 'Russia'],
         ['id' => 'de', 'entityId' => 'mbDialogEntity', 'title' => 'Germany'],
     ]);
 
-// Tabbed dialog
+// Диалог с вкладками
 DialogSelect::make('Role', 'ROLE_ID')
     ->tabsContent([
         'managers' => [
@@ -180,7 +179,7 @@ DialogSelect::make('Role', 'ROLE_ID')
     ->multiple();
 ```
 
-**Fluent item/tab API:**
+**Fluent API элементов/вкладок:**
 
 ```php
 DialogSelect::make('Status', 'STATUS_ID')
@@ -191,20 +190,20 @@ DialogSelect::make('Status', 'STATUS_ID')
     ->addItem(['id' => '3', 'entityId' => 'mbDialogEntity', 'title' => 'Done',   'tabs' => ['archived']]);
 ```
 
-`DialogSelect` can also combine dynamic entities with static tabs by mixing
-`entityId()` / `entity()` calls (renders via `renderFormFieldWithDialogSelector`).
+`DialogSelect` может сочетать динамические сущности со статическими вкладками, смешивая
+вызовы `entityId()` / `entity()` (рендер через `renderFormFieldWithDialogSelector`).
 
 ---
 
-## Common API for all selector fields
+## Общий API для всех полей-селекторов
 
-### Multiple values
+### Несколько значений
 
 ```php
 UserSelect::make('Authors', 'AUTHOR_IDS')->multiple();
 ```
 
-Values are stored comma-separated: `"1,42,7"`.
+Значения хранятся через запятую: `"1,42,7"`.
 
 ### Readonly
 
@@ -219,14 +218,14 @@ UserSelect::make('Responsible', 'RESPONSIBLE_ID')
     ->placeholder('Select a user…');
 ```
 
-### Conditional visibility
+### Условная видимость
 
 ```php
 UserSelect::make('Approver', 'APPROVER_ID')
     ->visibleWhen('NEEDS_APPROVAL', 'Y');
 ```
 
-### Custom label resolver
+### Пользовательский резолвер подписей
 
 ```php
 EntitySelect::make('Project', 'PROJECT_ID')
@@ -236,35 +235,35 @@ EntitySelect::make('Project', 'PROJECT_ID')
     );
 ```
 
-### dependsOn (reactive re-render)
+### dependsOn (реактивный перерендер)
 
 ```php
-// When IBLOCK_ID changes → ELEMENT_ID re-renders with new iblockId()
+// При смене IBLOCK_ID → ELEMENT_ID перерендерится с новым iblockId()
 IblockElementSelect::make('Element', 'ELEMENT_ID')
     ->dependsOn('IBLOCK_ID');
 
-// Custom modifier
+// Пользовательский модификатор
 Select::make('Subcategory', 'SUB_ID')
     ->dependsOn('CATEGORY_ID', function (Select $field, mixed $val): void {
         $field->options(SubcategoryTable::optionsForCategory((int)$val));
     });
 ```
 
-### onChange (reactive source)
+### onChange (источник реактивности)
 
 ```php
 Select::make('Iblock', 'IBLOCK_ID')
-    ->onChange('ELEMENT_ID', fn ($iblockId) => null);   // clear sibling on change
+    ->onChange('ELEMENT_ID', fn ($iblockId) => null);   // очистить соседнее поле при изменении
 ```
 
 ---
 
-## Normalization and storage
+## Нормализация и хранение
 
-| Mode | `normalize()` result | Stored in DB |
+| Режим | Результат `normalize()` | В БД |
 |------|---------------------|--------------|
-| Single | `string\|null` | `"42"` or `""` |
-| Multiple | `string[]` | comma-separated via `serializePostValue()`: `"1,42,7"` |
+| Single | `string\|null` | `"42"` или `""` |
+| Multiple | `string[]` | через запятую в `serializePostValue()`: `"1,42,7"` |
 
-`parseIds()` splits comma-separated strings automatically, so reading back a
-stored multi-value string works without extra conversion.
+`parseIds()` автоматически разбивает строки с ID через запятую, поэтому чтение
+сохранённой multi-value строки работает без дополнительного преобразования.

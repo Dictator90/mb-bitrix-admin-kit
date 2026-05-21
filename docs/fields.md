@@ -1,10 +1,10 @@
-# Fields
+# Поля
 
-AdminKit fields are declarative PHP objects that handle rendering, normalization, validation, and conditional behaviour across list, form, and detail pages. All fields extend the abstract `Field` base class and are created with the static `make()` factory.
+Поля AdminKit — декларативные PHP-объекты, отвечающие за рендер, нормализацию, валидацию и условное поведение на страницах списка, формы и детального просмотра. Все поля наследуют абстрактный базовый класс `Field` и создаются через статическую фабрику `make()`.
 
-## Common Field API
+## Общий API полей
 
-All fields support the backward-compatible fluent API below:
+Все поля поддерживают обратно совместимый fluent API:
 
 ```php
 $field = Text::make('Name', 'NAME')
@@ -17,40 +17,42 @@ $field = Text::make('Name', 'NAME')
     ->visibleWhen('TYPE', '=', 'public')
     ->requiredWhen('TYPE', '=', 'public')
     ->readonlyWhen('LOCKED', '=', 'Y')
+    ->readonlyOnUpdate()
+    ->readonlyOnCreate()
     ->dependsOn('TYPE')
     ->selectable(false)
     ->selectColumns(['NAME_EN', 'NAME_RU'])
     ->displayUsing(static fn (mixed $value, array $row): string => (string)$value);
 ```
 
-Rendering and value lifecycle methods are standardized:
+Методы рендера и жизненного цикла значения стандартизированы:
 
-- `renderIndex(mixed $value, array $row = []): string` — grid cell HTML.
-- `renderForm(mixed $value = null, array $context = []): string` — edit form HTML.
-- `renderDetail(mixed $value, array $row = []): string` — detail page HTML.
-- `normalize(mixed $value): mixed` — POST normalization.
-- `validate(mixed $value): array` and `runValidation(mixed $value, array $data = []): array` — validation errors.
+- `renderIndex(mixed $value, array $row = []): string` — HTML ячейки грида.
+- `renderForm(mixed $value = null, array $context = []): string` — HTML формы редактирования.
+- `renderDetail(mixed $value, array $row = []): string` — HTML страницы детального просмотра.
+- `normalize(mixed $value): mixed` — нормализация POST-данных.
+- `validate(mixed $value): array` и `runValidation(mixed $value, array $data = []): array` — ошибки валидации.
 
-`displayUsing()` is applied to index/detail rendering and is the preferred way to customize lookup labels without creating one-off field classes:
+`displayUsing()` применяется к рендеру index/detail и является предпочтительным способом настройки подписей связанных записей без одноразовых классов полей:
 
 ```php
 Text::make('Status', 'STATUS')
     ->displayUsing(static fn (mixed $value, array $row): string => '[' . $value . ']');
 ```
 
-## ORM Selection Control
+## Управление выборкой ORM
 
-- `selectable(bool $selectable = true)` — marks whether the field column should be automatically included in the ORM `select` list. Default is `true`.
-- `selectColumns(array|string|null $columns)` — explicitly defines which columns should be selected for this field. Useful when a field depends on multiple database columns.
+- `selectable(bool $selectable = true)` — указывает, должна ли колонка поля автоматически попадать в ORM-список `select`. По умолчанию `true`.
+- `selectColumns(array|string|null $columns)` — явно задаёт, какие колонки выбирать для этого поля. Полезно, когда поле зависит от нескольких колонок БД.
 
-## Normalization rules
+## Правила нормализации
 
-The base field no longer joins arrays with commas. Each concrete field owns its own strategy:
+Базовое поле больше не склеивает массивы через запятую. Стратегию определяет каждое конкретное поле:
 
-- Scalar fields (`Text`, `Textarea`, `Number`, `Switcher`) return scalar values or `null`.
-- `Select::multiple()` returns an array.
-- `EntitySelect` / `DialogSelect` (and their subclasses) with `multiple()` store values as comma-separated IDs via `serializePostValue()`.
-- `File`, `Image`, and UF multiple fields keep multiple values as arrays.
+- Скалярные поля (`Text`, `Textarea`, `Number`, `Switcher`) возвращают скаляр или `null`.
+- `Select::multiple()` возвращает массив.
+- `EntitySelect` / `DialogSelect` (и их подклассы) в режиме `multiple()` хранят значения как ID через запятую через `serializePostValue()`.
+- `File`, `Image` и множественные UF-поля сохраняют несколько значений как массив.
 
 ## Text
 
@@ -61,7 +63,7 @@ Text::make('Title', 'TITLE')
     ->maxLength(255);
 ```
 
-`Text` renders a Bitrix UI textbox, supports required/readonly/placeholder/help/default values, scalar normalization, and grid/detail escaping.
+`Text` рендерит Bitrix UI textbox, поддерживает required/readonly/placeholder/help/default, скалярную нормализацию и экранирование в гриде и на detail.
 
 ## Textarea
 
@@ -71,7 +73,7 @@ Textarea::make('Description', 'DESCRIPTION')
     ->placeholder('Description');
 ```
 
-`Textarea` renders a Bitrix UI textarea and keeps scalar normalization.
+`Textarea` рендерит Bitrix UI textarea и сохраняет скалярную нормализацию.
 
 ## Number
 
@@ -82,11 +84,11 @@ Number::make('Sort', 'SORT')
     ->step(1);
 ```
 
-`Number` renders a numeric input, normalizes numeric strings to `int`/`float`, and returns `null` for empty input.
+`Number` рендерит числовой input, нормализует числовые строки в `int`/`float` и возвращает `null` для пустого ввода.
 
 ## Select
 
-`Select` supports plain arrays and callables for options. Callables receive context and the field instance.
+`Select` поддерживает обычные массивы и callable для опций. Callable получает контекст и экземпляр поля.
 
 ```php
 Select::make('Status', 'STATUS')
@@ -104,7 +106,7 @@ Select::make('Tags', 'TAGS')
     ]);
 ```
 
-Single select returns the selected scalar value or `null`; multiple select returns an array and never implodes values. `renderIndex()` and `renderDetail()` show option labels.
+Одиночный select возвращает выбранное скалярное значение или `null`; множественный — массив и никогда не склеивает значения. `renderIndex()` и `renderDetail()` показывают подписи опций.
 
 ## Switcher
 
@@ -113,26 +115,26 @@ Switcher::make('Active', 'ACTIVE')
     ->values('Y', 'N');
 ```
 
-`Switcher` wraps Bitrix `ui.switcher` and keeps checked/unchecked scalar values.
+`Switcher` оборачивает Bitrix `ui.switcher` и хранит скалярные значения для включённого и выключенного состояния.
 
-## Entity selector fields
+## Поля entity selector
 
-AdminKit ships two rendering backends and a set of pre-configured concrete fields built on top of them:
+AdminKit поставляет два бэкенда рендера и набор готовых полей поверх них:
 
 ```
 EntitySelect   — Bitrix ui.entity-selector / BX.UI.EntitySelector.TagSelector
-    TagSelect  — thin alias for EntitySelect
-    DialogSelect — MB.AdminKit.DialogSelector (mb.admin.kit; static item lists)
-        UserSelect          — pre-wired for Bitrix users
-        IblockSelect        — pre-wired for iblocks
-        IblockElementSelect — pre-wired for iblock elements; supports dependsOn()
-        IblockSectionSelect — pre-wired for iblock sections
+    TagSelect  — тонкий alias для EntitySelect
+    DialogSelect — MB.AdminKit.DialogSelector (mb.admin.kit; статические списки)
+        UserSelect          — преднастроен для пользователей Bitrix
+        IblockSelect        — преднастроен для инфоблоков
+        IblockElementSelect — преднастроен для элементов; поддерживает dependsOn()
+        IblockSectionSelect — преднастроен для разделов
 ```
 
-All selector fields share the same `Field` base API and normalize values the same way:
+Все selector-поля используют общий API `Field` и нормализуют значения одинаково:
 
-- **Single mode**: one ID string or `null`.
-- **Multiple mode**: comma-separated IDs stored in a single column (`"1,42,7"`); `parseIds()` splits them back automatically.
+- **Одиночный режим**: одна строка ID или `null`.
+- **Множественный режим**: ID через запятую в одной колонке (`"1,42,7"`); `parseIds()` разбирает их автоматически.
 
 ### UserSelect
 
@@ -141,7 +143,7 @@ UserSelect::make('Responsible', 'RESPONSIBLE_ID');          // single (default)
 UserSelect::make('Executors', 'EXECUTOR_IDS')->multiple();  // multi
 ```
 
-Labels are resolved automatically from `Bitrix\Main\UserTable` (name/last name or login).
+Подписи подставляются из `Bitrix\Main\UserTable` (имя/фамилия или логин).
 
 ### IblockSelect
 
@@ -154,7 +156,7 @@ IblockSelect::make('Catalog', 'IBLOCK_ID');
 ```php
 IblockElementSelect::make('Product', 'PRODUCT_ID')->iblockId(5);
 
-// Dynamic — re-renders when IBLOCK_ID changes
+// Динамически — перерисовка при смене IBLOCK_ID
 IblockElementSelect::make('Element', 'ELEMENT_ID')->dependsOn('IBLOCK_ID');
 ```
 
@@ -164,22 +166,22 @@ IblockElementSelect::make('Element', 'ELEMENT_ID')->dependsOn('IBLOCK_ID');
 IblockSectionSelect::make('Section', 'SECTION_ID')->iblockId(5)->multiple();
 ```
 
-### EntitySelect / TagSelect — generic Bitrix entity selector
+### EntitySelect / TagSelect — универсальный Bitrix entity selector
 
 ```php
 EntitySelect::make('Department', 'DEPARTMENT_ID')->entityId('department');
 
-// Multiple Bitrix entities in one dialog
+// Несколько сущностей Bitrix в одном диалоге
 EntitySelect::make('Participant', 'PARTICIPANT_IDS')
     ->entity('user')
     ->entity('department')
     ->multiple();
 ```
 
-Built-in label resolution (no `resolveLabels()` call needed): `user`, `user-list`,
+Встроенное разрешение подписей (вызов `resolveLabels()` не нужен): `user`, `user-list`,
 `user-group`, `iblock`, `iblock-list`, `iblock-element`, `iblock-property`.
 
-Custom resolver for other entities:
+Собственный resolver для других сущностей:
 
 ```php
 EntitySelect::make('Warehouse', 'WAREHOUSE_ID')
@@ -192,10 +194,10 @@ EntitySelect::make('Warehouse', 'WAREHOUSE_ID')
     );
 ```
 
-### DialogSelect — static item list
+### DialogSelect — статический список элементов
 
-`DialogSelect` renders with `MB.AdminKit.DialogSelector` (requires the `mb.admin.kit`
-Bitrix extension from `mb.core`). Use it for a known, finite set of items:
+`DialogSelect` рендерится через `MB.AdminKit.DialogSelector` (нужно расширение Bitrix
+`mb.admin.kit` из `mb.core`). Используйте для известного конечного набора элементов:
 
 ```php
 DialogSelect::make('Role', 'ROLE_ID')
@@ -211,7 +213,7 @@ DialogSelect::make('Role', 'ROLE_ID')
     ->multiple();
 ```
 
-Or with the lower-level fluent API:
+Или через низкоуровневый fluent API:
 
 ```php
 DialogSelect::make('Status', 'STATUS')
@@ -223,20 +225,20 @@ DialogSelect::make('Status', 'STATUS')
 
 ## UfField
 
-`UfField` adapts Bitrix user fields and does not replace Bitrix UF internals.
+`UfField` адаптирует пользовательские поля Bitrix и не заменяет внутренности UF.
 
 ```php
 UfField::make('Custom value', 'UF_CUSTOM')
     ->entityId('HLBLOCK_1');
 ```
 
-The adapter reads Bitrix UF metadata when `USER_FIELD_MANAGER` is available and respects:
+Адаптер читает метаданные UF Bitrix, когда доступен `USER_FIELD_MANAGER`, и учитывает:
 
-- `USER_TYPE_ID` for Bitrix-side rendering;
-- `MULTIPLE` for array normalization;
-- `MANDATORY` for required validation.
+- `USER_TYPE_ID` для рендера на стороне Bitrix;
+- `MULTIPLE` для нормализации массивов;
+- `MANDATORY` для обязательной валидации.
 
-You can provide metadata explicitly in tests or non-Bitrix contexts:
+Метаданные можно задать явно в тестах или вне Bitrix:
 
 ```php
 UfField::make('Tags', 'UF_TAGS')
@@ -249,61 +251,78 @@ UfField::make('Tags', 'UF_TAGS')
 
 ## BelongsTo / BelongsToMany
 
-Select a related record directly from a Bitrix ORM `DataManager` table.
-These fields do not require a Bitrix entity-selector entity — the options are
-loaded at render time via `getList()`.
+Выбор связанной записи напрямую из таблицы Bitrix ORM `DataManager`.
+Эти поля не требуют entity Bitrix entity-selector — опции загружаются
+в момент рендера через `getList()`.
 
-### BelongsTo — single foreign-key select
+### BelongsTo — одиночный внешний ключ
 
 ```php
-use MB\Bitrix\AdminKit\Field\BelongsTo;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
 
 BelongsTo::make('Category', 'CATEGORY_ID', CategoryTable::class)
-    ->titleColumn('NAME')           // column shown in the dropdown (default: 'NAME')
-    ->valueColumn('ID')             // column used as the option value (default: 'ID')
-    ->emptyOption('— select —')     // placeholder option (empty string by default)
-    ->filter(['ACTIVE' => 'Y'])     // additional ORM filter
-    ->orderBy('SORT');              // ORM order (string → ASC, array → ORM order array)
+    ->titleColumn('NAME')           // колонка в выпадающем списке (по умолчанию: 'NAME')
+    ->valueColumn('ID')             // колонка значения опции (по умолчанию: 'ID')
+    ->emptyOption('— select —')     // placeholder-опция (по умолчанию пустая строка)
+    ->filter(['ACTIVE' => 'Y'])     // дополнительный ORM-фильтр
+    ->orderBy('SORT');              // ORM order (строка → ASC, массив → массив order ORM)
 ```
 
-### BelongsToMany — multi-select from a table
+### BelongsToMany — множественный выбор из таблицы
 
 ```php
-use MB\Bitrix\AdminKit\Field\BelongsToMany;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 
 BelongsToMany::make('Tags', 'TAG_IDS', TagTable::class)
     ->titleColumn('NAME')
     ->filter(['ACTIVE' => 'Y'])
     ->orderBy('NAME');
 
-// Render as a vertical checkbox list instead of a multi-<select>
+// Вертикальный список чекбоксов вместо multi-<select>
 BelongsToMany::make('Permissions', 'PERMISSION_IDS', PermissionTable::class)
     ->titleColumn('TITLE')
     ->asCheckboxes();
 ```
 
-Values are stored as comma-separated IDs (`"1,5,12"`).
+Значения хранятся как ID через запятую (`"1,5,12"`).
 
 ---
 
-## Conditional display and validation
+## Условный показ и валидация
 
-`visibleWhen` supports a 2-argument shorthand (column + expected value) or the
-full 3-argument form (column, operator, value):
+`visibleWhen` поддерживает краткую форму из 2 аргументов (колонка + ожидаемое значение) или
+полную форму из 3 аргументов (колонка, оператор, значение):
 
 ```php
 Text::make('External URL', 'EXTERNAL_URL')
-    ->visibleWhen('TYPE', 'external')          // shorthand — equals 'external'
-    ->visibleWhen('TYPE', '=', 'external')     // same, explicit operator
-    ->visibleWhen('MODE', 'in', ['a', 'b'])    // in-array check
+    ->visibleWhen('TYPE', 'external')          // краткая форма — равно 'external'
+    ->visibleWhen('TYPE', '=', 'external')     // то же, явный оператор
+    ->visibleWhen('MODE', 'in', ['a', 'b'])    // проверка вхождения в массив
     ->requiredWhen('TYPE', '=', 'external')
     ->readonlyWhen('LOCKED', '=', 'Y');
 ```
 
-Conditions can also be closures or `ConditionTree` objects. `requiredWhen()`
-participates in validation; `readonlyWhen()` is checked via `isReadOnlyFor($data)`.
+Условиями могут быть также замыкания или объекты `ConditionTree`. `requiredWhen()`
+участвует в валидации; `readonlyWhen()` проверяется через `isReadOnlyFor($data)`.
 
-## Dependencies
+На форме в `$data` доступны служебные ключи `_mode` (`create` / `edit`) и `_id` (ID записи).
+Удобные сокращения:
+
+- `readonlyOnUpdate()` — только при редактировании (preview/link на create остаётся с hidden input и `default()`).
+- `readonlyOnCreate()` — только при создании.
+
+```php
+BelongsTo::make('Инфоблок', 'IBLOCK_ID', IblockTable::class)
+    ->titleColumn('NAME')
+    ->valueColumn('ID')
+    ->default($iblockId)
+    ->asLink()
+    ->readonlyOnUpdate();
+```
+
+`default()` подставляется в значение поля на create (в том числе в `asLink()` preview и hidden input).
+
+## Зависимости
 
 ```php
 Select::make('Category', 'CATEGORY_ID')
@@ -313,10 +332,10 @@ IblockElementSelect::make('Element', 'ELEMENT_ID')
     ->dependsOn('IBLOCK_ID');
 ```
 
-`dependsOn()` marks a field that must be reconfigured from another field's value.
-`onChange()` marks the source field that triggers dependent field refreshes (AJAX re-render).
+`dependsOn()` помечает поле, которое нужно переконфигурировать от значения другого поля.
+`onChange()` помечает исходное поле, запускающее обновление зависимых полей (AJAX re-render).
 
-A custom modifier lets you mutate the dependent field freely:
+Собственный модификатор позволяет свободно менять зависимое поле:
 
 ```php
 Select::make('Sub', 'SUB_ID')
@@ -325,9 +344,9 @@ Select::make('Sub', 'SUB_ID')
     });
 ```
 
-## Lookup preloading
+## Предзагрузка lookup
 
-For related labels, prefer request-level preloading instead of N+1 calls. `RelationResolver` batches IDs and caches rows per request:
+Для подписей связей предпочитайте предзагрузку на уровне запроса вместо N+1. `RelationResolver` батчит ID и кэширует строки в рамках запроса:
 
 ```php
 $resolver = new RelationResolver();
@@ -337,26 +356,32 @@ Text::make('Product', 'PRODUCT_ID')
     ->displayUsing(static fn (mixed $value): string => $rows[(string)$value]['NAME'] ?? (string)$value);
 ```
 
-## Field inventory
+## Справочник полей
 
-| Class | Purpose | Normalization | Grid/detail |
+| Класс | Назначение | Нормализация | Grid/detail |
 | --- | --- | --- | --- |
-| `Text`, `Textarea`, `Email`, `Password`, `Hidden`, `Html`, `Color`, `Preview`, `ID` | Scalar text-like controls and helpers | Scalar or `null` | Escaped or specialized preview |
-| `Number` | Numeric input | Empty→`null`; numeric string→`int`/`float` | Numeric grid column |
-| `Select` | Single/multiple choice | Single: scalar/null; multiple: array | Option labels |
-| `Checkbox`, `Switcher` | Boolean checked/unchecked | Checked or unchecked scalar value | Checkbox/switcher adapter |
-| `Date`, `DateTime` | Bitrix calendar inputs | Scalar date string | Date assembler formatting |
-| `File`, `Image` | Bitrix file/image IDs | File strategy (delete/upload companion) | File name / image preview |
-| `BelongsTo` | Foreign-key select from a DataManager | Single scalar or `null` | Title column value |
-| `BelongsToMany` | Multi-select from a DataManager | Comma-separated IDs | Title column values |
-| `EntitySelect` / `TagSelect` | Generic Bitrix entity selector (TagSelector UI) | Single ID or comma-separated IDs | Label chips via resolver |
-| `DialogSelect` | Static item list selector (mb.admin.kit) | Single ID or comma-separated IDs | Label chips via resolver |
-| `UserSelect` | Bitrix user selector | Single ID or comma-separated IDs | User name chips |
-| `IblockSelect` | Iblock selector | Single ID | Iblock name chip |
-| `IblockElementSelect` | Iblock element selector; auto-reloads on `dependsOn()` | Single ID or comma-separated IDs | Element name chips |
-| `IblockSectionSelect` | Iblock section selector | Single ID or comma-separated IDs | Section name chips |
-| `UfField` | Bitrix user-field adapter | Bitrix UF POST shape | Scalar/array display |
+| `Text`, `Textarea`, `Email`, `Password`, `Hidden`, `Html`, `Color`, `Preview`, `ID` | Скалярные текстовые контролы и вспомогательные | Скаляр или `null` | Экранирование или спец. preview |
+| `Number` | Числовой input | Пусто→`null`; числовая строка→`int`/`float` | Числовая колонка грида |
+| `Select` | Одиночный/множественный выбор | Single: scalar/null; multiple: array | Подписи опций |
+| `Checkbox`, `Switcher` | Логическое вкл/выкл | Скаляр checked/unchecked | Адаптер checkbox/switcher |
+| `Date`, `DateTime` | Календарь Bitrix | Скалярная строка даты | Форматирование date assembler |
+| `File`, `Image` | ID файла/изображения Bitrix | Стратегия file (delete/upload companion) | Имя файла / preview изображения |
+| `BelongsTo` | Внешний ключ из DataManager | Один скаляр или `null` | Значение title-колонки |
+| `BelongsToMany` | Множественный выбор из DataManager | ID через запятую | Значения title-колонок |
+| `EntitySelect` / `TagSelect` | Универсальный Bitrix entity selector (TagSelector UI) | Один ID или ID через запятую | Чипы подписей через resolver |
+| `DialogSelect` | Статический список (mb.admin.kit) | Один ID или ID через запятую | Чипы подписей через resolver |
+| `UserSelect` | Селектор пользователя Bitrix | Один ID или ID через запятую | Чипы имени пользователя |
+| `IblockSelect` | Селектор инфоблока | Один ID | Чип имени инфоблока |
+| `IblockElementSelect` | Селектор элемента; перезагрузка по `dependsOn()` | Один ID или ID через запятую | Чипы имени элемента |
+| `IblockSectionSelect` | Селектор раздела | Один ID или ID через запятую | Чипы имени раздела |
+| `UfField` | Адаптер пользовательского поля Bitrix | Форма POST UF Bitrix | Скаляр/массив в отображении |
 
-All classes inherit `required()`, `readonly()`, `multiple()`, `default()`, `help()`,
+Все классы наследуют от `Field`: `required()`, `readonly()`, `multiple()`, `default()`, `help()`,
 `placeholder()`, `visibleWhen()`, `requiredWhen()`, `readonlyWhen()`, `dependsOn()`,
-`onChange()`, and `displayUsing()` from `Field`.
+`onChange()` и `displayUsing()`.
+
+## Метаданные inline-редактирования в гриде
+
+- Метаданные inline-редактирования приходят из `getGridColumnConfig()` и включаются только при `editable(true)` **и** если поле не readonly.
+- `Select` отдаёт элементы list editor Bitrix как `editable[items]` только для inline-editable колонок.
+- Поля связей и entity selector (`RelationField`, `EntitySelect`, `DialogSelect`, `TagSelect`, `UserSelect`, `Iblock*Select`) намеренно не редактируются inline в `main.ui.grid`; меняйте значения через форму/sidepanel.

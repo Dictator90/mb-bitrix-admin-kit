@@ -1,13 +1,13 @@
-# Saving pipeline
+# Пайплайн сохранения
 
-Admin Kit v0.3.0 saves CRUD form data through a single pipeline:
+Admin Kit v0.3.0 сохраняет данные CRUD-формы через единый пайплайн:
 
-1. read raw POST values;
-2. normalize every editable field through `Field::normalize()`;
-3. validate fields through `Field::runValidation()`;
-4. run `CrudResource::beforeValidate()` and `CrudResource::afterValidate()`;
-5. persist data through `CrudPersister`;
-6. run create/update lifecycle hooks and Bitrix events;
-7. show field-level validation errors or ORM errors when the operation fails.
+1. чтение сырых значений POST;
+2. нормализация каждого редактируемого поля через `Field::normalize()`;
+3. валидация полей через `Field::runValidation()`;
+4. вызов `CrudResource::beforeValidate()` и `CrudResource::afterValidate()`;
+5. сохранение через `CrudPersister`;
+6. lifecycle-хуки create/update и события Bitrix;
+7. показ ошибок валидации по полям или ORM при неуспешной операции.
 
-`FormData` carries four explicit stages: `raw`, `normalized`, `validated`, and `errors`.
+`FormData` хранит четыре явных этапа: `raw`, `normalized`, `validated` и `errors`.

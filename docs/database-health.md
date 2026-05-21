@@ -1,11 +1,11 @@
-# Database health and schema diagnostics
+# Диагностика БД и схемы
 
-v0.6.0 adds read-only database diagnostics for CRUD resources. Diagnostics never create tables,
-add columns, add indexes, or run migrations from the admin UI.
+v0.6.0 добавляет read-only диагностику базы данных для CRUD-ресурсов. Диагностика никогда не создаёт таблицы,
+не добавляет колонки и индексы и не запускает миграции из админ-UI.
 
-## Declare expected schema
+## Объявление ожидаемой схемы
 
-Resources that need diagnostics may implement `SchemaAwareResource`:
+Ресурсы, которым нужна диагностика, могут реализовать `SchemaAwareResource`:
 
 ```php
 use MB\Bitrix\AdminKit\Database\Schema\TableSchema;
@@ -25,25 +25,25 @@ final class ProductResource extends DataManagerResource implements SchemaAwareRe
 }
 ```
 
-`CrudResource::databaseTableName()` resolves the table from `DataManager::getTableName()` when the ORM class exposes it.
+`CrudResource::databaseTableName()` определяет таблицу из `DataManager::getTableName()`, если ORM-класс её предоставляет.
 
-## Inspect and check tables
+## Проверка таблиц
 
-`DatabaseSchemaInspector` uses the Bitrix connection to check:
+`DatabaseSchemaInspector` через соединение Bitrix проверяет:
 
-- table existence;
-- columns;
-- indexes.
+- наличие таблицы;
+- колонки;
+- индексы.
 
-`TableHealthCheck` compares the declared `TableSchema` with the live database and reports:
+`TableHealthCheck` сравнивает объявленную `TableSchema` с живой БД и сообщает:
 
-- missing table;
-- missing required columns;
-- missing indexes;
-- safe basic type mismatches when a type can be determined.
+- отсутствующую таблицу;
+- отсутствующие обязательные колонки;
+- отсутствующие индексы;
+- безопасные базовые несовпадения типов, когда тип можно определить.
 
-## Optional health page
+## Опциональная страница health
 
-`MB\Bitrix\AdminKit\Page\System\DatabaseHealthPage` accepts an iterable of resources and renders a diagnostic table with resource id, DataManager class, table name, missing columns, missing indexes, and status.
+`MB\Bitrix\AdminKit\Page\System\DatabaseHealthPage` принимает iterable ресурсов и рендерит диагностическую таблицу с id ресурса, классом DataManager, именем таблицы, отсутствующими колонками, отсутствующими индексами и статусом.
 
-The page is intentionally optional. Register it only in tools or admin sections where this is appropriate for privileged users.
+Страница намеренно опциональна. Регистрируйте её только в разделах tools или admin, где диагностика уместна для привилегированных пользователей.

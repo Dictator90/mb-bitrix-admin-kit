@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Action;
 
-use Bitrix\Main\Diag\Debug;
 use MB\Bitrix\AdminKit\Database\BulkOperationContext;
 use MB\Bitrix\AdminKit\Database\BulkResult;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
@@ -58,7 +57,9 @@ class MassDeleteAction extends BulkAction
             request: $context->request,
         );
 
-        if (method_exists($context->resource, 'beforeMassDelete')) {
+        $useAtomicMassDelete = $this->shouldUseAtomicMassDelete($context->resource);
+
+        if (!$useAtomicMassDelete && method_exists($context->resource, 'beforeMassDelete')) {
             try {
                 $context->resource->beforeMassDelete($ids, $operationContext);
             } catch (Throwable $exception) {
@@ -69,30 +70,26 @@ class MassDeleteAction extends BulkAction
         $chunkSize = $this->chunkSize($context);
 
         foreach ($this->chunks($ids, $chunkSize) as $chunk) {
-            foreach ($chunk as $id) {
-                $item = $context->resource->findItem($id);
-                if ($item === null) {
-                    $result->addError($id, 'Item was not found.');
-                    continue;
+            $deletableIds = $this->resolveDeletableIds($context, $chunk, $result);
+            if ($deletableIds === []) {
+                continue;
+            }
+
+            if ($useAtomicMassDelete) {
+                try {
+                    $context->resource->massDelete($deletableIds);
+                    foreach ($deletableIds as $id) {
+                        $result->addSuccess($id);
+                    }
+                } catch (Throwable $exception) {
+                    foreach ($deletableIds as $id) {
+                        $result->addError($id, $exception->getMessage());
+                    }
                 }
+                continue;
+            }
 
-                if (!$this->isRunnable($context, $item)) {
-                    $result->addSkipped($id, 'Bulk action is not allowed for this item.');
-                    continue;
-                }
-
-                $permissionContext = new PermissionContext(
-                    userId: $context->userId,
-                    resource: $context->resource,
-                    operation: 'delete',
-                    item: $item,
-                );
-
-                if (!$context->resource->canDelete($permissionContext)) {
-                    $result->addSkipped($id, 'Delete permission denied.');
-                    continue;
-                }
-
+            foreach ($deletableIds as $id) {
                 try {
                     $deleteResult = $context->resource->deleteItemResult($id);
                     if ($deleteResult->isSuccess()) {
@@ -106,7 +103,7 @@ class MassDeleteAction extends BulkAction
             }
         }
 
-        if (method_exists($context->resource, 'afterMassDelete')) {
+        if (!$useAtomicMassDelete && method_exists($context->resource, 'afterMassDelete')) {
             try {
                 $context->resource->afterMassDelete($ids, $operationContext);
             } catch (Throwable $exception) {
@@ -114,7 +111,6 @@ class MassDeleteAction extends BulkAction
             }
         }
 
-        Debug::writeToFile([$result]);
         return $result;
     }
 
@@ -136,6 +132,51 @@ class MassDeleteAction extends BulkAction
         $chunkSize = max(1, $chunkSize);
 
         return array_chunk(AdminCollection::make($ids)->all(), $chunkSize);
+    }
+
+    /**
+     * @param array<int,mixed> $chunk
+     * @return list<mixed>
+     */
+    private function resolveDeletableIds(BulkOperationContext $context, array $chunk, BulkResult $result): array
+    {
+        $deletableIds = [];
+
+        foreach ($chunk as $id) {
+            $item = $context->resource->findItem($id);
+            if ($item === null) {
+                $result->addError($id, 'Item was not found.');
+                continue;
+            }
+
+            if (!$this->isRunnable($context, $item)) {
+                $result->addSkipped($id, 'Bulk action is not allowed for this item.');
+                continue;
+            }
+
+            $permissionContext = new PermissionContext(
+                userId: $context->userId,
+                resource: $context->resource,
+                operation: 'delete',
+                item: $item,
+            );
+
+            if (!$context->resource->canDelete($permissionContext)) {
+                $result->addSkipped($id, 'Delete permission denied.');
+                continue;
+            }
+
+            $deletableIds[] = $id;
+        }
+
+        return $deletableIds;
+    }
+
+    private function shouldUseAtomicMassDelete(object $resource): bool
+    {
+        return method_exists($resource, 'massDelete')
+            && method_exists($resource, 'useTransactions')
+            && $resource->useTransactions();
     }
 
 }

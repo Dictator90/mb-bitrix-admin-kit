@@ -23,12 +23,12 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         self::assertCount(1, $panel['GROUPS']);
         $items = $panel['GROUPS'][0]['ITEMS'];
 
-        self::assertSame('edit_button', $items[0]['ID']);
+        self::assertSame('grid_edit_button', $items[0]['ID']);
         self::assertSame('delete', $items[1]['ID']);
         self::assertTrue($items[1]['ONCHANGE'][0]['CONFIRM']);
         self::assertSame('Really?', $items[1]['ONCHANGE'][0]['CONFIRM_MESSAGE']);
         self::assertSame('ui-btn-danger', $items[1]['CLASS']);
-        self::assertStringContainsString("kit.GridBulkActions.runBulkAction", $items[1]['ONCHANGE'][0]['DATA'][0]['JS']);
+        self::assertStringContainsString('kit.GridBulkActions.runBulkAction', $items[1]['ONCHANGE'][0]['DATA'][0]['JS']);
         self::assertStringContainsString('"actionId":"delete"', $items[1]['ONCHANGE'][0]['DATA'][0]['JS']);
     }
 
@@ -40,7 +40,7 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
         $items = $panel['GROUPS'][0]['ITEMS'];
 
-        self::assertSame('for_all_checkbox', $items[0]['ID']);
+        self::assertSame('actallrows_', $items[0]['ID']);
         self::assertSame('activate', $items[1]['ID']);
     }
 
@@ -87,6 +87,34 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         self::assertSame('Button Title', $item['TITLE']);
         self::assertStringContainsString('my-custom-class', $item['CLASS']);
         self::assertStringContainsString('ui-btn-icon-success', $item['CLASS']);
+    }
+
+
+    public function testCustomClientHandlerIsRenderedWithoutMagicActionId(): void
+    {
+        $grid = new Grid('products');
+        $grid->setBulkActions([
+            BulkAction::make('csv_custom', 'Export')->clientHandler('exportSelected'),
+        ]);
+
+        $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
+        $js = $panel['GROUPS'][0]['ITEMS'][0]['ONCHANGE'][0]['DATA'][0]['JS'];
+
+        self::assertStringContainsString('kit.GridBulkActions.exportSelected', $js);
+        self::assertStringContainsString('"actionId":"csv_custom"', $js);
+    }
+
+    public function testInvalidCustomClientHandlerFallsBackToBulkHandler(): void
+    {
+        $grid = new Grid('products');
+        $grid->setBulkActions([
+            BulkAction::make('custom', 'Custom')->clientHandler('bad-handler()'),
+        ]);
+
+        $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
+        $js = $panel['GROUPS'][0]['ITEMS'][0]['ONCHANGE'][0]['DATA'][0]['JS'];
+
+        self::assertStringContainsString('kit.GridBulkActions.runBulkAction', $js);
     }
 
     public function testItSupportsCustomPanelItem(): void

@@ -75,6 +75,7 @@
 
 
 ## Discovery notes
+- Keep module bootstrap and discovery separate: `Loader::includeModule()` loads Bitrix module code, while `AdminKitScope::fromModuleId()` only resolves module-relative discovery paths and must not call `Loader::includeModule()`.
 - Keep class discovery in `MB\Bitrix\AdminKit\Discovery\ClassDiscovery`; `Manager\AdminKitRegistry` must not parse PHP tokens or walk directories directly.
 - Use `mb4it/filesystem` `MB\Filesystem\Finder\ClassFinder` as the shared class lookup engine and keep final Resource/standalone Page checks Reflection-based.
 
@@ -94,3 +95,13 @@
 - Keep grouped index rows inside the existing `IndexPage` / `IndexPageDefinitionContract` flow; do not add a separate tree-grid loader.
 - Keep `HasMany` / `HasOne` relation fields batch-loaded after base rows are fetched and avoid ORM JOINs that duplicate grid rows.
 - Preserve synthetic grid row IDs (`group:*`, `item:*`) and filter group IDs out of item bulk/inline operations.
+
+## Current maintenance notes
+- Bulk actions can choose custom JS execution through `BulkAction::clientHandler()`; do not hardcode business action IDs in `BitrixGridActionPanelAdapter`.
+- Import UI is currently disabled on `IndexPage`; keep `Import\*` as a library/service layer until a dedicated UI task reconnects it.
+- `CrudResource` is a DSL/page base without persistence; use `DataManagerResource` for Bitrix D7 ORM CRUD.
+
+## Agent maintenance notes
+- Before running project checks locally, run `composer install` so `phpunit` and `phpstan` binaries are available.
+- CI/static analysis command is `composer analyse` (not `composer phpstan`).
+- PHPStan runs at **level 6** (`phpstan.neon.dist`) with `phpstan-baseline.neon`; increase level and shrink the baseline incrementally.

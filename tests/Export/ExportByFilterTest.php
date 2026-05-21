@@ -32,6 +32,6 @@ final class ExportByFilterTest extends TestCase
         $result = ExportAction::make()->execute(new ExportContext(new ProductResource()));
 
         self::assertFalse($result->isSuccess());
-        self::assertStringContainsString('умолчанию', $result->errors[0] ?? '');
+        self::assertStringContainsString('Exporting all records', $result->errors[0] ?? '');
     }
 }

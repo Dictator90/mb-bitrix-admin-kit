@@ -13,11 +13,21 @@ final class FormPageJsExtensionTest extends TestCase
 {
     protected function setUp(): void
     {
+        parent::setUp();
         $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = false;
         $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = [];
         $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [];
         $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
         $_POST = [];
+        $GLOBALS['APPLICATION'] = new class () {
+            public function SetTitle(string $title): void
+            {
+            }
+
+            public function IncludeComponent(string $name, string $template, array $params): void
+            {
+            }
+        };
     }
 
     public function testFormPageRenderInitializesAdminKitFormScript(): void

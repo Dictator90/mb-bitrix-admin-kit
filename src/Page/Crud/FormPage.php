@@ -6,37 +6,32 @@ namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\Localization\Loc;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
-use MB\Bitrix\AdminKit\Component\ComponentContext;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
-use MB\Bitrix\AdminKit\Component\Renderers\VisibilityWrapper;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Page\FormPageContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\UI\FieldContainerContract;
-use MB\Bitrix\AdminKit\Contracts\UI\ItemAwareContract;
-use MB\Bitrix\AdminKit\Contracts\UI\PageTypeAwareContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
-use MB\Bitrix\AdminKit\Exceptions\AdminKitException;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
-use MB\Bitrix\AdminKit\Field\FieldRenderContext;
-use MB\Bitrix\AdminKit\Field\Renderers\FieldRowContext;
-use MB\Bitrix\AdminKit\Field\Renderers\FieldRowRenderer;
-use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
+use MB\Bitrix\AdminKit\Page\Crud\Handlers\FormPageFormRenderer;
+use MB\Bitrix\AdminKit\Page\Crud\Handlers\FormPagePostHandler;
 use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
-use MB\Bitrix\AdminKit\Support\AdminKitJs;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Bitrix\AdminKit\Support\ExceptionDiagnostics;
 use MB\Bitrix\AdminKit\Support\ResponseTerminator;
 use Throwable;
 
 class FormPage extends CrudPage implements FormPageContract
 {
     protected ?DataWrapper $item = null;
+    protected ?object $entityItem = null;
     /** @var array<int,string> */
     protected array $globalErrors = [];
     protected bool $hasValidationErrors = false;
@@ -54,6 +49,7 @@ class FormPage extends CrudPage implements FormPageContract
     protected string $formId = '';
 
     protected string $mode = 'create';
+
     public function __construct(?ResourceContract $resource = null, mixed $id = null, array $params = [])
     {
         parent::__construct($resource, $id, $params);
@@ -66,6 +62,8 @@ class FormPage extends CrudPage implements FormPageContract
     {
         return 'form';
     }
+
+
 
     public function render(): void
     {
@@ -93,13 +91,23 @@ class FormPage extends CrudPage implements FormPageContract
 
         $this->formId = 'adminkit-form-' . md5(static::class . ($this->id ?? ''));
 
-        (new ToolbarRenderer())->renderForm($this->resource, $this->formId, $this->cancelActionJs());
+        (new ToolbarRenderer())->renderForm($this->resource, $this->formId, $this->getCancelActionJs());
 
         if ($this->id !== null && $this->id !== '') {
             if (!$this->resource instanceof ResourcePersistenceContract) {
                 $this->globalErrors[] = 'Resource does not support persistence.';
             } else {
-                $row = $this->resource->findItem($this->id);
+                if ($this->resource instanceof DataManagerResourceContract) {
+                    $select = $this->resource->relationSelectForFields($this->resource->formFields());
+                    $this->entityItem = $this->resource->findObject($this->id, $select);
+                    $row = null;
+                    if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
+                        $row = $this->entityItem->collectValues();
+                    }
+                } else {
+                    $row = $this->resource->findItem($this->id);
+                }
+
                 if ($row === null) {
                     $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_NOT_FOUND');
                 } else {
@@ -139,149 +147,148 @@ class FormPage extends CrudPage implements FormPageContract
 
         if ($this->savedInSidePanel && $this->closeSidePanelAfterSave()) {
             echo '<script>window.top.BX.SidePanel.Instance.getTopSlider().close();</script>';
-
             return;
         }
 
-        $this->renderAlerts();
-        if (!$this->isEditNotFound()) {
-            $this->renderForm();
-            $this->renderDependencyScript($this->formId);
-            $this->renderConditionalVisibilityScript($this->formId);
-            if ($this->isAsync()) {
-                $this->renderAsyncSaveScript();
-            }
-        }
-        $this->renderHintInit();
+        $this->renderFormPage();
     }
 
-    public function isAsync(): bool
+    public function getId(): mixed
     {
-        return $this->isAsync;
+        return $this->id;
     }
 
-    protected function renderHintInit(): void
+    public function setId(mixed $id): void
     {
-        echo <<<'HTML'
-        <script>
-        BX.ready(function() {
-            if (BX.UI && BX.UI.Hint) {
-                BX.UI.Hint.init(document.body);
-            }
-        });
-        </script>
-        HTML;
+        $this->id = $id;
     }
 
-    /** True when the page is rendered inside a Bitrix SidePanel. */
-    protected function isSidePanelMode(): bool
+    public function getFormMode(): string
     {
-        return $this->request->get('IFRAME') === 'Y';
+        return $this->mode;
     }
 
-    protected function isEditNotFound(): bool
+    public function setFormMode(string $mode): void
     {
-        return $this->id !== null && $this->id !== '' && $this->item === null;
+        $this->mode = $mode;
     }
 
-    protected function handlePost(): void
+    public function getItemValue(): ?DataWrapper
     {
-        if ($this->isEditNotFound()) {
-            return;
-        }
-
-        $fields = $this->collectAllFields();
-        $raw = [];
-
-        foreach ($fields as $field) {
-            $column = $field->getColumn();
-            $raw[$column] = $this->request->getPost($column);
-        }
-        $this->submittedValues = $raw;
-
-        $formData = (new DataPipeline())->process($fields, $raw);
-        $this->syncFormErrors($formData);
-
-        $context = new DbOperationContext(
-            resource: $this->resource,
-            operation: $this->id ? 'update' : 'create',
-            itemId: $this->id,
-            oldData: $this->item?->toArray() ?? [],
-            newData: $formData->validated(),
-            rawData: $formData->raw(),
-            normalizedData: $formData->normalized(),
-            validatedData: $formData->validated(),
-            request: $this->request,
-        );
-
-        try {
-            $this->assertSavePermission($context);
-            $this->resource->beforeValidate($formData, $context);
-            $this->syncFormErrors($formData);
-            $this->beforeSave($formData, $context);
-            $this->syncFormErrors($formData);
-
-            if ($formData->hasErrors() || $this->hasValidationErrors) {
-                return;
-            }
-
-            $this->resource->afterValidate($formData, $context);
-
-            if ($this->id) {
-                if (!$this->resource instanceof ResourcePersistenceContract) {
-                    throw new AdminKitException('Resource does not support persistence.');
-                }
-                $result = $this->resource->updateItemResult($this->id, $formData, $context);
-                $savedId = $result->isSuccess() ? $this->id : null;
-            } else {
-                if (!$this->resource instanceof ResourcePersistenceContract) {
-                    throw new AdminKitException('Resource does not support persistence.');
-                }
-                $result = $this->resource->createItemResult($formData, $context);
-                $savedId = $result->isSuccess() ? $result->id() : null;
-            }
-
-            if ($savedId !== null) {
-                $this->afterSave($formData, $context, $savedId);
-            }
-        } catch (AdminKitException $exception) {
-            $this->globalErrors[] = $exception->getMessage();
-            return;
-        } catch (Throwable $exception) {
-            $message = trim($exception->getMessage());
-            if ($message === '') {
-                $message = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
-            }
-            $this->globalErrors[] = $message;
-            return;
-        }
-
-        if (!$result->isSuccess()) {
-            foreach ($result->errors() as $error) {
-                $this->globalErrors[] = $error;
-            }
-            return;
-        }
-
-        if ($savedId) {
-            if ($this->isSidePanelMode()) {
-                $this->savedInSidePanel = true;
-                if (!$this->closeSidePanelAfterSave()) {
-                    $this->showSavedNotice = true;
-                    $this->reloadItemAfterSave($savedId);
-                }
-            } else {
-                $redirectUrl = $this->redirectAfterSave($savedId);
-                if ($redirectUrl === null) {
-                    $backUrl = $this->request->getPost('back_url') ?: $this->request->getRequestUri();
-                    $sep = str_contains($backUrl, '?') ? '&' : '?';
-                    $redirectUrl = $backUrl . $sep . 'saved=1';
-                }
-                $this->redirect($redirectUrl);
-            }
-        }
+        return $this->item;
     }
 
+    public function setItemValue(?DataWrapper $item): void
+    {
+        $this->item = $item;
+    }
+
+    public function getEntityItemInstance(): ?object
+    {
+        return $this->entityItem;
+    }
+
+    public function setEntityItemInstance(?object $entityItem): void
+    {
+        $this->entityItem = $entityItem;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getSubmittedValues(): array
+    {
+        return $this->submittedValues;
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    public function setSubmittedValues(array $values): void
+    {
+        $this->submittedValues = $values;
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public function getFieldErrors(): array
+    {
+        return $this->fieldErrors;
+    }
+
+    /**
+     * @param array<string, array<int, string>> $errors
+     */
+    public function setFieldErrors(array $errors): void
+    {
+        $this->fieldErrors = $errors;
+    }
+
+    public function addFieldError(string $column, string $message): void
+    {
+        $existing = $this->fieldErrors[$column] ?? [];
+        if (!in_array($message, $existing, true)) {
+            $this->fieldErrors[$column][] = $message;
+        }
+        $this->hasValidationErrors = true;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getGlobalErrors(): array
+    {
+        return $this->globalErrors;
+    }
+
+    /**
+     * @param array<int, string> $errors
+     */
+    public function setGlobalErrors(array $errors): void
+    {
+        $this->globalErrors = $errors;
+    }
+
+    public function addGlobalError(string $error): void
+    {
+        $this->globalErrors[] = $error;
+    }
+
+    public function hasValidationErrors(): bool
+    {
+        return $this->hasValidationErrors;
+    }
+
+    public function setHasValidationErrors(bool $flag): void
+    {
+        $this->hasValidationErrors = $flag;
+    }
+
+    public function getFormId(): string
+    {
+        return $this->formId;
+    }
+
+    public function getSavedInSidePanel(): bool
+    {
+        return $this->savedInSidePanel;
+    }
+
+    public function setSavedInSidePanel(bool $flag): void
+    {
+        $this->savedInSidePanel = $flag;
+    }
+
+    public function getShowSavedNotice(): bool
+    {
+        return $this->showSavedNotice;
+    }
+
+    public function setShowSavedNotice(bool $flag): void
+    {
+        $this->showSavedNotice = $flag;
+    }
 
     /** @return iterable<FieldContract|ComponentContract> */
     public function fields(): iterable
@@ -295,17 +302,10 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->resource->formTabs();
     }
 
-    protected function syncFormErrors(FormData $formData): void
+    /** @return iterable<Tab> */
+    public function getTabsList(): iterable
     {
-        foreach ($formData->errors() as $column => $messages) {
-            foreach ($messages as $message) {
-                $existing = $this->fieldErrors[$column] ?? [];
-                if (!in_array($message, $existing, true)) {
-                    $this->fieldErrors[$column][] = $message;
-                }
-                $this->hasValidationErrors = true;
-            }
-        }
+        return $this->tabs();
     }
 
     protected function beforeSave(FormData $data, DbOperationContext $context): void
@@ -338,172 +338,202 @@ class FormPage extends CrudPage implements FormPageContract
         }
     }
 
-    protected function renderAlerts(): void
+    public function triggerBeforeSave(FormData $data, DbOperationContext $context): void
     {
-        if ($this->hasValidationErrors) {
-            echo '<div class="ui-alert ui-alert-danger adminkit-alert">';
-            echo '<span class="ui-alert-message">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR')) . '</span>';
-            echo '</div>';
-        }
-
-        if (!empty($this->globalErrors)) {
-            echo '<div class="ui-alert ui-alert-danger adminkit-alert">';
-            foreach ($this->globalErrors as $error) {
-                echo '<span class="ui-alert-message">' . htmlspecialcharsbx((string)$error) . '</span><br>';
-            }
-            echo '</div>';
-        }
-
-        if ($this->request->get('saved') === '1' || $this->showSavedNotice) {
-            echo '<div class="ui-alert ui-alert-success adminkit-alert"><span class="ui-alert-message">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED')) . '</span></div>';
-        }
+        $this->beforeSave($data, $context);
     }
-    protected function renderForm(): void
+
+    public function triggerAfterSave(FormData $data, DbOperationContext $context, mixed $savedId): void
     {
-        $action = $this->request->getRequestUri();
+        $this->afterSave($data, $context, $savedId);
+    }
+
+    public function triggerRedirectAfterSave(mixed $savedId): ?string
+    {
+        return $this->redirectAfterSave($savedId);
+    }
+
+    public function triggerAssertSavePermission(DbOperationContext $context): void
+    {
+        $this->assertSavePermission($context);
+    }
+
+    /** True when the page is rendered inside a Bitrix SidePanel. */
+    protected function isSidePanelMode(): bool
+    {
+        return $this->request->get('IFRAME') === 'Y';
+    }
+
+    public function getIsSidePanelMode(): bool
+    {
+        return $this->isSidePanelMode();
+    }
+
+    protected function isEditNotFound(): bool
+    {
+        return $this->id !== null && $this->id !== '' && $this->item === null;
+    }
+
+    public function getIsEditNotFound(): bool
+    {
+        return $this->isEditNotFound();
+    }
+
+    /** @return FieldContract[] all writable fields from both flat form and tabs */
+    public function collectAllFields(): array
+    {
         $tabs = iterator_to_array($this->tabs());
-        $fid = htmlspecialcharsbx($this->formId);
-
-        echo '<form id="' . $fid . '" method="POST" action="' . htmlspecialcharsbx($action) . '">';
-        echo bitrix_sessid_post();
-
         if (!empty($tabs)) {
-            $this->renderTabbedForm($tabs);
+            $fields = [];
+            foreach ($tabs as $tab) {
+                foreach ($tab->getItems() as $item) {
+                    if ($item instanceof FieldContainerContract) {
+                        $fields = array_merge($fields, $item->extractFields());
+                    } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
+                        $fields[] = $item;
+                    }
+                }
+            }
         } else {
-            $this->renderFlatForm();
+            $fields = $this->getVisibleFields();
         }
 
-        $this->renderButtons();
-        echo '</form>';
-    }
+        $formData = $this->formConditionContext();
 
-    protected function renderFlatForm(): void
-    {
-        $items = $this->getVisibleItems();
-        $this->applyInitialDependencies($items);
-
-        echo '<div class="ui-form ui-form-section">';
-
-        foreach ($items as $item) {
-            if ($item instanceof ComponentContract) {
-                if ($item instanceof PageTypeAwareContract) {
-                    $item = $item->withPageType(PageType::FORM);
-                }
-                if ($item instanceof ItemAwareContract) {
-                    $item = $item->withItem($this->item);
-                }
-                $inner = $item->render();
-                echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($this->item, PageType::FORM));
-            } elseif ($item instanceof FieldContract) {
-                $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
-                $this->renderFormRow($item, $value);
-            }
-        }
-        echo '</div>';
-    }
-
-    /** @param array<int,Tab> $tabs */
-    protected function renderTabbedForm(array $tabs): void
-    {
-        $hasActive = false;
-        foreach ($tabs as $tab) {
-            if ($tab->isActive()) {
-                $hasActive = true;
-                break;
-            }
-        }
-        if (!$hasActive && !empty($tabs)) {
-            $tabs[0]->active();
-        }
-
-        // Collect all tab items and apply dependencies before rendering
-        $allTabItems = [];
-        foreach ($tabs as $tab) {
-            foreach ($tab->getItems() as $item) {
-                $allTabItems[] = $item;
-            }
-        }
-        $this->applyInitialDependencies($allTabItems);
-
-        echo '<div class="ui-tabs" id="adminkit-form-tabs">';
-        echo '<div class="ui-tabs-nav">';
-        foreach ($tabs as $tab) {
-            $activeClass = $tab->isActive() ? ' ui-tabs-nav-item-active' : '';
-            $tabId = htmlspecialcharsbx('tab_' . $tab->getId());
-            $title = htmlspecialcharsbx($tab->getTitle());
-            echo '<a class="ui-tabs-nav-item' . $activeClass . '" href="#' . $tabId . '">' . $title . '</a>';
-        }
-        echo '</div>';
-
-        foreach ($tabs as $tab) {
-            $activeClass = $tab->isActive() ? ' ui-tabs-panel-active' : '';
-            $tabId = htmlspecialcharsbx('tab_' . $tab->getId());
-
-            echo '<div id="' . $tabId . '" class="ui-tabs-panel' . $activeClass . '">';
-            echo '<div class="ui-form">';
-
-            foreach ($tab->getItems() as $item) {
-                if ($item instanceof ComponentContract) {
-                    if ($item instanceof PageTypeAwareContract) {
-                        $item = $item->withPageType(PageType::FORM);
-                    }
-                    if ($item instanceof ItemAwareContract) {
-                        $item = $item->withItem($this->item);
-                    }
-                    $inner = $item->render();
-                    echo (new VisibilityWrapper())->wrap($inner, $item, new ComponentContext($this->item, PageType::FORM));
-                } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
-                    $value = $this->resolveFieldValue($item->getColumn(), $this->item?->get($item->getColumn()));
-                    $this->renderFormRow($item, $value);
-                }
-            }
-
-            echo '</div>';
-            echo '</div>';
-        }
-
-        echo '</div>';
-        echo '<script>BX.ready(function(){ if(MB.UI && MB.UI.Tabs) { new MB.UI.Tabs({node: BX("adminkit-form-tabs")}); } });</script>';
-    }
-
-    protected function renderFormRow(FieldContract $field, mixed $value): void
-    {
-        echo (new FieldRowRenderer())->render(new FieldRowContext(
-            field: $field,
-            value: $value,
-            item: $this->item,
-            pageType: $this->pageType,
-            renderContext: new FieldRenderContext(
-                field: $field,
-                resource: $this->resource,
-                item: $this->item,
-                value: $value,
-                page: 'form',
-                row: $this->item?->toArray() ?? [],
-                errors: $this->fieldErrors[$field->getColumn()] ?? [],
-                meta: ['mode' => $this->mode],
-            ),
-            errors: $this->fieldErrors[$field->getColumn()] ?? [],
+        return array_values(array_filter(
+            $fields,
+            static fn (FieldContract $field): bool => !$field->isReadOnlyFor($formData),
         ));
     }
 
-    protected function renderButtons(): void
+    /** @return array<string,mixed> */
+    protected function formConditionContext(): array
     {
-        $cancelAction = $this->cancelActionJs();
+        $context = $this->item?->toArray() ?? [];
+        $context['_mode'] = $this->mode;
+        $context['_id'] = $this->id ?? '';
 
-        echo '<div class="ui-button-panel adminkit-button-panel">';
-        echo '<button type="submit" class="ui-btn ui-btn-success" id="'.$this->formId.'-submit" name="save" value="Y">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVE')) . '</button>';
-        echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialcharsbx(
-            $cancelAction
-        ) . '">' . htmlspecialcharsbx((string)Loc::getMessage('MB_ADMIN_KIT_FORM_CANCEL')) . '</button>';
-        echo '</div>';
+        if ($this->id !== null && $this->id !== '') {
+            $resource = $this->resource;
+            if ($resource instanceof \MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract) {
+                $context[$resource->getPrimaryKey()] = $this->id;
+            }
+        }
+
+        return array_merge($context, $this->submittedValues);
     }
 
-    protected function cancelActionJs(): string
+    /** @return array<string,mixed> */
+    public function formConditionContextList(): array
     {
-        return $this->isSidePanelMode()
-            ? 'window.top.BX.SidePanel.Instance.getTopSlider().close()'
-            : 'window.history.back()';
+        return $this->formConditionContext();
+    }
+
+    public function resolveFieldValueForField(FieldContract $field): mixed
+    {
+        $column = $field->getColumn();
+
+        if (array_key_exists($column, $this->submittedValues)) {
+            return $this->submittedValues[$column];
+        }
+
+        $row = $this->formConditionContext();
+
+        if (
+            $field instanceof \MB\Bitrix\AdminKit\Field\Relation\RelationField
+            && $this->resource instanceof DataManagerResourceContract
+            && $this->entityItem !== null
+        ) {
+            $resolved = $this->resource->resolveRelationValue($this->entityItem, $field);
+            if ($resolved !== null && $resolved !== '') {
+                return $resolved;
+            }
+        }
+
+        return $field->resolveValue($this->item, $row);
+    }
+
+    public function closeSidePanelAfterSave(): bool
+    {
+        return $this->resource->closeSidePanelAfterSave();
+    }
+
+    public function tryReloadItemAfterSave(mixed $savedId): bool
+    {
+        try {
+            $this->reloadItemAfterSave($savedId);
+        } catch (Throwable $exception) {
+            $fallback = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_SAVE_FAILED');
+            array_push($this->globalErrors, ...ExceptionDiagnostics::toGlobalErrors($exception, $fallback));
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function reloadItemAfterSave(mixed $savedId): void
+    {
+        if ($this->id === null || $this->id === '') {
+            $this->id = $savedId;
+            $this->mode = 'edit';
+        }
+
+        if ($this->resource instanceof ResourcePersistenceContract) {
+            if ($this->resource instanceof DataManagerResourceContract) {
+                $select = $this->resource->relationSelectForFields($this->resource->formFields());
+                $this->entityItem = $this->resource->findObject($this->id, $select);
+                if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
+                    $this->item = DataWrapper::fromArray($this->entityItem->collectValues(), $this->resource->getPrimaryKey());
+                }
+            } else {
+                $row = $this->resource->findItem($this->id);
+                if ($row !== null) {
+                    $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+                }
+            }
+        }
+    }
+
+    protected function isAsyncSaveRequest(): bool
+    {
+        if ((string)$this->request->getPost('adminkit_async_save') === 'Y') {
+            return true;
+        }
+
+        return $this->isSidePanelMode() && $this->isAjaxRequest();
+    }
+
+    public function getIsAsyncSaveRequest(): bool
+    {
+        return $this->isAsyncSaveRequest();
+    }
+
+    protected function isAjaxRequest(): bool
+    {
+        return strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
+    }
+
+    public function getIsAjaxRequest(): bool
+    {
+        return $this->isAjaxRequest();
+    }
+
+    public function sendAsyncSaveResponse(): void
+    {
+        ResponseTerminator::clearOutputBuffers();
+
+        header('Content-Type: application/json; charset=utf-8');
+        $success = !$this->hasValidationErrors && $this->globalErrors === [];
+        echo json_encode([
+            'success' => $success,
+            'validationError' => $this->hasValidationErrors,
+            'globalErrors' => $this->globalErrors,
+            'fieldErrors' => $this->fieldErrors,
+            'gridId' => $this->resource->getGridId(),
+            'closeSidePanel' => $success && $this->savedInSidePanel && $this->closeSidePanelAfterSave(),
+            'reloadParentGrid' => $success && $this->savedInSidePanel,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        ResponseTerminator::terminate();
     }
 
     /** @return array<int, FieldContract|ComponentContract> */
@@ -518,6 +548,12 @@ class FormPage extends CrudPage implements FormPageContract
             }
         }
         return $items;
+    }
+
+    /** @return array<int, FieldContract|ComponentContract> */
+    public function getVisibleItemsList(): array
+    {
+        return $this->getVisibleItems();
     }
 
     /** @return FieldContract[] */
@@ -554,7 +590,7 @@ class FormPage extends CrudPage implements FormPageContract
         $formData = [];
         foreach ($allFields as $field) {
             $column = $field->getColumn();
-            $formData[$column] = $this->resolveFieldValue($column, $this->item?->get($column));
+            $formData[$column] = $this->resolveFieldValueForField($field);
         }
 
         foreach ($allFields as $field) {
@@ -564,162 +600,110 @@ class FormPage extends CrudPage implements FormPageContract
         }
     }
 
-
-    /**
-     * AJAX handler for dependsOn() field dependencies.
-     * Applies dependency modifiers and returns re-rendered field HTML as JSON.
-     */
-    protected function handleReactivePost(): void
+    /** @param array<int, FieldContract|ComponentContract> $items */
+    public function applyInitialDependenciesList(array $items): void
     {
-        $fields = $this->collectAllFields();
-        $formData = [];
-
-        foreach ($fields as $field) {
-            $formData[$field->getColumn()] = $field->serializePostValue($this->request->getPost($field->getColumn()));
-        }
-
-        if ($this->id && $this->item === null && $this->resource instanceof ResourcePersistenceContract) {
-            $row = $this->resource->findItem($this->id);
-            $this->item = $row ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey()) : null;
-        }
-
-        $result = [];
-        foreach ($fields as $field) {
-            if (!method_exists($field, 'hasDependency') || !$field->hasDependency()) {
-                continue;
-            }
-            $field->applyDependency($formData);
-            $value = $formData[$field->getColumn()] ?? $this->item?->get($field->getColumn());
-            $result[$field->getColumn()] = ['html' => $field->renderFormField($value)];
-        }
-
-        ResponseTerminator::clearOutputBuffers();
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['status' => 'success', 'fields' => $result]);
-        ResponseTerminator::terminate();
+        $this->applyInitialDependencies($items);
     }
 
-    /**
-     * Render JS that watches source columns, shows disabled/loading states on dependent
-     * fields, and re-renders them via AJAX when a source value changes.
-     */
-    protected function renderDependencyScript(string $formId): void
+    public function getCancelActionJs(): string
     {
-        $sourceCols = [];
-        $dependsMap = [];
+        return $this->isSidePanelMode()
+            ? 'window.top.BX.SidePanel.Instance.getTopSlider().close()'
+            : 'window.history.back()';
+    }
 
-        foreach ($this->collectAllFields() as $field) {
-            if (method_exists($field, 'hasDependency') && $field->hasDependency()) {
-                $dependsMap[$field->getColumn()] = $field->getDependsOn();
-                foreach ($field->getDependsOn() as $col) {
-                    $sourceCols[$col] = true;
-                }
-            }
-        }
+    // --- Protected Helper Methods Delegating to Handlers for Backward Compatibility ---
 
-        if ($sourceCols === []) {
+    protected function handlePost(): void
+    {
+        if ($this->isEditNotFound()) {
             return;
         }
 
-        AdminKitJs::renderInit('Dependencies', [
-            'formId' => $formId,
-            'sourceCols' => array_keys($sourceCols),
-            'dependsMap' => $dependsMap,
-        ]);
+        if ($this->resource instanceof DataManagerResourceContract) {
+            $this->handleDataManagerObjectPost();
+            return;
+        }
+
+        $this->handleCrudResourcePost();
+    }
+
+    protected function handleCrudResourcePost(): void
+    {
+        (new FormPagePostHandler())->handleCrudResourcePost($this);
+    }
+
+    protected function handleDataManagerObjectPost(): void
+    {
+        (new FormPagePostHandler())->handleDataManagerObjectPost($this);
+    }
+
+    protected function finishSuccessfulSave(mixed $savedId): void
+    {
+        (new FormPagePostHandler())->finishSuccessfulSave($this, $savedId);
+    }
+
+    protected function handleReactivePost(): void
+    {
+        (new FormPagePostHandler())->handleReactivePost($this);
+    }
+
+    protected function renderFormPage(): void
+    {
+        (new FormPageFormRenderer())->render($this);
+    }
+
+    protected function renderAlerts(): void
+    {
+        (new FormPageFormRenderer())->renderAlerts($this);
+    }
+
+    protected function renderForm(): void
+    {
+        (new FormPageFormRenderer())->renderForm($this);
+    }
+
+    protected function renderFlatForm(): void
+    {
+        (new FormPageFormRenderer())->renderFlatForm($this);
+    }
+
+    /**
+     * @param array<int, \MB\Bitrix\AdminKit\Component\Layout\Tab> $tabs
+     */
+    protected function renderTabbedForm(array $tabs): void
+    {
+        (new FormPageFormRenderer())->renderTabbedForm($this, $tabs);
+    }
+
+    protected function renderFormRow(FieldContract $field, mixed $value): void
+    {
+        (new FormPageFormRenderer())->renderFormRow($this, $field, $value);
+    }
+
+    protected function renderButtons(): void
+    {
+        (new FormPageFormRenderer())->renderButtons($this);
+    }
+
+    protected function renderDependencyScript(string $formId): void
+    {
+        (new FormPageFormRenderer())->renderDependencyScript($this, $formId);
     }
 
     protected function renderConditionalVisibilityScript(string $formId): void
     {
-        AdminKitJs::renderInit('Visibility', [
-            'formId' => $formId,
-        ]);
-    }
-
-    /** @return FieldContract[] all writable fields from both flat form and tabs */
-    protected function collectAllFields(): array
-    {
-        $tabs = iterator_to_array($this->tabs());
-        if (!empty($tabs)) {
-            $fields = [];
-            foreach ($tabs as $tab) {
-                foreach ($tab->getItems() as $item) {
-                    if ($item instanceof FieldContainerContract) {
-                        $fields = array_merge($fields, $item->extractFields());
-                    } elseif ($item instanceof FieldContract && $item->isVisibleOn(PageType::FORM)) {
-                        $fields[] = $item;
-                    }
-                }
-            }
-        } else {
-            $fields = $this->getVisibleFields();
-        }
-
-        return array_values(array_filter($fields, fn (FieldContract $f) => !$f->isReadOnly()));
-    }
-    protected function resolveFieldValue(string $column, mixed $fallback): mixed
-    {
-        return array_key_exists($column, $this->submittedValues) ? $this->submittedValues[$column] : $fallback;
-    }
-
-    protected function closeSidePanelAfterSave(): bool
-    {
-        return $this->resource->closeSidePanelAfterSave();
-    }
-
-    protected function reloadItemAfterSave(mixed $savedId): void
-    {
-        if ($this->id === null || $this->id === '') {
-            $this->id = $savedId;
-            $this->mode = 'edit';
-        }
-
-        if ($this->resource instanceof ResourcePersistenceContract) {
-            $row = $this->resource->findItem($this->id);
-            if ($row !== null) {
-                $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
-            }
-        }
-    }
-
-    protected function isAsyncSaveRequest(): bool
-    {
-        if ((string)$this->request->getPost('adminkit_async_save') === 'Y') {
-            return true;
-        }
-
-        return $this->isSidePanelMode() && $this->isAjaxRequest();
-    }
-
-    protected function isAjaxRequest(): bool
-    {
-        return strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
-    }
-
-    protected function sendAsyncSaveResponse(): void
-    {
-        ResponseTerminator::clearOutputBuffers();
-
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'success' => !$this->hasValidationErrors && $this->globalErrors === [],
-            'validationError' => $this->hasValidationErrors,
-            'globalErrors' => $this->globalErrors,
-            'fieldErrors' => $this->fieldErrors,
-            'closeSidePanel' => $this->savedInSidePanel && $this->closeSidePanelAfterSave(),
-            'reloadParentGrid' => $this->savedInSidePanel && !$this->closeSidePanelAfterSave(),
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        ResponseTerminator::terminate();
+        (new FormPageFormRenderer())->renderConditionalVisibilityScript($formId);
     }
 
     protected function renderAsyncSaveScript(): void
     {
-        AdminKitJs::renderInit('Form', [
-            'formId' => $this->formId,
-            'gridId' => $this->resource->getGridId(),
-            'messages' => [
-                'validationError' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_VALIDATION_ERROR'),
-                'saved' => (string)Loc::getMessage('MB_ADMIN_KIT_FORM_SAVED'),
-            ],
-        ]);
+        (new FormPageFormRenderer())->renderAsyncSaveScript($this);
+    }
+
+    protected function renderHintInit(): void
+    {
+        (new FormPageFormRenderer())->renderHintInit();
     }
 }

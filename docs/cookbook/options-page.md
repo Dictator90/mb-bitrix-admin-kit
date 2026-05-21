@@ -43,13 +43,20 @@ final class SettingsPage extends OptionsPage
 
 ```php
 <?php
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
-require_once __DIR__ . '/../include.php';
-
 use Vendor\Module\Admin\SettingsPage;
 
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
+
+global $APPLICATION;
+$adminPage->hideTitle();
+
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
+
+\Bitrix\Main\Loader::includeModule('vendor.module');
+
+// Если админ файл должен рендерить только одну страницу
 (new SettingsPage())->render();
+
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
 ```
 

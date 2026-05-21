@@ -17,4 +17,10 @@ interface FieldValidationContract
 
     /** @return list<string>|static */
     public function validate(mixed $value): array|static;
+
+    /**
+     * @param array<string,mixed> $allValues
+     * @return list<string>
+     */
+    public function runValidation(mixed $value, array $allValues = []): array;
 }

@@ -1,19 +1,19 @@
-# Resources
+# Ресурсы
 
-A Resource is the public description of an admin section: title, identifier, fields, filters, actions, permissions, menu metadata, and page rendering settings.
+Resource — публичное описание раздела админки: заголовок, идентификатор, поля, фильтры, действия, права, метаданные меню и настройки рендера страниц.
 
-## Stable public contract
+## Стабильный публичный контракт
 
-Resource-level APIs should keep accepting and returning simple values: `array`, `iterable`, `string`, `bool`, `int`, `mixed`, `callable`, or `Closure` where callbacks are expected. Public module code should not have to depend on `MB\Support\Collection`, global helpers, or internal adapter classes.
+API на уровне Resource должны по-прежнему принимать и возвращать простые значения: `array`, `iterable`, `string`, `bool`, `int`, `mixed`, `callable` или `Closure` там, где ожидаются колбэки. Публичный код модуля не должен зависеть от `MB\Support\Collection`, глобальных хелперов или внутренних adapter-классов.
 
-## Typical responsibilities
+## Типичные обязанности
 
-- Return field lists from `indexFields()`, `formFields()`, and `detailFields()`.
-- Return filters from `filters()`.
-- Return row and bulk actions from `rowActions()` and `bulkActions()`.
-- Define permissions with `canView()`, `canCreate()`, `canUpdate()`, `canDelete()`, and action-level checks.
-- Configure SidePanel and admin menu metadata.
+- Возвращать списки полей из `indexFields()`, `formFields()` и `detailFields()`.
+- Возвращать фильтры из `filters()`.
+- Возвращать действия строки и массовые действия из `rowActions()` и `bulkActions()`.
+- Определять права через `canView()`, `canCreate()`, `canUpdate()`, `canDelete()` и проверки на уровне действий.
+- Настраивать SidePanel и метаданные пункта меню админки.
 
-## Extension guidance
+## Рекомендации по расширению
 
-Prefer extending the existing Resource and Field classes instead of introducing a parallel abstraction. Keep business-specific Bitrix ORM joins in the Resource query hooks, not in generic grid code.
+Предпочитайте расширение существующих классов Resource и Field вместо параллельной абстракции. Бизнес-специфичные ORM JOIN Bitrix держите в query-хуках Resource, а не в общем коде грида.

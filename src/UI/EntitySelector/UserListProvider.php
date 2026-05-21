@@ -11,7 +11,6 @@ use Bitrix\Main\EO_User;
 use Bitrix\Main\EO_User_Collection;
 use Bitrix\Main\Loader;
 use Bitrix\Main\ModuleManager;
-use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Bitrix\Main\ORM\Fields\ExpressionField;
 use Bitrix\Main\ORM\Fields\Relations\Reference;
 use Bitrix\Main\ORM\Query\Filter;
@@ -23,6 +22,7 @@ use Bitrix\UI\EntitySelector\Dialog;
 use Bitrix\UI\EntitySelector\Item;
 use Bitrix\UI\EntitySelector\SearchQuery;
 use Bitrix\UI\EntitySelector\Tab;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class UserListProvider extends BaseProvider
 {
@@ -54,7 +54,11 @@ class UserListProvider extends BaseProvider
 
             $this->options['nameTemplate'] = implode('', $matches[0]);
         } else {
-            $this->options['nameTemplate'] = \CSite::getNameFormat(false);
+            try {
+                $this->options['nameTemplate'] = \CSite::getNameFormat(false);
+            } catch (\Throwable) {
+                $this->options['nameTemplate'] = '#NAME# #LAST_NAME#';
+            }
         }
 
         $this->options['analyticsSource'] = 'userProvider';
@@ -117,6 +121,10 @@ class UserListProvider extends BaseProvider
 
     public function isAvailable(): bool
     {
+        if (!is_object($GLOBALS['USER'] ?? null) || !method_exists($GLOBALS['USER'], 'isAuthorized')) {
+            return false;
+        }
+
         if (!$GLOBALS['USER']->isAuthorized()) {
             return false;
         }
@@ -158,7 +166,7 @@ class UserListProvider extends BaseProvider
         $dialog->addTab(
             new Tab([
                 'id' => static::ENTITY_ID,
-                'title' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_SELECTOR_USERS_TITLE', 'Users'),
+                'title' => LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_SELECTOR_USERS_TITLE', 'Users'),
                 'icon' => [
                     'default' => 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%20fill%3D%22currentColor%22%3E%3Cpath%20fill%3D%22%23ABB1B8%22%20fill-rule%3D%22evenodd%22%20d%3D%22M21.645%2011.713c-1.054-1.67%207.832-3.057%208.422%202.054a15.6%2015.6%200%200%201%200%204.647s1.328-.152.442%202.372c0%200-.488%201.816-1.238%201.408%200%200%20.122%202.296-1.058%202.685%200%200%20.084%201.223.084%201.306l.986.147s-.03%201.02.167%201.13c.9.58%201.886%201.021%202.923%201.305%203.062.777%204.616%202.11%204.616%203.278l.823%204.189c-3.544%201.485-7.657%202.373-12.055%202.466H24.22c-4.389-.093-8.493-.977-12.03-2.456.161-1.159.371-2.47.588-3.315.466-1.816%203.087-3.165%205.498-4.202%201.248-.537%201.518-.86%202.774-1.409.07-.334.098-.676.084-1.017l1.068-.127s.14.255-.085-1.245c0%200-1.2-.311-1.256-2.7%200%200-.902.3-.956-1.147-.039-.98-.808-1.832.299-2.537l-.564-1.502s-.592-5.8%202.005-5.33%22%2F%3E%3C%2Fsvg%3E',
                     'selected' => 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%20fill%3D%22currentColor%22%3E%3Cpath%20fill%3D%22white%22%20fill-rule%3D%22evenodd%22%20d%3D%22M21.645%2011.713c-1.054-1.67%207.832-3.057%208.422%202.054a15.6%2015.6%200%200%201%200%204.647s1.328-.152.442%202.372c0%200-.488%201.816-1.238%201.408%200%200%20.122%202.296-1.058%202.685%200%200%20.084%201.223.084%201.306l.986.147s-.03%201.02.167%201.13c.9.58%201.886%201.021%202.923%201.305%203.062.777%204.616%202.11%204.616%203.278l.823%204.189c-3.544%201.485-7.657%202.373-12.055%202.466H24.22c-4.389-.093-8.493-.977-12.03-2.456.161-1.159.371-2.47.588-3.315.466-1.816%203.087-3.165%205.498-4.202%201.248-.537%201.518-.86%202.774-1.409.07-.334.098-.676.084-1.017l1.068-.127s.14.255-.085-1.245c0%200-1.2-.311-1.256-2.7%200%200-.902.3-.956-1.147-.039-.98-.808-1.832.299-2.537l-.564-1.502s-.592-5.8%202.005-5.33%22%2F%3E%3C%2Fsvg%3E'

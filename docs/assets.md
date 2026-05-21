@@ -1,10 +1,10 @@
-# Assets v0.8.0
+# Ассеты v0.8.0
 
-`AssetManager` centralizes Bitrix asset loading and deduplicates extensions, CSS, and JS declarations.
+`AssetManager` централизует подключение ассетов Bitrix и дедуплицирует объявления extensions, CSS и JS.
 
-Common presets:
+Типовые пресеты:
 
-- `forGrid()` loads `main.ui.grid`, `main.ui.filter`, `ui.buttons`, `ui.toolbar`
-- `forForm()` loads `ui`, `ui.buttons`, `ui.toolbar`
-- `forSidePanel()` loads `sidepanel`
-- `forEntitySelector()` loads `ui.entity-selector`
+- `forGrid()` — `main.ui.grid`, `main.ui.filter`, `ui.buttons`, `ui.toolbar`
+- `forForm()` — `ui`, `ui.buttons`, `ui.toolbar`
+- `forSidePanel()` — `sidepanel`
+- `forEntitySelector()` — `ui.entity-selector`

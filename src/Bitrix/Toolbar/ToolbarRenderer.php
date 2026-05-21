@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Bitrix\Toolbar;
 
 use Bitrix\UI\Buttons\Button;
-use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Bitrix\UI\Buttons\Color;
 use Bitrix\UI\Buttons\Icon;
 use Bitrix\UI\Buttons\JsCode;
@@ -13,8 +12,10 @@ use Bitrix\UI\Toolbar\ButtonLocation;
 use Bitrix\UI\Toolbar\Facade\Toolbar;
 use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
+use MB\Bitrix\AdminKit\Manager\SidePanelAdapter;
 use MB\Bitrix\AdminKit\Manager\ToolbarAction;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 final class ToolbarRenderer
 {
@@ -34,7 +35,7 @@ final class ToolbarRenderer
                 new Button([
                     'color' => Color::SUCCESS,
                     'icon' => Icon::ADD,
-                    'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_CREATE', 'Create'),
+                    'text' => LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_TOOLBAR_CREATE', 'Create'),
                     'click' => new JsCode($this->createButtonJs($resource, $grid, $createUrl)),
                 ]),
                 ButtonLocation::AFTER_TITLE,
@@ -45,7 +46,7 @@ final class ToolbarRenderer
             if ($action === 'export') {
                 Toolbar::addButton(
                     new Button([
-                        'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_EXPORT_CSV', 'Export CSV'),
+                        'text' => LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_TOOLBAR_EXPORT_CSV', 'Export CSV'),
                         'click' => new JsCode('window.location.href=' . json_encode($this->exportUrl($grid), JSON_UNESCAPED_SLASHES) . ';'),
                     ]),
                     ButtonLocation::AFTER_TITLE,
@@ -87,7 +88,7 @@ final class ToolbarRenderer
         if ($editUrl !== null && $resource->canUpdate(new PermissionContext(resource: $resource, operation: 'update'))) {
             Toolbar::addButton(
                 new Button([
-                    'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_EDIT', 'Edit'),
+                    'text' => LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_TOOLBAR_EDIT', 'Edit'),
                     'click' => new JsCode('window.location.href=' . json_encode($editUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';'),
                 ]),
                 ButtonLocation::AFTER_TITLE,
@@ -96,7 +97,7 @@ final class ToolbarRenderer
 
         Toolbar::addButton(
             new Button([
-                'text' => LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_BACK', 'Back'),
+                'text' => LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_TOOLBAR_BACK', 'Back'),
                 'click' => new JsCode($backJs),
             ]),
             ButtonLocation::AFTER_TITLE,
@@ -107,33 +108,15 @@ final class ToolbarRenderer
 
     public function createButtonJs(CrudResourceContract $resource, Grid $grid, string $createUrl): string
     {
-        if (method_exists($resource, 'createInSidePanel') && !$resource->createInSidePanel()) {
+        $adapter = new SidePanelAdapter($resource);
+
+        if (!$adapter->shouldOpen('create')) {
             return 'window.location.href=' . json_encode($createUrl, JSON_UNESCAPED_SLASHES) . ';';
         }
 
-        $options = [
-            'cacheable' => false,
-            'allowChangeHistory' => false,
-            'events' => [
-                'onCloseComplete' => '__ADMIN_KIT_RELOAD_GRID__',
-            ],
-        ];
-
-        if (method_exists($resource, 'sidePanelWidth')) {
-            $options['width'] = $resource->sidePanelWidth();
-        }
-
-        $json = json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $json = str_replace('"__ADMIN_KIT_RELOAD_GRID__"', 'function(){' . $this->reloadGridJs($grid) . '}', (string)$json);
-
-        return 'BX.SidePanel.Instance.open(' . json_encode($createUrl) . ', ' . $json . ')';
+        return $adapter->openJs($createUrl, $grid->getId());
     }
 
-    private function reloadGridJs(Grid $grid): string
-    {
-        return 'var grid=BX.Main.gridManager.getInstanceById(' . json_encode($grid->getId()) . ');'
-            . 'if(grid){grid.reload();}';
-    }
 
     private function exportUrl(Grid $grid): string
     {

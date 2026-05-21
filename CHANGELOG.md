@@ -2,6 +2,71 @@
 
 ## Unreleased
 
+### Added
+- `DataManagerResource` / `DataManagerResourceContract::getEntity()` — ORM Entity из `dataManagerClass()` (`DataManager::getEntity()`).
+- `DataManagerResource` всегда сохраняет формы через Bitrix EntityObject: `queryObject()`, `findObject()`, `newObject()`, `EntityObjectFormSaver` / `RelationObjectMutator`, `$entityObject->save()`.
+- `FormPage` маршрутизирует `DataManagerResource` в object-graph flow, `CrudResource` с ручной persistence — в `createItemResult()` / `updateItemResult()`.
+- Явные хелперы `BelongsToMany::isOrmRelationMode()` / `isStoredAsCsv()` и разделение ORM-aware `serializePostValue()`.
+- Режимы рендера формы `BelongsTo`: `asSelect()` (по умолчанию), `asRadio()`, `asLink()` (preview).
+- Тесты relation-слоя: namespace, runtime builder/registrar, метаданные resolver, value loader, object mutator, manual pivot sync, маршрутизация веток FormPage.
+
+### Fixed
+- `AdminKitManager`: кэш fingerprint для `discover()` — повторные вызовы `registry()` / `router()` / `menuBuilder()` не пересканируют пути.
+- `FormPage::formTabs()`: вкладки через `Tabs` / `TabsRenderer` (`MB.AdminKit`), убран legacy `MB.UI.Tabs`.
+- `DataPipeline`: `readonlyOnUpdate()` / `readonlyWhen()` учитывают `_mode`, `_id`, `ID` из raw POST при пропуске валидации.
+- Scalar fields (`Text`, `Textarea`, `Number`, `Select`, `EntitySelect`): `isReadOnlyFor()` в HTML формы.
+- `EntityObjectFormSaver`: сохранение в `TransactionManager` при `useTransactions()`.
+- `MassDeleteAction`: атомарное удаление через `massDelete()` когда ресурс поддерживает транзакции.
+- `ToolbarRenderer`: открытие create в SidePanel через `SidePanelAdapter`.
+- Восстановлены BC-алиасы `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage` → `Page\Crud\*`.
+- `OptionsPage`: убран дублирующий inline CSS (стили в bundle `admin-common.css`).
+- `OptionsPage`: вкладки `Tabs` снова отдают поля в HTML без JS (`TabsRenderer` server-prerendered fallback); обычный POST сохраняет и редиректит (AJAX только по `X-Requested-With`, убран всегда включённый hidden `adminkit_ajax`).
+- `GridDataLoader`: подсчёт строк (`useTotalCount`) регистрирует `runtime` через ORM `query()`, как `getList()` — фильтры вроде `PROPERTY.IBLOCK_ID` больше не падают в `getCount()`.
+- `BelongsTo` по умолчанию writable (`readonly = false`): FK-поля снова попадают в `collectAllFields()` и сохраняются через EntityObject.
+- `Switcher::normalize()` / `serializePostValue()` трактуют отсутствие POST-значения как unchecked; `EntityObjectFormSaver::extractRaw()` сериализует все поля, даже если ключ не пришёл в POST.
+- `BelongsToMany` без `mediatorReferences()` (pivot только с колонками, как `EventMessageSiteTable`) не регистрирует runtime ManyToMany; загрузка/сохранение через manual pivot sync.
+- `readonlyOnUpdate()` / `readonlyOnCreate()` и контекст формы (`_mode`, `_id`) для `readonlyWhen()` / `isReadOnlyFor()`; `collectAllFields()` и `EntityObjectFormSaver` учитывают условный readonly.
+- `BelongsTo::asLink()` на create с `default()` рендерит preview + hidden input; на edit с `readonlyOnUpdate()` — только preview.
+- `FormPage::resolveFieldValueForField()` применяет `default()` при открытии формы создания.
+- `Switcher::isCheckedValue()` понимает boolean/`1` из Bitrix ORM (`ACTIVE` в SectionTable) — форма и грид больше не показывают «Активен» всегда выключенным.
+- SidePanel async save: перезагрузка грида через `window.parent`, `reloadTable()` и `gridId` в JSON-ответе (раньше искали только `window.top` и `reload()`).
+- `FormPage`: при `adminkit_async_save=Y` успешное сохранение больше не вызывает `LocalRedirect` — ответ отдаётся JSON (`sendAsyncSaveResponse`), исправлена ошибка `Unexpected token '<'` в async-форме.
+- `EntityObjectFormSaver`: после update не вызывается `UpdateResult::getId()` с пустым `primary` — ID берётся из EntityObject, `itemId` или `getPrimary()` на Result.
+- `FormPage` / `EntityObjectFormSaver`: при исключениях сохранения в глобальные ошибки выводятся сообщение, файл:строка и stack trace (`ExceptionDiagnostics`).
+- SidePanel async save: перед закрытием слайдера выполняется `reloadItemAfterSave()` — ошибки пост-загрузки (в т.ч. relation) попадают в JSON `globalErrors`, панель не закрывается; `form-save.js` показывает алерты, уведомление и не считает ответ успешным при `globalErrors` / `fieldErrors`.
+- `BelongsToMany::normalize()` в ORM-режиме сохраняет список ID (раньше наследовался `BelongsTo::normalize()` и оставлял только первый элемент).
+- `MediatorPivotKeyResolver`: pivot-колонки (`USER_ID`, `GROUP_ID`) выводятся из `mediatorReferences()` на pivot-сущности; `RelationMetadataResolver` и `persistsViaPivotTable()` используют manual pivot sync без обязательного `foreignPivotKey()` / `relatedPivotKey()` в DSL.
+- `MediatorReferenceOrientation`: `mediatorReferences()` на `GroupTable` с `('USER', 'GROUP')` автоматически приводится к `('GROUP', 'USER')` — исправлена ошибка `Unknown field definition UserGroup:USER for Group Entity` при `findObject()`.
+- `HasMany` preview: `RelationValueLoader` разворачивает `EntityObject` / коллекции в скалярные массивы; при явном `relatedTable()` + `foreignKey()` подгружает все pivot-строки через `getList`, если ORM отдал меньше записей; `renderTablePreview()` больше не приводит объекты к string.
+- `RelationTileGrid` preview: уникальные id строк (`row_0`, `row_1`, …), чтобы tilegrid не схлопывал строки с одинаковым `ID`; подписи колонок всегда приводятся к строке (ORM title / JSON), в заголовке больше не отображается `[object Object]`.
+- `HasMany::asTable()`: превью связей через Bitrix `ui.tilegrid` (`RelationTileGridPreviewRenderer`, `BX.TileGrid.Grid`, кастомные `BX.AdminKit.RelationTileGrid.*Item`); в `asTable()` можно задать колонки и подписи (без подписи — `getTitle()` из ORM related-таблицы).
+- `BelongsTo::normalize()` приводит пустой FK к `null` и числовые ID к `int`, чтобы `EntityObject::save()` не получал `''` для integer-полей.
+- `FormPage` передаёт validated-значения из `beforeValidate()` (например `IBLOCK_ID` на create) в `EntityObjectFormSaver`, в том числе для readonly-полей.
+- `DataManagerResource::assertSinglePrimaryKey()` не вызывает `count()` при `getPrimaryArray() === null`.
+- `RuntimeRelationBuilder` для ManyToMany: `configureLocalReference` / `configureRemoteReference` принимают имена Reference на mediator-сущности, а не имена pivot-колонок; обязателен DSL `mediatorReferences()` (без привязки к конкретным Bitrix-модулям).
+- `BelongsTo::relatedTable()` синхронизирует `dataManagerClass` для загрузки опций в `BelongsToMany`; `BelongsToMany::renderFormField()` принимает список ID из `resolveRelationValue()`.
+- `EntityObjectFormSaver` откладывает sync связей до первого `save()` при создании записи; `RelationObjectMutator` создаёт пустую коллекцию через `DataManager::getEntity()->createCollection()`.
+- `BelongsToMany` с явным `pivotTable()` / pivot keys сохраняется через pivot sync (`persistsViaPivotTable()`): runtime ManyToMany в Bitrix доступен для чтения, но `EntityObject::set()` для него не поддерживается.
+- `RelationMetadataResolver` отдаёт приоритет явным `foreignPivotKey()` / `relatedPivotKey()` над ORM metadata; `OrmRelationResolver` больше не пишет имена Reference (`IBLOCK_ELEMENT`) в pivot-колонки.
+- `RelationValueLoader` корректно разворачивает строки-массивы, duck-typed entity objects и Bitrix `Collection` для BelongsToMany в ORM-режиме.
+- `RelationObjectMutator` применяет BelongsTo FK, BelongsToMany collection/manual sync и защищённые обновления HasOne/HasMany (без тихого удаления без явных флагов).
+- `ManualPivotSynchronizer` реализует `RelationSynchronizerInterface` с diff pivot (insert/delete/keep).
+- `OrmRelationResolver` извлекает ключи метаданных связей из API полей Bitrix ORM, где это доступно.
+- `RuntimeRelationBuilder`: корректный обратный Reference для BelongsTo/HasOne, OneToMany, ManyToMany с явными pivot keys.
+- Метаданные inline-редактирования грида учитывают readonly полей: поля с `readonly()` больше не публикуют editable-конфиг в колонках `main.ui.grid`.
+- Relation и entity selector поля явно помечены как non-inline-editable в метаданных грида, чтобы избежать нестабильных runtime-редакторов и направить редактирование в form/sidepanel.
+- Метаданные колонки `Select` экспортируют editable `items` только когда inline-редактирование для колонки реально включено.
+- Метаданные грида `BelongsTo` (и `BelongsToMany`) явно отключают inline-редактирование, согласуя relation-подобные select со стабильными flow sidepanel/form и исправляя падающие тесты/CI.
+- Исправлены локальные сбои CI: удалён отладочный вызов Bitrix `Debug::writeToFile()` из mass delete, восстановлен алиас колбэка `BulkAction::executeUsing()`, добавлены недостающие PHPStan-стабы Bitrix.
+- AJAX-ответы bulk actions теперь содержат структурированные `status`, `errors`, `warnings`, `affected` и сводку; non-AJAX flash включает ошибки/предупреждения по строкам, чтобы сообщения сохранялись после перезагрузки.
+- `BitrixGridActionPanelAdapter` больше не выбирает JavaScript-обработчик export по магическому id `export_selected`; bulk actions могут объявлять `clientHandler()`.
+- Стабильность Composer-пакета по умолчанию `stable`; пакет больше не подталкивает потребителей к разрешению dev-зависимостей.
+
+### Documentation
+- Задокументирован lifecycle рендера полей и совместимость/ограничения inline-редактирования для базовых, select, relation и entity selector полей.
+- Уточнено, что `CrudResource` — DSL/база страниц без persistence, а ORM CRUD-ресурсы должны расширять `DataManagerResource`.
+- Синхронизирована документация import/export, grid, quick-start и bulk-action с текущим состоянием: export включён, import UI отключён.
+
 ### Stabilization
 - Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.
 - Restored legacy `Resource` behavior expected by v1 modules: default CRUD page helpers (`indexPage/formPage/detailPage`), menu/permission/grid defaults, and DataManager fallback compatibility for direct `Resource` + persistence-trait usage.
@@ -10,6 +75,7 @@
 - Fixed menu builder safety for non-CRUD resources (guarded calls to optional `canView`/`hasCrud`/`group`).
 - Fixed field display pipeline double-formatting (`displayUsing`/preview no longer double-applies formatting).
 - Fixed `UserListProvider` boolean filter conditions (`onlyWithEmail`, `invitedUsers`).
+- Fixed EntitySelector providers stability in minimal/runtime test environments: safe defaults for missing `selected`/name-template context and guarded user-availability checks (`UserListProvider`, `UserGroupListProvider`).
 - Fixed selected export filtering to use primary-key filtering compatible with existing resource expectations.
 - Added inline-edit BC bridge on `IndexPage::saveInlineRow()` and visibility-rule BC helper on `Pages\OptionsPage::checkVisibilityRule()`.
 - Updated JS extension tests/fixtures to current `mb.admin.kit` bundle layout and stabilized isolated test fixtures.
@@ -28,6 +94,7 @@
 - Wide contracts `Contracts\FieldContract` and `Contracts\ComponentContract`; use `Contracts\Field\*`, `Contracts\UI\*`, and `Contracts\Widget\*`.
 
 ### Added
+- Added `AdminKitScope::fromModuleId()` and `resolveModulePath()` for module-relative resource/page discovery without replacing explicit `Loader::includeModule()` bootstrap.
 - `Support\LocalizedMessage` — shared `Loc::getMessage` helper for user-facing strings (replaces duplicated private `message()` methods).
 - `Pages\Handlers\OptionsPagePostHandler` and `Pages\Handlers\OptionsPageFormRenderer` — extracted POST and form rendering from `Pages\OptionsPage`.
 - `Tabs::remember()` — stores the last active tab in session (per page id) and restores it on the next visit; hidden `adminkit_active_tab` field syncs tab clicks when remember is enabled.
@@ -50,6 +117,8 @@
 - Bulk action `groupSort()` support for deterministic action-panel group ordering.
 
 ### Changed
+- Updated bootstrap/discovery documentation and demo module examples to separate Bitrix-module and local-admin usage scenarios.
+- `AdminKitScope::fromModule(string)` now treats string values as Bitrix module IDs and delegates to `fromModuleId()`.
 - Tabs and DialogSelector ship as separate bundles in `mb.admin.kit` (`src/tabs`, `src/dialog-selector` → `dist/*.bundle.js`); no shared `initAll` — each `TabsRenderer` / `DialogSelectorRenderer` initializes its own instance.
 - `Tabs::extension()` removed; `AssetManager::forForm()` no longer loads `mb.ui.tabs` separately.
 - `Resource` is now a minimal core class for identity, menu, and pages.
@@ -70,6 +139,10 @@
 - `MassDeleteAction` now shares the delete factory UI defaults (`danger`, remove icon, danger group, confirmation, sort order).
 
 ### Fixed
+- Grid inline-edit metadata now respects field readonly state: `readonly()` fields no longer publish editable config into `main.ui.grid` columns.
+- Relation and entity selector fields are now explicitly non-inline-editable in grid metadata to avoid unstable runtime editors and enforce form/sidepanel editing flows.
+- `Select` grid column metadata now exports editable `items` only when inline editing is actually enabled for the column.
+- `BelongsTo` (and `BelongsToMany`) grid metadata now explicitly disables inline editing, aligning relation-like selects with stable sidepanel/form editing flows and fixing failing tests/CI checks.
 - Localized hardcoded user-facing messages in actions, bulk results, relation components, selectors, validation rules, import/export handlers, and CRUD page notifications by moving them to `Loc` message files (`lang/ru` and `lang/en` for the affected classes).
 - Updated key documentation files to Russian and synchronized quick-start/install/architecture/grid/import-export/backward-compatibility guides with the current package behavior.
 - Options page: fields on inactive Bitrix tabs (e.g. `BelongsTo`) are included in AJAX save by temporarily enabling disabled inputs before `FormData` is built.
@@ -100,6 +173,10 @@
 - Import UI and toolbar entrypoints removed from `IndexPage` (no `action=import`, no import SidePanel flow on index). Library `Import\*` classes remain for future re-enable.
 
 ### Fixed
+- Grid inline-edit metadata now respects field readonly state: `readonly()` fields no longer publish editable config into `main.ui.grid` columns.
+- Relation and entity selector fields are now explicitly non-inline-editable in grid metadata to avoid unstable runtime editors and enforce form/sidepanel editing flows.
+- `Select` grid column metadata now exports editable `items` only when inline editing is actually enabled for the column.
+- `BelongsTo` (and `BelongsToMany`) grid metadata now explicitly disables inline editing, aligning relation-like selects with stable sidepanel/form editing flows and fixing failing tests/CI checks.
 - CSRF: POST saves and options updates require valid sessid; AJAX returns JSON errors, normal POST shows alert.
 - `DetailPage` enforces `canView` before rendering a record.
 - `FormPage` validation/save lifecycle and permission checks (`canCreate` / `canUpdate`) on render and save.
@@ -281,3 +358,20 @@
 - Added the initial Resource/CRUD skeleton for Bitrix admin pages.
 - Added base Field, Filter, Action, Grid, and Page abstractions.
 - Added initial README and PHPUnit smoke coverage for early CRUD/grid behavior.
+
+## Unreleased
+- Added foundational ORM-native relation layer primitives: `RelationMetadata`, `RelationType`, `OrmRelationResolver`, `ExplicitRelationResolver`, and `RuntimeRelationRegistrar` scaffolding for relation resolution/registration flow.
+- Extended relation fields with relation DSL building blocks (`relation()`, explicit related/pivot keys, cascade flags) and added relation type declaration API for `BelongsTo`, `HasOne`, `HasMany`, `BelongsToMany`.
+- Added BC-safe `BelongsToMany::storedAsCsv()` and save strategy toggles (`saveUsingOrm()`, `saveUsingManualSync()`) to prepare ORM-object and manual-sync modes.
+- Added `DataManagerResource::queryObject()`, `findObject()`, and `usesEntityObjectForm()` default hook for object-graph form flow.
+
+## Unreleased
+- Improved ORM relation metadata detection and type validation in `OrmRelationResolver` (Reference/OneToMany/ManyToMany heuristics).
+- Added runtime explicit relation builder/registrar wiring and validation for missing explicit config parts.
+- Added ORM-aware `BelongsToMany` serialization mode: relation/pivot mode now keeps array IDs, legacy CSV mode remains supported.
+- Added unit tests for relation resolver, runtime registrar, and BelongsToMany serialization behavior.
+
+## Unreleased
+- Migrated relation field classes to `MB\Bitrix\AdminKit\Field\Relation` namespace and updated internal imports.
+- Reworked runtime relation builder/registrar to use Bitrix ORM relation field objects and explicit registration result.
+- Added initial ORM relation services: `RelationValueLoader`, `RelationObjectMutator`, `OrmObjectRelationSynchronizer`, `ManualPivotSynchronizer`, and synchronizer interface.

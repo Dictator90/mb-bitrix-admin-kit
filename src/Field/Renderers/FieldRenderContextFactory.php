@@ -11,7 +11,7 @@ use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 final class FieldRenderContextFactory
 {
     /** @param array<string,mixed> $row */
-    /** @param array<string,array<int,string>|string> $errors */
+    /** @param array<int,string> $errors */
     /** @param array<string,mixed> $meta */
     public function make(
         FieldContract $field,

@@ -46,7 +46,8 @@ class RowAction implements ActionContract
     {
         $action = new static('delete', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_ROW_ACTION_DELETE', 'Delete'));
         $action->useConfirm = true;
-        $action->confirmText = LocalizedMessage::get(__FILE__,
+        $action->confirmText = LocalizedMessage::get(
+            __FILE__,
             'MB_ADMIN_KIT_ROW_ACTION_DELETE_CONFIRM',
             'Are you sure you want to delete this item?',
         );

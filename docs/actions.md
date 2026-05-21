@@ -1,11 +1,11 @@
-# Actions
+# Действия
 
-Actions describe user-triggered operations in row menus, toolbars, async endpoints, import/export controls, and bulk panels.
+Действия описывают операции, инициируемые пользователем: пункты меню строки, тулбар, async-эндпоинты, элементы импорта/экспорта и панель массовых действий.
 
-## Row actions
+## Действия строки
 
-Use existing row actions for view, edit, delete, and custom callbacks. Destructive actions must check permissions and CSRF.
+Используйте существующие row actions для просмотра, редактирования, удаления и пользовательских колбэков. Деструктивные действия обязаны проверять права и CSRF.
 
-## Stable API
+## Стабильный API
 
-The base Action API is stable for v1.x: public/protected method signatures, class names, namespaces, visibility conditions, labels, confirmation flags, and handler semantics must remain backward-compatible.
+Базовый API Action стабилен для v1.x: публичные/защищённые сигнатуры методов, имена классов, пространства имён, условия видимости, подписи, флаги подтверждения и семантика обработчиков должны оставаться обратно совместимыми.

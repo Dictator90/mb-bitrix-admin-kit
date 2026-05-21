@@ -1,9 +1,9 @@
-# Routing v0.8.0
+# Маршрутизация v0.8.0
 
-`AdminKitManager` delegates routing to `AdminKitRouter`. The router resolves `?page=` to a standalone page first, then to a CRUD resource. If no `page` parameter is present, the first registered resource or page is used.
+`AdminKitManager` делегирует маршрутизацию `AdminKitRouter`. Роутер разрешает `?page=` сначала в standalone-страницу, затем в CRUD-ресурс. Если параметр `page` отсутствует, используется первый зарегистрированный ресурс или страница.
 
-Build URLs through `MB\Bitrix\AdminKit\Support\UrlGenerator`:
+Собирайте URL через `MB\Bitrix\AdminKit\Support\UrlGenerator`:
 
-- `resourceUrl()` / `pageUrl()` for list and standalone pages
-- `createUrl()`, `editUrl()`, `detailUrl()` for CRUD pages
-- `actionUrl()`, `bulkActionUrl()`, `importUrl()`, `exportUrl()`, `endpointUrl()` for endpoints
+- `resourceUrl()` / `pageUrl()` — список и standalone-страницы;
+- `createUrl()`, `editUrl()`, `detailUrl()` — CRUD-страницы;
+- `actionUrl()`, `bulkActionUrl()`, `importUrl()`, `exportUrl()`, `endpointUrl()` — эндпоинты.

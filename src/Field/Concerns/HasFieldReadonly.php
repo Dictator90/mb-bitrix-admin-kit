@@ -28,6 +28,28 @@ trait HasFieldReadonly
         return $this;
     }
 
+    /** Readonly only when editing an existing record (form mode `edit` or `_id` is set). */
+    public function readonlyOnUpdate(bool $readonly = true): static
+    {
+        if ($readonly) {
+            $this->readonlyWhen(static fn (array $data): bool => ($data['_mode'] ?? '') === 'edit'
+                || ($data['_id'] ?? '') !== ''
+                || ($data['ID'] ?? '') !== '');
+        }
+
+        return $this;
+    }
+
+    /** Readonly only when creating a new record (form mode `create`). */
+    public function readonlyOnCreate(bool $readonly = true): static
+    {
+        if ($readonly) {
+            $this->readonlyWhen(static fn (array $data): bool => ($data['_mode'] ?? '') === 'create');
+        }
+
+        return $this;
+    }
+
     public function isReadOnly(): bool
     {
         return $this->readonly;

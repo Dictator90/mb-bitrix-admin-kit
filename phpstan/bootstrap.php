@@ -4,29 +4,6 @@ declare(strict_types=1);
 
 
 
-namespace MB\Bitrix\Foundation;
-
-if (!class_exists(ServiceProvider::class)) {
-    abstract class ServiceProvider
-    {
-        public function register(): void
-        {
-        }
-
-        public function boot(): void
-        {
-        }
-    }
-}
-
-namespace MB\Bitrix\Contracts\Module;
-
-if (!interface_exists(Entity::class)) {
-    interface Entity
-    {
-        public function getLibPath(): string;
-    }
-}
 
 namespace Bitrix\UI\EntitySelector;
 
@@ -46,6 +23,142 @@ namespace Bitrix\Main\ORM\Data;
 if (!class_exists(DataManager::class)) {
     abstract class DataManager
     {
+    }
+}
+
+namespace Bitrix\Main\ORM\Entity;
+
+if (!class_exists(Entity::class)) {
+    class Entity
+    {
+        public function hasField(string $fieldName): bool
+        {
+            return false;
+        }
+
+        public function getField(string $fieldName): object
+        {
+            return new class {};
+        }
+    }
+}
+
+namespace Bitrix\Main\ORM\Objectify;
+
+if (!class_exists(EntityObject::class)) {
+    class EntityObject
+    {
+        public function set(string $fieldName, mixed $value): self
+        {
+            return $this;
+        }
+
+        public function get(string $fieldName): mixed
+        {
+            return null;
+        }
+
+        public function getId(): mixed
+        {
+            return null;
+        }
+
+        public function getEntity(): \Bitrix\Main\ORM\Entity\Entity
+        {
+            return new \Bitrix\Main\ORM\Entity\Entity();
+        }
+
+        public function save(): object
+        {
+            return new class {
+                public function isSuccess(): bool
+                {
+                    return true;
+                }
+
+                /** @return list<string> */
+                public function getErrorMessages(): array
+                {
+                    return [];
+                }
+
+                public function getId(): mixed
+                {
+                    return null;
+                }
+            };
+        }
+    }
+}
+
+namespace Bitrix\Main\ORM\Query;
+
+if (!class_exists(Join::class)) {
+    class Join
+    {
+        /** @return array<string, string> */
+        public static function on(string $left, string $right): array
+        {
+            return [];
+        }
+    }
+}
+
+namespace Bitrix\Main\ORM\Fields\Relations;
+
+if (!class_exists(Reference::class)) {
+    class Reference
+    {
+        /**
+         * @param array<string, string> $referenceFilter
+         * @param array<string, mixed> $parameters
+         */
+        public function __construct(string $name, string $referenceEntity, array $referenceFilter, array $parameters = [])
+        {
+        }
+    }
+}
+
+if (!class_exists(OneToMany::class)) {
+    class OneToMany
+    {
+        public function __construct(string $name, string $relatedEntity, string $foreignKey)
+        {
+        }
+    }
+}
+
+if (!class_exists(ManyToMany::class)) {
+    class ManyToMany
+    {
+        public function __construct(string $name, string $relatedEntity)
+        {
+        }
+
+        public function configureMediatorEntity(string $entity): self
+        {
+            return $this;
+        }
+
+        public function configureLocalPrimary(string $fieldName, string $mediatorFieldName = ''): self
+        {
+            return $this;
+        }
+
+        public function configureRemotePrimary(string $fieldName, string $mediatorFieldName = ''): self
+        {
+            return $this;
+        }
+
+        public function configureLocalReference(string $key): self
+        {
+            return $this;
+        }
+
+        public function configureRemoteReference(string $key): self
+        {
+            return $this;
+        }
     }
 }
 
@@ -236,6 +349,59 @@ if (!class_exists(HttpRequest::class)) {
         public function getHeader(string $name): ?string
         {
             return null;
+        }
+    }
+}
+
+namespace Bitrix\Main;
+
+if (!class_exists(SiteTable::class)) {
+    final class SiteTable
+    {
+        public static function getList(array $params): object
+        {
+            return new class {
+                public function fetchAll(): array
+                {
+                    return [];
+                }
+            };
+        }
+    }
+}
+
+namespace Bitrix\Main\Config;
+
+if (!class_exists(Option::class)) {
+    final class Option
+    {
+        public static function get(string $moduleId, string $name, mixed $default = null, string $siteId = ''): mixed
+        {
+            return $default;
+        }
+
+        public static function set(string $moduleId, string $name, mixed $value = '', string $siteId = ''): void
+        {
+        }
+
+        public static function delete(string $moduleId, array $filter = []): void
+        {
+        }
+    }
+}
+
+namespace Bitrix\Main\ORM\Fields;
+
+if (!class_exists(ExpressionField::class)) {
+    class ExpressionField
+    {
+        public function __construct(string $name, string $expression, array $buildFrom = [])
+        {
+        }
+
+        public function getName(): string
+        {
+            return '';
         }
     }
 }

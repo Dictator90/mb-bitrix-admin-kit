@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Field;
 
-use MB\Bitrix\AdminKit\Field\HasOne;
+use MB\Bitrix\AdminKit\Field\Relation\HasOne;
 use MB\Bitrix\AdminKit\Tests\Grid\RelationSiteTable;
 use PHPUnit\Framework\TestCase;
 

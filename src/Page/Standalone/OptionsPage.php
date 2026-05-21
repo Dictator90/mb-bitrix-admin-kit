@@ -6,15 +6,16 @@ namespace MB\Bitrix\AdminKit\Page\Standalone;
 
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Localization\Loc;
-use JsonException;
 use MB\Bitrix\AdminKit\Component\Alert;
 use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
-use MB\Bitrix\AdminKit\Contracts\UI\FieldContainerContract;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Page\Standalone\Handlers\OptionsPageFormRenderer;
 use MB\Bitrix\AdminKit\Page\Standalone\Handlers\OptionsPagePostHandler;
+use MB\Bitrix\AdminKit\Page\Standalone\Services\OptionFieldExtractor;
+use MB\Bitrix\AdminKit\Page\Standalone\Services\OptionSerializer;
+use MB\Bitrix\AdminKit\Page\Standalone\Services\OptionStateManager;
 use MB\Bitrix\AdminKit\Page\StandalonePage;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\LocalizedMessage;
@@ -61,6 +62,7 @@ abstract class OptionsPage extends StandalonePage
     /** Show per-site tabs (one form per site in SiteTable). */
     protected bool $multiSite = false;
 
+    /** @var list<string> */
     protected array $errors = [];
     private bool $sessidRejected = false;
 
@@ -108,6 +110,10 @@ abstract class OptionsPage extends StandalonePage
         $APPLICATION->SetTitle(static::getTitle());
 
         $this->renderToolbar();
+
+        if (!$this->moduleId && $this->adminKitContext !== null) {
+            $this->moduleId = $this->adminKitContext->moduleId;
+        }
 
         if (!$this->moduleId) {
             echo Alert::make($this->message('MB_ADMIN_KIT_OPTIONS_MODULE_ID_MISSING', 'moduleId is not configured.', [
@@ -215,15 +221,7 @@ abstract class OptionsPage extends StandalonePage
     public function rememberActiveTabFromRequest(): void
     {
         $tabId = (string)($this->request->getPost('adminkit_active_tab') ?? '');
-        if ($tabId === '') {
-            return;
-        }
-
-        if (!isset($_SESSION['MB_ADMIN_KIT_ACTIVE_TAB']) || !is_array($_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'])) {
-            $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'] = [];
-        }
-
-        $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'][$this->tabsSessionKey()] = $tabId;
+        (new OptionStateManager($this->tabsSessionKey()))->rememberActiveTab($tabId);
     }
 
     /**
@@ -231,9 +229,7 @@ abstract class OptionsPage extends StandalonePage
      */
     public function resolveRememberedActiveTabId(array $components): ?string
     {
-        $stored = $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'][$this->tabsSessionKey()] ?? null;
-
-        return is_string($stored) && $stored !== '' ? $stored : null;
+        return (new OptionStateManager($this->tabsSessionKey()))->getActiveTabId();
     }
 
     /**
@@ -242,64 +238,21 @@ abstract class OptionsPage extends StandalonePage
      */
     public function applyRememberedTabs(array $components): array
     {
-        $storedTabId = $this->resolveRememberedActiveTabId($components);
-        $result = [];
-
-        foreach ($components as $item) {
-            if ($item instanceof \MB\Bitrix\AdminKit\Component\Layout\Tabs && $item->remembersActiveTab()) {
-                $result[] = $item->withRememberedActiveTab($storedTabId);
-                continue;
-            }
-
-            $result[] = $item;
-        }
-
-        return $result;
+        return (new OptionStateManager($this->tabsSessionKey()))->applyActiveTabs($components);
     }
 
     public function serializeOptionValue(FieldContract $field, mixed $value): string
     {
-        if (method_exists($field, 'serializeOptionValue')) {
-            return (string)$field->serializeOptionValue($value);
-        }
-
-        if (is_array($value)) {
-            try {
-                return (string)json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            } catch (JsonException) {
-                return '[]';
-            }
-        }
-
-        return (string)$value;
+        return (new OptionSerializer())->serialize($field, $value);
     }
 
     public function unserializeOptionValue(FieldContract $field, string $value): mixed
     {
-        if (method_exists($field, 'unserializeOptionValue')) {
-            return $field->unserializeOptionValue($value);
-        }
-
-        if ($value !== '' && ($value[0] === '[' || $value[0] === '{')) {
-            try {
-                $decoded = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
-                if (is_array($decoded)) {
-                    return $decoded;
-                }
-            } catch (JsonException) {
-                // Keep scalar string when stored value is not valid JSON.
-            }
-        }
-
-        return $value;
+        return (new OptionSerializer())->unserialize($field, $value);
     }
 
     public function isAjaxRequest(): bool
     {
-        if ($this->request->getPost('adminkit_ajax') === 'Y') {
-            return true;
-        }
-
         return strtolower((string)$this->request->getHeader('X-Requested-With')) === 'xmlhttprequest';
     }
 
@@ -354,18 +307,7 @@ abstract class OptionsPage extends StandalonePage
      */
     public function extractAllFields(array $components): array
     {
-        $fields = [];
-        foreach ($components as $item) {
-            if ($item instanceof Tab) {
-                $fields = array_merge($fields, $this->extractAllFields($item->getItems()));
-            } elseif ($item instanceof FieldContainerContract) {
-                $fields = array_merge($fields, $item->extractFields());
-            } elseif ($item instanceof FieldContract) {
-                $fields[] = $item;
-            }
-        }
-
-        return $fields;
+        return (new OptionFieldExtractor())->extract($components);
     }
 
     /** @return FieldContract[] */

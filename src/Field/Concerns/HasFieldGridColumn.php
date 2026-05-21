@@ -41,8 +41,19 @@ trait HasFieldGridColumn
             'sort' => (!$this->isComputed() && $this->sortable) ? $this->column : false,
             'default' => true,
             'type' => $this->getGridColumnType(),
-            'editable' => $this->editable,
+            'editable' => $this->isInlineEditable(),
         ];
+    }
+
+
+    protected function supportsInlineEdit(): bool
+    {
+        return true;
+    }
+
+    protected function isInlineEditable(): bool
+    {
+        return $this->editable && !$this->isReadOnly() && $this->supportsInlineEdit();
     }
 
     public function getFilterType(): ?string

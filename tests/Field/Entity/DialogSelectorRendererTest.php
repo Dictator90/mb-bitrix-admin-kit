@@ -58,7 +58,7 @@ final class DialogSelectorRendererTest extends TestCase
 
     public function testUserSelectorUsesDialogSelectorRenderer(): void
     {
-        $html = UserSelect::make('Responsible', 'RESPONSIBLE_ID')->renderForm(7);
+        $html = UserSelect::make('Responsible', 'RESPONSIBLE_ID')->renderForm(null);
 
         self::assertStringContainsString('MB.AdminKit.DialogSelector.DialogSelector', $html);
     }

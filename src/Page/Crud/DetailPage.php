@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\UI\Extension;
-use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
@@ -17,6 +16,7 @@ use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class DetailPage extends CrudPage implements DetailPageContract
 {
@@ -52,7 +52,7 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         if (!$this->item) {
             echo Notification::alert(
-                LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_DETAIL_NOT_FOUND', 'Item not found.'),
+                LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_DETAIL_NOT_FOUND', 'Item not found.'),
                 Notification::TYPE_WARNING,
             );
 
@@ -61,7 +61,7 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
             echo Notification::alert(
-                LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_DETAIL_ERR_CANNOT_VIEW', 'Insufficient permissions to view this record.'),
+                LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_DETAIL_ERR_CANNOT_VIEW', 'Insufficient permissions to view this record.'),
                 Notification::TYPE_WARNING,
             );
 
@@ -104,7 +104,7 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         (new ToolbarRenderer())->renderDetail($this->resource, $backAction, $this->editUrl());
 
-        $backLabel = htmlspecialcharsbx(LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_DETAIL_BACK', 'Back'));
+        $backLabel = htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_DETAIL_BACK', 'Back'));
         echo '<div class="ui-button-panel">';
         echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialchars($backAction, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">' . $backLabel . '</button>';
         echo '</div>';

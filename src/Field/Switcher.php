@@ -26,6 +26,42 @@ class Switcher extends Field
         return $this;
     }
 
+    public static function isCheckedValue(mixed $value, string $checkedValue = 'Y'): bool
+    {
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return $value > 0;
+        }
+
+        $normalized = strtoupper((string) $value);
+
+        return $normalized === strtoupper($checkedValue)
+            || $normalized === '1'
+            || $normalized === 'TRUE';
+    }
+
+    public function isCheckedState(mixed $value): bool
+    {
+        return self::isCheckedValue($value, $this->checkedValue);
+    }
+
+    public function normalize(mixed $value): mixed
+    {
+        return $this->isCheckedState($value) ? $this->checkedValue : $this->uncheckedValue;
+    }
+
+    public function serializePostValue(mixed $value): mixed
+    {
+        return $this->normalize($value);
+    }
+
     public function getGridColumnType(): string
     {
         return 'checkbox';
@@ -37,7 +73,7 @@ class Switcher extends Field
 
         $currentValue = $this->resolveValue($value);
         $name = htmlspecialcharsbx($this->column);
-        $isChecked = ((string)$currentValue === $this->checkedValue) ? 'true' : 'false';
+        $isChecked = $this->isCheckedState($currentValue) ? 'true' : 'false';
         $checkedVal = htmlspecialcharsbx($this->checkedValue);
         $uncheckedVal = htmlspecialcharsbx($this->uncheckedValue);
         $inputId = 'switcher_' . $name . '_' . uniqid();

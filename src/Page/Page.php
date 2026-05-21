@@ -13,8 +13,10 @@ use MB\Bitrix\AdminKit\Page\Concerns\HasPageIdentity;
 use MB\Bitrix\AdminKit\Page\Concerns\HasPageRequest;
 use MB\Bitrix\AdminKit\Page\Concerns\HasPageResponse;
 use MB\Bitrix\AdminKit\Page\Concerns\HasPageToolbar;
+use MB\Bitrix\AdminKit\Page\Context\AdminKitContext;
+use MB\Bitrix\AdminKit\Page\Context\AdminKitContextAwareContract;
 
-abstract class Page implements CorePageContract
+abstract class Page implements CorePageContract, AdminKitContextAwareContract
 {
     use HasPageAssets;
     use HasPageBreadcrumbs;
@@ -27,11 +29,23 @@ abstract class Page implements CorePageContract
     /** @var array<string,mixed> */
     protected array $params = [];
 
+    protected ?AdminKitContext $adminKitContext = null;
+
     /** @param array<string,mixed> $params */
     public function __construct(array $params = [])
     {
         $this->params = $params;
         $this->request = Context::getCurrent()->getRequest();
+    }
+
+    public function setAdminKitContext(AdminKitContext $context): void
+    {
+        $this->adminKitContext = $context;
+    }
+
+    public function adminKitContext(): ?AdminKitContext
+    {
+        return $this->adminKitContext;
     }
 
     abstract public function render(): void;

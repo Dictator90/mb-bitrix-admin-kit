@@ -11,7 +11,7 @@ final class FieldRenderContext
 {
     /**
      * @param array<string,mixed> $row
-     * @param array<string,array<int,string>|string> $errors
+     * @param array<int,string> $errors
      * @param array<string,mixed> $meta
      */
     public function __construct(

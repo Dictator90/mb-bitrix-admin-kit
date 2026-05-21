@@ -70,14 +70,13 @@ final class OptionsPageFormRenderer
         }
         foreach ($allFields as $field) {
             if (method_exists($field, 'hasDependency') && $field->hasDependency()) {
-                $field->applyDependency($formData);
+                $field->{'applyDependency'}($formData);
             }
         }
 
         echo '<form id="' . $formId . '" method="POST" action="' . htmlspecialcharsbx($action) . '">';
         echo bitrix_sessid_post();
         echo '<input type="hidden" name="site_id" value="' . htmlspecialcharsbx($siteId) . '">';
-        echo '<input type="hidden" name="adminkit_ajax" value="Y">';
         echo '<input type="hidden" name="adminkit_active_tab" value="' . htmlspecialcharsbx($activeTabId ?? '') . '">';
 
         $resolver = static fn (string $col) => $wrapper->get($col);
@@ -144,8 +143,8 @@ final class OptionsPageFormRenderer
 
         foreach ($page->collectEditableFields() as $field) {
             if (method_exists($field, 'hasDependency') && $field->hasDependency()) {
-                $dependsMap[$field->getColumn()] = $field->getDependsOn();
-                foreach ($field->getDependsOn() as $col) {
+                $dependsMap[$field->getColumn()] = $field->{'getDependsOn'}();
+                foreach ($field->{'getDependsOn'}() as $col) {
                     $sourceCols[$col] = true;
                 }
             }
@@ -171,14 +170,7 @@ final class OptionsPageFormRenderer
 
     public function renderInlineCss(): void
     {
-        echo <<<'CSS'
-        <style>
-        .adminkit-conditional-hidden { display: none !important; }
-        .adminkit-visibility-wrapper.adminkit-conditional-hidden { display: none !important; }
-        .adminkit-field-disabled { pointer-events: none; opacity: 0.42; filter: grayscale(20%); }
-        .adminkit-field-loading { position: relative; pointer-events: none; min-height: 36px; }
-        </style>
-        CSS;
+        // Styles live in install/js/mb/admin/kit/src/css/admin-common.css (mb.admin.kit bundle).
     }
 
     public function renderHintInit(): void

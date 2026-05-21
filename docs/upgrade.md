@@ -35,3 +35,18 @@
 
 - `@deprecated` должен содержать понятную альтернативу.
 - Deprecated-API сохраняется минимум до следующего major-релиза, если нет критической причины удалить раньше.
+
+
+### Bulk action client handlers
+
+`BitrixGridActionPanelAdapter` больше не выбирает export-поведение по id `export_selected`. Для нестандартного JS flow задавайте `BulkAction::clientHandler('handlerName')`; стандартные действия продолжают использовать `runBulkAction`.
+
+### Поля связей (namespace)
+
+- Используйте только `MB\Bitrix\AdminKit\Field\Relation\{BelongsTo,HasOne,HasMany,BelongsToMany}`.
+- Старый namespace `MB\Bitrix\AdminKit\Field\BelongsTo`, deprecated wrappers и `class_alias` не поддерживаются.
+- `BelongsToMany` по умолчанию хранит ID в scalar-колонке в формате CSV; ORM ManyToMany включается через `relation()`, `relatedTable()`/`pivotTable()`, `saveUsingOrm()` или `saveUsingManualSync()`.
+- `DataManagerResource` всегда использует EntityObject persistence на `FormPage`. Методы `enableEntityObjectForm()` / `usesEntityObjectForm()` удалены; array persistence mode для ORM-форм не поддерживается.
+
+Подробнее: [relations.md](relations.md), [forms.md](forms.md).
+

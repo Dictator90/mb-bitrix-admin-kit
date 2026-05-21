@@ -64,4 +64,42 @@ final class BitrixGridAdapterComponentParamsTest extends TestCase
         ]);
         self::assertTrue($adapter->componentParams($grid5)['SHOW_SELECT_ALL_RECORDS_CHECKBOX']);
     }
+
+    public function testItSupportsCollapsibleRowsAndColumnShift(): void
+    {
+        $grid = new class ('products', [
+            ID::make('ID'),
+            Text::make('Name', 'NAME')
+        ]) extends Grid {
+            public function hasCollapsibleRows(): bool
+            {
+                return true;
+            }
+
+            public function collapsibleShiftColumnId(): ?string
+            {
+                return 'NAME';
+            }
+
+            public function groupingAlign(): ?string
+            {
+                return 'right';
+            }
+        };
+
+        $params = (new BitrixGridAdapter())->componentParams($grid);
+
+        self::assertTrue($params['ENABLE_COLLAPSIBLE_ROWS'] ?? false);
+        $nameColumn = null;
+        foreach ($params['COLUMNS'] as $col) {
+            if ($col['id'] === 'NAME') {
+                $nameColumn = $col;
+                break;
+            }
+        }
+
+        self::assertNotNull($nameColumn);
+        self::assertTrue($nameColumn['shift'] ?? false);
+        self::assertSame('right', $nameColumn['align'] ?? null);
+    }
 }

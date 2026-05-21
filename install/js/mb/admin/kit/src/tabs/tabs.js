@@ -177,7 +177,9 @@ export class Tabs extends EventEmitter
 	#attachKeyboardNavigation(headersEl: HTMLElement)
 	{
 		Event.bind(headersEl, 'keydown', (e: KeyboardEvent) => {
-			const headers = Array.from(headersEl.querySelectorAll('[data-bx-role="tab-header"]'));
+			const headers = Array.from(headersEl.children).filter(
+				(el) => el.getAttribute('data-bx-role') === 'tab-header'
+			);
 			const activeIdx = headers.findIndex(h => h.classList.contains('--header-active'));
 
 			let nextIdx = activeIdx;

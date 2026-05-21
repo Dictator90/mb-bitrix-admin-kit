@@ -1,6 +1,6 @@
 # SidePanel v0.8.0
 
-Resources can opt into SidePanel behavior:
+Ресурсы могут включить поведение SidePanel:
 
 - `useSidePanel(): bool`
 - `createInSidePanel(): bool`
@@ -8,4 +8,4 @@ Resources can opt into SidePanel behavior:
 - `detailInSidePanel(): bool`
 - `sidePanelWidth(): int`
 
-`SidePanelAdapter` adds `IFRAME=Y`, opens create/edit/detail sliders, can reload the grid on close, and emits a close-after-save script for iframe mode without breaking full-page rendering.
+`SidePanelAdapter` добавляет `IFRAME=Y`, открывает слайдеры create/edit/detail, может перезагружать грид при закрытии и выводит скрипт закрытия после сохранения для iframe-режима, не ломая полноэкранный рендер.

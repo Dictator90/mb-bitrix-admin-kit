@@ -1,116 +1,100 @@
-# AdminKit scopes and discovery
+# Scope AdminKit и discovery
 
-AdminKit is **module-first**, but not **module-only**. Every `AdminKitManager` works inside an `AdminKitScope`; the scope is identified by a `scopeId`.
+AdminKit ориентирован на **модули**, но не ограничен **только модулями**. Каждый `AdminKitManager` работает внутри `AdminKitScope`.
 
-## `scopeId`
+`AdminKitScope` хранит:
 
-`scopeId` is a stable unique identifier for an AdminKit area. It can be a real Bitrix module ID, but it does not have to point to an installed module.
+- `scopeId` — стабильный идентификатор области AdminKit;
+- `discoveryPaths` — каталоги, в которых ищутся классы `Resource` и standalone `Page`.
 
-Examples:
+`scopeId` может быть ID модуля Bitrix, но код не должен предполагать, что каждый scope указывает на установленный модуль. Используйте ID модулей для admin-разделов модулей и project-level ID вроде `local.admin` или `site.admin` для локальных admin-инструментов.
 
-- `vendor.module`
-- `site.admin`
-- `catalog.admin`
-- `content.tools`
-- `local.interface`
+## `AdminKitScope::fromModuleId()`
 
-Use module IDs for module admin sections, and project-level names for resources stored in `local/php_interface` or custom directories.
-
-## `AdminKitScope`
-
-`MB\Bitrix\AdminKit\Manager\AdminKitScope` stores:
-
-- `scopeId` — the AdminKit area identifier;
-- `basePath` — optional base path for the scope;
-- `discoveryPaths` — directories scanned for resources and pages.
-
-The scope object does not require paths to exist. Path validation is handled by discovery configuration and the registry, so a missing optional directory does not break admin pages.
-
-## Module-first setup: `forModule()`
-
-For a module ID string, pass the module ID and add a lib path explicitly:
+Используйте `fromModuleId()` для модулей Bitrix:
 
 ```php
-use MB\Bitrix\AdminKit\AdminKit;
+use Bitrix\Main\Loader;
+use MB\Bitrix\AdminKit\Manager\AdminKitScope;
 
-$adminKit = AdminKit::forModule('vendor.module')
-    ->discoverIn('/local/modules/vendor.module/lib');
+Loader::includeModule('vendor.demo');
+$scope = AdminKitScope::fromModuleId('vendor.demo');
 ```
 
-For a module object, pass the object directly:
+`Loader::includeModule('vendor.demo')` и `fromModuleId()` намеренно разделены:
+
+- `Loader::includeModule()` загружает модуль, его `include.php`, autoload и классы;
+- `AdminKitScope::fromModuleId()` разрешает каталог модуля и строит discovery paths;
+- `fromModuleId()` **не** вызывает `Loader::includeModule()`.
+
+По умолчанию `fromModuleId('vendor.demo')` ищет классы в `lib/Admin` внутри модуля. Второй аргумент — относительный путь внутри модуля:
 
 ```php
-$adminKit = AdminKit::forModule($moduleObject);
+$scope = AdminKitScope::fromModuleId('vendor.demo', 'lib/Resources');
 ```
 
-AdminKit intentionally does not depend on a concrete module contract. It reads module data through common methods/properties when present:
-
-- scope ID: `getModuleId()`, `getId()`, `id()`, public `moduleId`, or public `id`;
-- base path: `getPath()` or public `path`;
-- module lib path: `getLibPath()` or public `libPath`.
-
-If `getLibPath()` or `libPath` is available, the path is added to discovery automatically.
-
-## Scope-only setup: `forScope()`
-
-Use `forScope()` for admin tools that are not bound to a Bitrix module:
+Поддерживается несколько каталогов модуля:
 
 ```php
-$adminKit = AdminKit::forScope('site.admin')
-    ->discoverIn('/local/php_interface/lib/Admin');
+$scope = AdminKitScope::fromModuleId('vendor.demo', [
+    'lib/Admin',
+    'lib/Pages',
+]);
 ```
 
-This is the recommended setup for `local/php_interface` resources.
+Путь модуля разрешается через Bitrix `Loader::getLocal()` при наличии, затем через fallback по файловой системе: сначала `/local/modules/<moduleId>`, затем `/bitrix/modules/<moduleId>`.
 
-## Directory shortcuts
+## `AdminKitScope::fromDirectory()`
 
-Use `fromDirectory()` when one directory is the whole scope:
+Используйте `fromDirectory()` для кода вне модулей Bitrix, например `local/classes/Admin`:
 
 ```php
-$adminKit = AdminKit::fromDirectory(
-    '/local/php_interface/lib/Admin',
-    scopeId: 'site.admin'
+use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+
+$scope = AdminKitScope::fromDirectory(
+    $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Admin',
+    'local.admin'
 );
 ```
 
-Use `fromDirectories()` for several discovery roots:
+В сценариях local-admin путь должен быть абсолютным. Если `scopeId` не указан, AdminKit использует `adminkit.local`.
+
+## `AdminKitScope::fromDirectories()`
+
+Используйте `fromDirectories()`, когда у scope несколько корней discovery:
 
 ```php
-$adminKit = AdminKit::fromDirectories([
-    '/local/php_interface/lib/Admin',
-    '/local/php_interface/lib/Tools',
-], scopeId: 'site.admin');
+$scope = AdminKitScope::fromDirectories([
+    $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Admin',
+    $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Pages',
+], 'local.admin');
 ```
 
-If `scopeId` is omitted for directory shortcuts, AdminKit uses `adminkit.local`.
+## `AdminKitScope::fromModule()`
 
-## Adding discovery paths later
-
-`discoverIn()` accepts variadic paths:
+`fromModule()` принимает строку ID модуля или module-like объект:
 
 ```php
-$adminKit = AdminKit::forScope('site.admin')
-    ->discoverIn(
-        '/local/php_interface/lib/Admin',
-        '/local/php_interface/lib/Tools'
-    );
+$scope = AdminKitScope::fromModule('vendor.demo');
 ```
 
-`discoverPaths()` accepts an array:
+Для строк `fromModule()` делегирует в `fromModuleId()`, то есть строка трактуется как ID модуля Bitrix с путём discovery по умолчанию `lib/Admin`.
+
+Для объектов AdminKit сохраняет гибкое legacy-поведение и читает общие методы/свойства при наличии:
+
+- scope ID: `getModuleId()`, `getId()`, `id()`, публичное `moduleId` или публичное `id`;
+- базовый путь: `getPath()` или публичное `path`;
+- lib модуля: `getLibPath()` или публичное `libPath`.
+
+## `AdminKitScope::fromScope()`
+
+Используйте `fromScope()`, когда нужен только scope id без discovery paths:
 
 ```php
-$adminKit = AdminKit::forScope('site.admin')
-    ->discoverPaths([
-        '/local/php_interface/lib/Admin',
-        '/local/php_interface/lib/Tools',
-    ]);
+$scope = AdminKitScope::fromScope('site.admin');
 ```
 
-Duplicate paths are ignored after normalization.
-
-## Manual registration
-
-Discovery is optional. Resources and pages can be registered manually:
+Удобно для ручной регистрации:
 
 ```php
 $adminKit = AdminKit::forScope('site.admin')
@@ -118,17 +102,37 @@ $adminKit = AdminKit::forScope('site.admin')
     ->registerPage(SettingsPage::class);
 ```
 
-Manual registration works with empty discovery paths and with missing discovery directories.
+## Добавление discovery paths позже
 
-## What is discovered
+`AdminKitManager::discoverIn()` принимает variadic paths:
 
-For every configured directory, the registry scans PHP classes and registers:
+```php
+$adminKit = AdminKit::forScope('site.admin')
+    ->discoverIn(
+        $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Admin',
+        $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Tools'
+    );
+```
 
-- non-abstract subclasses of `MB\Bitrix\AdminKit\Resource\Resource` as resources;
-- non-abstract subclasses of `MB\Bitrix\AdminKit\Pages\AbstractPage` as pages.
+`discoverPaths()` принимает массив:
 
-Classes are keyed by their `getId()` values. Duplicate IDs are not registered twice.
+```php
+$adminKit = AdminKit::forScope('site.admin')
+    ->discoverPaths([
+        $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Admin',
+        $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Tools',
+    ]);
+```
 
-## Missing paths behavior
+## Поведение при отсутствующих путях
 
-Missing, empty, or non-directory paths are ignored. They do not throw fatal errors and do not prevent manually registered resources or pages from being used.
+`AdminKitScope` не требует существования путей на этапе конструирования. Отсутствующие, пустые или не-каталожные discovery paths игнорируются слоем discovery и не мешают использовать вручную зарегистрированные ресурсы или страницы.
+
+## Что обнаруживается
+
+Для каждого настроенного каталога registry сканирует PHP-классы и регистрирует:
+
+- неабстрактные подклассы `MB\Bitrix\AdminKit\Resource\Resource` как ресурсы;
+- неабстрактные standalone page classes как страницы.
+
+Ключи классов — значения `getId()`. Дубликаты ID не регистрируются повторно.

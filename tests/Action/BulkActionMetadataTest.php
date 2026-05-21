@@ -35,6 +35,10 @@ final class BulkActionMetadataTest extends TestCase
         self::assertSame('my-class', $action->getButtonClass());
         self::assertSame('My Title', $action->getTitle());
         self::assertSame('DROPDOWN', $action->getPanelType());
+        self::assertSame('runBulkAction', $action->getClientHandler());
+
+        $action->clientHandler('customHandler');
+        self::assertSame('customHandler', $action->getClientHandler());
     }
 
     public function testDeleteActionHasDefaults(): void
@@ -42,7 +46,7 @@ final class BulkActionMetadataTest extends TestCase
         $action = BulkAction::delete();
 
         self::assertSame('danger', $action->getGroup());
-        self::assertSame('Удаление', $action->getGroupLabel());
+        self::assertSame('Deletion', $action->getGroupLabel());
         self::assertSame('ui-btn-icon-remove', $action->getIcon());
         self::assertSame(100, $action->getSort());
         self::assertTrue($action->isDanger());

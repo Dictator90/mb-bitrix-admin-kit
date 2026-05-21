@@ -49,7 +49,7 @@ final class GroupLabelRenderer
                 return $ungroupedLabel([]);
             }
 
-            return $ungroupedLabel ?? LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_GROUPING_UNGROUPED', 'Ungrouped');
+            return $ungroupedLabel ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_GROUPING_UNGROUPED', 'Ungrouped');
         }
 
         $labelColumn = $grouping->labelColumn();

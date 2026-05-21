@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Field;
 use CFile;
 use MB\Bitrix\AdminKit\Grid\Row\Assembler\ImageAssembler;
 use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class Image extends File
 {
@@ -32,6 +33,8 @@ class Image extends File
         $name = htmlspecialcharsbx($this->column);
         $fileId = (int)$currentValue;
         $existingHtml = '';
+        $deleteLabel = LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMAGE_DELETE', 'delete image');
+        $selectLabel = LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMAGE_SELECT', 'Choose image');
 
         if ($fileId > 0) {
             $fileInfo = CFile::GetByID($fileId)->Fetch();
@@ -44,13 +47,13 @@ class Image extends File
                 $thumbSrc = $thumb['src'] ?? $filePath;
 
                 $existingHtml = <<<HTML
-                <div class="adminkit-image-current" style="margin-bottom:8px;display:flex;align-items:center;gap:12px;">
+                <div class="adminkit-image-current">
                     <a href="{$filePath}" target="_blank">
-                        <img src="{$thumbSrc}" style="max-width:{$this->previewWidth}px;max-height:{$this->previewHeight}px;border:1px solid #ddd;border-radius:4px;">
+                        <img class="adminkit-image-current__preview" src="{$thumbSrc}" width="{$this->previewWidth}" height="{$this->previewHeight}">
                     </a>
                     <label>
                         <input type="checkbox" name="{$name}_delete" value="Y">
-                        {$this->message('MB_ADMIN_KIT_IMAGE_DELETE', 'delete image')}
+                        {$deleteLabel}
                     </label>
                 </div>
                 HTML;
@@ -60,12 +63,11 @@ class Image extends File
         return <<<HTML
         {$existingHtml}
         <input type="hidden" name="{$name}" value="{$fileId}">
-        <div class="ui-ctl ui-ctl-file-drop" style="position:relative;">
-            <input type="file" class="ui-ctl-element" name="{$name}_file" accept="image/*"
-                style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
-            <div class="ui-ctl-label-text" style="padding:8px 16px;cursor:pointer;">
-                <span class="ui-icon-16 ui-icon-16-image" style="vertical-align:middle;margin-right:4px;"></span>
-                {$this->message('MB_ADMIN_KIT_IMAGE_SELECT', 'Choose image')}
+        <div class="ui-ctl ui-ctl-file-drop adminkit-image-upload">
+            <input type="file" class="ui-ctl-element adminkit-image-upload__input" name="{$name}_file" accept="image/*">
+            <div class="ui-ctl-label-text adminkit-image-upload__label">
+                <span class="ui-icon-16 ui-icon-16-image adminkit-image-upload__icon"></span>
+                {$selectLabel}
             </div>
         </div>
         HTML;
@@ -90,8 +92,8 @@ class Image extends File
         ], BX_RESIZE_IMAGE_PROPORTIONAL);
         $thumbSrc = $thumb['src'] ?? $filePath;
 
-        return '<img src="' . htmlspecialcharsbx(
+        return '<img class="adminkit-image-current__preview" src="' . htmlspecialcharsbx(
             $thumbSrc
-        ) . '" style="max-width:' . $this->previewWidth . 'px;max-height:' . $this->previewHeight . 'px;">';
+        ) . '" width="' . $this->previewWidth . '" height="' . $this->previewHeight . '">';
     }
 }

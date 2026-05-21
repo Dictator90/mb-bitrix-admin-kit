@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Manager;
 
+use Bitrix\Main\Loader;
+use RuntimeException;
+
 final class AdminKitScope
 {
     /** @param string[] $discoveryPaths */
     public function __construct(
         private string $scopeId,
-        private array $discoveryPaths = []
+        private array $discoveryPaths = [],
+        private bool $isModuleScope = false
     ) {
         $this->discoveryPaths = $this->filterPaths($discoveryPaths);
     }
@@ -17,7 +21,7 @@ final class AdminKitScope
     public static function fromModule(string|object $module): self
     {
         if (is_string($module)) {
-            return new self($module);
+            return self::fromModuleId($module);
         }
 
         $scopeId = self::stringFromMethod($module, 'getModuleId')
@@ -33,7 +37,54 @@ final class AdminKitScope
             $libPath = $basePath . '/lib';
         }
 
-        return new self($scopeId, $libPath !== null ? [$libPath] : []);
+        return new self($scopeId, [$libPath], true);
+    }
+
+    /** @param string|array<int,string> $discoveryPath */
+    public static function fromModuleId(string $moduleId, string|array $discoveryPath = 'lib/Admin'): self
+    {
+        $modulePath = self::resolveModulePath($moduleId);
+        $paths = [];
+
+        foreach ((array) $discoveryPath as $path) {
+            $paths[] = rtrim($modulePath, '/\\') . '/' . ltrim((string) $path, '/\\');
+        }
+
+        return new self($moduleId, $paths, true);
+    }
+
+    public static function resolveModulePath(string $moduleId): string
+    {
+        if (class_exists(Loader::class)) {
+            foreach ([
+                'modules/' . $moduleId . '/include.php',
+                'modules/' . $moduleId . '/install/index.php',
+            ] as $relative) {
+                $path = Loader::getLocal($relative);
+                if (is_string($path) && $path !== '') {
+                    if (str_ends_with($path, '/include.php')) {
+                        return dirname($path);
+                    }
+
+                    if (str_ends_with($path, '/install/index.php')) {
+                        return dirname(dirname($path));
+                    }
+                }
+            }
+        }
+
+        $documentRoot = rtrim((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), '/\\');
+
+        foreach ([
+            $documentRoot . '/local/modules/' . $moduleId,
+            $documentRoot . '/bitrix/modules/' . $moduleId,
+        ] as $path) {
+            if (is_dir($path)) {
+                return $path;
+            }
+        }
+
+        throw new RuntimeException(sprintf('Bitrix module [%s] was not found.', $moduleId));
     }
 
     public static function fromScope(string $scopeId): self
@@ -43,13 +94,13 @@ final class AdminKitScope
 
     public static function fromDirectory(string $path, ?string $scopeId = null): self
     {
-        return new self($scopeId ?? 'adminkit.local', [$path]);
+        return new self($scopeId ?? 'adminkit.local', [$path], false);
     }
 
     /** @param string[] $paths */
     public static function fromDirectories(array $paths, ?string $scopeId = null): self
     {
-        return new self($scopeId ?? 'adminkit.local', array_values($paths));
+        return new self($scopeId ?? 'adminkit.local', array_values($paths), false);
     }
 
     public function id(): string
@@ -68,6 +119,26 @@ final class AdminKitScope
         return $this->discoveryPaths;
     }
 
+    public function isModuleScope(): bool
+    {
+        return $this->isModuleScope;
+    }
+
+    public function moduleId(): ?string
+    {
+        return $this->isModuleScope ? $this->scopeId : null;
+    }
+
+    public function optionModuleId(): string
+    {
+        return $this->isModuleScope ? $this->scopeId : 'main';
+    }
+
+    public function eventModuleId(): string
+    {
+        return $this->isModuleScope ? $this->scopeId : 'main';
+    }
+
     public function withDiscoveryPath(string $path): self
     {
         return $this->withDiscoveryPaths([$path]);
@@ -76,7 +147,7 @@ final class AdminKitScope
     /** @param string[] $paths */
     public function withDiscoveryPaths(array $paths): self
     {
-        return new self($this->scopeId, array_merge($this->discoveryPaths, $paths));
+        return new self($this->scopeId, array_merge($this->discoveryPaths, $paths), $this->isModuleScope);
     }
 
     private static function stringFromMethod(object $module, string $method): ?string

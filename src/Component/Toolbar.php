@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Component;
 
 use Bitrix\Main\UI\Extension;
-use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Bitrix\UI\Buttons\AddButton;
 use Bitrix\UI\Buttons\Color;
 use Bitrix\UI\Toolbar\Toolbar as BitrixToolbar;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class Toolbar
 {
@@ -31,7 +31,7 @@ class Toolbar
 
     public function addButton(string $url, string $text = ''): static
     {
-        $this->leftButtons[] = Button::add($url, $text !== '' ? $text : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_ADD', 'Add'));
+        $this->leftButtons[] = Button::add($url, $text !== '' ? $text : LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_TOOLBAR_ADD', 'Add'));
 
         return $this;
     }
@@ -91,7 +91,7 @@ class Toolbar
     public static function renderAddButton(string $url, string $title = ''): void
     {
         Extension::load(['ui.buttons']);
-        $title = $title !== '' ? $title : LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_TOOLBAR_ADD', 'Add');
+        $title = $title !== '' ? $title : LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_TOOLBAR_ADD', 'Add');
 
         if (class_exists(BitrixToolbar::class) && class_exists(AddButton::class)) {
             $toolbar = new BitrixToolbar();

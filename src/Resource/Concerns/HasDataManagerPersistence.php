@@ -9,6 +9,7 @@ use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Database\DbResult;
 use MB\Bitrix\AdminKit\Database\TransactionManager;
 use MB\Bitrix\AdminKit\Form\FormData;
+use MB\Bitrix\AdminKit\Relation\EntityObjectFormSaver;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use RuntimeException;
@@ -59,23 +60,36 @@ trait HasDataManagerPersistence
 
     public function createItemResult(FormData|array $data, ?DbOperationContext $context = null): DbResult
     {
-        $class = $this->requireDataManagerClass();
         $formData = $data instanceof FormData ? $data : new FormData($data, $data, $data);
         $context ??= $this->makeOperationContext('create', null, [], $formData);
 
-        return (new TransactionManager())->run(function () use ($class, $formData, $context): DbResult {
+        return (new TransactionManager())->run(function () use ($formData, $context): DbResult {
             $this->beforeCreate($formData, $context);
             $this->sendBitrixEvent('OnBeforeAdminKitResourceCreate', $context, $formData->validated(), null);
 
-            $result = (new CrudPersister())->create($class, $formData->validated());
-            if (!$result->isSuccess()) {
-                return $result;
+            $saver = new EntityObjectFormSaver();
+            $saveResult = $saver->save(
+                $this,
+                null,
+                $this->formFields(),
+                $formData->raw(),
+                $context
+            );
+
+            if (!$saveResult->success) {
+                $errors = $saveResult->globalErrors;
+                foreach ($saveResult->fieldErrors as $fieldErrors) {
+                    foreach ($fieldErrors as $err) {
+                        $errors[] = $err;
+                    }
+                }
+                return DbResult::error($errors);
             }
 
-            $this->afterCreate($result->id(), $formData, $context);
-            $this->sendBitrixEvent('OnAfterAdminKitResourceCreate', $context, $formData->validated(), $result->id());
+            $this->afterCreate($saveResult->savedId, $formData, $context);
+            $this->sendBitrixEvent('OnAfterAdminKitResourceCreate', $context, $formData->validated(), $saveResult->savedId);
 
-            return $result;
+            return DbResult::success($saveResult->savedId);
         }, $this->useTransactions());
     }
 
@@ -89,28 +103,38 @@ trait HasDataManagerPersistence
 
     public function updateItemResult(mixed $id, FormData|array $data, ?DbOperationContext $context = null): DbResult
     {
-        $class = $this->requireDataManagerClass();
         $oldItem = $this->findItem($id) ?? [];
         $formData = $data instanceof FormData ? $data : new FormData($data, $data, $data);
         $context ??= $this->makeOperationContext('update', $id, $oldItem, $formData);
 
-        return (new TransactionManager())->run(function () use ($class, $id, $oldItem, $formData, $context): DbResult {
+        return (new TransactionManager())->run(function () use ($id, $oldItem, $formData, $context): DbResult {
             $this->beforeUpdate($id, $formData, $context);
             $this->sendBitrixEvent('OnBeforeAdminKitResourceUpdate', $context, $formData->validated(), $id);
 
-            $updateData = $formData->validated();
-            unset($updateData[$this->getPrimaryKey()]);
+            $saver = new EntityObjectFormSaver();
+            $saveResult = $saver->save(
+                $this,
+                $id,
+                $this->formFields(),
+                $formData->raw(),
+                $context
+            );
 
-            $result = (new CrudPersister())->update($class, $id, $updateData);
-            if (!$result->isSuccess()) {
-                return $result;
+            if (!$saveResult->success) {
+                $errors = $saveResult->globalErrors;
+                foreach ($saveResult->fieldErrors as $fieldErrors) {
+                    foreach ($fieldErrors as $err) {
+                        $errors[] = $err;
+                    }
+                }
+                return DbResult::error($errors);
             }
 
-            $item = array_merge($oldItem, $updateData, [$this->getPrimaryKey() => $id]);
+            $item = array_merge($oldItem, $formData->validated(), [$this->getPrimaryKey() => $id]);
             $this->afterUpdate($id, $formData, $context);
             $this->sendBitrixEvent('OnAfterAdminKitResourceUpdate', $context, $item, $id);
 
-            return $result;
+            return DbResult::success($id);
         }, $this->useTransactions());
     }
 

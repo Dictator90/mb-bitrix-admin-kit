@@ -18,8 +18,10 @@ use MB\Bitrix\AdminKit\Page\ResourcePageResolver;
  */
 final class ResourcePage
 {
-    public function __construct(private ResourceContract $resource)
-    {
+    public function __construct(
+        private ResourceContract $resource,
+        private ?\MB\Bitrix\AdminKit\Page\Context\AdminKitContext $context = null
+    ) {
     }
 
     public function render(): void
@@ -42,7 +44,7 @@ final class ResourcePage
             $mode = $action === 'add' ? 'create' : ($action === 'edit' || $id !== null ? 'edit' : 'create');
         }
 
-        (new ResourcePageResolver())->resolve($this->resource, $pageName, $id, [
+        (new ResourcePageResolver(context: $this->context))->resolve($this->resource, $pageName, $id, [
             'mode' => $mode,
             'action' => $action,
         ])->render();

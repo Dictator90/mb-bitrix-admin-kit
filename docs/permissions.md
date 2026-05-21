@@ -1,5 +1,5 @@
-# Permissions
+# Права доступа
 
-`PermissionContext` describes access checks with `userId`, `moduleId`, `resource`, `operation`, and `item`.
+`PermissionContext` описывает проверки доступа с полями `userId`, `moduleId`, `resource`, `operation` и `item`.
 
-`CrudResource` exposes `canView()`, `canCreate()`, `canUpdate()`, and `canDelete()` methods accepting a `PermissionContext`. Pages check permissions before rendering create actions, opening forms, saving data, deleting rows, and mass deleting rows.
+`CrudResource` предоставляет методы `canView()`, `canCreate()`, `canUpdate()` и `canDelete()`, принимающие `PermissionContext`. Страницы проверяют права перед отрисовкой действий создания, открытием форм, сохранением данных, удалением строк и массовым удалением.
