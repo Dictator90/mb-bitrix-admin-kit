@@ -24,8 +24,8 @@ final class ExportPermissionTest extends TestCase
         $result = ExportAction::make()->execute(new ExportContext($resource, selectedIds: [1]));
 
         self::assertFalse($result->isSuccess());
-        self::assertFalse($result->isSuccess());
-        self::assertStringContainsString('СЌРєСЃРїРѕСЂС‚', mb_strtolower($result->errors[0] ?? ''));
+        $error = mb_strtolower($result->errors[0] ?? '');
+        self::assertTrue(str_contains($error, 'экспорт') || str_contains($error, 'export'));
     }
 
     public function testItHonorsCanRunCondition(): void
@@ -33,7 +33,7 @@ final class ExportPermissionTest extends TestCase
         $result = ExportAction::make()->canRun(false)->execute(new ExportContext(new ProductResource(), selectedIds: [1]));
 
         self::assertFalse($result->isSuccess());
-        self::assertFalse($result->isSuccess());
-        self::assertStringContainsString('СЌРєСЃРїРѕСЂС‚', mb_strtolower($result->errors[0] ?? ''));
+        $error = mb_strtolower($result->errors[0] ?? '');
+        self::assertTrue(str_contains($error, 'экспорт') || str_contains($error, 'export'));
     }
 }

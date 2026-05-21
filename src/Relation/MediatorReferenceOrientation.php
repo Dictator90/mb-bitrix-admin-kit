@@ -52,10 +52,11 @@ final class MediatorReferenceOrientation
         }
 
         $entity = $mediatorDataManagerClass::getEntity();
-        if (!is_object($entity) || !method_exists($entity, 'hasField') || !$entity->hasField($referenceName)) {
+        if (!is_object($entity) || !method_exists($entity, 'hasField') || !method_exists($entity, 'getField') || !$entity->hasField($referenceName)) {
             return null;
         }
 
+        /** @var mixed $field */
         $field = $entity->getField($referenceName);
         if (!method_exists($field, 'getRefEntity')) {
             return null;

@@ -29,15 +29,8 @@ final class AdminKitV080Test extends TestCase
     public function testRouterResolvesStandalonePageBeforeResource(): void
     {
         $registry = (new AdminKitRegistry())->registerResource(EarlyResource::class)->registerPage(StandalonePage::class);
-        $router = new AdminKitRouter($registry, new class () extends HttpRequest {
-            public function get(string $key): mixed
-            {
-                return $key === 'page' ? 'standalone' : null;
-            } public function getPost(string $key): mixed
-            {
-                return null;
-            }
-        });
+        $request = new HttpRequest(new \Bitrix\Main\Server([]), ['page' => 'standalone'], [], [], []);
+        $router = new AdminKitRouter($registry, $request);
 
         self::assertInstanceOf(StandalonePage::class, $router->currentPage());
     }
@@ -45,15 +38,8 @@ final class AdminKitV080Test extends TestCase
     public function testRouterResolvesResourcePage(): void
     {
         $registry = (new AdminKitRegistry())->registerResource(EarlyResource::class);
-        $router = new AdminKitRouter($registry, new class () extends HttpRequest {
-            public function get(string $key): mixed
-            {
-                return $key === 'page' ? 'early' : null;
-            } public function getPost(string $key): mixed
-            {
-                return null;
-            }
-        });
+        $request = new HttpRequest(new \Bitrix\Main\Server([]), ['page' => 'early'], [], [], []);
+        $router = new AdminKitRouter($registry, $request);
 
         self::assertInstanceOf(ResourcePage::class, $router->currentPage());
     }

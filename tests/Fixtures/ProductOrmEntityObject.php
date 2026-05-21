@@ -7,7 +7,7 @@ namespace MB\Bitrix\AdminKit\Tests\Fixtures;
 final class ProductOrmEntityObject
 {
     /** @param array<string,mixed> $values */
-    public function __construct(private array $values)
+    public function __construct(private array $values, private bool $isNew = true)
     {
     }
 
@@ -34,17 +34,26 @@ final class ProductOrmEntityObject
 
     public function save(): FakeOrmResult
     {
-        $id = $this->values['ID'] ?? null;
-        if ($id === null || $id === '') {
-            $result = ProductTable::add($this->values);
+        if ($this->isNew) {
+            $data = $this->values;
+            if (array_key_exists('ID', $data) && $data['ID'] === null) {
+                unset($data['ID']);
+            }
+            $result = ProductTable::add($data);
             if ($result->isSuccess()) {
                 $this->values['ID'] = $result->getId();
+                $this->isNew = false;
             }
 
             return $result;
         }
 
-        $result = ProductTable::update($id, $this->values);
+        $id = $this->values['ID'] ?? null;
+        $data = $this->values;
+        if (array_key_exists('ID', $data)) {
+            unset($data['ID']);
+        }
+        $result = ProductTable::update($id, $data);
         if ($result->isSuccess()) {
             foreach (ProductTable::$rows as $index => $row) {
                 if ((string) ($row['ID'] ?? '') === (string) $id) {

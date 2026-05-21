@@ -54,7 +54,11 @@ class UserListProvider extends BaseProvider
 
             $this->options['nameTemplate'] = implode('', $matches[0]);
         } else {
-            $this->options['nameTemplate'] = \CSite::getNameFormat(false);
+            try {
+                $this->options['nameTemplate'] = \CSite::getNameFormat(false);
+            } catch (\Throwable) {
+                $this->options['nameTemplate'] = '#NAME# #LAST_NAME#';
+            }
         }
 
         $this->options['analyticsSource'] = 'userProvider';
@@ -117,6 +121,10 @@ class UserListProvider extends BaseProvider
 
     public function isAvailable(): bool
     {
+        if (!is_object($GLOBALS['USER'] ?? null) || !method_exists($GLOBALS['USER'], 'isAuthorized')) {
+            return false;
+        }
+
         if (!$GLOBALS['USER']->isAuthorized()) {
             return false;
         }

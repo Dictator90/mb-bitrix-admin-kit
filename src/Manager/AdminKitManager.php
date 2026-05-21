@@ -84,7 +84,7 @@ final class AdminKitManager
 
     public function router(): AdminKitRouter
     {
-        return new AdminKitRouter($this->discover(), $this->request);
+        return new AdminKitRouter($this->discover(), $this->request, $this->scope);
     }
 
     public function menuBuilder(string $baseUrl = ''): AdminKitMenuBuilder

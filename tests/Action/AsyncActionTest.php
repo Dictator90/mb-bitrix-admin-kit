@@ -6,10 +6,25 @@ namespace MB\Bitrix\AdminKit\Tests\Action;
 
 use Bitrix\Main\HttpRequest;
 use MB\Bitrix\AdminKit\Action\AsyncAction;
+use MB\Bitrix\AdminKit\Tests\Support\BitrixContextTrait;
 use PHPUnit\Framework\TestCase;
 
 final class AsyncActionTest extends TestCase
 {
+    use BitrixContextTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setPostRequest(['ping' => '1']);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->restoreRequest();
+        parent::tearDown();
+    }
+
     public function testDispatchReturnsJsonSuccessPayload(): void
     {
         $action = new class ('ping', 'Ping') extends AsyncAction {
@@ -19,11 +34,15 @@ final class AsyncActionTest extends TestCase
             }
         };
 
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['ping' => '1'];
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
-
         ob_start();
-        $action->dispatch(new HttpRequest());
+        $request = new HttpRequest(
+            \Bitrix\Main\Application::getInstance()->getContext()->getServer(),
+            ['sessid' => bitrix_sessid()],
+            ['ping' => '1', 'sessid' => bitrix_sessid()],
+            [],
+            []
+        );
+        $action->dispatch($request);
         $output = (string) ob_get_clean();
 
         self::assertStringContainsString('"status":"success"', str_replace(' ', '', $output));
@@ -32,10 +51,13 @@ final class AsyncActionTest extends TestCase
 
     public function testDispatchRejectsInvalidCsrf(): void
     {
-        $previous = $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] ?? true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = false;
+        $context = \Bitrix\Main\Application::getInstance()->getContext();
+        $originalRequest = $context->getRequest();
 
         try {
+            $invalidRequest = new HttpRequest($context->getServer(), ['sessid' => 'invalid'], ['sessid' => 'invalid'], [], []);
+            $context->initialize($invalidRequest, $context->getResponse(), $context->getServer());
+
             $action = new class ('ping', 'Ping') extends AsyncAction {
                 public function handle(array $data): array
                 {
@@ -44,12 +66,13 @@ final class AsyncActionTest extends TestCase
             };
 
             ob_start();
-            $action->dispatch(new HttpRequest());
+            $request = new HttpRequest(new \Bitrix\Main\Server([]), [], [], [], []);
+            $action->dispatch($request);
             $output = (string) ob_get_clean();
 
             self::assertStringContainsString('"status":"error"', str_replace(' ', '', $output));
         } finally {
-            $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = $previous;
+            $context->initialize($originalRequest, $context->getResponse(), $context->getServer());
         }
     }
 }

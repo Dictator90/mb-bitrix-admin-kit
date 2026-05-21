@@ -115,10 +115,12 @@ class UserGroupListProvider extends BaseProvider
 
     protected function prepareOptions(array $options = []): void
     {
-        if (!$options['selected']) {
+        if (!isset($options['selected']) || $options['selected'] === '') {
             $this->options['selected'] = [];
         } elseif (!is_array($options['selected'])) {
             $this->options['selected'] = [$options['selected']];
+        } else {
+            $this->options['selected'] = $options['selected'];
         }
 
         $this->options['fillDialog'] = true;

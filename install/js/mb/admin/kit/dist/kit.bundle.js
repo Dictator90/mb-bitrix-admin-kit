@@ -1244,7 +1244,9 @@ this.MB = this.MB || {};
     }
     function _attachKeyboardNavigation2(headersEl) {
       main_core.Event.bind(headersEl, 'keydown', function (e) {
-        var headers = Array.from(headersEl.querySelectorAll('[data-bx-role="tab-header"]'));
+        var headers = Array.from(headersEl.children).filter(function (el) {
+          return el.getAttribute('data-bx-role') === 'tab-header';
+        });
         var activeIdx = headers.findIndex(function (h) {
           return h.classList.contains('--header-active');
         });
@@ -1284,6 +1286,75 @@ this.MB = this.MB || {};
      * @property {boolean} remember
      */
 
+    function bindRememberActiveTab(root, remember) {
+      if (!remember) {
+        return;
+      }
+      var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
+      if (!activeTabInput) {
+        return;
+      }
+      root.addEventListener('click', function (event) {
+        var header = event.target.closest('[data-bx-role="tab-header"]');
+        if (!header) {
+          return;
+        }
+        var headersContainer = root.querySelector('[data-bx-role="headers"]');
+        if (!headersContainer || !headersContainer.contains(header)) {
+          return;
+        }
+
+        // Double check it's a direct child of OUR headers container
+        if (header.parentElement !== headersContainer) {
+          return;
+        }
+        var tabId = header.getAttribute('data-bx-name') || '';
+        if (tabId !== '') {
+          activeTabInput.value = tabId;
+        }
+      });
+    }
+    function activatePrerenderedTab(root, tabId) {
+      var bodiesContainer = root.querySelector('[data-bx-role="bodies"]');
+      if (bodiesContainer) {
+        Array.from(bodiesContainer.children).forEach(function (body) {
+          if (body.classList.contains('ui-tabs__tab-body_inner')) {
+            body.classList.toggle('--body-active', body.dataset.id === tabId);
+          }
+        });
+      }
+      var headersContainer = root.querySelector('[data-bx-role="headers"]');
+      if (headersContainer) {
+        Array.from(headersContainer.children).forEach(function (header) {
+          if (header.getAttribute('data-bx-role') === 'tab-header') {
+            header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
+          }
+        });
+      }
+    }
+    function initPrerenderedTabs(targetContainer, config) {
+      var root = targetContainer.querySelector('.ui-tabs__tabs-container') || targetContainer;
+      var headersContainer = root.querySelector('[data-bx-role="headers"]');
+      if (headersContainer) {
+        Array.from(headersContainer.children).forEach(function (header) {
+          if (header.getAttribute('data-bx-role') !== 'tab-header') {
+            return;
+          }
+          header.addEventListener('click', function () {
+            var tabId = header.getAttribute('data-bx-name') || '';
+            if (tabId === '') {
+              return;
+            }
+            activatePrerenderedTab(root, tabId);
+          });
+        });
+      }
+      bindRememberActiveTab(root, config.remember === true);
+      if (window.BX && window.BX.UI && window.BX.UI.Hint) {
+        window.BX.UI.Hint.init(root);
+      }
+    }
+
     /**
      * Initialize tabs from config
      * @param {TabsConfig} config
@@ -1296,6 +1367,14 @@ this.MB = this.MB || {};
         items = config.items,
         bodies = config.bodies,
         remember = config.remember;
+      var targetContainer = document.getElementById(id);
+      if (!targetContainer) {
+        return;
+      }
+      if (targetContainer.dataset.adminkitTabsPrerendered === 'Y') {
+        initPrerenderedTabs(targetContainer, config);
+        return;
+      }
       var tabs = new Tabs({
         id: id,
         items: items
@@ -1325,26 +1404,11 @@ this.MB = this.MB || {};
           }
         });
       }
-      var targetContainer = document.getElementById(id);
-      if (targetContainer) {
-        main_core.Dom.append(container, targetContainer);
-      }
+      main_core.Dom.append(container, targetContainer);
       if (window.BX && window.BX.UI && window.BX.UI.Hint) {
         window.BX.UI.Hint.init(container);
       }
-      if (remember) {
-        var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
-        container.addEventListener('click', function (event) {
-          var header = event.target.closest('[data-bx-name]');
-          if (!header || !activeTabInput) {
-            return;
-          }
-          var tabId = header.getAttribute('data-bx-name') || '';
-          if (tabId !== '') {
-            activeTabInput.value = tabId;
-          }
-        });
-      }
+      bindRememberActiveTab(container, remember === true);
     }
 
     /**

@@ -410,7 +410,22 @@ class BulkAction implements ActionContract, BulkPanelItemContract
     protected function normalizeCondition(bool|Closure|ConditionTree|string|null $condition, ?string $operator, mixed $value): bool|Closure|ConditionTree|null
     {
         if (is_string($condition) && $operator !== null) {
-            return AdminCondition::tree()->where($condition, $operator, $value);
+            if (!str_contains($condition, '.')) {
+                $condition = 'item.' . $condition;
+            }
+
+            return function (array $context) use ($condition, $operator, $value): bool {
+                $tree = AdminCondition::tree();
+                $tree->context($context, 'default');
+                foreach ($context as $alias => $val) {
+                    if ($val === null || (!is_array($val) && !is_object($val) && !is_string($val))) {
+                        continue;
+                    }
+                    $tree->context($val, is_string($alias) ? $alias : 'item_' . $alias);
+                }
+                $tree->where($condition, $operator, $value);
+                return $tree->calculate()->result();
+            };
         }
 
         return $condition;

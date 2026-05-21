@@ -7,24 +7,29 @@ namespace MB\Bitrix\AdminKit\Tests\Page;
 use MB\Bitrix\AdminKit\Page\Crud\FormPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductTable;
+use MB\Bitrix\AdminKit\Tests\Support\BitrixContextTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use ReflectionProperty;
 
 final class FormPageSidePanelAsyncTest extends TestCase
 {
+    use BitrixContextTrait;
+
     protected function setUp(): void
     {
+        parent::setUp();
         ProductTable::reset();
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = ['IFRAME' => 'Y'];
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [
+        $this->setPostRequest([
             'NAME' => 'Saved item',
             'adminkit_async_save' => 'Y',
-            'sessid' => 'sessid',
-        ];
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
-        $_POST = $GLOBALS['MB_ADMIN_KIT_TEST_POST'];
+        ], ['IFRAME' => 'Y']);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->restoreRequest();
+        parent::tearDown();
     }
 
     public function testSuccessfulAsyncSaveInsideSidePanelSetsCloseSidePanelFlag(): void

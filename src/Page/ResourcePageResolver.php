@@ -11,8 +11,10 @@ use MB\Bitrix\AdminKit\Exception\PageNotFoundException;
 
 final class ResourcePageResolver
 {
-    public function __construct(private readonly PageFactory $factory = new PageFactory())
-    {
+    public function __construct(
+        private readonly PageFactory $factory = new PageFactory(),
+        private ?\MB\Bitrix\AdminKit\Page\Context\AdminKitContext $context = null
+    ) {
     }
 
     /** @param array<string,mixed> $params */
@@ -32,6 +34,10 @@ final class ResourcePageResolver
         if ($page instanceof ResourcePageContract) {
             $page->setResource($resource);
             $page->setContext($id, $params);
+        }
+
+        if ($page instanceof \MB\Bitrix\AdminKit\Page\Context\AdminKitContextAwareContract && $this->context !== null) {
+            $page->setAdminKitContext($this->context);
         }
 
         if (!$page instanceof ResourcePageContract) {

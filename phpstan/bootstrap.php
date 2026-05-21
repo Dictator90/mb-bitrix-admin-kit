@@ -3,29 +3,7 @@
 declare(strict_types=1);
 
 
-namespace MB\Bitrix\Foundation;
 
-if (!class_exists(ServiceProvider::class)) {
-    abstract class ServiceProvider
-    {
-        public function register(): void
-        {
-        }
-
-        public function boot(): void
-        {
-        }
-    }
-}
-
-namespace MB\Bitrix\Contracts\Module;
-
-if (!interface_exists(Entity::class)) {
-    interface Entity
-    {
-        public function getLibPath(): string;
-    }
-}
 
 namespace Bitrix\UI\EntitySelector;
 
@@ -56,6 +34,11 @@ if (!class_exists(Entity::class)) {
         public function hasField(string $fieldName): bool
         {
             return false;
+        }
+
+        public function getField(string $fieldName): object
+        {
+            return new class {};
         }
     }
 }
@@ -403,6 +386,22 @@ if (!class_exists(Option::class)) {
 
         public static function delete(string $moduleId, array $filter = []): void
         {
+        }
+    }
+}
+
+namespace Bitrix\Main\ORM\Fields;
+
+if (!class_exists(ExpressionField::class)) {
+    class ExpressionField
+    {
+        public function __construct(string $name, string $expression, array $buildFrom = [])
+        {
+        }
+
+        public function getName(): string
+        {
+            return '';
         }
     }
 }

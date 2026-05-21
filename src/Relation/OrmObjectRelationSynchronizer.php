@@ -5,15 +5,27 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Relation;
 
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
-use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Field\Relation\RelationField;
-use RuntimeException;
-use Throwable;
+use MB\Bitrix\AdminKit\Relation\Strategies\ManualPivotSyncStrategy;
+use MB\Bitrix\AdminKit\Relation\Strategies\OrmMutationSyncStrategy;
+use MB\Bitrix\AdminKit\Relation\Strategies\RelationSyncStrategyInterface;
 
 final class OrmObjectRelationSynchronizer implements RelationSynchronizerInterface
 {
-    public function __construct(private readonly RelationObjectMutator $mutator = new RelationObjectMutator())
+    /** @var list<RelationSyncStrategyInterface> */
+    private array $strategies = [];
+
+    public function __construct()
     {
+        $this->strategies = [
+            new ManualPivotSyncStrategy(),
+            new OrmMutationSyncStrategy(),
+        ];
+    }
+
+    public function registerStrategy(RelationSyncStrategyInterface $strategy): void
+    {
+        array_unshift($this->strategies, $strategy);
     }
 
     public function sync(
@@ -23,42 +35,12 @@ final class OrmObjectRelationSynchronizer implements RelationSynchronizerInterfa
         mixed $value,
         DbOperationContext $context,
     ): void {
-        if (
-            $field instanceof BelongsToMany
-            && ($field->saveStrategy() === 'manual' || $field->persistsViaPivotTable($metadata))
-        ) {
-            (new ManualPivotSynchronizer())->sync($owner, $field, $metadata, $value, $context);
-
-            return;
-        }
-
-        try {
-            $this->mutator->mutate($owner, $field, $metadata, $value, $context);
-        } catch (Throwable $exception) {
-            if (
-                $field instanceof BelongsToMany
-                && !$field->persistsViaPivotTable($metadata)
-                && $metadata->mediatorEntity !== null
-                && $metadata->mediatorEntity !== ''
-                && $metadata->foreignPivotKey !== null
-                && $metadata->foreignPivotKey !== ''
-                && $metadata->relatedPivotKey !== null
-                && $metadata->relatedPivotKey !== ''
-            ) {
-                (new ManualPivotSynchronizer())->sync($owner, $field, $metadata, $value, $context);
+        foreach ($this->strategies as $strategy) {
+            if ($strategy->canSync($field, $metadata)) {
+                $strategy->sync($owner, $field, $metadata, $value, $context);
 
                 return;
             }
-
-            if ($field instanceof BelongsToMany && $field->saveStrategy() === 'orm' && $metadata->mediatorEntity !== null) {
-                throw new RuntimeException(
-                    'BelongsToMany ORM sync failed: ' . $exception->getMessage(),
-                    (int) $exception->getCode(),
-                    $exception,
-                );
-            }
-
-            throw $exception;
         }
     }
 }

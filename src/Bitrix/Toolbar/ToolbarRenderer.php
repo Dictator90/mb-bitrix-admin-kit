@@ -117,11 +117,6 @@ final class ToolbarRenderer
         return $adapter->openJs($createUrl, $grid->getId());
     }
 
-    private function reloadGridJs(Grid $grid): string
-    {
-        return 'var grid=BX.Main.gridManager.getInstanceById(' . json_encode($grid->getId()) . ');'
-            . 'if(grid){grid.reload();}';
-    }
 
     private function exportUrl(Grid $grid): string
     {

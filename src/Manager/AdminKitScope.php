@@ -12,7 +12,8 @@ final class AdminKitScope
     /** @param string[] $discoveryPaths */
     public function __construct(
         private string $scopeId,
-        private array $discoveryPaths = []
+        private array $discoveryPaths = [],
+        private bool $isModuleScope = false
     ) {
         $this->discoveryPaths = $this->filterPaths($discoveryPaths);
     }
@@ -36,7 +37,7 @@ final class AdminKitScope
             $libPath = $basePath . '/lib';
         }
 
-        return new self($scopeId, [$libPath]);
+        return new self($scopeId, [$libPath], true);
     }
 
     /** @param string|array<int,string> $discoveryPath */
@@ -49,7 +50,7 @@ final class AdminKitScope
             $paths[] = rtrim($modulePath, '/\\') . '/' . ltrim((string) $path, '/\\');
         }
 
-        return new self($moduleId, $paths);
+        return new self($moduleId, $paths, true);
     }
 
     public static function resolveModulePath(string $moduleId): string
@@ -93,13 +94,13 @@ final class AdminKitScope
 
     public static function fromDirectory(string $path, ?string $scopeId = null): self
     {
-        return new self($scopeId ?? 'adminkit.local', [$path]);
+        return new self($scopeId ?? 'adminkit.local', [$path], false);
     }
 
     /** @param string[] $paths */
     public static function fromDirectories(array $paths, ?string $scopeId = null): self
     {
-        return new self($scopeId ?? 'adminkit.local', array_values($paths));
+        return new self($scopeId ?? 'adminkit.local', array_values($paths), false);
     }
 
     public function id(): string
@@ -118,6 +119,26 @@ final class AdminKitScope
         return $this->discoveryPaths;
     }
 
+    public function isModuleScope(): bool
+    {
+        return $this->isModuleScope;
+    }
+
+    public function moduleId(): ?string
+    {
+        return $this->isModuleScope ? $this->scopeId : null;
+    }
+
+    public function optionModuleId(): string
+    {
+        return $this->isModuleScope ? $this->scopeId : 'main';
+    }
+
+    public function eventModuleId(): string
+    {
+        return $this->isModuleScope ? $this->scopeId : 'main';
+    }
+
     public function withDiscoveryPath(string $path): self
     {
         return $this->withDiscoveryPaths([$path]);
@@ -126,7 +147,7 @@ final class AdminKitScope
     /** @param string[] $paths */
     public function withDiscoveryPaths(array $paths): self
     {
-        return new self($this->scopeId, array_merge($this->discoveryPaths, $paths));
+        return new self($this->scopeId, array_merge($this->discoveryPaths, $paths), $this->isModuleScope);
     }
 
     private static function stringFromMethod(object $module, string $method): ?string

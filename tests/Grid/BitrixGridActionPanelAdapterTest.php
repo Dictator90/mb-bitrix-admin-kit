@@ -23,7 +23,7 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         self::assertCount(1, $panel['GROUPS']);
         $items = $panel['GROUPS'][0]['ITEMS'];
 
-        self::assertSame('edit_button', $items[0]['ID']);
+        self::assertSame('grid_edit_button', $items[0]['ID']);
         self::assertSame('delete', $items[1]['ID']);
         self::assertTrue($items[1]['ONCHANGE'][0]['CONFIRM']);
         self::assertSame('Really?', $items[1]['ONCHANGE'][0]['CONFIRM_MESSAGE']);
@@ -40,7 +40,7 @@ final class BitrixGridActionPanelAdapterTest extends TestCase
         $panel = (new BitrixGridActionPanelAdapter())->componentParams($grid);
         $items = $panel['GROUPS'][0]['ITEMS'];
 
-        self::assertSame('for_all_checkbox', $items[0]['ID']);
+        self::assertSame('actallrows_', $items[0]['ID']);
         self::assertSame('activate', $items[1]['ID']);
     }
 

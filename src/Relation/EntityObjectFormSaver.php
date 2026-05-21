@@ -28,8 +28,6 @@ final class EntityObjectFormSaver
      * @param DataManagerResourceContract&object $resource
      * @param list<FieldContract> $fields
      * @param array<string,mixed> $rawPost
-     */
-    /**
      * @param array<string,mixed> $validatedScalars Values from FormPage hooks (e.g. beforeValidate), including readonly defaults.
      */
     public function save(
@@ -40,21 +38,36 @@ final class EntityObjectFormSaver
         DbOperationContext $context,
         array $validatedScalars = [],
     ): EntityObjectSaveResult {
-        [$scalarFields, $relationFields] = $this->splitFields($fields);
-        $rawScalar = $this->extractRaw($scalarFields, $rawPost);
-        $rawRelations = $this->extractRaw($relationFields, $rawPost);
-
-        $scalarFormData = (new DataPipeline())->process($scalarFields, $rawScalar);
-        if ($scalarFormData->hasErrors()) {
-            return new EntityObjectSaveResult(false, fieldErrors: $scalarFormData->errors());
+        if ($itemId !== null && $itemId !== '') {
+            $filteredFields = [];
+            foreach ($fields as $field) {
+                if (array_key_exists($field->getColumn(), $rawPost)) {
+                    $filteredFields[] = $field;
+                }
+            }
+            $fields = $filteredFields;
         }
 
-        $relationFormData = $relationFields === []
-            ? new FormData([], [], [])
-            : (new DataPipeline())->process($relationFields, $rawRelations);
+        [$scalarFields, $relationFields] = $this->splitFields($fields);
+        if ($fields === []) {
+            $scalarFormData = new FormData($rawPost, $rawPost, $rawPost);
+            $relationFormData = new FormData([], [], []);
+        } else {
+            $rawScalar = $this->extractRaw($scalarFields, $rawPost);
+            $rawRelations = $this->extractRaw($relationFields, $rawPost);
 
-        if ($relationFormData->hasErrors()) {
-            return new EntityObjectSaveResult(false, fieldErrors: $relationFormData->errors());
+            $scalarFormData = (new DataPipeline())->process($scalarFields, $rawScalar);
+            if ($scalarFormData->hasErrors()) {
+                return new EntityObjectSaveResult(false, fieldErrors: $scalarFormData->errors());
+            }
+
+            $relationFormData = $relationFields === []
+                ? new FormData([], [], [])
+                : (new DataPipeline())->process($relationFields, $rawRelations);
+
+            if ($relationFormData->hasErrors()) {
+                return new EntityObjectSaveResult(false, fieldErrors: $relationFormData->errors());
+            }
         }
 
         $useTransactions = method_exists($resource, 'useTransactions') && $resource->useTransactions();
@@ -74,6 +87,12 @@ final class EntityObjectFormSaver
                 $useTransactions,
             );
         } catch (Throwable $exception) {
+            if ($exception instanceof RuntimeException) {
+                return new EntityObjectSaveResult(
+                    false,
+                    globalErrors: explode('; ', $exception->getMessage()),
+                );
+            }
             return new EntityObjectSaveResult(
                 false,
                 globalErrors: ExceptionDiagnostics::toGlobalErrors($exception, 'EntityObject save failed.'),
@@ -202,8 +221,6 @@ final class EntityObjectFormSaver
 
     /**
      * @param list<FieldContract> $scalarFields
-     */
-    /**
      * @param array<string,mixed> $validatedScalars
      */
     private function applyScalarValues(
@@ -215,6 +232,20 @@ final class EntityObjectFormSaver
         array $validatedScalars = [],
     ): void {
         $primaryKey = $resource->getPrimaryKey();
+        $forcedColumns = array_keys($validatedScalars);
+        $values = array_merge($formData->validated(), $validatedScalars);
+
+        if ($scalarFields === []) {
+            foreach ($values as $column => $value) {
+                $column = (string) $column;
+                if ($itemId !== null && $itemId !== '' && $column === $primaryKey) {
+                    continue;
+                }
+                $entityObject->set($column, $value);
+            }
+            return;
+        }
+
         $formContext = array_merge($formData->validated(), $validatedScalars, [
             '_mode' => ($itemId !== null && $itemId !== '') ? 'edit' : 'create',
             '_id' => $itemId ?? '',
@@ -231,9 +262,6 @@ final class EntityObjectFormSaver
         foreach ($scalarFields as $field) {
             $writableColumns[] = $field->getColumn();
         }
-
-        $forcedColumns = array_keys($validatedScalars);
-        $values = array_merge($formData->validated(), $validatedScalars);
 
         foreach ($values as $column => $value) {
             $column = (string) $column;

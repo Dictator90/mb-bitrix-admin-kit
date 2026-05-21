@@ -98,7 +98,9 @@ final class GridDataLoaderCountRuntimeTest extends TestCase
             'grid' => $ctx->gridId,
             'filter' => $params['filter'],
             'runtime' => $params['runtime'],
-            'user' => null,
+            'user' => is_object($GLOBALS['USER'] ?? null) && method_exists($GLOBALS['USER'], 'GetID')
+                ? $GLOBALS['USER']->GetID()
+                : null,
         ]);
 
         ArrayTtlCache::set($key1, 42, 60);

@@ -55,7 +55,7 @@ final class FieldApiV050Test extends TestCase
 
     public function testUserSelectorUsesDialogSelectorAdapter(): void
     {
-        $html = UserSelect::make('Responsible', 'RESPONSIBLE_ID')->renderForm(7);
+        $html = UserSelect::make('Responsible', 'RESPONSIBLE_ID')->renderForm(null);
 
         self::assertStringContainsString('MB.AdminKit.DialogSelector.DialogSelector', $html);
         self::assertStringContainsString('RESPONSIBLE_ID', $html);

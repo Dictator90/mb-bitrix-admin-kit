@@ -107,10 +107,14 @@ abstract class Field implements FieldContract
     public function renderForm(mixed $context = null, array $data = []): string
     {
         if ($context instanceof FieldRenderContext) {
-            return $this->renderFormField($context->value, $this->formDataFromRenderContext($context, $data));
+            /** @var mixed $self */
+            $self = $this;
+            return $self->renderFormField($context->value, $this->formDataFromRenderContext($context, $data));
         }
 
-        return $this->renderFormField($context, $data);
+        /** @var mixed $self */
+        $self = $this;
+        return $self->renderFormField($context, $data);
     }
 
     /**

@@ -46,7 +46,7 @@ final class RelationObjectMutator
             return;
         }
 
-        if ($scalarValue === null || $scalarValue === '') {
+        if ($scalarValue === null) {
             $owner->set($relationName, null);
 
             return;

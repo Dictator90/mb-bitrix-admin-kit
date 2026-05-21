@@ -28,5 +28,9 @@ final class TabsRendererTest extends TestCase
         self::assertStringContainsString('data-bx-role="tab-header"', $html);
         self::assertStringNotContainsString('mb.ui.tabs', $html);
         self::assertCount(2, $tabs->extractFields());
+
+        // Verify fix for nested tabs is present in inline JS
+        self::assertStringContainsString('Array.from(bodiesContainer.children).forEach', $html);
+        self::assertStringContainsString('Array.from(headersContainer.children).forEach', $html);
     }
 }

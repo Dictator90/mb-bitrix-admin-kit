@@ -385,32 +385,6 @@ final class RelationValueLoader
         return array_values(array_filter($ids, static fn (string $id): bool => $id !== ''));
     }
 
-    /** @return array<int|string,mixed> */
-    private function collectionToArray(object $collection): array
-    {
-        $rows = [];
-
-        foreach ($collection as $item) {
-            $rows[] = $this->normalizeRelationRow($item);
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @param array<int|string, mixed> $rows
-     * @return array<int|string, mixed>
-     */
-    private function normalizeRelationRows(array $rows): array
-    {
-        $normalized = [];
-
-        foreach ($rows as $key => $row) {
-            $normalized[$key] = $this->normalizeRelationRow($row);
-        }
-
-        return $normalized;
-    }
 
     /**
      * @return array<string, mixed>|mixed

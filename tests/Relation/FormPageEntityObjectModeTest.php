@@ -14,18 +14,26 @@ use MB\Bitrix\AdminKit\Resource\CrudResource;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductTable;
+use MB\Bitrix\AdminKit\Tests\Support\BitrixContextTrait;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 final class FormPageEntityObjectModeTest extends TestCase
 {
+    use BitrixContextTrait;
+
     protected function setUp(): void
     {
+        parent::setUp();
         ProductTable::reset();
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['NAME' => 'Updated', 'sessid' => 'sessid'];
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
-        $_POST = $GLOBALS['MB_ADMIN_KIT_TEST_POST'];
+        ManualPersistenceCrudResource::$updateCalled = false;
+        $this->setPostRequest(['NAME' => 'Updated']);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->restoreRequest();
+        parent::tearDown();
     }
 
     public function testCrudResourceUsesLegacyHandlePost(): void
@@ -142,6 +150,11 @@ final class ManualPersistenceCrudResource extends CrudResource implements Resour
 final class EntityObjectFormTestPage extends FormPage
 {
     private bool $dataManagerObjectBranch = false;
+
+    public function redirect(string $url): void
+    {
+        $GLOBALS['last_redirect'] = $url;
+    }
 
     public function setLoadedItem(DataWrapper $item): void
     {

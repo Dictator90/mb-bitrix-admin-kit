@@ -28,6 +28,18 @@ function bindRememberActiveTab(root, remember) {
 			return;
 		}
 
+		const headersContainer = root.querySelector('[data-bx-role="headers"]');
+		if (!headersContainer || !headersContainer.contains(header))
+		{
+			return;
+		}
+
+		// Double check it's a direct child of OUR headers container
+		if (header.parentElement !== headersContainer)
+		{
+			return;
+		}
+
 		const tabId = header.getAttribute('data-bx-name') || '';
 		if (tabId !== '')
 		{
@@ -37,29 +49,52 @@ function bindRememberActiveTab(root, remember) {
 }
 
 function activatePrerenderedTab(root, tabId) {
-	root.querySelectorAll('.ui-tabs__tab-body_inner').forEach((body) => {
-		body.classList.toggle('--body-active', body.dataset.id === tabId);
-	});
+	const bodiesContainer = root.querySelector('[data-bx-role="bodies"]');
+	if (bodiesContainer)
+	{
+		Array.from(bodiesContainer.children).forEach((body) => {
+			if (body.classList.contains('ui-tabs__tab-body_inner'))
+			{
+				body.classList.toggle('--body-active', body.dataset.id === tabId);
+			}
+		});
+	}
 
-	root.querySelectorAll('[data-bx-role="tab-header"]').forEach((header) => {
-		header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
-	});
+	const headersContainer = root.querySelector('[data-bx-role="headers"]');
+	if (headersContainer)
+	{
+		Array.from(headersContainer.children).forEach((header) => {
+			if (header.getAttribute('data-bx-role') === 'tab-header')
+			{
+				header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
+			}
+		});
+	}
 }
 
 function initPrerenderedTabs(targetContainer, config) {
 	const root = targetContainer.querySelector('.ui-tabs__tabs-container') || targetContainer;
+	const headersContainer = root.querySelector('[data-bx-role="headers"]');
 
-	root.querySelectorAll('[data-bx-role="tab-header"]').forEach((header) => {
-		header.addEventListener('click', () => {
-			const tabId = header.getAttribute('data-bx-name') || '';
-			if (tabId === '')
+	if (headersContainer)
+	{
+		Array.from(headersContainer.children).forEach((header) => {
+			if (header.getAttribute('data-bx-role') !== 'tab-header')
 			{
 				return;
 			}
 
-			activatePrerenderedTab(root, tabId);
+			header.addEventListener('click', () => {
+				const tabId = header.getAttribute('data-bx-name') || '';
+				if (tabId === '')
+				{
+					return;
+				}
+
+				activatePrerenderedTab(root, tabId);
+			});
 		});
-	});
+	}
 
 	bindRememberActiveTab(root, config.remember === true);
 

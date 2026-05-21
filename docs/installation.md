@@ -24,12 +24,9 @@ composer require mb4it/bitrix-admin-kit
 declare(strict_types=1);
 
 $vendorAutoload = __DIR__ . '/vendor/autoload.php';
-$projectAutoload = dirname(__DIR__, 3) . '/vendor/autoload.php';
 
 if (is_file($vendorAutoload)) {
     require_once $vendorAutoload;
-} elseif (is_file($projectAutoload)) {
-    require_once $projectAutoload;
 }
 ```
 
@@ -37,16 +34,14 @@ if (is_file($vendorAutoload)) {
 
 ```php
 use Bitrix\Main\Loader;
-use MB\Bitrix\AdminKit\Manager\AdminKitManager;
-use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+use MB\Bitrix\AdminKit\AdminKit;
 
 Loader::includeModule('vendor.demo');
 
-$scope = AdminKitScope::fromModuleId('vendor.demo');
-(new AdminKitManager($scope))->getCurrentPage()->render();
+AdminKit::forModule('vendor.demo')->getCurrentPage()->render();
 ```
 
-`Loader::includeModule('vendor.demo')` подключает модуль, его `include.php` и классы. `AdminKitScope::fromModuleId('vendor.demo')` только находит физическую директорию модуля и собирает discovery paths для `Resource`/`Page` классов.
+`Loader::includeModule('vendor.demo')` подключает модуль, его `include.php` и классы. Вызов `AdminKit::forModule('vendor.demo')` возвращает экземпляр `AdminKitManager` для этого модуля, автоматически определяя его директорию и настраивая пути сканирования ресурсов и страниц (по умолчанию `lib/Admin`).
 
 ## Bootstrap вне модуля
 
@@ -57,7 +52,7 @@ cd <bitrix-project-root>
 composer require mb4it/bitrix-admin-kit
 ```
 
-Подключите Composer autoload глобально в `local/php_interface/init.php`:
+Подключите Composer autoload globally в `local/php_interface/init.php`:
 
 ```php
 <?php
@@ -73,25 +68,33 @@ if (is_file($autoload)) {
 
 ## Discovery
 
-`AdminKitScope` состоит из:
+Инициализация и настройка путей сканирования ресурсов и страниц выполняется через фасад `AdminKit`.
 
-- `scopeId` — идентификатор области AdminKit;
-- `discoveryPaths` — директории, где AdminKit ищет `Resource` и `Page` классы.
-
-Для Bitrix-модуля:
+Для стандартного Bitrix-модуля (сканирует `lib/Admin` внутри модуля):
 
 ```php
 use Bitrix\Main\Loader;
-use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+use MB\Bitrix\AdminKit\AdminKit;
 
 Loader::includeModule('vendor.demo');
-$scope = AdminKitScope::fromModuleId('vendor.demo');
+$adminKit = AdminKit::forModule('vendor.demo');
 ```
 
-Для нестандартной папки внутри модуля:
+Для нестандартной папки внутри модуля можно доопределить пути сканирования:
 
 ```php
+$adminKit = AdminKit::forModule('vendor.demo')
+    ->discoverIn($_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/lib/Resources');
+```
+
+Или настроить с помощью `AdminKitScope` явно:
+
+```php
+use MB\Bitrix\AdminKit\AdminKit;
+use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+
 $scope = AdminKitScope::fromModuleId('vendor.demo', 'lib/Resources');
+$adminKit = AdminKit::manager($scope);
 ```
 
 Для нескольких папок внутри модуля:
@@ -101,21 +104,23 @@ $scope = AdminKitScope::fromModuleId('vendor.demo', [
     'lib/Admin',
     'lib/Pages',
 ]);
+$adminKit = AdminKit::manager($scope);
 ```
 
-Для локального кода вне модуля используйте абсолютный путь:
+Для локального кода вне модуля:
 
 ```php
-$scope = AdminKitScope::fromDirectory(
+use MB\Bitrix\AdminKit\AdminKit;
+
+$adminKit = AdminKit::fromDirectory(
     $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Admin',
     'local.admin'
 );
 ```
 
 Важно:
-
-- `fromModuleId()` ищет модуль в `/local/modules/<moduleId>`, затем в `/bitrix/modules/<moduleId>`.
-- `fromModuleId()` не подключает модуль и не вызывает `Loader::includeModule()`.
+- `forModule()` ищет модуль в `/local/modules/<moduleId>`, затем в `/bitrix/modules/<moduleId>`.
+- Инициализация менеджера не подключает модуль и не вызывает `Loader::includeModule()`.
 - `Loader::includeModule()` нужно вызвать отдельно, если вы работаете внутри Bitrix-модуля.
 
 ## Проверки в разработке

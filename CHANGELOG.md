@@ -11,6 +11,15 @@
 - Тесты relation-слоя: namespace, runtime builder/registrar, метаданные resolver, value loader, object mutator, manual pivot sync, маршрутизация веток FormPage.
 
 ### Fixed
+- `AdminKitManager`: кэш fingerprint для `discover()` — повторные вызовы `registry()` / `router()` / `menuBuilder()` не пересканируют пути.
+- `FormPage::formTabs()`: вкладки через `Tabs` / `TabsRenderer` (`MB.AdminKit`), убран legacy `MB.UI.Tabs`.
+- `DataPipeline`: `readonlyOnUpdate()` / `readonlyWhen()` учитывают `_mode`, `_id`, `ID` из raw POST при пропуске валидации.
+- Scalar fields (`Text`, `Textarea`, `Number`, `Select`, `EntitySelect`): `isReadOnlyFor()` в HTML формы.
+- `EntityObjectFormSaver`: сохранение в `TransactionManager` при `useTransactions()`.
+- `MassDeleteAction`: атомарное удаление через `massDelete()` когда ресурс поддерживает транзакции.
+- `ToolbarRenderer`: открытие create в SidePanel через `SidePanelAdapter`.
+- Восстановлены BC-алиасы `Page\IndexPage`, `Page\FormPage`, `Page\DetailPage` → `Page\Crud\*`.
+- `OptionsPage`: убран дублирующий inline CSS (стили в bundle `admin-common.css`).
 - `OptionsPage`: вкладки `Tabs` снова отдают поля в HTML без JS (`TabsRenderer` server-prerendered fallback); обычный POST сохраняет и редиректит (AJAX только по `X-Requested-With`, убран всегда включённый hidden `adminkit_ajax`).
 - `GridDataLoader`: подсчёт строк (`useTotalCount`) регистрирует `runtime` через ORM `query()`, как `getList()` — фильтры вроде `PROPERTY.IBLOCK_ID` больше не падают в `getCount()`.
 - `BelongsTo` по умолчанию writable (`readonly = false`): FK-поля снова попадают в `collectAllFields()` и сохраняются через EntityObject.
@@ -66,6 +75,7 @@
 - Fixed menu builder safety for non-CRUD resources (guarded calls to optional `canView`/`hasCrud`/`group`).
 - Fixed field display pipeline double-formatting (`displayUsing`/preview no longer double-applies formatting).
 - Fixed `UserListProvider` boolean filter conditions (`onlyWithEmail`, `invitedUsers`).
+- Fixed EntitySelector providers stability in minimal/runtime test environments: safe defaults for missing `selected`/name-template context and guarded user-availability checks (`UserListProvider`, `UserGroupListProvider`).
 - Fixed selected export filtering to use primary-key filtering compatible with existing resource expectations.
 - Added inline-edit BC bridge on `IndexPage::saveInlineRow()` and visibility-rule BC helper on `Pages\OptionsPage::checkVisibilityRule()`.
 - Updated JS extension tests/fixtures to current `mb.admin.kit` bundle layout and stabilized isolated test fixtures.

@@ -43,6 +43,34 @@ final class DataManagerResourceObjectTest extends TestCase
 
         $resource->findObject(1);
     }
+
+    public function testEmptyDataManagerClassThrows(): void
+    {
+        $resource = new class () extends DataManagerResource {
+            public function dataManagerClass(): string
+            {
+                return '';
+            }
+        };
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('must declare a non-empty dataManagerClass()');
+        $resource->getDataManagerClass();
+    }
+
+    public function testNoGetEntityMethodThrows(): void
+    {
+        $resource = new class () extends DataManagerResource {
+            public function dataManagerClass(): string
+            {
+                return MissingGetEntityTable::class;
+            }
+        };
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('must implement getEntity()');
+        $resource->getEntity();
+    }
 }
 
 final class ObjectQueryTestResource extends DataManagerResource
@@ -142,7 +170,7 @@ final class ObjectQueryFake
 
         foreach ($this->rows as $row) {
             if ((string) ($row[$this->whereField] ?? '') === (string) $this->whereValue) {
-                return new ProductOrmEntityObject($row);
+                return new ProductOrmEntityObject($row, false);
             }
         }
 
@@ -161,4 +189,9 @@ final class CompositePrimaryEntityFake
     {
         return $this->singlePrimary ? ['ID'] : ['ID', 'SITE_ID'];
     }
+}
+
+final class MissingGetEntityTable
+{
+    // does not implement getEntity()
 }

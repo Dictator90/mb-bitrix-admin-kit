@@ -46,7 +46,9 @@ final class IndexBulkActionHandlerDropdownTest extends TestCase
         $result = $handler->handle($page, 'activate');
 
         self::assertTrue($result['success']);
-        self::assertStringContainsString('РЈСЃРїРµС€РЅРѕ: 1', $result['message']);
+        self::assertTrue(
+            str_contains($result['message'], 'Успешно: 1') || str_contains($result['message'], 'Success: 1')
+        );
         self::assertSame([1], ProductTable::$updatedIds);
     }
 

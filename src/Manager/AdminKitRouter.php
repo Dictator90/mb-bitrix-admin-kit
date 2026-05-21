@@ -15,8 +15,22 @@ final class AdminKitRouter
     public const ADMIN_PAGE_PARAM = 'admin_page';
     public const ACTION_PARAM = 'action';
 
-    public function __construct(private AdminKitRegistry $registry, private HttpRequest $request)
-    {
+    private ?\MB\Bitrix\AdminKit\Page\Context\AdminKitContext $context = null;
+
+    public function __construct(
+        private AdminKitRegistry $registry,
+        private HttpRequest $request,
+        private ?AdminKitScope $scope = null
+    ) {
+        if ($this->scope !== null) {
+            $this->context = new \MB\Bitrix\AdminKit\Page\Context\AdminKitContext(
+                scopeId: $this->scope->scopeId(),
+                moduleId: $this->scope->optionModuleId(),
+                insideModule: $this->scope->isModuleScope(),
+                adminSection: defined('ADMIN_SECTION') && ADMIN_SECTION === true,
+                basePath: null
+            );
+        }
     }
 
     public function currentPage(): ResourcePage|StandalonePage|NotFoundPage
@@ -29,12 +43,16 @@ final class AdminKitRouter
             $pageId = AdminString::slug($pageId);
             $pageClass = $this->registry->page($pageId);
             if ($pageClass !== null) {
-                return new $pageClass();
+                $page = new $pageClass();
+                if ($page instanceof \MB\Bitrix\AdminKit\Page\Context\AdminKitContextAwareContract && $this->context !== null) {
+                    $page->setAdminKitContext($this->context);
+                }
+                return $page;
             }
 
             $resourceClass = $this->registry->resource($pageId);
             if ($resourceClass !== null) {
-                return new ResourcePage(new $resourceClass());
+                return new ResourcePage(new $resourceClass(), $this->context);
             }
 
             return new NotFoundPage();
@@ -42,12 +60,16 @@ final class AdminKitRouter
 
         $resourceClass = $this->registry->firstResource();
         if ($resourceClass !== null) {
-            return new ResourcePage(new $resourceClass());
+            return new ResourcePage(new $resourceClass(), $this->context);
         }
 
         $pageClass = $this->registry->firstPage();
         if ($pageClass !== null) {
-            return new $pageClass();
+            $page = new $pageClass();
+            if ($page instanceof \MB\Bitrix\AdminKit\Page\Context\AdminKitContextAwareContract && $this->context !== null) {
+                $page->setAdminKitContext($this->context);
+            }
+            return $page;
         }
 
         return new NotFoundPage();

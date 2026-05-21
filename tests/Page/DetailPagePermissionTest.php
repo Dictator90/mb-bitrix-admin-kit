@@ -26,7 +26,7 @@ final class DetailPagePermissionTest extends TestCase
         $page->render();
         $html = (string)ob_get_clean();
 
-        self::assertStringContainsString('Р­Р»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ.', $html);
+        self::assertTrue(str_contains($html, 'Элемент не найден.') || str_contains($html, 'Item not found.'));
         self::assertStringNotContainsString('ui-form-row', $html);
     }
 
@@ -50,7 +50,10 @@ final class DetailPagePermissionTest extends TestCase
         $page->render();
         $html = (string)ob_get_clean();
 
-        self::assertStringContainsString('РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РїСЂР°РІ РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР° Р·Р°РїРёСЃРё.', $html);
+        self::assertTrue(
+            str_contains($html, 'Недостаточно прав для просмотра записи.')
+            || str_contains($html, 'Insufficient permissions to view this record.')
+        );
         self::assertStringNotContainsString('Secret product', $html);
         self::assertStringNotContainsString('ui-form-row', $html);
     }

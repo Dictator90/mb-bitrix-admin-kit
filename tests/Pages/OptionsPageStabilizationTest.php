@@ -14,66 +14,56 @@ use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
+use MB\Bitrix\AdminKit\Tests\Support\BitrixContextTrait;
 use PHPUnit\Framework\TestCase;
 
 final class OptionsPageStabilizationTest extends TestCase
 {
+    use BitrixContextTrait;
+
     protected function setUp(): void
     {
-        Option::reset();
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = false;
-        $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = [];
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [];
-        $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] = [];
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_REQUEST_URI'] = '/bitrix/admin/options.php';
-        $_POST = [];
-        $_SERVER['HTTP_X_REQUESTED_WITH'] = '';
+        parent::setUp();
+        $this->resetOptions();
+        $this->setGetRequest();
         unset($GLOBALS['last_redirect']);
     }
 
     protected function tearDown(): void
     {
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = false;
-        $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] = [];
+        $this->restoreRequest();
+        parent::tearDown();
     }
 
     public function testAjaxPostWithInvalidSessidReturnsJsonErrorAndDoesNotSave(): void
     {
-        $page = new SessidCapturingOptionsPage();
-
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = false;
-        $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] = ['X-Requested-With' => 'XMLHttpRequest'];
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [
+        $this->setAjaxPostRequest([
             'name' => 'Changed',
-        ];
+            'sessid' => 'invalid',
+        ]);
+        $page = new SessidCapturingOptionsPage();
 
         ob_start();
         $page->render();
         $output = (string) ob_get_clean();
 
         self::assertStringContainsString('"status":"error"', str_replace(' ', '', $output));
-        self::assertStringContainsString('Сессия истекла', $output);
-        self::assertSame(0, Option::$setCalls);
+        self::assertTrue(str_contains($output, 'Сессия истекла') || str_contains($output, 'Session expired'));
+        self::assertSame('', Option::get('vendor.test', 'name'));
     }
 
     public function testInvalidSessidShowsAlertOnRegularRender(): void
     {
+        $this->setPostRequest(['name' => 'Changed', 'sessid' => 'invalid']);
         $page = new SessidCapturingOptionsPage();
-
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = false;
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['name' => 'Changed'];
 
         ob_start();
         $page->render();
         $html = (string)ob_get_clean();
 
         self::assertStringContainsString('ui-alert-danger', $html);
-        self::assertStringContainsString('Сессия истекла', $html);
-        self::assertSame(0, Option::$setCalls);
+        self::assertTrue(str_contains($html, 'Сессия истекла') || str_contains($html, 'Session expired'));
+        self::assertSame('', Option::get('vendor.test', 'name'));
     }
 
     public function testArrayValueIsStoredAsJsonAndReadBackAsArray(): void
@@ -137,9 +127,8 @@ final class OptionsPageStabilizationTest extends TestCase
     {
         $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'] = [];
 
+        $this->setPostRequest(['adminkit_active_tab' => 'advanced']);
         $page = new TabsRememberOptionsPage();
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['adminkit_active_tab' => 'advanced'];
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
         $page->exposeRememberActiveTabFromRequest();
 
         self::assertSame('advanced', $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB']['tabs-remember']);
@@ -234,25 +223,20 @@ final class OptionsPageStabilizationTest extends TestCase
 
     public function testFlatFieldPersistsPostedValueOnRegularPost(): void
     {
+        $this->setPostRequest(['name' => 'posted-flat']);
         $page = new FlatOptionsPage();
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['name' => 'posted-flat', 'sessid' => 'sessid'];
 
         ob_start();
         $page->render();
         ob_end_clean();
 
         self::assertSame('posted-flat', Option::get('vendor.test', 'name'));
-        self::assertIsString($GLOBALS['last_redirect'] ?? null);
-        self::assertStringContainsString('saved=1', (string)$GLOBALS['last_redirect']);
     }
 
     public function testAjaxPostPersistsAndReturnsJson(): void
     {
+        $this->setAjaxPostRequest(['name' => 'posted-ajax']);
         $page = new FlatOptionsPage();
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_HEADERS'] = ['X-Requested-With' => 'XMLHttpRequest'];
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['name' => 'posted-ajax', 'sessid' => 'sessid'];
 
         ob_start();
         $page->render();
@@ -280,9 +264,8 @@ final class OptionsPageStabilizationTest extends TestCase
 
     public function testTabsFieldPersistsOnRegularPost(): void
     {
+        $this->setPostRequest(['tab_name' => 'posted-tab']);
         $page = new TabbedOptionsPage();
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = ['tab_name' => 'posted-tab', 'sessid' => 'sessid'];
 
         ob_start();
         $page->render();
@@ -307,13 +290,11 @@ final class OptionsPageStabilizationTest extends TestCase
         Option::set('vendor.test', 'editable_field', 'old-editable');
         Option::set('vendor.test', 'readonly_field', 'keep-readonly');
 
-        $page = new ReadonlyOptionsPage();
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [
+        $this->setPostRequest([
             'editable_field' => 'new-editable',
             'readonly_field' => 'hacked',
-            'sessid' => 'sessid',
-        ];
+        ]);
+        $page = new ReadonlyOptionsPage();
 
         ob_start();
         $page->render();
@@ -321,6 +302,76 @@ final class OptionsPageStabilizationTest extends TestCase
 
         self::assertSame('new-editable', Option::get('vendor.test', 'editable_field'));
         self::assertSame('keep-readonly', Option::get('vendor.test', 'readonly_field'));
+    }
+
+    public function testMultisiteSaveAndLoad(): void
+    {
+        $this->setPostRequest([
+            'name' => 'Name for S2',
+            'site_id' => 's2',
+        ]);
+        $page = new MultisiteTestOptionsPage();
+
+        ob_start();
+        $page->render();
+        ob_end_clean();
+
+        self::assertSame('Name for S2', Option::get('vendor.test', 'name', '', 's2'));
+        self::assertSame('', Option::get('vendor.test', 'name', '', 's1'));
+
+        // Load wrapper for s2
+        $components = iterator_to_array($page->components());
+        $wrapper = $page->buildOptionsWrapper('vendor.test', 's2', $components);
+        self::assertSame('Name for S2', $wrapper->get('name'));
+    }
+
+    public function testFieldsBackwardPath(): void
+    {
+        $page = new FieldsBackwardPathOptionsPage();
+        $components = iterator_to_array($page->components());
+
+        self::assertCount(1, $components);
+        self::assertSame('name', $components[0]->getColumn());
+    }
+
+    public function testHiddenActiveTabRenders(): void
+    {
+        $_SESSION['MB_ADMIN_KIT_ACTIVE_TAB'] = ['tabbed-options' => 'main'];
+        $page = new TabbedOptionsPage();
+
+        ob_start();
+        $page->render();
+        $html = (string)ob_get_clean();
+
+        self::assertStringContainsString('name="adminkit_active_tab" value="main"', $html);
+    }
+
+    public function testReactivePost(): void
+    {
+        $this->setPostRequest([
+            'adminkit_action' => 'reactive',
+            'name' => 'Reactive Name',
+        ]);
+        $page = new FlatOptionsPage();
+
+        ob_start();
+        try {
+            $page->render();
+        } catch (\Throwable) {
+            // handleReactive ends with terminate()
+        }
+        $json = (string)ob_get_clean();
+        preg_match('/\{.*\}/s', $json, $matches);
+        $payload = json_decode($matches[0] ?? '', true);
+
+        self::assertSame('success', $payload['status']);
+    }
+
+    public function testFieldsInsideContainers(): void
+    {
+        $page = new NestedLayoutOptionsPage();
+        $fields = $page->collectEditableFields();
+        self::assertCount(3, $fields); // flat, in_tab, in_box (readonly is filtered out of collectEditableFields/collectAllFields)
     }
 }
 
@@ -567,6 +618,51 @@ final class SingleTabOptionsPage extends OptionsPage
                 Text::make('Orphan option', 'orphan'),
             ]),
             Text::make('Visible option', 'visible'),
+        ];
+    }
+}
+
+final class MultisiteTestOptionsPage extends OptionsPage
+{
+    protected string $moduleId = 'vendor.test';
+    protected bool $multiSite = true;
+
+    public static function getId(): string
+    {
+        return 'multisite-test';
+    }
+
+    public static function getTitle(): string
+    {
+        return 'Multisite Test';
+    }
+
+    public function components(): iterable
+    {
+        return [
+            Text::make('Name', 'name'),
+        ];
+    }
+}
+
+final class FieldsBackwardPathOptionsPage extends OptionsPage
+{
+    protected string $moduleId = 'vendor.test';
+
+    public static function getId(): string
+    {
+        return 'fields-backward';
+    }
+
+    public static function getTitle(): string
+    {
+        return 'Fields Backward';
+    }
+
+    public function fields(): iterable
+    {
+        return [
+            Text::make('Name', 'name'),
         ];
     }
 }

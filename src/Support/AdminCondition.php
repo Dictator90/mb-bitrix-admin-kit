@@ -31,13 +31,13 @@ final class AdminCondition
         }
 
         if ($condition instanceof ConditionTree) {
-            $condition->context($context, null);
+            $condition->context($context, 'default');
             foreach ($context as $alias => $value) {
                 if ($value === null || (!is_array($value) && !is_object($value) && !is_string($value))) {
                     continue;
                 }
 
-                $condition->context($value, is_string($alias) ? $alias : null);
+                $condition->context($value, is_string($alias) ? $alias : 'item_' . $alias);
             }
             return $condition->calculate()->result();
         }

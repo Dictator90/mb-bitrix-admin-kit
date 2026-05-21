@@ -8,7 +8,7 @@ AdminKit можно использовать двумя способами:
 - внутри собственного Bitrix-модуля;
 - вне модуля, например через `local/admin`, `local/classes` и Composer autoload проекта.
 
-`Loader::includeModule()` и `AdminKitScope` решают разные задачи. `Loader::includeModule('vendor.demo')` подключает модуль, его `include.php` и классы. `AdminKitScope` хранит `scopeId` и пути discovery, по которым AdminKit ищет `Resource` и `Page` классы.
+`Loader::includeModule()` и `AdminKit` решают разные задачи. `Loader::includeModule('vendor.demo')` подключает модуль, его `include.php` и классы. Менеджер `AdminKit` хранит `scopeId` и пути discovery, по которым AdminKit ищет `Resource` и `Page` классы.
 
 ## Вариант 1. Внутри Bitrix-модуля
 
@@ -41,12 +41,9 @@ composer require mb4it/bitrix-admin-kit
 declare(strict_types=1);
 
 $vendorAutoload = __DIR__ . '/vendor/autoload.php';
-$projectAutoload = dirname(__DIR__, 3) . '/vendor/autoload.php';
 
 if (is_file($vendorAutoload)) {
     require_once $vendorAutoload;
-} elseif (is_file($projectAutoload)) {
-    require_once $projectAutoload;
 }
 ```
 
@@ -169,21 +166,18 @@ final class ProductResource extends DataManagerResource
 declare(strict_types=1);
 
 use Bitrix\Main\Loader;
-use MB\Bitrix\AdminKit\Manager\AdminKitManager;
-use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+use MB\Bitrix\AdminKit\AdminKit;
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
-
-Loader::includeModule('vendor.demo');
 
 global $APPLICATION, $adminPage;
 $adminPage->hideTitle();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
 
-$scope = AdminKitScope::fromModuleId('vendor.demo');
+Loader::includeModule('vendor.demo');
 
-(new AdminKitManager($scope))->getCurrentPage()->render();
+AdminKit::forModule('vendor.demo')->getCurrentPage()->render();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
 ```
@@ -191,10 +185,14 @@ require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.p
 Важно:
 
 - `Loader::includeModule('vendor.demo')` подключает модуль и его `include.php`.
-- `AdminKitScope::fromModuleId('vendor.demo')` находит путь модуля и добавляет discovery path `lib/Admin`.
-- `fromModuleId()` не заменяет `includeModule()` и не вызывает его внутри.
-- Если ресурсы лежат не в `lib/Admin`, передайте относительный путь внутри модуля: `AdminKitScope::fromModuleId('vendor.demo', 'lib/Resources')`.
-- Для нескольких директорий используйте массив: `AdminKitScope::fromModuleId('vendor.demo', ['lib/Admin', 'lib/Pages'])`.
+- `AdminKit::forModule('vendor.demo')` автоматически находит путь модуля и добавляет discovery path `lib/Admin` по умолчанию.
+- Если ресурсы лежат в другой директории (например, `lib/Resources`), настройте пути сканирования через метод `discoverIn()`:
+  ```php
+  AdminKit::forModule('vendor.demo')
+      ->discoverIn($_SERVER['DOCUMENT_ROOT'] . '/local/modules/vendor.demo/lib/Resources')
+      ->getCurrentPage()
+      ->render();
+  ```
 
 ### 6. `admin/menu.php`
 
@@ -202,18 +200,19 @@ require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.p
 <?php
 
 use Bitrix\Main\Loader;
-use Vendor\Demo\Admin\ProductResource;
+use MB\Bitrix\AdminKit\AdminKit;
 
 Loader::includeModule('vendor.demo');
 
 return [
     'parent_menu' => 'global_menu_content',
-    'section' => ProductResource::getId(),
-    'sort' => ProductResource::getSort(),
-    'text' => 'Товары',
-    'title' => 'Товары',
-    'url' => 'demo_admin.php?page=' . ProductResource::getId(),
-    'icon' => ProductResource::getMenuIcon(),
+    'section' => 'vendor_demo',
+    'sort' => 100,
+    'text' => 'Демо модуль',
+    'title' => 'Демо модуль',
+    'icon' => 'adm-menu-settings',
+    'items_id' => 'vendor_demo_menu',
+    'items' => AdminKit::forModule('vendor.demo')->getMenu('/bitrix/admin/demo_admin.php'),
 ];
 ```
 
@@ -243,45 +242,26 @@ vendor/
 ### 1. Установка в корне проекта
 
 ```bash
-cd <bitrix-project-root>
+cd <bitrix-project-root>/local/php_interface #Как базовый путь (но Вы вправе делать что вам хочется)
+composer init #Если не было
 composer require mb4it/bitrix-admin-kit
 ```
 
-### 2. Composer autoload для своих классов
-
-`composer.json` проекта:
-
-```json
-{
-  "autoload": {
-    "psr-4": {
-      "Local\\": "local/classes/"
-    }
-  }
-}
-```
-
-После изменения autoload выполните:
-
-```bash
-composer dump-autoload
-```
-
-### 3. `local/php_interface/init.php`
+### 2. `local/php_interface/init.php`
 
 ```php
 <?php
 
-$autoload = $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
+$autoload = __DIR__ . '/vendor/autoload.php';
 
 if (is_file($autoload)) {
     require_once $autoload;
 }
 ```
 
-Если вы не хотите подключать Composer autoload глобально, подключите `vendor/autoload.php` в конкретном admin-файле до создания `AdminKitManager`.
+Если вы не хотите подключать Composer autoload глобально, подключите `vendor/autoload.php` в конкретном admin-файле до вызова фасада `AdminKit`.
 
-### 4. Resource вне модуля
+### 3. Resource вне модуля
 
 Код ресурса совпадает с модульным примером выше, но меняются namespace и imports:
 
@@ -310,8 +290,7 @@ ORM table в этом сценарии можно положить в `local/cla
 
 declare(strict_types=1);
 
-use MB\Bitrix\AdminKit\Manager\AdminKitManager;
-use MB\Bitrix\AdminKit\Manager\AdminKitScope;
+use MB\Bitrix\AdminKit\AdminKit;
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
 
@@ -320,12 +299,10 @@ $adminPage->hideTitle();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
 
-$scope = AdminKitScope::fromDirectory(
+AdminKit::fromDirectory(
     $_SERVER['DOCUMENT_ROOT'] . '/local/classes/Admin',
     'local.admin'
-);
-
-(new AdminKitManager($scope))->getCurrentPage()->render();
+)->getCurrentPage()->render();
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
 ```

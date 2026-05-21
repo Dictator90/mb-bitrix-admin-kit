@@ -85,25 +85,45 @@ final class TabsRenderer
             if (el.dataset.adminkitTabsPrerendered === 'Y') {
                 var root = el.querySelector('.ui-tabs__tabs-container') || el;
                 var activateTab = function(tabId) {
-                    root.querySelectorAll('.ui-tabs__tab-body_inner').forEach(function(body) {
-                        body.classList.toggle('--body-active', body.getAttribute('data-id') === tabId);
-                    });
-                    root.querySelectorAll('[data-bx-role="tab-header"]').forEach(function(header) {
-                        header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
-                    });
-                };
-                root.querySelectorAll('[data-bx-role="tab-header"]').forEach(function(header) {
-                    header.addEventListener('click', function() {
-                        var tabId = header.getAttribute('data-bx-name') || '';
-                        if (tabId !== '') {
-                            activateTab(tabId);
-                            var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
-                            if (activeTabInput) {
-                                activeTabInput.value = tabId;
+                    var bodiesContainer = root.querySelector('[data-bx-role="bodies"]');
+                    if (bodiesContainer) {
+                        Array.from(bodiesContainer.children).forEach(function(body) {
+                            if (body.classList.contains('ui-tabs__tab-body_inner')) {
+                                body.classList.toggle('--body-active', body.getAttribute('data-id') === tabId);
                             }
+                        });
+                    }
+
+                    var headersContainer = root.querySelector('[data-bx-role="headers"]');
+                    if (headersContainer) {
+                        Array.from(headersContainer.children).forEach(function(header) {
+                            if (header.getAttribute('data-bx-role') === 'tab-header') {
+                                header.classList.toggle('--header-active', header.getAttribute('data-bx-name') === tabId);
+                            }
+                        });
+                    }
+                };
+
+                var headersContainer = root.querySelector('[data-bx-role="headers"]');
+                if (headersContainer) {
+                    Array.from(headersContainer.children).forEach(function(header) {
+                        if (header.getAttribute('data-bx-role') !== 'tab-header') {
+                            return;
                         }
+
+                        header.addEventListener('click', function() {
+                            var tabId = header.getAttribute('data-bx-name') || '';
+                            if (tabId !== '') {
+                                activateTab(tabId);
+                                var activeTabInput = document.querySelector('input[name="adminkit_active_tab"]');
+                                if (activeTabInput) {
+                                    activeTabInput.value = tabId;
+                                }
+                            }
+                        });
                     });
-                });
+                }
+                el.dataset.adminkitTabsInitialized = 'true';
                 if (window.BX && window.BX.UI && window.BX.UI.Hint) {
                     window.BX.UI.Hint.init(root);
                 }

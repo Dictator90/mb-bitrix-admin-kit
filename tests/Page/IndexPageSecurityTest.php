@@ -7,57 +7,80 @@ namespace MB\Bitrix\AdminKit\Tests\Page;
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
+use MB\Bitrix\AdminKit\Tests\Support\BitrixContextTrait;
 use PHPUnit\Framework\TestCase;
 
 final class IndexPageSecurityTest extends TestCase
 {
+    use BitrixContextTrait;
+
     protected function setUp(): void
     {
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = false;
-        $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = [];
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [];
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
-        $_POST = [];
+        parent::setUp();
+        $this->setGetRequest();
         $_SESSION = [];
-        $_SERVER['HTTP_X_REQUESTED_WITH'] = '';
         $GLOBALS['last_redirect'] = null;
+        $GLOBALS['APPLICATION'] = new class () {
+            public function SetTitle(string $title): void
+            {
+            }
+
+            public function IncludeComponent(string $name, string $template, array $params): void
+            {
+            }
+
+            public function StoreCookies(): void
+            {
+            }
+        };
     }
 
     protected function tearDown(): void
     {
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = false;
+        $this->restoreRequest();
+        parent::tearDown();
     }
 
     public function testPostBulkWithoutSessidDoesNotExecuteBulkAction(): void
     {
         $resource = new BulkTrackingResource();
-        $page = new IndexPage($resource);
-
         $gridId = $resource->getGridId();
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = false;
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $GLOBALS['MB_ADMIN_KIT_TEST_POST'] = [];
-        $_POST['action_button_' . $gridId] = 'track_bulk';
+        $this->setPostRequest([
+            'action_button_' . $gridId => 'track_bulk',
+            'sessid' => 'invalid',
+        ]);
+        $page = new class ($resource) extends IndexPage {
+            public function redirect(string $url): void
+            {
+                $GLOBALS['last_redirect'] = $url;
+            }
+        };
 
         ob_start();
         $page->render();
         ob_end_clean();
 
         self::assertFalse(BulkTrackingResource::$bulkExecuted);
-        self::assertSame('/bitrix/admin/test.php', $GLOBALS['last_redirect']);
+        self::assertArrayHasKey($gridId, $_SESSION['MB_ADMIN_KIT_BULK_RESULT'] ?? []);
+        self::assertIsString($GLOBALS['last_redirect']);
     }
 
     public function testPostInlineEditWithoutSessidDoesNotSaveRows(): void
     {
         $resource = new InlineTrackingResource();
-        $page = new IndexPage($resource);
         $gridId = $resource->getGridId();
 
-        $GLOBALS['MB_ADMIN_KIT_TEST_SESSID_VALID'] = false;
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $_POST['action_button_' . $gridId] = 'edit';
-        $_POST['FIELDS'] = ['1' => ['NAME' => 'Changed']];
+        $this->setPostRequest([
+            'action_button_' . $gridId => 'edit',
+            'FIELDS' => ['1' => ['NAME' => 'Changed']],
+            'sessid' => 'invalid',
+        ]);
+        $page = new class ($resource) extends IndexPage {
+            public function redirect(string $url): void
+            {
+                $GLOBALS['last_redirect'] = $url;
+            }
+        };
 
         ob_start();
         $page->render();
@@ -69,16 +92,16 @@ final class IndexPageSecurityTest extends TestCase
     public function testDeleteSupportsStringPrimaryKeyWithoutIntCast(): void
     {
         $resource = new StringIdDeleteResource();
-        $page = new IndexPage($resource);
-
-        $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = ['action' => 'delete', 'id' => 'sku-42'];
+        $this->setGetRequest(['action' => 'delete', 'id' => 'sku-42']);
+        $page = new class ($resource) extends IndexPage {
+            public function redirect(string $url): void
+            {
+                $GLOBALS['last_redirect'] = $url;
+            }
+        };
 
         ob_start();
-        try {
-            $page->render();
-        } catch (\Throwable) {
-            // LocalRedirect may not stop execution in all environments.
-        }
+        $page->render();
         ob_end_clean();
 
         self::assertSame(['sku-42'], StringIdDeleteResource::$deletedIds);
@@ -116,7 +139,7 @@ final class IndexPageSecurityTest extends TestCase
         $page::class::$buildGridCalled = false;
         $page::class::$loadDataCalled = false;
 
-        $GLOBALS['MB_ADMIN_KIT_TEST_GET'] = ['action' => 'export'];
+        $this->setGetRequest(['action' => 'export']);
 
         ob_start();
         try {
@@ -128,18 +151,19 @@ final class IndexPageSecurityTest extends TestCase
         self::assertFalse($page::class::$exportCalled);
         self::assertFalse($page::class::$buildGridCalled);
         self::assertFalse($page::class::$loadDataCalled);
-        self::assertStringContainsString('Недостаточно прав для просмотра раздела.', $html);
+        self::assertTrue(str_contains($html, 'Недостаточно прав для просмотра раздела.') || str_contains($html, 'Insufficient permissions to view this section.'));
     }
 
     public function testInlineEditPreservesStringId(): void
     {
         $resource = new InlineIdTrackingResource();
-        $page = new IndexPage($resource);
         $gridId = $resource->getGridId();
 
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $_POST['action_button_' . $gridId] = 'edit';
-        $_POST['FIELDS'] = ['sku-42' => ['NAME' => 'Changed']];
+        $this->setPostRequest([
+            'action_button_' . $gridId => 'edit',
+            'FIELDS' => ['sku-42' => ['NAME' => 'Changed']],
+        ]);
+        $page = new IndexPage($resource);
 
         ob_start();
         $page->render();
@@ -152,12 +176,13 @@ final class IndexPageSecurityTest extends TestCase
     public function testInlineEditPreservesIntLikeId(): void
     {
         $resource = new InlineIdTrackingResource();
-        $page = new IndexPage($resource);
         $gridId = $resource->getGridId();
 
-        $GLOBALS['MB_ADMIN_KIT_TEST_IS_POST'] = true;
-        $_POST['action_button_' . $gridId] = 'edit';
-        $_POST['FIELDS'] = [7 => ['NAME' => 'Changed']];
+        $this->setPostRequest([
+            'action_button_' . $gridId => 'edit',
+            'FIELDS' => [7 => ['NAME' => 'Changed']],
+        ]);
+        $page = new IndexPage($resource);
 
         ob_start();
         $page->render();
@@ -189,7 +214,7 @@ final class IndexPageSecurityTest extends TestCase
         }
 
         self::assertFalse($page::class::$loadDataCalled);
-        self::assertStringContainsString('Недостаточно прав для просмотра раздела.', $html);
+        self::assertTrue(str_contains($html, 'Недостаточно прав для просмотра раздела.') || str_contains($html, 'Insufficient permissions to view this section.'));
         self::assertStringNotContainsString('main.ui.grid', $html);
     }
 

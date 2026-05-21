@@ -46,7 +46,7 @@ final class BulkActionMetadataTest extends TestCase
         $action = BulkAction::delete();
 
         self::assertSame('danger', $action->getGroup());
-        self::assertSame('Удаление', $action->getGroupLabel());
+        self::assertSame('Deletion', $action->getGroupLabel());
         self::assertSame('ui-btn-icon-remove', $action->getIcon());
         self::assertSame(100, $action->getSort());
         self::assertTrue($action->isDanger());

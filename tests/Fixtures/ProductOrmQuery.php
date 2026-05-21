@@ -37,7 +37,7 @@ final class ProductOrmQuery
 
         foreach (ProductTable::$rows as $row) {
             if ((string) ($row[$this->whereField] ?? '') === (string) $this->whereValue) {
-                return new ProductOrmEntityObject($row);
+                return new ProductOrmEntityObject($row, false);
             }
         }
 

@@ -18,6 +18,6 @@ final class EmptySelectedIdsTest extends TestCase
         );
 
         self::assertFalse($result->isSuccess());
-        self::assertSame(['_bulk' => ['Не выбраны элементы']], $result->errors());
+        self::assertSame(['_bulk' => ['No items selected.']], $result->errors());
     }
 }
