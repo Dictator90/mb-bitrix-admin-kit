@@ -269,7 +269,11 @@ trait HasDataManagerPersistence
             return;
         }
 
-        $event = new \Bitrix\Main\Event('mb.bitrix.adminkit', $eventName, [
+        $moduleId = $context->eventModuleId
+            ?? $context->adminKitContext?->moduleId
+            ?? 'main';
+
+        $event = new \Bitrix\Main\Event($moduleId, $eventName, [
             'resource' => static::class,
             'context' => $context,
             'data' => $data,

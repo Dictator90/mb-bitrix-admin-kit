@@ -2,7 +2,32 @@
 <phpunit bootstrap="tests/bootstrap.php" colors="true">
   <testsuites>
     <testsuite name="Unit">
-      <directory>tests</directory>
+      <directory>tests/Action</directory>
+      <directory>tests/Component</directory>
+      <directory>tests/Contracts</directory>
+      <directory>tests/Database</directory>
+      <directory>tests/Discovery</directory>
+      <directory>tests/Export</directory>
+      <directory>tests/Field</directory>
+      <directory>tests/Filter</directory>
+      <directory>tests/Form</directory>
+      <directory>tests/Grid</directory>
+      <directory>tests/Import</directory>
+      <directory>tests/Lifecycle</directory>
+      <directory>tests/Manager</directory>
+      <directory>tests/Page</directory>
+      <directory>tests/Pages</directory>
+      <directory>tests/Relation</directory>
+      <directory>tests/Resource</directory>
+      <directory>tests/Security</directory>
+      <directory>tests/Support</directory>
+      <directory>tests/UI</directory>
+      <directory>tests/Url</directory>
+      <directory>tests/Widget</directory>
+      <exclude>tests/Integration</exclude>
+    </testsuite>
+    <testsuite name="Integration">
+      <directory>tests/Integration</directory>
     </testsuite>
   </testsuites>
   <logging>

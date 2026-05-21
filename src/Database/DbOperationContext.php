@@ -6,6 +6,7 @@ namespace MB\Bitrix\AdminKit\Database;
 
 use Bitrix\Main\HttpRequest;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
+use MB\Bitrix\AdminKit\Page\Context\AdminKitContext;
 
 final class DbOperationContext
 {
@@ -20,6 +21,8 @@ final class DbOperationContext
         public readonly array $validatedData = [],
         public readonly mixed $userId = null,
         public readonly ?HttpRequest $request = null,
+        public readonly ?AdminKitContext $adminKitContext = null,
+        public readonly ?string $eventModuleId = null,
     ) {
     }
 
@@ -37,6 +40,8 @@ final class DbOperationContext
             $changes['validatedData'] ?? $this->validatedData,
             $changes['userId'] ?? $this->userId,
             $changes['request'] ?? $this->request,
+            $changes['adminKitContext'] ?? $this->adminKitContext,
+            $changes['eventModuleId'] ?? $this->eventModuleId,
         );
     }
 }
