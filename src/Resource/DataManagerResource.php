@@ -11,6 +11,7 @@ use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 use MB\Bitrix\AdminKit\Relation\RelationMetadataResolver;
 use MB\Bitrix\AdminKit\Relation\RelationValueLoader;
+use MB\Bitrix\AdminKit\Relation\Strategies\RelationSyncStrategyInterface;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasDataManager;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasDataManagerPersistence;
 
@@ -138,6 +139,23 @@ abstract class DataManagerResource extends CrudResource implements DataManagerRe
         }
 
         return (new RelationValueLoader())->load($item, $field, $metadata);
+    }
+
+    /**
+     * User-defined relation synchronization strategies.
+     * They are registered before built-in strategies and have higher priority.
+     *
+     * @return iterable<RelationSyncStrategyInterface>
+     */
+    protected function relationSyncStrategies(): iterable
+    {
+        return [];
+    }
+
+    /** @return iterable<RelationSyncStrategyInterface> */
+    final public function getRelationSyncStrategies(): iterable
+    {
+        return $this->relationSyncStrategies();
     }
 
     protected function assertSinglePrimaryKey(): void

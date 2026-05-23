@@ -375,3 +375,10 @@
 - Migrated relation field classes to `MB\Bitrix\AdminKit\Field\Relation` namespace and updated internal imports.
 - Reworked runtime relation builder/registrar to use Bitrix ORM relation field objects and explicit registration result.
 - Added initial ORM relation services: `RelationValueLoader`, `RelationObjectMutator`, `OrmObjectRelationSynchronizer`, `ManualPivotSynchronizer`, and synchronizer interface.
+
+## Unreleased
+- Split PHPUnit suites into Unit/Integration in `phpunit.xml.dist` and excluded integration tests from Unit suite.
+- Added `adminKitContext` and `eventModuleId` to `DbOperationContext`; FormPage post contexts now pass AdminKit context and fallback event module id (`main`).
+- Updated DataManager event dispatch to resolve event module id from operation context with safe fallback to `main` (removed hardcoded `mb.bitrix.adminkit`).
+- Added DataManagerResource relation sync extension point via `relationSyncStrategies()` and `getRelationSyncStrategies()`; EntityObjectFormSaver now registers user strategies before sync.
+- Marked internal FormPage bridge/state mutator methods with `@internal` to reduce accidental public API surface.
