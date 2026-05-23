@@ -66,6 +66,7 @@
 - Стабильность Composer-пакета по умолчанию `stable`; пакет больше не подталкивает потребителей к разрешению dev-зависимостей.
 
 ### Documentation
+- Упрощён `docs/fields.md`: документ сфокусирован на пользовательском Fluent API и практических сценариях (`Resource`/`OptionsPage`), без детального internal API-reference; отдельно подчеркнуто, что `displayValue()`/`previewValue()` — runtime-методы, а для настройки отображения используются `displayUsing()`/`format()`/`preview()`, и добавлена ссылка на relation guide `docs/user/guides/relations.md`.
 - Полностью переписан `docs/fields.md`: добавлено полноценное описание базового Field API (identity/value/default/visibility/conditions/reactivity/validation/readonly/grid/computed/export-import/render lifecycle/custom field) и актуальный обзор стандартных полей с ссылкой на relation-гайд.
 - Added `docs/user/reference/fields/slug.md` and updated fields reference index with Slug field usage, defaults, and `dependsOn()` behavior.
 - В `docs/user/reference/fields/select.md` возвращён базовый пример `options([...])` через массив, перед примерами `Closure` и `OptionsResolverContract`.
