@@ -1,21 +1,36 @@
 # Fields
 
-`MB\Bitrix\AdminKit\Field\Field` — базовая декларация поля для index/form/detail/options, а также для import/export и валидации.
+`Field` — это декларативное описание поля в AdminKit.
 
-Поле хранит:
-- идентичность (`label`, `column`);
-- правила видимости/readonly/required;
-- форматирование и preview;
-- grid metadata (sortable/editable/edit-link);
-- normalize/serialize поведение для POST;
-- reactive dependencies (`dependsOn`, `onChange`).
+Поля используются в:
+- `indexFields()`
+- `formFields()`
+- `detailFields()`
+- `fields()` (например, в `OptionsPage`)
+- `components()` (когда поля встраиваются в layout-компоненты)
 
-## 1) Быстрый пример
+Основная настройка полей делается через fluent chain. Внутренние getter/checker/render/runtime методы обычно не нужны в пользовательском коде.
+
+## 1. Быстрый пример
 
 ```php
 use MB\Bitrix\AdminKit\Field\ID;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Field\Switcher;
+
+public function indexFields(): iterable
+{
+    return [
+        ID::make('ID'),
+
+        Text::make('Название', 'NAME')
+            ->sortable()
+            ->asEditLink(),
+
+        Switcher::make('Активность', 'ACTIVE')
+            ->values('Y', 'N'),
+    ];
+}
 
 public function formFields(): iterable
 {
@@ -29,143 +44,190 @@ public function formFields(): iterable
             ->default('Y'),
     ];
 }
-
-public function indexFields(): iterable
-{
-    return [
-        ID::make('ID'),
-        Text::make('Название', 'NAME')->sortable()->asEditLink(),
-        Switcher::make('Активность', 'ACTIVE')->values('Y', 'N'),
-    ];
-}
 ```
 
-- 1-й аргумент `make()` — label.
-- 2-й аргумент — column (ключ данных/ORM поля/option key).
-- Если column не указан, он генерируется из label через `AdminString::safeKey()`.
+- Первый аргумент `make()` — `label` (подпись в UI).
+- Второй аргумент — `column` (ключ данных/ORM-поля/option key).
+- Если `column` не передан, он генерируется из `label`, но для ORM и `OptionsPage` лучше указывать `column` явно.
 
-## 2) Создание поля и идентичность
+## 2. Создание поля
 
-- `make(string $label, ?string $column = null): static`
-- `getLabel(): string`
-- `getColumn(): string`
+```php
+Text::make('Название', 'NAME');
+Text::make('SEO title');
+```
 
-`column` используется как ключ значения в форме, POST, row-data и ORM/select/filter слоях.
+- `make()` создает экземпляр поля.
+- `label` используется в интерфейсе.
+- `column` используется для чтения/сохранения значения.
+- Если `column` не задан, он генерируется автоматически.
+- Для предсказуемости лучше задавать `column` явно.
 
-## 3) Значение поля
+## 3. Базовые fluent-методы всех полей
 
-- `setValue(mixed $value): static`
-- `fill(mixed $value): static` (алиас)
-- `getValue(): mixed`
-- `resolveValue(mixed $item, array $row = []): mixed`
+### Значение и значение по умолчанию
 
-`resolveValue()` берет значение в таком порядке: `item[column]` (array), `item->get(column)` (object), затем fallback по `row[column]`, `value`, `default`.
+```php
+->default('Y')
+->fill($value)
+->setValue($value)
+```
 
-## 4) Значение по умолчанию
+- `default()` задает fallback-значение.
+- `fill()` / `setValue()` обычно нужны редко (например, при ручной подготовке поля).
 
-- `default(mixed $value): static`
-- `getDefault(): mixed`
+```php
+Switcher::make('Активность', 'ACTIVE')
+    ->values('Y', 'N')
+    ->default('Y');
+```
 
-`default` — fallback при resolve, но не «принудительная запись в БД».
+### Видимость
 
-## 5) Видимость по страницам
+```php
+->hideOn(PageType::INDEX)
+->showOn(PageType::FORM, PageType::DETAIL)
+->visible(...)
+->canSee(...)
+->visibleWhen(...)
+```
 
-- `hideOn(PageType ...$pageTypes): static`
-- `showOn(PageType ...$pageTypes): static`
-- `isVisibleOn(PageType $pageType): bool`
-
-Это server-side видимость в контексте типа страницы (index/form/detail/options рендера).
-
-## 6) Условная видимость: `visible()`, `canSee()`, `visibleWhen()`
-
-- `visible(bool|Closure $visible = true, string|array|null $dependsOn = null): static`
-- `canSee(bool|Closure $condition = true, string|array|null $dependsOn = null): static` (алиас)
-- `visibleWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null, bool $reactive = false): static`
+```php
+Text::make('Внутренний комментарий', 'INTERNAL_COMMENT')
+    ->hideOn(PageType::INDEX);
+```
 
 ```php
 use MB\Bitrix\AdminKit\Field\FieldConditionContext;
 
-Text::make('Комментарий', 'COMMENT')
+Text::make('Описание', 'DESCRIPTION')
     ->canSee(fn (FieldConditionContext $ctx): bool => $ctx->is('ACTIVE', 'Y'));
-
-Text::make('Комментарий', 'COMMENT')
-    ->visibleWhen('ACTIVE', '=', 'Y', reactive: true);
 ```
 
-## 7) Required и validation
+- `visible()` — базовый метод для управления видимостью.
+- `canSee()` — алиас в стиле MoonShine/Nova.
+- `visibleWhen()` — короткая запись условий по значениям других полей.
 
-- `required(bool|Closure $required = true, string|array|null $dependsOn = null): static`
-- `requiredWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null, bool $reactive = false): static`
-- `validate(mixed $value): array|static` (closure → добавить validator, scalar → выполнить validation)
-- `runValidation(mixed $value, array $data = []): array`
-
-Validation helpers:
-- `minLength()`, `maxLength()`, `email()`, `url()`, `numeric()`, `min()`, `max()`, `pattern()`, `in()`.
-
-## 8) Readonly
-
-- `readonly(bool|Closure $readonly = true, string|array|null $dependsOn = null): static`
-- `readonlyWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null, bool $reactive = false): static`
-- `readonlyOnUpdate(bool $readonly = true): static`
-- `readonlyOnCreate(bool $readonly = true): static`
-- `isReadOnly(): bool`
-- `isReadOnlyFor(array $data = []): bool`
-
-`readonlyOnUpdate()` и `readonlyOnCreate()` используют form-контекст (`_mode`, `_id`, `ID`).
-
-## 9) Универсальная условная логика `when()`
-
-- `when(Closure $condition, Closure $modifier, string|array|null $dependsOn = null): static`
-
-Контекст условий: `FieldConditionContext` (`get/has/is/isNot/in/isCreate/isEdit`).
+### Required / validation
 
 ```php
-Text::make('SEO title', 'SEO_TITLE')
-    ->when(
-        condition: fn (FieldConditionContext $ctx): bool => $ctx->is('SEO_ENABLED', 'Y'),
-        modifier: fn (Text $field): Text => $field->required()->help('Заполните SEO title'),
-        dependsOn: 'SEO_ENABLED',
+->required()
+->required(fn (FieldConditionContext $ctx): bool => ...)
+->requiredWhen('ACTIVE', 'Y')
+->validate(fn ($value, array $data) => ...)
+->minLength()
+->maxLength()
+->email()
+->url()
+->numeric()
+->min()
+->max()
+->pattern()
+->in()
+```
+
+```php
+Text::make('Email', 'EMAIL')
+    ->required()
+    ->email();
+```
+
+```php
+Text::make('Комментарий', 'COMMENT')
+    ->required(
+        fn (FieldConditionContext $ctx): bool => $ctx->is('ACTIVE', 'Y'),
+        dependsOn: 'ACTIVE'
     );
 ```
 
-## 10) Reactivity: `dependsOn()` и `onChange()`
+### Readonly
 
-- `dependsOn(string|array $sourceColumns, ?Closure $modifier = null): static`
-- `onChange(string $targetColumn, Closure $resolver): static`
-- `resolveReactiveDependencies(mixed $value, array $allData = []): array`
-- low-level: `hasDependency()`, `getDependsOn()`, `applyDependency()`, `isReactive()`, `getOnChangeCallbacks()`, `getReactiveAttributes()`.
+```php
+->readonly()
+->readonly(fn (FieldConditionContext $ctx): bool => ...)
+->readonlyWhen('ACTIVE', 'N')
+->readonlyOnCreate()
+->readonlyOnUpdate()
+```
 
-`dependsOn` включает server + frontend реактивный сценарий (через `install/js/mb/admin/kit/src/dependencies.js`).
+```php
+Text::make('Код', 'CODE')
+    ->readonlyOnUpdate();
+```
 
-## 11) Форматирование и preview
+```php
+Text::make('Код', 'CODE')
+    ->readonly(fn (FieldConditionContext $ctx): bool => $ctx->isEdit());
+```
 
-- `format(Closure $formatter): static`
-- `displayUsing(Closure $callback): static`
-- `preview(Closure $preview): static`
-- `displayValue(...)`, `previewValue(...)`
+### Help UI
 
-`displayUsing()` — самый гибкий путь (value + row + context), `format()` — удобный shorthand для value-only.
+```php
+->placeholder('...')
+->help('...')
+->hint('...')
+```
 
-## 12) Grid и inline edit
+```php
+Text::make('Email', 'EMAIL')
+    ->placeholder('admin@example.com')
+    ->help('Используется для системных уведомлений');
+```
 
-- `sortable(bool $sortable = true): static`
-- `editable(bool $editable = true): static`
-- `asEditLink(bool $enabled = true): static`
-- `linkToEdit(bool $enabled = true): static` (алиас)
-- `getGridColumnConfig(): array`
-- `getGridColumnType(): string`
-- `getFilterType(): ?string`
+- `placeholder` применяется в input/textarea-полях.
+- `hint`/`help` используются для подсказок.
+- В текущем API `help()` также заполняет `hint`.
 
-Важно: computed field автоматически отключает sortable.
+### Formatting
 
-## 13) ORM select и computed
+```php
+->format(fn ($value) => ...)
+->preview(fn ($value) => ...)
+->displayUsing(fn ($value, array $row, array $context) => ...)
+```
 
-- `selectable(bool $selectable = true): static`
-- `selectColumns(array|string|null $columns): static`
-- `getSelectColumns(): array`
-- `computed(Closure $callback): static`
-- `isComputed(): bool`
-- `computeValue(array $row): mixed`
+```php
+Text::make('Цена', 'PRICE')
+    ->displayUsing(fn ($value): string => number_format((float) $value, 2, '.', ' ') . ' ₽');
+```
+
+```php
+Text::make('Описание', 'DESCRIPTION')
+    ->preview(fn ($value): string => mb_strimwidth((string) $value, 0, 80, '...'));
+```
+
+- `displayUsing()` — основной способ кастомизировать отображение (`value`, `row`, `context`).
+- `format()` — упрощенный formatter только по `value`.
+- `preview()` — короткое представление значения.
+
+### Grid
+
+```php
+->sortable()
+->sortable(false)
+->editable()
+->asEditLink()
+->linkToEdit()
+```
+
+```php
+Text::make('Название', 'NAME')
+    ->sortable()
+    ->asEditLink();
+```
+
+- `sortable()` включает сортировку по `column`.
+- `asEditLink()` / `linkToEdit()` превращают значение в ссылку на редактирование.
+- `editable()` включает inline edit, если это поддерживает и поле, и grid.
+- `computed()` автоматически отключает сортировку.
+
+### ORM select / computed
+
+```php
+->selectable(false)
+->selectColumns(['FIELD_1', 'FIELD_2'])
+->computed(fn (array $row) => ...)
+```
 
 ```php
 Text::make('Полное имя', 'FULL_NAME')
@@ -173,89 +235,307 @@ Text::make('Полное имя', 'FULL_NAME')
     ->selectColumns(['LAST_NAME', 'NAME']);
 ```
 
-## 14) Export / Import
+- `computed()` для значений, которых нет отдельной ORM-колонкой.
+- `computed()` отключает сортировку.
+- `selectColumns()` помогает загрузить исходные поля для вычисления.
 
-- `exportable(bool $exportable = true): static`
-- `private(bool $private = true): static`
-- `importable(bool $importable = true): static`
-- `system(bool $system = true): static`
+### Export / Import
 
-## 15) Help / hint / placeholder
+```php
+->exportable(false)
+->private()
+->importable(false)
+->system()
+```
 
-- `hint(string $hint): static`
-- `help(?string $text): static`
-- `placeholder(?string $text): static`
+```php
+Password::make('API key', 'API_KEY')
+    ->private()
+    ->exportable(false);
 
-`help()` в текущем API задает hint-текст (не отдельный блок описания под полем).
+ID::make('ID')
+    ->system()
+    ->importable(false);
+```
 
-## 16) Multiple/normalize/serialization
+- `private()` — чувствительное поле.
+- `exportable(false)` — исключить из экспорта.
+- `importable(false)` — исключить из импорта.
+- `system()` — служебное поле.
 
-- `multiple(bool $multiple = true): static`
-- `normalize(mixed $value): mixed`
-- `serializePostValue(mixed $value): mixed`
-- `preserveStoredValueWhenEmpty(): bool`
+### Multiple / post value
 
-## 17) Render lifecycle
+```php
+->multiple()
+```
 
-- `renderIndex(mixed $context, array $row = []): string`
-- `renderForm(mixed $context = null, array $data = []): string`
-- `renderFormField(mixed $value = null): string` (базовый контракт)
-- `renderDetail(mixed $context, array $row = []): string`
+```php
+Select::make('Теги', 'TAGS')
+    ->multiple();
+```
 
-`FieldRenderContext` и `FieldRowRenderer`/`FieldRowContext` используются для page-aware рендера (label/errors/wrapper/hint выносится в row renderer).
+- `multiple()` включает множественное значение там, где поле это поддерживает.
 
-## 18) Кастомное поле
+## 4. Условная логика
+
+```php
+->required(fn (FieldConditionContext $ctx): bool => ...)
+->readonly(fn (FieldConditionContext $ctx): bool => ...)
+->visible(fn (FieldConditionContext $ctx): bool => ...)
+->canSee(fn (FieldConditionContext $ctx): bool => ...)
+->when(condition, modifier, dependsOn)
+```
+
+```php
+Text::make('Комментарий', 'COMMENT')
+    ->required(
+        fn (FieldConditionContext $ctx): bool => $ctx->is('ACTIVE', 'Y'),
+        dependsOn: 'ACTIVE'
+    );
+```
+
+```php
+Text::make('SEO title', 'SEO_TITLE')
+    ->when(
+        condition: fn (FieldConditionContext $ctx): bool => $ctx->is('SEO_ENABLED', 'Y'),
+        modifier: fn (Text $field): Text => $field
+            ->required()
+            ->help('Заполните SEO title'),
+        dependsOn: 'SEO_ENABLED',
+    );
+```
+
+- Без `dependsOn` условие работает серверно.
+- С `dependsOn` условие работает серверно + реактивно.
+- `dependsOn` может быть строкой или массивом.
+- `modifier` должен быть идемпотентным (без накопления повторных side-effects).
+
+`FieldConditionContext` обычно достаточно использовать через:
+- `get()`
+- `has()`
+- `is()`
+- `isNot()`
+- `in()`
+- `isCreate()`
+- `isEdit()`
+
+## 5. Реактивность
+
+```php
+Text::make('Комментарий', 'COMMENT')
+    ->dependsOn('ACTIVE', function (Text $field, mixed $value, array $formData): void {
+        if (($formData['ACTIVE'] ?? null) === 'Y') {
+            $field->required();
+        }
+    });
+```
+
+```php
+Text::make('Комментарий', 'COMMENT')
+    ->dependsOn(['ACTIVE', 'TYPE'], function (Text $field, mixed $value, array $formData): void {
+        if (($formData['ACTIVE'] ?? null) === 'Y' && ($formData['TYPE'] ?? null) === 'manual') {
+            $field->required();
+        }
+    });
+```
+
+- `dependsOn` принимает одно или несколько полей.
+- callback получает полный `formData`.
+- Для multi-field условий лучше опираться на `formData`, а не только на `$value`.
+- Во frontend зависимости обрабатываются с debounce.
+
+## 6. Стандартные поля
+
+Ниже — краткий обзор основных полей из `src/Field/*.php`.
+
+### Text
+
+```php
+Text::make('Название', 'NAME')
+    ->required()
+    ->maxLength(255);
+```
+
+### Textarea
+
+```php
+Textarea::make('Описание', 'DESCRIPTION')
+    ->rows(6);
+```
+
+### Number
+
+```php
+Number::make('Сортировка', 'SORT')
+    ->min(0);
+```
+
+### Email
+
+```php
+Email::make('Email', 'EMAIL')
+    ->required();
+```
+
+### Checkbox
+
+```php
+Checkbox::make('Опубликовано', 'PUBLISHED')
+    ->values('Y', 'N');
+```
+
+### Switcher
+
+```php
+Switcher::make('Активность', 'ACTIVE')
+    ->values('Y', 'N')
+    ->default('Y');
+```
+
+### Select
+
+```php
+Select::make('Тип', 'TYPE')
+    ->options([
+        'product' => 'Товар',
+        'service' => 'Услуга',
+    ]);
+```
+
+### Date / DateTime
+
+```php
+Date::make('Дата начала', 'DATE_FROM');
+DateTime::make('Обновлено', 'UPDATED_AT');
+```
+
+### File / Image
+
+```php
+File::make('Файл', 'FILE_ID');
+Image::make('Изображение', 'PREVIEW_PICTURE');
+```
+
+### Password
+
+```php
+Password::make('API key', 'API_KEY')
+    ->preserveStoredValueWhenEmpty()
+    ->private();
+```
+
+### Hidden
+
+```php
+Hidden::make('Токен', 'TOKEN');
+```
+
+### Html / Preview / Color
+
+```php
+Html::make('Блок', 'HTML_BLOCK');
+Preview::make('Превью', 'SUMMARY');
+Color::make('Цвет', 'COLOR');
+```
+
+### Slug
+
+```php
+Slug::make('Код', 'CODE');
+```
+
+```php
+Slug::make('Код', 'CODE')
+    ->from('NAME')
+    ->separator('-');
+```
+
+Без `from()` `Slug` работает как обычное текстовое поле (сохраняет ручной ввод). Автогенерация включается через `from()`.
+
+### Entity selectors и iblock selectors
+
+```php
+UserSelect::make('Пользователь', 'USER_ID');
+EntitySelect::make('Элемент', 'ITEM_ID');
+IblockSelect::make('Инфоблок', 'IBLOCK_ID');
+IblockSectionSelect::make('Раздел', 'SECTION_ID');
+IblockElementSelect::make('Элемент инфоблока', 'ELEMENT_ID');
+TagSelect::make('Теги', 'TAGS');
+DialogSelect::make('Связи', 'LINKS');
+```
+
+### ID и UfField
+
+```php
+ID::make('ID');
+UfField::make('UF_CUSTOM_FIELD', 'UF_CUSTOM_FIELD');
+```
+
+## 7. Relation fields
+
+```php
+use MB\Bitrix\AdminKit\Field\Relation\BelongsTo;
+use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
+```
+
+- Relation fields работают с `DataManagerResource`.
+- Используют связи Bitrix D7 ORM.
+- Сохраняются через `EntityObject`.
+- Подробности: `docs/user/guides/relations.md`.
+
+## 8. Создание собственного поля
 
 ```php
 use MB\Bitrix\AdminKit\Field\Field;
 
 final class ColorField extends Field
 {
-    public function renderFormField(mixed $value = null): string
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
         $name = htmlspecialcharsbx($this->getColumn());
-        $resolved = htmlspecialcharsbx((string) $this->resolveValue($value));
+        $value = htmlspecialcharsbx((string) $this->resolveValue($value));
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textbox">
-            <input type="color" class="ui-ctl-element" name="{$name}" value="{$resolved}">
+            <input type="color" class="ui-ctl-element" name="{$name}" value="{$value}">
         </div>
         HTML;
     }
 
-    public function getGridColumnType(): string
+    public function normalize(mixed $value): mixed
     {
-        return 'color';
+        return is_scalar($value) ? (string) $value : null;
     }
 }
 ```
 
-Если нужно использовать вторым аргументом `$formData`, это поддерживается runtime-вызовом `renderForm()` в `Field`, но формальный контракт `renderFormField()` остается с одним параметром.
+Обычно достаточно:
+- переопределить `renderFormField()`;
+- при необходимости — `normalize()` для преобразования POST-значения.
 
-## 19) Обзор стандартных полей (`src/Field/*`)
+`label`/errors/hint/wrapper рендерятся через `FieldRowRenderer`, поэтому не нужно дублировать этот UI-каркас внутри поля.
 
-- `ID` — ID/инт-идентификатор, обычно readonly/system-like.
-- `Text` — базовый input text.
-- `Textarea` — многострочный текст.
-- `Number` — числовой input.
-- `Email` — email field + email validation helper workflow.
-- `Checkbox` — checkbox со значениями checked/unchecked.
-- `Switcher` — Bitrix switch/boolean-like toggler.
-- `Select` — select с `options()` и resolver-ами.
-- `TagSelect` / `DialogSelect` / `EntitySelect` / `UserSelect` — selector-поля на базе Bitrix UI selector.
-- `IblockSelect` / `IblockSectionSelect` / `IblockElementSelect` — селекторы Bitrix iblock сущностей.
-- `Date` / `DateTime` — даты/дата-время.
-- `File` / `Image` — файл/изображение.
-- `Password` — пароль/секрет; поддерживает сохранение старого значения при пустом POST.
-- `Hidden` — hidden input.
-- `Html` — HTML/block output field.
-- `Preview` — preview-only рендер.
-- `Color` — цвет.
-- `Slug` — slug-поле с `from()` и `separator()`.
-- `UfField` — адаптация UF-полей.
+## 9. Что не является пользовательским Fluent API
 
-## 20) Relation fields
+Следующие методы обычно не вызываются напрямую в `Resource`/`Page`:
 
-Relation-поля (`BelongsTo`, `HasOne`, `HasMany`, `BelongsToMany`) находятся в `MB\Bitrix\AdminKit\Field\Relation\*`, работают с ORM/DataManagerResource и имеют отдельные сценарии persistence/preview.
+- `getColumn()`
+- `getLabel()`
+- `getValue()`
+- `getDefault()`
+- `getSelectColumns()`
+- `getGridColumnConfig()`
+- `isRequired()`
+- `isReadOnly()`
+- `isVisibleOn()`
+- `runValidation()`
+- `renderForm()`
+- `renderIndex()`
+- `renderDetail()`
+- `applyDependency()`
+- `displayValue()`
+- `previewValue()`
 
-Подробно: `docs/user/guides/relations.md`.
+Эти методы используются внутренними renderer-ами, grid adapters, DataPipeline и form handlers.
+
+Важно: `displayValue()` и `previewValue()` — это не fluent-настройка поля. Они применяют callbacks, заданные через `displayUsing()`, `format()` и `preview()`.
