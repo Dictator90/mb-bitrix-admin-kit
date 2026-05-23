@@ -207,8 +207,8 @@ class FormPage extends CrudPage implements FormPageContract
 
     /**
      * @param array<string, mixed> $values
+     * @internal
      */
-    /** @internal */
     public function setSubmittedValues(array $values): void
     {
         $this->submittedValues = $values;
@@ -224,8 +224,8 @@ class FormPage extends CrudPage implements FormPageContract
 
     /**
      * @param array<string, array<int, string>> $errors
+     * @internal
      */
-    /** @internal */
     public function setFieldErrors(array $errors): void
     {
         $this->fieldErrors = $errors;
@@ -251,8 +251,8 @@ class FormPage extends CrudPage implements FormPageContract
 
     /**
      * @param array<int, string> $errors
+     * @internal
      */
-    /** @internal */
     public function setGlobalErrors(array $errors): void
     {
         $this->globalErrors = $errors;
@@ -314,8 +314,10 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->resource->formTabs();
     }
 
-    /** @return iterable<Tab> */
-    /** @internal */
+    /**
+     * @return iterable<Tab>
+     * @internal
+     */
     public function getTabsList(): iterable
     {
         return $this->tabs();
@@ -398,8 +400,10 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->isEditNotFound();
     }
 
-    /** @return FieldContract[] all writable fields from both flat form and tabs */
-    /** @internal */
+    /**
+     * @return array<int, FieldContract> all writable fields from both flat form and tabs
+     * @internal
+     */
     public function collectAllFields(): array
     {
         $tabs = iterator_to_array($this->tabs());
@@ -443,8 +447,10 @@ class FormPage extends CrudPage implements FormPageContract
         return array_merge($context, $this->submittedValues);
     }
 
-    /** @return array<string,mixed> */
-    /** @internal */
+    /**
+     * @return array<string, mixed>
+     * @internal
+     */
     public function formConditionContextList(): array
     {
         return $this->formConditionContext();
@@ -577,8 +583,10 @@ class FormPage extends CrudPage implements FormPageContract
         return $items;
     }
 
-    /** @return array<int, FieldContract|ComponentContract> */
-    /** @internal */
+    /**
+     * @return array<int, FieldContract|ComponentContract>
+     * @internal
+     */
     public function getVisibleItemsList(): array
     {
         return $this->getVisibleItems();
@@ -628,8 +636,10 @@ class FormPage extends CrudPage implements FormPageContract
         }
     }
 
-    /** @param array<int, FieldContract|ComponentContract> $items */
-    /** @internal */
+    /**
+     * @param array<int, FieldContract|ComponentContract> $items
+     * @internal
+     */
     public function applyInitialDependenciesList(array $items): void
     {
         $this->applyInitialDependencies($items);
