@@ -66,6 +66,7 @@
 - Стабильность Composer-пакета по умолчанию `stable`; пакет больше не подталкивает потребителей к разрешению dev-зависимостей.
 
 ### Documentation
+- Полностью переписан `docs/fields.md`: добавлено полноценное описание базового Field API (identity/value/default/visibility/conditions/reactivity/validation/readonly/grid/computed/export-import/render lifecycle/custom field) и актуальный обзор стандартных полей с ссылкой на relation-гайд.
 - Added `docs/user/reference/fields/slug.md` and updated fields reference index with Slug field usage, defaults, and `dependsOn()` behavior.
 - В `docs/user/reference/fields/select.md` возвращён базовый пример `options([...])` через массив, перед примерами `Closure` и `OptionsResolverContract`.
 - В docs/user/reference/fields/select.md добавлены отдельные примеры использования options() через Closure и через OptionsResolverContract (включая кастомный resolver).
