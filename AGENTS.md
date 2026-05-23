@@ -105,3 +105,6 @@
 - Before running project checks locally, run `composer install` so `phpunit` and `phpstan` binaries are available.
 - CI/static analysis command is `composer analyse` (not `composer phpstan`).
 - PHPStan runs at **level 6** (`phpstan.neon.dist`) with `phpstan-baseline.neon`; increase level and shrink the baseline incrementally.
+
+## Agent addendum
+- При изменениях документации по полям сохраняйте `docs/fields.md` как обзор fluent API с краткими примерами; внутренние runtime/getter-методы не описывайте как пользовательский API.
