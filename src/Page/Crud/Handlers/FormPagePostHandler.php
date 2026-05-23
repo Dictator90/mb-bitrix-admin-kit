@@ -60,6 +60,8 @@ final class FormPagePostHandler
             normalizedData: $formData->normalized(),
             validatedData: $formData->validated(),
             request: $page->request,
+            adminKitContext: $page->adminKitContext(),
+            eventModuleId: $page->adminKitContext()?->moduleId ?? 'main',
         );
 
         try {
@@ -145,6 +147,8 @@ final class FormPagePostHandler
             normalizedData: [],
             validatedData: [],
             request: $page->request,
+            adminKitContext: $page->adminKitContext(),
+            eventModuleId: $page->adminKitContext()?->moduleId ?? 'main',
         );
 
         try {

@@ -158,6 +158,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->id;
     }
 
+    /** @internal */
     public function setId(mixed $id): void
     {
         $this->id = $id;
@@ -168,6 +169,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->mode;
     }
 
+    /** @internal */
     public function setFormMode(string $mode): void
     {
         $this->mode = $mode;
@@ -178,6 +180,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->item;
     }
 
+    /** @internal */
     public function setItemValue(?DataWrapper $item): void
     {
         $this->item = $item;
@@ -188,6 +191,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->entityItem;
     }
 
+    /** @internal */
     public function setEntityItemInstance(?object $entityItem): void
     {
         $this->entityItem = $entityItem;
@@ -203,6 +207,7 @@ class FormPage extends CrudPage implements FormPageContract
 
     /**
      * @param array<string, mixed> $values
+     * @internal
      */
     public function setSubmittedValues(array $values): void
     {
@@ -219,12 +224,14 @@ class FormPage extends CrudPage implements FormPageContract
 
     /**
      * @param array<string, array<int, string>> $errors
+     * @internal
      */
     public function setFieldErrors(array $errors): void
     {
         $this->fieldErrors = $errors;
     }
 
+    /** @internal */
     public function addFieldError(string $column, string $message): void
     {
         $existing = $this->fieldErrors[$column] ?? [];
@@ -244,12 +251,14 @@ class FormPage extends CrudPage implements FormPageContract
 
     /**
      * @param array<int, string> $errors
+     * @internal
      */
     public function setGlobalErrors(array $errors): void
     {
         $this->globalErrors = $errors;
     }
 
+    /** @internal */
     public function addGlobalError(string $error): void
     {
         $this->globalErrors[] = $error;
@@ -260,6 +269,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->hasValidationErrors;
     }
 
+    /** @internal */
     public function setHasValidationErrors(bool $flag): void
     {
         $this->hasValidationErrors = $flag;
@@ -275,6 +285,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->savedInSidePanel;
     }
 
+    /** @internal */
     public function setSavedInSidePanel(bool $flag): void
     {
         $this->savedInSidePanel = $flag;
@@ -285,6 +296,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->showSavedNotice;
     }
 
+    /** @internal */
     public function setShowSavedNotice(bool $flag): void
     {
         $this->showSavedNotice = $flag;
@@ -302,7 +314,10 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->resource->formTabs();
     }
 
-    /** @return iterable<Tab> */
+    /**
+     * @return iterable<Tab>
+     * @internal
+     */
     public function getTabsList(): iterable
     {
         return $this->tabs();
@@ -338,21 +353,25 @@ class FormPage extends CrudPage implements FormPageContract
         }
     }
 
+    /** @internal */
     public function triggerBeforeSave(FormData $data, DbOperationContext $context): void
     {
         $this->beforeSave($data, $context);
     }
 
+    /** @internal */
     public function triggerAfterSave(FormData $data, DbOperationContext $context, mixed $savedId): void
     {
         $this->afterSave($data, $context, $savedId);
     }
 
+    /** @internal */
     public function triggerRedirectAfterSave(mixed $savedId): ?string
     {
         return $this->redirectAfterSave($savedId);
     }
 
+    /** @internal */
     public function triggerAssertSavePermission(DbOperationContext $context): void
     {
         $this->assertSavePermission($context);
@@ -364,6 +383,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->request->get('IFRAME') === 'Y';
     }
 
+    /** @internal */
     public function getIsSidePanelMode(): bool
     {
         return $this->isSidePanelMode();
@@ -374,12 +394,16 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->id !== null && $this->id !== '' && $this->item === null;
     }
 
+    /** @internal */
     public function getIsEditNotFound(): bool
     {
         return $this->isEditNotFound();
     }
 
-    /** @return FieldContract[] all writable fields from both flat form and tabs */
+    /**
+     * @return array<int, FieldContract> all writable fields from both flat form and tabs
+     * @internal
+     */
     public function collectAllFields(): array
     {
         $tabs = iterator_to_array($this->tabs());
@@ -423,12 +447,16 @@ class FormPage extends CrudPage implements FormPageContract
         return array_merge($context, $this->submittedValues);
     }
 
-    /** @return array<string,mixed> */
+    /**
+     * @return array<string, mixed>
+     * @internal
+     */
     public function formConditionContextList(): array
     {
         return $this->formConditionContext();
     }
 
+    /** @internal */
     public function resolveFieldValueForField(FieldContract $field): mixed
     {
         $column = $field->getColumn();
@@ -453,11 +481,13 @@ class FormPage extends CrudPage implements FormPageContract
         return $field->resolveValue($this->item, $row);
     }
 
+    /** @internal */
     public function closeSidePanelAfterSave(): bool
     {
         return $this->resource->closeSidePanelAfterSave();
     }
 
+    /** @internal */
     public function tryReloadItemAfterSave(mixed $savedId): bool
     {
         try {
@@ -503,6 +533,7 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->isSidePanelMode() && $this->isAjaxRequest();
     }
 
+    /** @internal */
     public function getIsAsyncSaveRequest(): bool
     {
         return $this->isAsyncSaveRequest();
@@ -513,11 +544,13 @@ class FormPage extends CrudPage implements FormPageContract
         return strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
     }
 
+    /** @internal */
     public function getIsAjaxRequest(): bool
     {
         return $this->isAjaxRequest();
     }
 
+    /** @internal */
     public function sendAsyncSaveResponse(): void
     {
         ResponseTerminator::clearOutputBuffers();
@@ -550,7 +583,10 @@ class FormPage extends CrudPage implements FormPageContract
         return $items;
     }
 
-    /** @return array<int, FieldContract|ComponentContract> */
+    /**
+     * @return array<int, FieldContract|ComponentContract>
+     * @internal
+     */
     public function getVisibleItemsList(): array
     {
         return $this->getVisibleItems();
@@ -600,7 +636,10 @@ class FormPage extends CrudPage implements FormPageContract
         }
     }
 
-    /** @param array<int, FieldContract|ComponentContract> $items */
+    /**
+     * @param array<int, FieldContract|ComponentContract> $items
+     * @internal
+     */
     public function applyInitialDependenciesList(array $items): void
     {
         $this->applyInitialDependencies($items);

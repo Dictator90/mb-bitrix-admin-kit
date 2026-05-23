@@ -25,7 +25,7 @@
     "phpunit/phpunit": "^11.0",
     "phpstan/phpstan": "^1.10",
     "friendsofphp/php-cs-fixer": "^3.0",
-    "mb4it/bitrix-core-test": "^0.1"
+    "mb4it/bitrix-core-test": "^0.2"
   },
   "autoload-dev": {
     "psr-4": {
