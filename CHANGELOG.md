@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+
+- Added unified field condition engine: `FieldConditionContext`, closure-aware `required()/readonly()/visible()/canSee()`, universal `when()` with optional `dependsOn`, DataPipeline conditional application, and reactive dependency input listeners for text-like inputs.
 - Added `Field\Slug` with MoonShine-like source-based slug generation (`from()`), configurable separator (`separator()`), and dependency-driven reactive updates.
 - `DataManagerResource` / `DataManagerResourceContract::getEntity()` — ORM Entity из `dataManagerClass()` (`DataManager::getEntity()`).
 - `DataManagerResource` всегда сохраняет формы через Bitrix EntityObject: `queryObject()`, `findObject()`, `newObject()`, `EntityObjectFormSaver` / `RelationObjectMutator`, `$entityObject->save()`.
