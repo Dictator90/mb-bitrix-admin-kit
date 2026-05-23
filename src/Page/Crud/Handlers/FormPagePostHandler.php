@@ -215,6 +215,13 @@ final class FormPagePostHandler
         foreach ($fields as $field) {
             $formData[$field->getColumn()] = $field->serializePostValue($page->request->getPost($field->getColumn()));
         }
+        foreach ($_POST as $key => $rawValue) {
+            if (!is_string($key) || $key === '' || array_key_exists($key, $formData)) {
+                continue;
+            }
+
+            $formData[$key] = $rawValue;
+        }
 
         $resource = $page->getResource();
         if ($page->getId() && $page->getItemValue() === null && $resource instanceof ResourcePersistenceContract) {

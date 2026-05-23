@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `Field\Slug` with MoonShine-like source-based slug generation (`from()`), configurable separator (`separator()`), and dependency-driven reactive updates.
 - `DataManagerResource` / `DataManagerResourceContract::getEntity()` — ORM Entity из `dataManagerClass()` (`DataManager::getEntity()`).
 - `DataManagerResource` всегда сохраняет формы через Bitrix EntityObject: `queryObject()`, `findObject()`, `newObject()`, `EntityObjectFormSaver` / `RelationObjectMutator`, `$entityObject->save()`.
 - `FormPage` маршрутизирует `DataManagerResource` в object-graph flow, `CrudResource` с ручной persistence — в `createItemResult()` / `updateItemResult()`.
@@ -63,6 +64,20 @@
 - Стабильность Composer-пакета по умолчанию `stable`; пакет больше не подталкивает потребителей к разрешению dev-зависимостей.
 
 ### Documentation
+- Added `docs/user/reference/fields/slug.md` and updated fields reference index with Slug field usage, defaults, and `dependsOn()` behavior.
+- В `docs/user/reference/fields/select.md` возвращён базовый пример `options([...])` через массив, перед примерами `Closure` и `OptionsResolverContract`.
+- В docs/user/reference/fields/select.md добавлены отдельные примеры использования options() через Closure и через OptionsResolverContract (включая кастомный resolver).
+- Уточнён `docs/user/reference/fields/field.md`: в разделе ключевых методов оставлены только методы, влияющие на поведение/рендер/логику поля; методы-чтения вынесены из основного списка.
+- Добавлены разделы `Значения по умолчанию` в `docs/user/reference/fields/*.md` с дефолтами конкретных классов и переопределяемыми дефолтами базового `Field`.
+- Для каждого файла в `docs/user/reference/fields/*.md` добавлены разделы `Методы и что делают` с расшифровкой назначения методов (включая inherited API там, где у класса нет собственных fluent-методов).
+- Раздел `Reference: Components` декомпозирован в каталог `docs/user/reference/components/`: добавлен общий `component.md` и отдельные `.md` по каждому компоненту и layout-классу (`Alert`, `Badge`, `SidePanel`, `Tabs`, `Grid` и др.).
+- Раздел `Reference: Fields` декомпозирован в отдельный каталог `docs/user/reference/fields/`: добавлен общий `field.md` и отдельные `.md` по каждому полю/семейству (`Text`, `Select`, `File`, `EntitySelect`, relation fields и т.д.).
+- Добавлены два отдельные end-to-end гайда подключения от установки пакета: `getting-started/module-full-guide.md` (внутри модуля) и `getting-started/standalone-full-guide.md` (вне модуля через `local/php_interface/init.php`).
+- Расширены user-гайды `getting-started/installation` и `getting-started/bootstrap`: добавлены пошаговые сценарии для module и standalone, варианты подключения `vendor/autoload.php` (module/local/project vendor) и отдельный standalone-пример через `local/php_interface/init.php`.
+- Полностью переработана пользовательская документация под структуру `README -> docs/user/getting-started -> docs/user/guides -> docs/user/reference`, cookbook вынесен в `docs/user/cookbook`.
+- Объединены дубли по import/export и lifecycle, добавлены канонические правила export (`allowExportByFilter`, `allowExportAll`, `maxExportRows`) и единый раздел ограничений текущей версии.
+- Добавлены новые пользовательские разделы по `AsyncAction`, `PermissionContext` (матрица проверок), `Resource` выбору (`Resource`/`CrudResource`/`DataManagerResource`) и UI-компонентам (`Badge`, `Button`, `Heading`, `Notification`, `SidePanel`, layout).
+- Внутренние материалы для контрибьюторов вынесены в `docs/dev/*`; исправлены устаревшие namespace/классы в примерах и ссылках.
 - Задокументирован lifecycle рендера полей и совместимость/ограничения inline-редактирования для базовых, select, relation и entity selector полей.
 - Уточнено, что `CrudResource` — DSL/база страниц без persistence, а ORM CRUD-ресурсы должны расширять `DataManagerResource`.
 - Синхронизирована документация import/export, grid, quick-start и bulk-action с текущим состоянием: export включён, import UI отключён.
@@ -382,3 +397,4 @@
 - Updated DataManager event dispatch to resolve event module id from operation context with safe fallback to `main` (removed hardcoded `mb.bitrix.adminkit`).
 - Added DataManagerResource relation sync extension point via `relationSyncStrategies()` and `getRelationSyncStrategies()`; EntityObjectFormSaver now registers user strategies before sync.
 - Marked internal FormPage bridge/state mutator methods with `@internal` to reduce accidental public API surface.
+
