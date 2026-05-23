@@ -24,6 +24,7 @@ class Slug extends Text
         return $this;
     }
 
+    /** @param string|list<string> $sourceColumns */
     public function from(string|array $sourceColumns): static
     {
         $columns = array_values(array_filter(array_map(

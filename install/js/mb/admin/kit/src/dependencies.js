@@ -1,3 +1,19 @@
+
+function eventNameFor(el) {
+	if (el.tagName === 'TEXTAREA') {
+		return 'input';
+	}
+
+	if (el.tagName === 'INPUT') {
+		const type = (el.type || '').toLowerCase();
+		if (['text', 'search', 'email', 'url', 'tel', 'number', 'password', 'hidden'].indexOf(type) !== -1) {
+			return 'input';
+		}
+	}
+
+	return 'change';
+}
+
 function getSourceValue(form, srcCol) {
 	const els = form.querySelectorAll('[name="' + srcCol + '"]');
 
@@ -121,7 +137,7 @@ export function init(config) {
 
 	sourceCols.forEach(function(col) {
 		form.querySelectorAll('[name="' + col + '"]').forEach(function(el) {
-			el.addEventListener('change', triggerReactive);
+			el.addEventListener(eventNameFor(el), triggerReactive);
 		});
 	});
 

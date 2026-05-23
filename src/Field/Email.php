@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
-use MB\Bitrix\AdminKit\Support\Validation\Rules;
-
 class Email extends Field
 {
     public function renderFormField(mixed $value = null): string
