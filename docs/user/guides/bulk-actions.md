@@ -26,9 +26,11 @@ public function bulkActions(): iterable
 
 ## selected IDs vs all-records-by-filter
 
-- `selected IDs`: обрабатывайте только переданные ID.
-- `all-records-by-filter`: разрешайте только через `allowRunByFilter()`.
-- Пустой фильтр для all-records — только через `allowRunWithoutFilter()`.
+| Режим | Правило |
+|---|---|
+| `selected IDs` | Обрабатывайте только переданные ID. |
+| `all-records-by-filter` | Разрешайте только через `allowRunByFilter()`. |
+| Пустой фильтр для all-records | Разрешайте только через `allowRunWithoutFilter()`. |
 
 ## Лимиты и QueryGuard
 

@@ -32,7 +32,7 @@ use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Field\ID;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Filter\TextFilter;
+use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
 
 public function indexFields(): iterable
 {
