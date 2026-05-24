@@ -414,3 +414,10 @@
 - Hardened docs markdown formatting for stage 1–2 core files and refreshed API-oriented structure for Fields/Filters documentation.
 - Reworked `docs/fields.md` into a central Field overview with context matrix, fluent API matrix, catalog, relation section, and custom field guidance.
 - Expanded `docs/user/reference/filters.md` with real filter classes/methods (`TextFilter`, `SelectFilter`, `NumberFilter`, `DateFilter`, `CheckboxFilter`, `CallbackFilter`) and ORM behavior notes.
+
+## Unreleased
+- Hardened markdown structure in Grid/Actions/Bulk actions docs (no one-line stubs; readable headings/lists/code blocks).
+- Reworked top-level `docs/grid.md`, `docs/actions.md`, and `docs/bulk-actions.md` into full user-oriented sections with Bitrix-native grid/action-panel semantics.
+- Added/updated practical guides and reference pages for Grid/Bulk/Actions: `docs/user/guides/grid.md`, `docs/user/guides/bulk-actions.md`, `docs/user/reference/actions.md`.
+- Corrected docs-in-docs links to use proper relative paths from inside `docs/` and `docs/user/*` trees.
+- Documented current BulkResult/error rendering behavior and explicit limitation for full UI error visualization.

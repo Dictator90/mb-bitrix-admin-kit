@@ -1,10 +1,10 @@
-# Bulk actions (safe-by-default)
+# Guide: безопасные Bulk actions
 
-## Когда использовать
+## Цель
 
-Когда нужно массовое обновление/удаление или свой пакетный action.
+Реализовать массовые операции без риска случайной обработки всей таблицы.
 
-## Минимальный пример
+## Практический пример
 
 ```php
 use MB\Bitrix\AdminKit\Action\BulkAction;
@@ -14,24 +14,36 @@ public function bulkActions(): iterable
     return [
         BulkAction::make('activate', 'Активировать')
             ->allowRunByFilter()
-            ->executeUsing(function (array $rows): void {
-                // ваш bulk flow
+            ->confirm('Активировать выбранные записи?')
+            ->handle(function (\MB\Bitrix\AdminKit\Database\BulkOperationContext $context) {
+                // обработка selected IDs или run-by-filter
             }),
+
+        BulkAction::delete(),
     ];
 }
 ```
 
-Правила по умолчанию:
-- Требуются явные selected IDs.
-- Режим “для всех” включается только через `allowRunByFilter()`.
-- Пустой filter + run-by-filter требует отдельного opt-in `allowRunWithoutFilter()`.
+## selected IDs vs all-records-by-filter
 
-## Ограничения
+- `selected IDs`: обрабатывайте только переданные ID.
+- `all-records-by-filter`: разрешайте только через `allowRunByFilter()`.
+- Пустой фильтр для all-records — только через `allowRunWithoutFilter()`.
 
-- Учитывайте `bulkChunkSize()` и `maxBulkRows()`.
-- Для dropdown используйте placeholder как первый неисполняемый элемент (`Types::DROPDOWN`).
+## Лимиты и QueryGuard
+
+- Ограничивайте объем через `maxBulkRows()`.
+- Выполняйте обработку чанками (`bulkChunkSize()`).
+- Не отключайте guard-механизмы для опасных действий.
+
+## Частые ошибки
+
+- Запуск destructive action “для всех” без явного opt-in.
+- Игнорирование permission-проверок на запись.
+- Ожидание полной автоматической отрисовки всех ошибок в UI.
 
 ## См. также
 
-- [Reference: Actions](../reference/actions.md)
+- [Bulk actions (overview)](../../bulk-actions.md)
+- [Actions reference](../reference/actions.md)
 - [Permissions](permissions.md)
