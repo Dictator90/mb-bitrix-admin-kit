@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Documentation
+- Docs hardening fix: дополнительно выверены README и обзорные ссылки документации (`docs/actions.md`, `docs/options-page.md`, `docs/dashboard-page.md`, `docs/user/guides/import-export.md`) без изменения runtime-кода; подтверждена валидность минимального `DataManagerResource` примера по текущему API.
 - Этап 5 документации: исправлены stub/схлопнутые markdown-страницы (`docs/options-page.md`, `docs/dashboard-page.md`, cookbook import/export/options/dashboard), выровнены относительные ссылки без лишнего префикса `docs/`, обновлены PHP-примеры под фактический API (`OptionsPage`, `DashboardPage`, `ImportAction`, export-политики), и синхронизирован статус import/export (CSV export UI включен, import UI на index временно отключен, XLSX не поддерживается).
 
 ### Added
