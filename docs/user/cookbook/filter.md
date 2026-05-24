@@ -1,9 +1,3 @@
-# Как добавить фильтр
+# Filter (bridge)
 
-```php
-use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
-
-TextFilter::make('Название', 'NAME');
-```
-
-Полный справочник: [Reference: Filters](../reference/filters.md)
+Этот рецепт объединён с каноническим: [add-filter.md](add-filter.md).

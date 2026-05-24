@@ -1,16 +1,3 @@
-# Как добавить bulk action
+# Bulk action (bridge)
 
-```php
-use MB\Bitrix\AdminKit\Action\BulkAction;
-
-public function bulkActions(): iterable
-{
-    return [
-        BulkAction::delete(),
-    ];
-}
-```
-
-Запуск по фильтру включайте только осознанно: `allowRunByFilter()`.
-
-См. также: [Guide: Bulk actions](../guides/bulk-actions.md)
+Этот рецепт объединён с каноническим: [add-bulk-action.md](add-bulk-action.md).

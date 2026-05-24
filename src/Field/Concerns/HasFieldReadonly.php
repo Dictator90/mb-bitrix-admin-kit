@@ -5,48 +5,54 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field\Concerns;
 
 use Closure;
+use MB\Bitrix\AdminKit\Field\FieldConditionContext;
 use MB\Support\Conditionable\ConditionTree;
 
 trait HasFieldReadonly
 {
     protected bool $readonly = false;
-
     /** @var array<int, Closure|ConditionTree|array<string,mixed>> */
     protected array $readonlyWhen = [];
 
-    public function readonly(bool $readonly = true): static
+    /** @param string|list<string>|null $dependsOn */
+    public function readonly(bool|Closure $readonly = true, string|array|null $dependsOn = null): static
     {
-        $this->readonly = $readonly;
-
+        if (is_bool($readonly)) {
+            $this->readonly = $readonly;
+            return $this;
+        }
+        $this->readonlyWhen[] = $readonly;
+        if ($dependsOn !== null) {
+            $this->when($readonly, static function (self $field): void {
+                $field->readonly(true);
+            }, $dependsOn);
+        }
         return $this;
     }
 
-    public function readonlyWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null): static
+    public function readonlyWhen(string|ConditionTree|Closure $condition, ?string $operator = null, mixed $value = null, bool $reactive = false): static
     {
-        $this->readonlyWhen[] = $this->normalizeCondition($condition, $operator, $value);
-
+        $normalized = $this->normalizeCondition($condition, $operator, $value);
+        $this->readonlyWhen[] = $normalized;
+        if ($reactive && is_array($normalized)) {
+            $this->readonly($this->conditionToClosure($condition, $operator, $value), $normalized['column']);
+        }
         return $this;
     }
 
-    /** Readonly only when editing an existing record (form mode `edit` or `_id` is set). */
     public function readonlyOnUpdate(bool $readonly = true): static
     {
         if ($readonly) {
-            $this->readonlyWhen(static fn (array $data): bool => ($data['_mode'] ?? '') === 'edit'
-                || ($data['_id'] ?? '') !== ''
-                || ($data['ID'] ?? '') !== '');
+            $this->readonly(static fn (FieldConditionContext $ctx): bool => $ctx->isEdit());
         }
-
         return $this;
     }
 
-    /** Readonly only when creating a new record (form mode `create`). */
     public function readonlyOnCreate(bool $readonly = true): static
     {
         if ($readonly) {
-            $this->readonlyWhen(static fn (array $data): bool => ($data['_mode'] ?? '') === 'create');
+            $this->readonly(static fn (FieldConditionContext $ctx): bool => $ctx->isCreate());
         }
-
         return $this;
     }
 
@@ -60,13 +66,11 @@ trait HasFieldReadonly
         if ($this->readonly) {
             return true;
         }
-
         foreach ($this->readonlyWhen as $condition) {
             if ($this->evaluateFieldCondition($condition, $data)) {
                 return true;
             }
         }
-
         return false;
     }
 }

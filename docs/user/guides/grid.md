@@ -1,47 +1,74 @@
-# Грид
+# Guide: настройка Grid
 
-## Когда использовать
+## Задача
 
-Когда настраиваете список: колонки, фильтры, сортировку, runtime-поля, группировку.
+Настроить index-список: колонки, сортировку, фильтры, row actions и bulk actions безопасным способом.
 
-## Минимальный пример
+## Полный пример Resource
 
 ```php
-use Bitrix\Main\ORM\Fields\Relations\Reference;
+<?php
+
+declare(strict_types=1);
+
+namespace Vendor\Demo\Admin\Resource;
+
+use MB\Bitrix\AdminKit\Action\BulkAction;
+use MB\Bitrix\AdminKit\Action\BulkActionDropdown;
+use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Field\ID;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
+use Vendor\Demo\Orm\ProductTable;
 
-public function indexFields(): iterable
+final class ProductResource extends DataManagerResource
 {
-    return [
-        ID::make('ID'),
-        Text::make('Название', 'NAME'),
-        Text::make('Раздел', 'SECTION_NAME'),
-    ];
-}
+    public function dataManagerClass(): string
+    {
+        return ProductTable::class;
+    }
 
-public function indexSelect(GridContext $context): array
-{
-    return ['ID', 'NAME', 'SECTION_NAME' => 'SECTION.NAME'];
-}
+    public function indexFields(): iterable
+    {
+        return [
+            ID::make('ID', 'ID')->sortable(),
+            Text::make('Название', 'NAME')->sortable()->asEditLink(),
+            Text::make('Код', 'CODE')->sortable(),
+        ];
+    }
 
-public function indexRuntime(GridContext $context): array
-{
-    return [
-        new Reference('SECTION', SectionTable::class, ['=this.SECTION_ID' => 'ref.ID']),
-    ];
+    public function filters(): iterable
+    {
+        return [
+            TextFilter::make('Название', 'NAME')->contains(),
+        ];
+    }
+
+    public function rowActions(): iterable
+    {
+        return [
+            RowAction::view(),
+            RowAction::edit(),
+            RowAction::delete(),
+        ];
+    }
+
+    public function bulkActions(): iterable
+    {
+        return [
+            BulkActionDropdown::make('state', 'Статус')->items([
+                BulkAction::make('activate', 'Активировать')->allowRunByFilter(),
+                BulkAction::make('deactivate', 'Деактивировать')->allowRunByFilter(),
+            ]),
+            BulkAction::delete(),
+        ];
+    }
 }
 ```
 
-`GridQueryBuilder` — единственный источник ORM-параметров `select/filter/order/runtime/limit/offset`.
-
-## Ограничения
-
-- Не переносите ORM query-building в `Grid`/`IndexPage` UI-слой.
-- Synthetic row IDs `group:*` и `item:*` не должны попадать в inline/bulk операции.
-
 ## См. также
 
-- [Bulk actions](bulk-actions.md)
-- [Reference: Fields](../reference/fields/README.md)
+- [Grid (концепт)](../../grid.md)
+- [Bulk actions guide](bulk-actions.md)
+- [Actions reference](../reference/actions.md)

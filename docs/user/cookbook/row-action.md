@@ -1,12 +1,3 @@
-# Как добавить row action
+# Row action (bridge)
 
-```php
-use MB\Bitrix\AdminKit\Action\RowAction;
-
-public function rowActions(): iterable
-{
-    return [RowAction::edit(), RowAction::delete()];
-}
-```
-
-См. также: [Reference: Actions](../reference/actions.md)
+Этот рецепт объединён с каноническим: [add-row-action.md](add-row-action.md).

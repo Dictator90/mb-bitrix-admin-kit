@@ -1,11 +1,44 @@
-# Как использовать import/export
+# Import / Export
 
-Экспорт в UI доступен (CSV), import UI временно отключен.
+## Задача
+
+Экспортировать записи в CSV и выполнять сервисный импорт через общий form pipeline.
+
+## Когда использовать
+
+Для обмена данными с внешними системами и пакетной загрузки.
+
+## Решение
+
+Export запускается из index: по selected ID или по фильтру (если action это разрешает). Полный экспорт без фильтра должен оставаться отключенным по умолчанию.
+
+Import UI в index сейчас отключен; используйте `Import\*` как сервисный слой (CLI/cron/кастомная админ-форма).
+
+## Полный пример
 
 ```php
-public function allowExportByFilter(): bool { return true; }
-public function allowExportAll(): bool { return false; }
-public function maxExportRows(): int { return 5000; }
+use MB\Bitrix\AdminKit\Export\CsvExporter;
+use MB\Bitrix\AdminKit\Import\CsvImporter;
+use MB\Bitrix\AdminKit\Import\ImportContext;
+
+$exporter = new CsvExporter();
+$content = $exporter->export($resource, $rows);
+
+$importer = new CsvImporter();
+$result = $importer->import($resource, $csvString, new ImportContext());
 ```
 
-Подробно: [Guide: Import/Export](../guides/import-export.md)
+## Как это работает
+
+Import повторно использует `Form\DataPipeline`, поэтому `normalize()` и валидация полей одинаковы для формы и CSV.
+
+## Что важно учесть
+
+- Поддерживается CSV-first подход; XLSX/Excel движок не заявлен как стандартный.
+- Учитывайте `exportable/importable/private/system` поведение полей.
+- Для массовых операций обязательно проверяйте права, CSRF и лимиты выполнения.
+
+## Связанные разделы
+
+- [Import / Export](../../import-export.md)
+- [Guides: Import / Export](../guides/import-export.md)
