@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Documentation
+- Этап 5 документации: исправлены stub/схлопнутые markdown-страницы (`docs/options-page.md`, `docs/dashboard-page.md`, cookbook import/export/options/dashboard), выровнены относительные ссылки без лишнего префикса `docs/`, обновлены PHP-примеры под фактический API (`OptionsPage`, `DashboardPage`, `ImportAction`, export-политики), и синхронизирован статус import/export (CSV export UI включен, import UI на index временно отключен, XLSX не поддерживается).
+
 ### Added
 
 - Added unified field condition engine: `FieldConditionContext`, closure-aware `required()/readonly()/visible()/canSee()`, universal `when()` with optional `dependsOn`, DataPipeline conditional application, and reactive dependency input listeners for text-like inputs.

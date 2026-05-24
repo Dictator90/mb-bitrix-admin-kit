@@ -111,7 +111,7 @@ final class ProductResource extends DataManagerResource
 - `TextFilter`
 - `CheckboxFilter`
 
-Подробности: [Filters reference](docs/user/reference/filters.md).
+Подробности: [Filters reference](user/reference/filters.md).
 
 ## 6. Row actions
 
@@ -156,7 +156,7 @@ $adminKit
 - [Pages](pages.md)
 - [Fields](fields.md)
 - [Grid](grid.md)
-- [Filters](docs/user/reference/filters.md)
+- [Filters](user/reference/filters.md)
 - [Actions](actions.md)
 - [Bulk actions](bulk-actions.md)
 - [OptionsPage](options-page.md)
