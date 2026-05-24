@@ -105,4 +105,4 @@ final class ProductResource extends DataManagerResource
 - [Bulk actions](docs/bulk-actions.md)
 - [OptionsPage](docs/options-page.md)
 - [DashboardPage](docs/dashboard-page.md)
-- [Import/Export](docs/user/guides/import-export.md)
+- [Import/Export](docs/import-export.md)
