@@ -88,6 +88,11 @@
 - Уточнено, что `CrudResource` — DSL/база страниц без persistence, а ORM CRUD-ресурсы должны расширять `DataManagerResource`.
 - Синхронизирована документация import/export, grid, quick-start и bulk-action с текущим состоянием: export включён, import UI отключён.
 
+### Documentation
+- Добавлены и переработаны пользовательские входные документы верхнего уровня: `docs/README.md`, `docs/installation.md`, `docs/quick-start.md`.
+- Упрощён корневой `README.md`: оставлены позиционирование, требования, установка, минимальный валидный ORM Resource-пример и ссылки на ключевые разделы.
+- Добавлены верхнеуровневые навигационные страницы `docs/resources.md`, `docs/pages.md`, `docs/grid.md`, `docs/actions.md`, `docs/bulk-actions.md`, `docs/options-page.md`, `docs/dashboard-page.md` для единых коротких ссылок из README/карты документации.
+
 ### Stabilization
 - Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.
 - Restored legacy `Resource` behavior expected by v1 modules: default CRUD page helpers (`indexPage/formPage/detailPage`), menu/permission/grid defaults, and DataManager fallback compatibility for direct `Resource` + persistence-trait usage.
