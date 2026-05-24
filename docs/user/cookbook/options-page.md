@@ -1,53 +1,58 @@
-# Рецепт: страница настроек OptionsPage
+# OptionsPage
 
 ## Задача
 
-Сделать standalone-страницу настроек модуля с сохранением через Bitrix Option API.
+Сделать страницу настроек модуля с сохранением в Bitrix options storage.
+
+## Когда использовать
+
+Когда нужны admin-настройки (API key, режимы работы, флаги).
 
 ## Решение
 
+Наследуйте страницу от `OptionsPage`, задайте `moduleId` и верните поля из `fields()`. Компонент сохраняет значения через `Bitrix\Main\Config\Option`.
+
+## Полный пример
+
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace Vendor\Demo\Admin\Page;
-
-use MB\Bitrix\AdminKit\Field\Text;
+use MB\Bitrix\AdminKit\Field\Password;
+use MB\Bitrix\AdminKit\Field\Select;
 use MB\Bitrix\AdminKit\Field\Switcher;
+use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
 
-final class SettingsPage extends OptionsPage
+final class ModuleOptionsPage extends OptionsPage
 {
-    protected string $moduleId = 'vendor.demo';
+    protected string $moduleId = 'vendor.module';
 
-    public static function getId(): string
+    public static function title(): string
     {
-        return 'vendor_demo_settings';
-    }
-
-    public static function getTitle(): string
-    {
-        return 'Настройки модуля';
+        return 'Module options';
     }
 
     public function fields(): iterable
     {
         return [
             Text::make('API URL', 'api_url')->required(),
-            Switcher::make('Включено', 'enabled')->default(true),
+            Password::make('API token', 'api_token'),
+            Switcher::make('Debug mode', 'debug_mode'),
+            Select::make('Log level', 'log_level')->options(['error' => 'Error', 'info' => 'Info']),
         ];
     }
 }
 ```
 
-## Важные замечания
+## Как это работает
 
-- `moduleId` должен быть задан, иначе страница покажет ошибку;
-- ключи опций формируются из колонок полей (`api_url`, `enabled`);
-- для per-site режима включайте `protected bool $multiSite = true;`.
+`OptionsPage` сам рендерит форму, проверяет `sessid` и сохраняет значения в `b_option` (или `b_option_site` при multisite-режиме).
 
-## Ссылки
+## Что важно учесть
 
-- [OptionsPage (guide)](../../options-page.md)
-- [Pages reference](../reference/pages.md)
+- `moduleId` должен быть задан явно.
+- Не храните незашифрованные секреты, если есть требования ИБ.
+- Site-specific режим включайте только если он нужен и протестирован.
+
+## Связанные разделы
+
+- [Options Page](../../options-page.md)
+- [Reference: Pages](../reference/pages.md)

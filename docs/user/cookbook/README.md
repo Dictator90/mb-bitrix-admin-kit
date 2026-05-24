@@ -1,21 +1,37 @@
 # Cookbook
 
-Практические рецепты «как сделать X» без дублирования полного API.
+Практические рецепты по принципу «как сделать X».
 
-- [Первый CRUD-ресурс](../getting-started/first-crud-resource.md)
-- [Как добавить поле](field.md)
-- [Как добавить фильтр](filter.md)
-- [Как добавить RowAction](row-action.md)
-- [Как добавить BulkAction](bulk-action.md)
-- [Как открыть форму в SidePanel](sidepanel.md)
-- [Как добавить runtime ReferenceField](runtime-reference.md)
-- [Как сделать computed column](computed-column.md)
-- [Как кастомизировать save](custom-save.md)
-- [Как добавить lifecycle hooks](lifecycle-hooks.md)
-- [Как проверить права](permissions.md)
-- [Как сделать OptionsPage](options-page.md)
-- [Как сделать DashboardPage](dashboard.md)
-- [Как настроить entity selector](entity-selector.md)
-- [Как использовать import/export](import-export.md)
+## CRUD
 
-Если нужен полный API — переходите в [Reference](../reference/resources.md).
+- [First CRUD Resource](first-crud.md) — поднять первый CRUD-раздел на базе `DataManagerResource`.
+- [Add Grid column](add-grid-column.md) — добавить и настроить колонку на index-странице.
+- [Add filter](add-filter.md) — подключить фильтры `main.ui.filter` и связать их с ORM-фильтром.
+
+## Actions
+
+- [Add RowAction](add-row-action.md) — добавить стандартные и кастомные действия строки.
+- [Add BulkAction](add-bulk-action.md) — безопасно запустить массовые операции по selected ID или фильтру.
+- [Use SidePanel](sidepanel.md) — открывать form/detail/actions в Bitrix SidePanel.
+
+## Pages
+
+- [OptionsPage](options-page.md) — сделать страницу настроек модуля через `b_option`.
+- [DashboardPage](dashboard.md) — собрать dashboard со счетчиками/графиками на Bitrix UI.
+
+## Fields
+
+- [Custom Field](custom-field.md) — расширить базовый `Field` для собственного UI/нормализации.
+- [Relation Field](relation-field.md) — использовать `BelongsTo/HasOne/HasMany/BelongsToMany` в CRUD.
+- [Computed column](computed-column.md) — показать вычисляемое значение в grid без изменения ORM-схемы.
+
+## Import / Export
+
+- [Import / Export](import-export.md) — CSV export из index и сервисный CSV import через pipeline.
+
+## Security
+
+- [Permissions](permissions.md) — разграничить доступ на уровне ресурса и действий.
+- [Add BulkAction](add-bulk-action.md) — safe-by-default массовые операции и all-records режим.
+
+Полный API смотрите в [Reference](../reference/resources.md).
