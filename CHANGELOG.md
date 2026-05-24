@@ -3,6 +3,14 @@
 ## Unreleased
 
 ### Added
+- Added fluent settings methods on `Field\File` for configuring Bitrix native `FileInput`: `canUpload()`, `canEdit()`, `canDelete()`, `useCloud()`, `medialib()`, `fileDialog()`, `maxCount()`, `uploadType()`, and `description()`.
+
+### Changed
+- Upgraded `Field\File` to render using Bitrix's native `Bitrix\Main\UI\FileInput` control.
+- Upgraded `Field\Image` to render using Bitrix's native `bitrix:ui.image.input` component, with defaults suitable for image inputs.
+- Implemented robust, idempotent file deletion and new file upload persistence inside `File::normalize()`, ensuring it works uniformly for both `CrudResource` and `DataManagerResource` pipelines.
+
+### Added
 - Added `Field\Slug` with MoonShine-like source-based slug generation (`from()`), configurable separator (`separator()`), and dependency-driven reactive updates.
 - `DataManagerResource` / `DataManagerResourceContract::getEntity()` — ORM Entity из `dataManagerClass()` (`DataManager::getEntity()`).
 - `DataManagerResource` всегда сохраняет формы через Bitrix EntityObject: `queryObject()`, `findObject()`, `newObject()`, `EntityObjectFormSaver` / `RelationObjectMutator`, `$entityObject->save()`.
