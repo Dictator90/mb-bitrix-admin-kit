@@ -1,58 +1,33 @@
-# OptionsPage
+# OptionsPage: рабочий рецепт
 
-## Задача
-
-Сделать страницу настроек модуля с сохранением в Bitrix options storage.
-
-## Когда использовать
-
-Когда нужны admin-настройки (API key, режимы работы, флаги).
-
-## Решение
-
-Наследуйте страницу от `OptionsPage`, задайте `moduleId` и верните поля из `fields()`. Компонент сохраняет значения через `Bitrix\Main\Config\Option`.
-
-## Полный пример
+## 1) Создайте класс страницы
 
 ```php
-use MB\Bitrix\AdminKit\Field\Password;
-use MB\Bitrix\AdminKit\Field\Select;
-use MB\Bitrix\AdminKit\Field\Switcher;
-use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
-
-final class ModuleOptionsPage extends OptionsPage
+final class SettingsPage extends OptionsPage
 {
-    protected string $moduleId = 'vendor.module';
-
-    public static function title(): string
-    {
-        return 'Module options';
-    }
+    public static function getId(): string { return 'vendor_demo_settings'; }
+    public static function getTitle(): string { return 'Settings'; }
+    protected string $moduleId = 'vendor.demo';
 
     public function fields(): iterable
     {
-        return [
-            Text::make('API URL', 'api_url')->required(),
-            Password::make('API token', 'api_token'),
-            Switcher::make('Debug mode', 'debug_mode'),
-            Select::make('Log level', 'log_level')->options(['error' => 'Error', 'info' => 'Info']),
-        ];
+        return [Text::make('API URL', 'api_url')];
     }
 }
 ```
 
-## Как это работает
+## 2) Создайте admin-файл
 
-`OptionsPage` сам рендерит форму, проверяет `sessid` и сохраняет значения в `b_option` (или `b_option_site` при multisite-режиме).
+Рендер через `AdminKit::forModule('vendor.demo')->getCurrentPage()->render()`.
 
-## Что важно учесть
+## 3) Добавьте пункт меню
 
-- `moduleId` должен быть задан явно.
-- Не храните незашифрованные секреты, если есть требования ИБ.
-- Site-specific режим включайте только если он нужен и протестирован.
+`AdminKit::forModule('vendor.demo')->getMenu('/bitrix/admin/vendor_demo_admin.php')`.
 
-## Связанные разделы
+## 4) Откройте страницу
 
-- [Options Page](../../options-page.md)
-- [Reference: Pages](../reference/pages.md)
+`/bitrix/admin/vendor_demo_admin.php?lang=ru&page=vendor_demo_settings`
+
+## Вне модуля
+
+Поддерживается через `AdminKit::fromDirectory(..., 'demo.admin')`; опции сохраняются в `main` module scope, поэтому используйте стабильный `scopeId`.

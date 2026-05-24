@@ -1,92 +1,53 @@
-# First CRUD Resource
+# Первый CRUD Resource (end-to-end)
 
-## Задача
+## Структура
 
-Создать первый CRUD-раздел для D7 ORM-сущности.
+```text
+local/modules/vendor.demo/
+  lib/Admin/ProductResource.php
+  admin/vendor_demo_admin.php
+  admin/menu.php
+```
 
-## Когда использовать
-
-Когда у вас уже есть `DataManager` и нужно быстро получить index/form/detail с фильтрами и действиями.
-
-## Решение
-
-Наследуйте ресурс от `DataManagerResource`: он уже реализует базовый CRUD-поток, работу с Grid и form-пайплайн. Опишите ORM-класс через `dataManagerClass()`, затем добавьте поля для index/form и фильтры.
-
-Действия строк и bulk-действия добавляйте сразу в ресурсе: так права, URL и поведение action panel остаются в одном месте.
-
-## Полный пример
+## ProductResource
 
 ```php
-<?php
-
-use MB\Bitrix\AdminKit\Action\BulkAction;
-use MB\Bitrix\AdminKit\Action\RowAction;
-use MB\Bitrix\AdminKit\Field\ID;
-use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
-use MB\Bitrix\AdminKit\Resource\DataManagerResource;
-
 final class ProductResource extends DataManagerResource
 {
-    public static function label(): string
+    public function dataManagerClass(): string
     {
-        return 'Products';
-    }
-
-    public static function dataManagerClass(): string
-    {
-        return \Vendor\Module\Internals\ProductTable::class;
-    }
-
-    public function indexFields(): iterable
-    {
-        return [
-            ID::make('ID')->sortable(),
-            Text::make('Name', 'NAME')->sortable()->asEditLink(),
-        ];
-    }
-
-    public function formFields(): iterable
-    {
-        return [
-            Text::make('Name', 'NAME')->required(),
-        ];
-    }
-
-    public function filters(): iterable
-    {
-        return [
-            TextFilter::make('Name', 'NAME')->contains(),
-        ];
-    }
-
-    public function rowActions(): iterable
-    {
-        return [RowAction::view(), RowAction::edit(), RowAction::delete()];
-    }
-
-    public function bulkActions(): iterable
-    {
-        return [BulkAction::delete()];
+        return ProductTable::class;
     }
 }
 ```
 
-## Как это работает
+Важно: `dataManagerClass()` — **не static**.
 
-`DataManagerResource` берет ORM-данные через `dataManagerClass()` и передает конфигурацию полей/фильтров в `GridQueryBuilder` и UI-адаптеры. `indexFields()` управляет колонками списка, `formFields()` — формой create/edit.
+## Admin page file
 
-## Что важно учесть
+Создайте `admin/vendor_demo_admin.php` и рендерите:
 
-- Для Bitrix Grid используется `bitrix:main.ui.grid`; фильтры идут через `main.ui.filter`.
-- `BulkAction` безопасен по умолчанию: без selected ID операция не выполняется, если явно не разрешен режим по фильтру.
-- Права (`canView/canCreate/canUpdate/canDelete`) настраивайте в ресурсе до включения destructive actions.
+```php
+AdminKit::forModule('vendor.demo')->getCurrentPage()->render();
+```
 
-## Связанные разделы
+(с Bitrix prolog/epilog, как в guide).
 
-- [Quick start](../../quick-start.md)
-- [Resources](../../resources.md)
-- [Fields](../../fields.md)
-- [Grid](../../grid.md)
-- [Actions](../../actions.md)
-- [Reference: Resources](../reference/resources.md)
+## Menu item
+
+В `admin/menu.php` используйте:
+
+```php
+'items' => AdminKit::forModule('vendor.demo')->getMenu('/bitrix/admin/vendor_demo_admin.php')
+```
+
+## Результат
+
+Откройте `/bitrix/admin/vendor_demo_admin.php?lang=ru`.
+
+## Типовые ошибки
+
+- Не подключен autoload.
+- Нет `Loader::includeModule('vendor.demo')`.
+- Ошибка сигнатуры `dataManagerClass()`.
+- Несовпадение URL в меню и admin-файла.
