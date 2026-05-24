@@ -92,6 +92,7 @@
 - Добавлены и переработаны пользовательские входные документы верхнего уровня: `docs/README.md`, `docs/installation.md`, `docs/quick-start.md`.
 - Упрощён корневой `README.md`: оставлены позиционирование, требования, установка, минимальный валидный ORM Resource-пример и ссылки на ключевые разделы.
 - Добавлены верхнеуровневые навигационные страницы `docs/resources.md`, `docs/pages.md`, `docs/grid.md`, `docs/actions.md`, `docs/bulk-actions.md`, `docs/options-page.md`, `docs/dashboard-page.md` для единых коротких ссылок из README/карты документации.
+- Этап 2 оптимизации документации: исправлены относительные ссылки в `docs/README.md`; переработаны `docs/resources.md` и `docs/pages.md` как полноценные пользовательские разделы; расширены API-справочники `docs/user/reference/resources.md` и `docs/user/reference/pages.md`; обновлён гайд выбора базового класса `docs/user/guides/resource-selection.md` в соответствии с текущим публичным API (`Resource` / `CrudResource` / `DataManagerResource`, CRUD/standalone Pages).
 
 ### Stabilization
 - Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.
@@ -408,4 +409,3 @@
 - Updated DataManager event dispatch to resolve event module id from operation context with safe fallback to `main` (removed hardcoded `mb.bitrix.adminkit`).
 - Added DataManagerResource relation sync extension point via `relationSyncStrategies()` and `getRelationSyncStrategies()`; EntityObjectFormSaver now registers user strategies before sync.
 - Marked internal FormPage bridge/state mutator methods with `@internal` to reduce accidental public API surface.
-
