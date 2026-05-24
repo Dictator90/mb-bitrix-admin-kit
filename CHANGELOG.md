@@ -409,3 +409,8 @@
 - Updated DataManager event dispatch to resolve event module id from operation context with safe fallback to `main` (removed hardcoded `mb.bitrix.adminkit`).
 - Added DataManagerResource relation sync extension point via `relationSyncStrategies()` and `getRelationSyncStrategies()`; EntityObjectFormSaver now registers user strategies before sync.
 - Marked internal FormPage bridge/state mutator methods with `@internal` to reduce accidental public API surface.
+
+## Unreleased
+- Hardened docs markdown formatting for stage 1–2 core files and refreshed API-oriented structure for Fields/Filters documentation.
+- Reworked `docs/fields.md` into a central Field overview with context matrix, fluent API matrix, catalog, relation section, and custom field guidance.
+- Expanded `docs/user/reference/filters.md` with real filter classes/methods (`TextFilter`, `SelectFilter`, `NumberFilter`, `DateFilter`, `CheckboxFilter`, `CallbackFilter`) and ORM behavior notes.
