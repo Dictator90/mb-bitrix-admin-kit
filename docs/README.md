@@ -12,7 +12,7 @@
 - [Resources](resources.md) — что такое Resource и как описывать CRUD-раздел.
 - [Pages](pages.md) — как работают `IndexPage`, `FormPage`, `DetailPage` и standalone-страницы.
 - [Fields](fields.md) — обзор Field API и практические примеры полей.
-- [Filters](user/reference/filters.md) — фильтры для `main.ui.filter` и ORM-фильтрации.
+- [Filters](filters.md) — фильтры для `main.ui.filter` и ORM-фильтрации.
 - [Grid](grid.md) — работа с `bitrix:main.ui.grid` через Admin Kit.
 - [Actions](actions.md) — RowAction и сценарии пользовательских действий.
 - [Bulk actions](bulk-actions.md) — массовые действия с безопасным запуском.
@@ -27,7 +27,7 @@
 
 - [Discovery & Routing](user/guides/discovery-routing.md) — автопоиск классов и маршрутизация.
 - [UI integration](user/guides/ui-integration.md) — интеграция с Bitrix UI extensions, toolbar, sidepanel.
-- [Import / Export](user/guides/import-export.md) — CSV-first импорт/экспорт и ограничения UI.
+- [Import / Export](import-export.md) — CSV-first импорт/экспорт и ограничения UI.
 - [Permissions](user/guides/permissions.md) — контроль доступа к действиям и страницам.
 
 ## Advanced
