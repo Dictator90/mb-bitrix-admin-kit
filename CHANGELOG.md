@@ -435,3 +435,7 @@
 - Added/updated practical guides and reference pages for Grid/Bulk/Actions: `docs/user/guides/grid.md`, `docs/user/guides/bulk-actions.md`, `docs/user/reference/actions.md`.
 - Corrected docs-in-docs links to use proper relative paths from inside `docs/` and `docs/user/*` trees.
 - Documented current BulkResult/error rendering behavior and explicit limitation for full UI error visualization.
+
+## Unreleased
+- Expanded `docs/user/cookbook` into task-oriented recipes (CRUD, grid columns, filters, row/bulk actions, SidePanel, pages, import/export, permissions, relation/custom fields) with API-verified examples and cross-links to guides/reference.
+- Reworked `docs/user/cookbook/README.md` into a structured recipe map and removed stale/non-task-oriented cookbook navigation.
