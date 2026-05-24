@@ -1,12 +1,28 @@
-# Import/Export
+# Import / Export
 
-## Когда использовать
+## Что это
 
-Когда нужен CSV-экспорт из `IndexPage` или библиотечный CSV-импорт.
+CSV-first экспорт и сервисный импорт для `DataManagerResource`.
 
-## Минимальный пример
+## Текущий статус
+
+| Возможность | Статус |
+|---|---|
+| CSV export UI | Да |
+| Export selected | Да |
+| Export by filter | Да (по умолчанию) |
+| Full export | По умолчанию выключен |
+| CSV import service layer | Да |
+| Import UI | Временно отключен на IndexPage |
+| XLSX | Не поддерживается |
+
+## Export
+
+### Базовый пример
 
 ```php
+<?php
+
 public function allowExportByFilter(): bool
 {
     return true;
@@ -23,25 +39,44 @@ public function maxExportRows(): int
 }
 ```
 
-## Канонические правила экспорта
+### Политика безопасности
 
-- Export UI включен (CSV).
-- Export by filter разрешен по умолчанию (`allowExportByFilter(): true`).
-- Full export выключен по умолчанию (`allowExportAll(): false`).
-- До выборки данных проверяется лимит `maxExportRows()`.
+- нужен `canView(..., 'export')`;
+- full export блокируется без selected IDs/filter, пока не включен opt-in (`allowRunAll()` или `resource->allowExportAll()`);
+- export by filter можно запретить action-level или resource-level;
+- лимит строк контролируется `maxExportRows()`.
 
-## Import (library-only)
+## Import
 
-- `ImportAction`, `ImportContext`, `CsvImporter` доступны как сервисный слой.
-- Import UI на index-страницах временно отключен.
-- Импорт использует `Form\DataPipeline` для общей нормализации/валидации полей.
+### Текущий статус
 
-## Ограничения
+- `ImportAction`, `ImportContext`, `CsvImporter` доступны как service layer;
+- Import UI в index-страницах временно отключен;
+- pipeline импорта использует нормализацию/валидацию полей.
 
-- XLSX/Excel не поддерживается в текущем scope.
-- Не обещайте пользователям Import UI до отдельной задачи на UI-реинтеграцию.
+### Service layer example
 
-## См. также
+```php
+<?php
 
-- [Reference: Actions](../reference/actions.md)
+use MB\Bitrix\AdminKit\Import\ImportAction;
+use MB\Bitrix\AdminKit\Import\ImportContext;
+
+$action = ImportAction::make();
+$context = new ImportContext($resource);
+
+$result = $action->import($context);
+```
+
+## Практические сценарии
+
+- экспорт выбранных записей;
+- экспорт по фильтру;
+- запрет full export по умолчанию;
+- библиотечный CSV импорт без UI-экрана.
+
+## Связанные разделы
+
+- [Actions reference](../reference/actions.md)
+- [Bulk actions guide](bulk-actions.md)
 - [Cookbook: import/export](../cookbook/import-export.md)

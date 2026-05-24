@@ -7,63 +7,65 @@
 ## Полный пример Resource
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+namespace Vendor\Demo\Admin\Resource;
+
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\BulkActionDropdown;
 use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Field\ID;
 use MB\Bitrix\AdminKit\Field\Text;
-use MB\Bitrix\AdminKit\Filter\TextFilter;
+use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
+use MB\Bitrix\AdminKit\Resource\DataManagerResource;
+use Vendor\Demo\Orm\ProductTable;
 
-public function indexFields(): iterable
+final class ProductResource extends DataManagerResource
 {
-    return [
-        ID::make('ID', 'ID')->sortable(),
-        Text::make('Название', 'NAME')->sortable()->asEditLink(),
-        Text::make('Код', 'CODE')->sortable(),
-    ];
-}
+    public function dataManagerClass(): string
+    {
+        return ProductTable::class;
+    }
 
-public function filters(): iterable
-{
-    return [
-        TextFilter::make('Название', 'NAME'),
-    ];
-}
+    public function indexFields(): iterable
+    {
+        return [
+            ID::make('ID', 'ID')->sortable(),
+            Text::make('Название', 'NAME')->sortable()->asEditLink(),
+            Text::make('Код', 'CODE')->sortable(),
+        ];
+    }
 
-public function rowActions(): iterable
-{
-    return [
-        RowAction::view(),
-        RowAction::edit(),
-        RowAction::delete(),
-    ];
-}
+    public function filters(): iterable
+    {
+        return [
+            TextFilter::make('Название', 'NAME')->contains(),
+        ];
+    }
 
-public function bulkActions(): iterable
-{
-    return [
-        BulkActionDropdown::make('state', 'Статус')->items([
-            BulkAction::make('activate', 'Активировать')->allowRunByFilter(),
-            BulkAction::make('deactivate', 'Деактивировать')->allowRunByFilter(),
-        ]),
-        BulkAction::delete(),
-    ];
+    public function rowActions(): iterable
+    {
+        return [
+            RowAction::view(),
+            RowAction::edit(),
+            RowAction::delete(),
+        ];
+    }
+
+    public function bulkActions(): iterable
+    {
+        return [
+            BulkActionDropdown::make('state', 'Статус')->items([
+                BulkAction::make('activate', 'Активировать')->allowRunByFilter(),
+                BulkAction::make('deactivate', 'Деактивировать')->allowRunByFilter(),
+            ]),
+            BulkAction::delete(),
+        ];
+    }
 }
 ```
-
-## Пояснение по частям
-
-1. `indexFields()` управляет колонками и sort/edit-link behavior.
-2. `filters()` связывает UI filter и ORM filter pipeline.
-3. `rowActions()` задает действия на уровне одной записи.
-4. `bulkActions()` задает безопасные массовые операции через action panel.
-
-## Частые ошибки
-
-- Использование несуществующих field/action методов.
-- Ожидание, что `SHOW_SELECT_ALL_RECORDS_CHECKBOX` сам по себе безопасно обработает все записи.
-- Тяжелые выборки без лимитов и без QueryGuard.
-- Дублирование grid-конфигурации одновременно в `Page` и `Resource` без необходимости.
 
 ## См. также
 
