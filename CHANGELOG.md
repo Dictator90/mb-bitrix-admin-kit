@@ -218,6 +218,11 @@
 - Export guard messages localized; export failures use `ui.alerts` on index.
 - Form/toolbar RU label mojibake (UTF-8 `Loc` files).
 
+### Documentation
+- Полировка этапа 6: в документации выровнены markdown-таблицы и оформление примеров как fenced code blocks с языками.
+- Исправлен namespace фильтра в примере `docs/grid.md` на `MB\Bitrix\AdminKit\Filter\Types\TextFilter`.
+- Уточнена секция выбора режима в `docs/user/guides/bulk-actions.md` в виде markdown-таблицы.
+
 ## v1.0.0 - 2026-05-14
 
 ### Changed
