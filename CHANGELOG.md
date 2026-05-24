@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Documentation
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
 - Этап 6 (polishing/link audit): добавлены bridge-страницы `docs/filters.md` и `docs/import-export.md`, обновлены обзорные ссылки в `README.md` и `docs/README.md`, подтверждена отсутствие битых markdown-ссылок и сохранена актуальная формулировка статуса import/export (CSV-first, import UI отключён на `IndexPage`).
 - Docs hardening fix: дополнительно выверены README и обзорные ссылки документации (`docs/actions.md`, `docs/options-page.md`, `docs/dashboard-page.md`, `docs/user/guides/import-export.md`) без изменения runtime-кода; подтверждена валидность минимального `DataManagerResource` примера по текущему API.
 - Этап 5 документации: исправлены stub/схлопнутые markdown-страницы (`docs/options-page.md`, `docs/dashboard-page.md`, cookbook import/export/options/dashboard), выровнены относительные ссылки без лишнего префикса `docs/`, обновлены PHP-примеры под фактический API (`OptionsPage`, `DashboardPage`, `ImportAction`, export-политики), и синхронизирован статус import/export (CSV export UI включен, import UI на index временно отключен, XLSX не поддерживается).
@@ -71,6 +72,7 @@
 - Стабильность Composer-пакета по умолчанию `stable`; пакет больше не подталкивает потребителей к разрешению dev-зависимостей.
 
 ### Documentation
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
 - Восстановлен обзорный раздел `docs/fields.md`: возвращено практическое описание fluent API `Field` (visibility, validation, readonly, formatting, grid, computed, import/export, multiple, dependsOn, when) с примерами и областями применения, без превращения страницы во внутренний API reference; сохранены каталоги стандартных и relation-полей, а также пояснение по runtime-методам `displayValue()`/`previewValue()`.
 - Упрощён `docs/fields.md`: документ сфокусирован на пользовательском Fluent API и практических сценариях (`Resource`/`OptionsPage`), без детального internal API-reference; отдельно подчеркнуто, что `displayValue()`/`previewValue()` — runtime-методы, а для настройки отображения используются `displayUsing()`/`format()`/`preview()`, и добавлена ссылка на relation guide `docs/user/guides/relations.md`.
 - Синхронизирован `docs/fields.md` с фактическими concrete-полями из `src/Field/*` и `src/Field/Relation/*`: раздел превращён в обзорный каталог со ссылками на отдельные страницы `docs/user/reference/fields/*`, добавлены явные ссылки на relation guide и уточнено текущее поведение `Slug` (без `from()` как `Text`, с `from()` реактивная генерация).
@@ -94,6 +96,7 @@
 - Синхронизирована документация import/export, grid, quick-start и bulk-action с текущим состоянием: export включён, import UI отключён.
 
 ### Documentation
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
 - Добавлены и переработаны пользовательские входные документы верхнего уровня: `docs/README.md`, `docs/installation.md`, `docs/quick-start.md`.
 - Упрощён корневой `README.md`: оставлены позиционирование, требования, установка, минимальный валидный ORM Resource-пример и ссылки на ключевые разделы.
 - Добавлены верхнеуровневые навигационные страницы `docs/resources.md`, `docs/pages.md`, `docs/grid.md`, `docs/actions.md`, `docs/bulk-actions.md`, `docs/options-page.md`, `docs/dashboard-page.md` для единых коротких ссылок из README/карты документации.
@@ -219,6 +222,7 @@
 - Form/toolbar RU label mojibake (UTF-8 `Loc` files).
 
 ### Documentation
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
 - Полировка этапа 6: в документации выровнены markdown-таблицы и оформление примеров как fenced code blocks с языками.
 - Исправлен namespace фильтра в примере `docs/grid.md` на `MB\Bitrix\AdminKit\Filter\Types\TextFilter`.
 - Уточнена секция выбора режима в `docs/user/guides/bulk-actions.md` в виде markdown-таблицы.

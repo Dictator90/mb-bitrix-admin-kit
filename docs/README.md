@@ -30,6 +30,10 @@
 - [Import / Export](import-export.md) — CSV-first импорт/экспорт и ограничения UI.
 - [Permissions](user/guides/permissions.md) — контроль доступа к действиям и страницам.
 
+## Quality
+
+- [Documentation quality checklist](quality-checklist.md) — минимальный чеклист перед merge документации.
+
 ## Advanced
 
 - [Architecture](dev/architecture.md) — обзор архитектурных компонентов.

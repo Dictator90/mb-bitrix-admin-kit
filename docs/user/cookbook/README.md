@@ -1,11 +1,12 @@
 # Cookbook
 
-Короткие recipes без дублирования reference. Если нужен полный API — переходите в `../reference/*`.
+Практические рецепты «как сделать X» без дублирования полного API.
 
+- [Первый CRUD-ресурс](../getting-started/first-crud-resource.md)
 - [Как добавить поле](field.md)
 - [Как добавить фильтр](filter.md)
-- [Как добавить row action](row-action.md)
-- [Как добавить bulk action](bulk-action.md)
+- [Как добавить RowAction](row-action.md)
+- [Как добавить BulkAction](bulk-action.md)
 - [Как открыть форму в SidePanel](sidepanel.md)
 - [Как добавить runtime ReferenceField](runtime-reference.md)
 - [Как сделать computed column](computed-column.md)
@@ -16,3 +17,5 @@
 - [Как сделать DashboardPage](dashboard.md)
 - [Как настроить entity selector](entity-selector.md)
 - [Как использовать import/export](import-export.md)
+
+Если нужен полный API — переходите в [Reference](../reference/resources.md).
