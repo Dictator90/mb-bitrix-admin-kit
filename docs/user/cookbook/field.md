@@ -1,9 +1,3 @@
-# Как добавить поле
+# Custom field (bridge)
 
-```php
-use MB\Bitrix\AdminKit\Field\Text;
-
-Text::make('Название', 'NAME')->required();
-```
-
-Полный справочник: [Reference: Fields](../reference/fields/README.md)
+Этот рецепт объединён с каноническим: [custom-field.md](custom-field.md).
