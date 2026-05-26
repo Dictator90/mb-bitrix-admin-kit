@@ -28,6 +28,10 @@ class BelongsToMany extends BelongsTo
 
     protected bool $asCheckboxes = false;
 
+    /** Per-instance id→label memo, reused across grid rows to avoid a query per row. */
+    /** @var array<string,string> */
+    private array $labelMapCache = [];
+
     /** Render as a vertical checkbox list instead of a multi-select. */
     public function asCheckboxes(bool $v = true): static
     {
@@ -266,19 +270,31 @@ class BelongsToMany extends BelongsTo
         if (!$this->dataManagerClass || !class_exists($this->dataManagerClass)) {
             return $ids;
         }
-        try {
-            $result = $this->dataManagerClass::getList([
-                'select' => [$this->valueColumn, $this->titleColumn],
-                'filter' => ['@' . $this->valueColumn => $ids],
-            ]);
-            $map = [];
-            while ($row = $result->fetch()) {
-                $map[(string)$row[$this->valueColumn]] = (string)($row[$this->titleColumn] ?? '');
+
+        $missing = array_values(array_filter(
+            $ids,
+            fn (string $id): bool => !array_key_exists($id, $this->labelMapCache),
+        ));
+
+        if ($missing !== []) {
+            try {
+                $result = $this->dataManagerClass::getList([
+                    'select' => [$this->valueColumn, $this->titleColumn],
+                    'filter' => ['@' . $this->valueColumn => $missing],
+                ]);
+                while ($row = $result->fetch()) {
+                    $this->labelMapCache[(string)$row[$this->valueColumn]] = (string)($row[$this->titleColumn] ?? '');
+                }
+            } catch (Throwable) {
+                return $ids;
             }
-            return array_map(fn ($id) => $map[$id] ?? $id, $ids);
-        } catch (Throwable) {
-            return $ids;
+
+            foreach ($missing as $id) {
+                $this->labelMapCache[$id] ??= $id;
+            }
         }
+
+        return array_map(fn (string $id): string => $this->labelMapCache[$id] ?? $id, $ids);
     }
 
     public function normalize(mixed $value): mixed

@@ -27,6 +27,13 @@ class BelongsTo extends RelationField
     protected ?Closure $optionsCallback = null;
     protected string $renderMode = 'select';
 
+    /** Per-instance preview label memo, keyed by raw value, reused across grid rows. */
+    /** @var array<string,string> */
+    private array $previewLabelCache = [];
+
+    /** @var array<array-key,string>|null */
+    private ?array $previewOptionsCache = null;
+
     public function __construct(string $label, ?string $column = null, string $dataManagerClass = '')
     {
         parent::__construct($label, $column);
@@ -286,13 +293,30 @@ class BelongsTo extends RelationField
         if ($value === null || $value === '') {
             return LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BELONGS_TO_EMPTY_PREVIEW', '—');
         }
-        if ($this->optionsCallback !== null) {
-            $options = ($this->optionsCallback)();
-            return htmlspecialcharsbx($options[(string)$value] ?? (string)$value);
+
+        $key = (string)$value;
+        if (array_key_exists($key, $this->previewLabelCache)) {
+            return $this->previewLabelCache[$key];
         }
+
+        return $this->previewLabelCache[$key] = $this->resolvePreviewLabel($value, $key);
+    }
+
+    private function resolvePreviewLabel(mixed $value, string $key): string
+    {
+        if ($this->optionsCallback !== null) {
+            $this->previewOptionsCache ??= array_map(
+                static fn (mixed $label): string => (string)$label,
+                ($this->optionsCallback)(),
+            );
+
+            return htmlspecialcharsbx($this->previewOptionsCache[$key] ?? (string)$value);
+        }
+
         if (!$this->dataManagerClass || !class_exists($this->dataManagerClass)) {
             return htmlspecialcharsbx((string)$value);
         }
+
         try {
             $row = $this->dataManagerClass::getList([
                 'select' => [$this->titleColumn],

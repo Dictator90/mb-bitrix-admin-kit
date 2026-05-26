@@ -48,6 +48,14 @@ abstract class Field implements FieldContract
     /** @var string[]|null */
     protected ?array $selectColumns = null;
 
+    /**
+     * Form data captured by {@see renderForm()} so single-argument
+     * {@see renderFormField()} overrides can still resolve readonly state.
+     *
+     * @var array<string,mixed>
+     */
+    protected array $renderFormData = [];
+
     public function __construct(string $label, ?string $column = null)
     {
         $this->bootFieldIdentity($label, $column);
@@ -107,10 +115,15 @@ abstract class Field implements FieldContract
     public function renderForm(mixed $context = null, array $data = []): string
     {
         if ($context instanceof FieldRenderContext) {
+            $formData = $this->formDataFromRenderContext($context, $data);
+            $this->renderFormData = $formData;
+
             /** @var mixed $self */
             $self = $this;
-            return $self->renderFormField($context->value, $this->formDataFromRenderContext($context, $data));
+            return $self->renderFormField($context->value, $formData);
         }
+
+        $this->renderFormData = $data;
 
         /** @var mixed $self */
         $self = $this;
@@ -149,7 +162,31 @@ abstract class Field implements FieldContract
     /** @param array<string,mixed> $formData */
     protected function formReadonlyAttr(array $formData = []): string
     {
+        if ($formData === []) {
+            $formData = $this->renderFormData;
+        }
+
         return $this->isReadOnlyFor($formData) ? ' readonly disabled' : '';
+    }
+
+    /** ` required` when the field is required, otherwise an empty string. */
+    protected function requiredAttr(): string
+    {
+        return $this->required ? ' required' : '';
+    }
+
+    /** ` placeholder="…"` when a placeholder is set, otherwise an empty string. */
+    protected function placeholderAttr(): string
+    {
+        return $this->placeholder !== null
+            ? ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"'
+            : '';
+    }
+
+    /** Resolve the field value for a form input and HTML-escape it. */
+    protected function escapedFormValue(mixed $value): string
+    {
+        return htmlspecialcharsbx((string)$this->resolveValue($value));
     }
 
     public function renderDetail(mixed $context, array $row = []): string

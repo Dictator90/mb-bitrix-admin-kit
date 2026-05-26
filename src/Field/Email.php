@@ -6,15 +6,19 @@ namespace MB\Bitrix\AdminKit\Field;
 
 class Email extends Field
 {
-    public function renderFormField(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
-        $val = htmlspecialcharsbx((string)$this->resolveValue($value));
+        $val = $this->escapedFormValue($value);
         $name = htmlspecialcharsbx($this->column);
-        $reqAttr = $this->required ? ' required' : '';
+        $reqAttr = $this->requiredAttr();
+        $readonlyAttr = $this->formReadonlyAttr($formData);
+        $placeholderAttr = $this->placeholderAttr();
+        $reactiveAttrs = $this->renderReactiveAttrs();
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textbox">
-            <input type="email" class="ui-ctl-element" name="{$name}" value="{$val}"{$reqAttr}>
+            <input type="email" class="ui-ctl-element" name="{$name}" value="{$val}"{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
         </div>
         HTML;
     }
