@@ -199,7 +199,7 @@ class BelongsTo extends RelationField
         $name = htmlspecialcharsbx($this->column);
         $options = $this->loadOptions();
         $reactive = $this->renderReactiveAttrs();
-        $required = $this->required ? ' required' : '';
+        $required = $this->requiredAttr();
 
         $optionsHtml = '';
         if ($this->emptyLabel !== '') {
@@ -226,7 +226,7 @@ class BelongsTo extends RelationField
         $name = htmlspecialcharsbx($this->column);
         $options = $this->loadOptions();
         $reactive = $this->renderReactiveAttrs();
-        $required = $this->required ? ' required' : '';
+        $required = $this->requiredAttr();
         $html = '<div class="adminkit-radio-list">';
 
         if ($this->emptyLabel !== '') {

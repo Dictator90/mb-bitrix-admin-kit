@@ -109,7 +109,25 @@ abstract class Field implements FieldContract
 
         $displayValue = $this->displayValue($value, $row, $meta);
 
-        return htmlspecialcharsbx((string)($this->previewValue($displayValue) ?? ''));
+        return $this->finalizePreview($this->previewValue($displayValue));
+    }
+
+    /**
+     * Whether {@see previewValue()} returns ready HTML markup. When true,
+     * {@see renderIndex()} / {@see renderDetail()} keep it as-is instead of
+     * escaping it. Fields that build markup in previewValue() (Preview, Color,
+     * Image) must escape their own dynamic values and return true here.
+     */
+    protected function previewReturnsHtml(): bool
+    {
+        return false;
+    }
+
+    private function finalizePreview(mixed $preview): string
+    {
+        $preview = (string)($preview ?? '');
+
+        return $this->previewReturnsHtml() ? $preview : htmlspecialcharsbx($preview);
     }
 
     public function renderForm(mixed $context = null, array $data = []): string
@@ -202,7 +220,7 @@ abstract class Field implements FieldContract
 
         $displayValue = $this->displayValue($value, $row, $meta);
 
-        return htmlspecialcharsbx((string)($this->previewValue($displayValue) ?? ''));
+        return $this->finalizePreview($this->previewValue($displayValue));
     }
 
     public function normalize(mixed $value): mixed

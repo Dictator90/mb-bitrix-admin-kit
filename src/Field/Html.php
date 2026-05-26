@@ -33,11 +33,12 @@ class Html extends Field
         $currentValue = (string)($this->resolveValue($value) ?? '');
         $name = htmlspecialcharsbx($this->column);
         $escapedValue = htmlspecialcharsbx($currentValue);
+        $readonlyAttr = $this->formReadonlyAttr();
 
-        if (!$this->useEditor) {
+        if (!$this->useEditor || $readonlyAttr !== '') {
             return <<<HTML
             <div class="ui-ctl ui-ctl-textarea">
-                <textarea class="ui-ctl-element" name="{$name}" rows="{$this->rows}">{$escapedValue}</textarea>
+                <textarea class="ui-ctl-element" name="{$name}" rows="{$this->rows}"{$readonlyAttr}>{$escapedValue}</textarea>
             </div>
             HTML;
         }

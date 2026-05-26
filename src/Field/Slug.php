@@ -64,7 +64,7 @@ class Slug extends Text
         $name = htmlspecialcharsbx($this->column);
         $val = htmlspecialcharsbx($resolvedValue);
         $maxAttr = $this->maxLength ? ' maxlength="' . $this->maxLength . '"' : '';
-        $reqAttr = $this->required ? ' required' : '';
+        $reqAttr = $this->requiredAttr();
         $readonlyAttr = $this->formReadonlyAttr($formData);
         $placeholderAttr = $this->placeholder !== null ? ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"' : '';
         $reactiveAttrs = $this->renderReactiveAttrs();
