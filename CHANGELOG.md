@@ -20,7 +20,17 @@
 - Режимы рендера формы `BelongsTo`: `asSelect()` (по умолчанию), `asRadio()`, `asLink()` (preview).
 - Тесты relation-слоя: namespace, runtime builder/registrar, метаданные resolver, value loader, object mutator, manual pivot sync, маршрутизация веток FormPage.
 
+### Performance
+- `BelongsTo` / `BelongsToMany` / `EntitySelect` (и наследник `UserSelect`): `previewValue()` мемоизирует подписи по значению/ID на уровне поля — повторяющиеся FK в гриде больше не дают запрос-на-строку (N+1), а резолвятся одним батчем закэшированных значений.
+- `Grid\Row\RowAssembler::prepareRow()` / `buildRows()`: прямой обход массивов полей и действий вместо пересоздания `AdminCollection` на каждую строку грида.
+
 ### Fixed
+- `Preview` (`badge()` / `link()` / `format()`), `Color`, `Image`: HTML из `previewValue()` больше не экранируется на index/detail — введён флаг `Field::previewReturnsHtml()`, базовые `renderIndex()` / `renderDetail()` отдают разметку как есть (динамические значения по-прежнему экранируются внутри полей).
+- Поле `File`: подписи кнопок «удалить» / «выбрать файл» больше не выводятся как литеральный код `{LocalizedMessage::get(...)}` (heredoc не интерполирует статические вызовы) — строки вычисляются заранее и берутся из `lang/*/src/Field/File.php`.
+- Поддержка `readonly()` / `readonlyOnUpdate()` для редактируемых полей `Checkbox`, `Color`, `Html`, `Password`, `File`, `Switcher` (раньше readonly на них молча игнорировался); `Switcher` в readonly рендерит неактивное состояние + hidden input с текущим значением, `File` скрывает загрузку и удаление.
+- `Checkbox`: добавлены устойчивый `normalize()` / `serializePostValue()` (как у `Switcher`) и экранирование подписи; `Checkbox` и `Switcher` используют общий трейт `Concerns\HasCheckedValues` вместо дублированной checked-логики.
+- `Password`: строки UI (`Show password`, подсказки) вынесены в `lang/*/src/Field/Password.php` через `LocalizedMessage`.
+- Поля `Email`, `Date`, `DateTime`: `renderFormField()` снова получает контекст формы (`$formData`) — `readonly` / `disabled` (и для `Email` `placeholder` / реактивные атрибуты) больше не теряются; базовый `Field::renderForm()` сохраняет `formData` для полей с одноаргументной сигнатурой.
 - `AdminKitManager`: кэш fingerprint для `discover()` — повторные вызовы `registry()` / `router()` / `menuBuilder()` не пересканируют пути.
 - `FormPage::formTabs()`: вкладки через `Tabs` / `TabsRenderer` (`MB.AdminKit`), убран legacy `MB.UI.Tabs`.
 - `DataPipeline`: `readonlyOnUpdate()` / `readonlyWhen()` учитывают `_mode`, `_id`, `ID` из raw POST при пропуске валидации.

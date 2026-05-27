@@ -18,12 +18,12 @@ class Text extends Field
     /** @param array<string,mixed> $formData */
     public function renderFormField(mixed $value = null, array $formData = []): string
     {
-        $val = htmlspecialcharsbx((string)$this->resolveValue($value));
+        $val = $this->escapedFormValue($value);
         $name = htmlspecialcharsbx($this->column);
         $maxAttr = $this->maxLength ? ' maxlength="' . $this->maxLength . '"' : '';
-        $reqAttr = $this->required ? ' required' : '';
+        $reqAttr = $this->requiredAttr();
         $readonlyAttr = $this->formReadonlyAttr($formData);
-        $placeholderAttr = $this->placeholder !== null ? ' placeholder="' . htmlspecialcharsbx($this->placeholder) . '"' : '';
+        $placeholderAttr = $this->placeholderAttr();
         $reactiveAttrs = $this->renderReactiveAttrs();
 
         return <<<HTML

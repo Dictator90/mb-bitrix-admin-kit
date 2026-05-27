@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use MB\Bitrix\AdminKit\Field\Concerns\HasCheckedValues;
+
 class Checkbox extends Field
 {
-    protected string $checkedValue = 'Y';
-    protected string $uncheckedValue = 'N';
-
-    public function values(string $checked, string $unchecked): static
-    {
-        $this->checkedValue = $checked;
-        $this->uncheckedValue = $unchecked;
-
-        return $this;
-    }
+    use HasCheckedValues;
 
     public function getGridColumnType(): string
     {
@@ -26,13 +19,17 @@ class Checkbox extends Field
     {
         $currentValue = $this->resolveValue($value);
         $name = htmlspecialcharsbx($this->column);
-        $checked = ((string)$currentValue === $this->checkedValue) ? ' checked' : '';
+        $checkedVal = htmlspecialcharsbx($this->checkedValue);
+        $uncheckedVal = htmlspecialcharsbx($this->uncheckedValue);
+        $label = htmlspecialcharsbx($this->label);
+        $checked = $this->isCheckedState($currentValue) ? ' checked' : '';
+        $readonlyAttr = $this->formReadonlyAttr();
 
         return <<<HTML
-        <input type="hidden" name="{$name}" value="{$this->uncheckedValue}">
+        <input type="hidden" name="{$name}" value="{$uncheckedVal}">
         <label class="ui-ctl ui-ctl-checkbox">
-            <input type="checkbox" class="ui-ctl-element" name="{$name}" value="{$this->checkedValue}"{$checked}>
-            <div class="ui-ctl-label-text">{$this->label}</div>
+            <input type="checkbox" class="ui-ctl-element" name="{$name}" value="{$checkedVal}"{$checked}{$readonlyAttr}>
+            <div class="ui-ctl-label-text">{$label}</div>
         </label>
         HTML;
     }
