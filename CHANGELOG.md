@@ -16,6 +16,11 @@
 - Upgraded `Field\File` to render using Bitrix's native `Bitrix\Main\UI\FileInput` control.
 - Upgraded `Field\Image` to render using Bitrix's native `bitrix:ui.image.input` component, with defaults suitable for image inputs.
 - Implemented robust, idempotent file deletion and new file upload persistence inside `File::normalize()`, ensuring it works uniformly for both `CrudResource` and `DataManagerResource` pipelines.
+### Fixed
+- Fixed `Field\Image` rendering in AJAX/SidePanel context and resolved the `onUploaderIsInited` race condition: if the uploader is initialized before `BX.UI.ImageInput` registers its listener, the container remains hidden with `display: none`. Added explicit JS/CSS preloading and an inline helper initialization script.
+- Fixed `Field\File` (and `Field\Image`) to properly handle multiple files saving by adding support for temporary string paths (resolved via `\CFile::MakeFileArray`) and standard multipart `$_FILES` uploads fallback.
+- Fixed `Field\File` (and `Field\Image`) to support parsing and loading stored multiple file values represented as JSON array strings, serialized PHP arrays, or comma-separated lists of IDs, preventing display issues and file loss on save. Multiple file values on OptionsPage are now stored using standard PHP serialize/unserialize for native Bitrix compatibility, while maintaining backward-compatible reading of older JSON array strings.
+- Fixed `resolveValue` in `HasFieldValue` trait to correctly handle multiple field resolved values (indexed array of IDs) and prevent them from being mistaken for row data arrays (which was resolving to `null` and failing to display).
 
 ### Added
 
