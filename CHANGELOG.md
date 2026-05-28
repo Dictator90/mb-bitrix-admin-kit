@@ -2,7 +2,17 @@
 
 ## Unreleased
 
+### Documentation
+- Документация интеграции переработана в end-to-end формате: добавлены user guides `module-integration.md`, `standalone-integration.md`, `admin-menu-and-pages.md`; обновлены `docs/installation.md`, `docs/quick-start.md`, `docs/options-page.md`, cookbook `first-crud.md`/`options-page.md`, карта docs и README-ссылки. Исправлена сигнатура `DataManagerResource::dataManagerClass()` в cookbook (не static), дубли cookbook переведены в bridge-файлы к каноническим рецептам (`add-bulk-action`, `add-row-action`, `add-filter`, `custom-field`).
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
+- Этап 6 (polishing/link audit): добавлены bridge-страницы `docs/filters.md` и `docs/import-export.md`, обновлены обзорные ссылки в `README.md` и `docs/README.md`, подтверждена отсутствие битых markdown-ссылок и сохранена актуальная формулировка статуса import/export (CSV-first, import UI отключён на `IndexPage`).
+- Docs hardening fix: дополнительно выверены README и обзорные ссылки документации (`docs/actions.md`, `docs/options-page.md`, `docs/dashboard-page.md`, `docs/user/guides/import-export.md`) без изменения runtime-кода; подтверждена валидность минимального `DataManagerResource` примера по текущему API.
+- Этап 5 документации: исправлены stub/схлопнутые markdown-страницы (`docs/options-page.md`, `docs/dashboard-page.md`, cookbook import/export/options/dashboard), выровнены относительные ссылки без лишнего префикса `docs/`, обновлены PHP-примеры под фактический API (`OptionsPage`, `DashboardPage`, `ImportAction`, export-политики), и синхронизирован статус import/export (CSV export UI включен, import UI на index временно отключен, XLSX не поддерживается).
+
 ### Added
+
+- Added unified field condition engine: `FieldConditionContext`, closure-aware `required()/readonly()/visible()/canSee()`, universal `when()` with optional `dependsOn`, DataPipeline conditional application, and reactive dependency input listeners for text-like inputs.
+- Added `Field\Slug` with MoonShine-like source-based slug generation (`from()`), configurable separator (`separator()`), and dependency-driven reactive updates.
 - `DataManagerResource` / `DataManagerResourceContract::getEntity()` — ORM Entity из `dataManagerClass()` (`DataManager::getEntity()`).
 - `DataManagerResource` всегда сохраняет формы через Bitrix EntityObject: `queryObject()`, `findObject()`, `newObject()`, `EntityObjectFormSaver` / `RelationObjectMutator`, `$entityObject->save()`.
 - `FormPage` маршрутизирует `DataManagerResource` в object-graph flow, `CrudResource` с ручной persistence — в `createItemResult()` / `updateItemResult()`.
@@ -10,7 +20,17 @@
 - Режимы рендера формы `BelongsTo`: `asSelect()` (по умолчанию), `asRadio()`, `asLink()` (preview).
 - Тесты relation-слоя: namespace, runtime builder/registrar, метаданные resolver, value loader, object mutator, manual pivot sync, маршрутизация веток FormPage.
 
+### Performance
+- `BelongsTo` / `BelongsToMany` / `EntitySelect` (и наследник `UserSelect`): `previewValue()` мемоизирует подписи по значению/ID на уровне поля — повторяющиеся FK в гриде больше не дают запрос-на-строку (N+1), а резолвятся одним батчем закэшированных значений.
+- `Grid\Row\RowAssembler::prepareRow()` / `buildRows()`: прямой обход массивов полей и действий вместо пересоздания `AdminCollection` на каждую строку грида.
+
 ### Fixed
+- `Preview` (`badge()` / `link()` / `format()`), `Color`, `Image`: HTML из `previewValue()` больше не экранируется на index/detail — введён флаг `Field::previewReturnsHtml()`, базовые `renderIndex()` / `renderDetail()` отдают разметку как есть (динамические значения по-прежнему экранируются внутри полей).
+- Поле `File`: подписи кнопок «удалить» / «выбрать файл» больше не выводятся как литеральный код `{LocalizedMessage::get(...)}` (heredoc не интерполирует статические вызовы) — строки вычисляются заранее и берутся из `lang/*/src/Field/File.php`.
+- Поддержка `readonly()` / `readonlyOnUpdate()` для редактируемых полей `Checkbox`, `Color`, `Html`, `Password`, `File`, `Switcher` (раньше readonly на них молча игнорировался); `Switcher` в readonly рендерит неактивное состояние + hidden input с текущим значением, `File` скрывает загрузку и удаление.
+- `Checkbox`: добавлены устойчивый `normalize()` / `serializePostValue()` (как у `Switcher`) и экранирование подписи; `Checkbox` и `Switcher` используют общий трейт `Concerns\HasCheckedValues` вместо дублированной checked-логики.
+- `Password`: строки UI (`Show password`, подсказки) вынесены в `lang/*/src/Field/Password.php` через `LocalizedMessage`.
+- Поля `Email`, `Date`, `DateTime`: `renderFormField()` снова получает контекст формы (`$formData`) — `readonly` / `disabled` (и для `Email` `placeholder` / реактивные атрибуты) больше не теряются; базовый `Field::renderForm()` сохраняет `formData` для полей с одноаргументной сигнатурой.
 - `AdminKitManager`: кэш fingerprint для `discover()` — повторные вызовы `registry()` / `router()` / `menuBuilder()` не пересканируют пути.
 - `FormPage::formTabs()`: вкладки через `Tabs` / `TabsRenderer` (`MB.AdminKit`), убран legacy `MB.UI.Tabs`.
 - `DataPipeline`: `readonlyOnUpdate()` / `readonlyWhen()` учитывают `_mode`, `_id`, `ID` из raw POST при пропуске валидации.
@@ -63,9 +83,35 @@
 - Стабильность Composer-пакета по умолчанию `stable`; пакет больше не подталкивает потребителей к разрешению dev-зависимостей.
 
 ### Documentation
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
+- Восстановлен обзорный раздел `docs/fields.md`: возвращено практическое описание fluent API `Field` (visibility, validation, readonly, formatting, grid, computed, import/export, multiple, dependsOn, when) с примерами и областями применения, без превращения страницы во внутренний API reference; сохранены каталоги стандартных и relation-полей, а также пояснение по runtime-методам `displayValue()`/`previewValue()`.
+- Упрощён `docs/fields.md`: документ сфокусирован на пользовательском Fluent API и практических сценариях (`Resource`/`OptionsPage`), без детального internal API-reference; отдельно подчеркнуто, что `displayValue()`/`previewValue()` — runtime-методы, а для настройки отображения используются `displayUsing()`/`format()`/`preview()`, и добавлена ссылка на relation guide `docs/user/guides/relations.md`.
+- Синхронизирован `docs/fields.md` с фактическими concrete-полями из `src/Field/*` и `src/Field/Relation/*`: раздел превращён в обзорный каталог со ссылками на отдельные страницы `docs/user/reference/fields/*`, добавлены явные ссылки на relation guide и уточнено текущее поведение `Slug` (без `from()` как `Text`, с `from()` реактивная генерация).
+- Полностью переписан `docs/fields.md`: добавлено полноценное описание базового Field API (identity/value/default/visibility/conditions/reactivity/validation/readonly/grid/computed/export-import/render lifecycle/custom field) и актуальный обзор стандартных полей с ссылкой на relation-гайд.
+- Added `docs/user/reference/fields/slug.md` and updated fields reference index with Slug field usage, defaults, and `dependsOn()` behavior.
+- В `docs/user/reference/fields/select.md` возвращён базовый пример `options([...])` через массив, перед примерами `Closure` и `OptionsResolverContract`.
+- В docs/user/reference/fields/select.md добавлены отдельные примеры использования options() через Closure и через OptionsResolverContract (включая кастомный resolver).
+- Уточнён `docs/user/reference/fields/field.md`: в разделе ключевых методов оставлены только методы, влияющие на поведение/рендер/логику поля; методы-чтения вынесены из основного списка.
+- Добавлены разделы `Значения по умолчанию` в `docs/user/reference/fields/*.md` с дефолтами конкретных классов и переопределяемыми дефолтами базового `Field`.
+- Для каждого файла в `docs/user/reference/fields/*.md` добавлены разделы `Методы и что делают` с расшифровкой назначения методов (включая inherited API там, где у класса нет собственных fluent-методов).
+- Раздел `Reference: Components` декомпозирован в каталог `docs/user/reference/components/`: добавлен общий `component.md` и отдельные `.md` по каждому компоненту и layout-классу (`Alert`, `Badge`, `SidePanel`, `Tabs`, `Grid` и др.).
+- Раздел `Reference: Fields` декомпозирован в отдельный каталог `docs/user/reference/fields/`: добавлен общий `field.md` и отдельные `.md` по каждому полю/семейству (`Text`, `Select`, `File`, `EntitySelect`, relation fields и т.д.).
+- Добавлены два отдельные end-to-end гайда подключения от установки пакета: `getting-started/module-full-guide.md` (внутри модуля) и `getting-started/standalone-full-guide.md` (вне модуля через `local/php_interface/init.php`).
+- Расширены user-гайды `getting-started/installation` и `getting-started/bootstrap`: добавлены пошаговые сценарии для module и standalone, варианты подключения `vendor/autoload.php` (module/local/project vendor) и отдельный standalone-пример через `local/php_interface/init.php`.
+- Полностью переработана пользовательская документация под структуру `README -> docs/user/getting-started -> docs/user/guides -> docs/user/reference`, cookbook вынесен в `docs/user/cookbook`.
+- Объединены дубли по import/export и lifecycle, добавлены канонические правила export (`allowExportByFilter`, `allowExportAll`, `maxExportRows`) и единый раздел ограничений текущей версии.
+- Добавлены новые пользовательские разделы по `AsyncAction`, `PermissionContext` (матрица проверок), `Resource` выбору (`Resource`/`CrudResource`/`DataManagerResource`) и UI-компонентам (`Badge`, `Button`, `Heading`, `Notification`, `SidePanel`, layout).
+- Внутренние материалы для контрибьюторов вынесены в `docs/dev/*`; исправлены устаревшие namespace/классы в примерах и ссылках.
 - Задокументирован lifecycle рендера полей и совместимость/ограничения inline-редактирования для базовых, select, relation и entity selector полей.
 - Уточнено, что `CrudResource` — DSL/база страниц без persistence, а ORM CRUD-ресурсы должны расширять `DataManagerResource`.
 - Синхронизирована документация import/export, grid, quick-start и bulk-action с текущим состоянием: export включён, import UI отключён.
+
+### Documentation
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
+- Добавлены и переработаны пользовательские входные документы верхнего уровня: `docs/README.md`, `docs/installation.md`, `docs/quick-start.md`.
+- Упрощён корневой `README.md`: оставлены позиционирование, требования, установка, минимальный валидный ORM Resource-пример и ссылки на ключевые разделы.
+- Добавлены верхнеуровневые навигационные страницы `docs/resources.md`, `docs/pages.md`, `docs/grid.md`, `docs/actions.md`, `docs/bulk-actions.md`, `docs/options-page.md`, `docs/dashboard-page.md` для единых коротких ссылок из README/карты документации.
+- Этап 2 оптимизации документации: исправлены относительные ссылки в `docs/README.md`; переработаны `docs/resources.md` и `docs/pages.md` как полноценные пользовательские разделы; расширены API-справочники `docs/user/reference/resources.md` и `docs/user/reference/pages.md`; обновлён гайд выбора базового класса `docs/user/guides/resource-selection.md` в соответствии с текущим публичным API (`Resource` / `CrudResource` / `DataManagerResource`, CRUD/standalone Pages).
 
 ### Stabilization
 - Test runner no longer aborts silently on JSON/early-response branches: response termination is centralized and test-aware (`Support\ResponseTerminator`), so `composer test` always returns a full summary.
@@ -185,6 +231,12 @@
 - `GridQueryBuilder::buildOrder()` three-layer sort merge.
 - Export guard messages localized; export failures use `ui.alerts` on index.
 - Form/toolbar RU label mojibake (UTF-8 `Loc` files).
+
+### Documentation
+- Этап 7 документации: выполнен финальный audit навигации и cookbook, добавлен `docs/quality-checklist.md`, обновлены карта документации (`docs/README.md`) и cookbook-рецепты (`docs/user/cookbook/README.md`, `filter.md`, `row-action.md`, `bulk-action.md`) с единым шаблоном «Задача/Решение/Полный пример/Что важно учесть/Связанные разделы», уточнены Bitrix-native и bulk-security акценты без изменений runtime-кода.
+- Полировка этапа 6: в документации выровнены markdown-таблицы и оформление примеров как fenced code blocks с языками.
+- Исправлен namespace фильтра в примере `docs/grid.md` на `MB\Bitrix\AdminKit\Filter\Types\TextFilter`.
+- Уточнена секция выбора режима в `docs/user/guides/bulk-actions.md` в виде markdown-таблицы.
 
 ## v1.0.0 - 2026-05-14
 
@@ -382,3 +434,19 @@
 - Updated DataManager event dispatch to resolve event module id from operation context with safe fallback to `main` (removed hardcoded `mb.bitrix.adminkit`).
 - Added DataManagerResource relation sync extension point via `relationSyncStrategies()` and `getRelationSyncStrategies()`; EntityObjectFormSaver now registers user strategies before sync.
 - Marked internal FormPage bridge/state mutator methods with `@internal` to reduce accidental public API surface.
+
+## Unreleased
+- Hardened docs markdown formatting for stage 1–2 core files and refreshed API-oriented structure for Fields/Filters documentation.
+- Reworked `docs/fields.md` into a central Field overview with context matrix, fluent API matrix, catalog, relation section, and custom field guidance.
+- Expanded `docs/user/reference/filters.md` with real filter classes/methods (`TextFilter`, `SelectFilter`, `NumberFilter`, `DateFilter`, `CheckboxFilter`, `CallbackFilter`) and ORM behavior notes.
+
+## Unreleased
+- Hardened markdown structure in Grid/Actions/Bulk actions docs (no one-line stubs; readable headings/lists/code blocks).
+- Reworked top-level `docs/grid.md`, `docs/actions.md`, and `docs/bulk-actions.md` into full user-oriented sections with Bitrix-native grid/action-panel semantics.
+- Added/updated practical guides and reference pages for Grid/Bulk/Actions: `docs/user/guides/grid.md`, `docs/user/guides/bulk-actions.md`, `docs/user/reference/actions.md`.
+- Corrected docs-in-docs links to use proper relative paths from inside `docs/` and `docs/user/*` trees.
+- Documented current BulkResult/error rendering behavior and explicit limitation for full UI error visualization.
+
+## Unreleased
+- Expanded `docs/user/cookbook` into task-oriented recipes (CRUD, grid columns, filters, row/bulk actions, SidePanel, pages, import/export, permissions, relation/custom fields) with API-verified examples and cross-links to guides/reference.
+- Reworked `docs/user/cookbook/README.md` into a structured recipe map and removed stale/non-task-oriented cookbook navigation.

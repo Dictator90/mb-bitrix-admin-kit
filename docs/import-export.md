@@ -1,41 +1,20 @@
-# Экспорт (CSV)
+# Import / Export
 
-> Import UI на index-страницах и тулбаре временно отключён.  
-> Классы `MB\Bitrix\AdminKit\Import\*` остаются в библиотеке для будущего включения, но в текущей ветке не подключены к `IndexPage`.
+Импорт/экспорт в `mb4it/bitrix-admin-kit` реализован как CSV-first слой сервисов поверх Resource и Form/DataPipeline.
 
 ## Текущий статус
 
-- Export UI доступен на index-страницах, если ресурс поддерживает просмотр и export guard-условия.
-- Import — только library/service layer (`Import\*`) и не подключён к `IndexPage`/toolbar в текущей ветке.
-- Import UI не следует обещать пользователям до отдельной реализации.
+- Экспорт доступен как часть action-сценариев и работает в CSV-формате.
+- Import UI на `IndexPage` сейчас отключен и рассматривается как отдельная UI-задача.
+- XLSX/Excel-движок в публичный API не входит.
 
-## Принципы
+## Когда использовать
 
-- Экспорт CSV-first.
-- XLSX/Excel-движки не входят в текущий scope.
-- Экспорт должен быть безопасным по умолчанию.
+- Когда нужен безопасный массовый обмен данными в формате CSV.
+- Когда важно переиспользовать ту же нормализацию и валидацию полей, что и в form save.
 
-## Безопасность экспорта
+## Куда идти дальше
 
-- Требуются выбранные ID или разрешённый экспорт по фильтру.
-- Полный экспорт выключен по умолчанию (`allowExportAll(): false`).
-- Проверяется `canView()` у ресурса.
-- Превышение `maxExportRows()` останавливает экспорт до выборки данных.
-
-## Основные классы
-
-- `ExportAction` — точка входа.
-- `ExportContext` — контекст операции.
-- `MB\Bitrix\AdminKit\Export\CsvExporter` — CSV-экспортёр.
-
-## Хуки ресурса
-
-```php
-public function allowExportByFilter(): bool { return true; }
-public function allowExportAll(): bool { return false; }
-public function maxExportRows(): int { return 5000; }
-```
-
-## Примечание по import
-
-Для import см. [docs/import.md](import.md): там описан только библиотечный слой без UI-флоу.
+- [Guide: Import / Export](user/guides/import-export.md)
+- [Cookbook: Import / Export](user/cookbook/import-export.md)
+- [Reference: Actions](user/reference/actions.md)

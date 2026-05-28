@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Vendor\Demo\Admin;
 
-use MB\Bitrix\AdminKit\Field\EntitySelectorField;
-use MB\Bitrix\AdminKit\Field\IblockElementSelectorField;
-use MB\Bitrix\AdminKit\Field\UserSelector;
+use MB\Bitrix\AdminKit\Field\EntitySelect;
+use MB\Bitrix\AdminKit\Field\IblockElementSelect;
+use MB\Bitrix\AdminKit\Field\ID;
+use MB\Bitrix\AdminKit\Field\Text;
+use MB\Bitrix\AdminKit\Field\UserSelect;
 use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use Vendor\Demo\Orm\ProductTable;
 
@@ -20,14 +22,18 @@ final class ProductResource extends DataManagerResource
     public function formFields(): iterable
     {
         return [
-            UserSelector::make('Responsible', 'RESPONSIBLE_ID'),
-            EntitySelectorField::make('Company', 'COMPANY_ID')->entityId('company'),
-            IblockElementSelectorField::make('Related element', 'ELEMENT_ID')->iblockId(5),
+            UserSelect::make('Responsible', 'RESPONSIBLE_ID'),
+            EntitySelect::make('Company', 'COMPANY_ID')->entityId('company'),
+            IblockElementSelect::make('Related element', 'ELEMENT_ID')->iblockId(5),
         ];
     }
 
     public function indexFields(): iterable
     {
-        // TODO: Implement indexFields() method.
+        return [
+            ID::make('ID'),
+            Text::make('Name', 'NAME'),
+            Text::make('Responsible', 'RESPONSIBLE_ID'),
+        ];
     }
 }

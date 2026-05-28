@@ -62,6 +62,13 @@ final class OptionsPagePostHandler
                 ? $page->unserializeOptionValue($field, $stored)
                 : $field->serializePostValue($field->getDefault());
         }
+        foreach ($_POST as $key => $rawValue) {
+            if (!is_string($key) || $key === '' || array_key_exists($key, $formData)) {
+                continue;
+            }
+
+            $formData[$key] = $rawValue;
+        }
 
         $result = [];
         foreach ($fields as $field) {

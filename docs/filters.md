@@ -1,18 +1,21 @@
-# Фильтры
+# Filters
 
-Фильтры задают метаданные Bitrix `main.ui.filter` и правила применения ORM-фильтра.
+`Filters` в Admin Kit описывают поля для `main.ui.filter` и преобразование пользовательского ввода в ORM-фильтр для `DataManager::getList()`.
 
-## Встроенные фильтры
+## Когда использовать
 
-- `TextFilter` — точное совпадение, contains, starts-with, ends-with для строк.
-- `NumberFilter` — точное значение, диапазон, больше и меньше.
-- `SelectFilter` — списковые фильтры.
-- `DateFilter` — точная дата и диапазон дат.
-- `CheckboxFilter` — логические значения.
-- `CallbackFilter` — пользовательская ORM-логика фильтра на стороне Resource.
+- Когда в Resource нужно дать пользователю поиск, точное совпадение или диапазон.
+- Когда фильтр должен оставаться Bitrix-native и совместимым с `bitrix:main.ui.grid`.
 
-Пустые значения пропускаются при обработке грида; значимые значения вроде `0`, `'0'` и `false` сохраняются.
+## Что использовать на практике
 
-## Стабильный API
+- `TextFilter` для строковых полей (`exact()`, `contains()`).
+- `SelectFilter` для справочников/статусов (`options()`, `exact()`).
+- `DateFilter` и `NumberFilter` для дат/чисел (`exact()`, `range()`).
 
-Базовый API Filter, имена классов фильтров, пространства имён и публичные/защищённые сигнатуры обратно совместимы в minor и patch релизах.
+## Куда идти дальше
+
+- [Reference: Filters](user/reference/filters.md)
+- [Guide: Grid](user/guides/grid.md)
+- [Guide: Resource selection](user/guides/resource-selection.md)
+- [Cookbook: Filter recipes](user/cookbook/filter.md)

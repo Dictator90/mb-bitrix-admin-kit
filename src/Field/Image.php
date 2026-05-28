@@ -33,6 +33,7 @@ class Image extends File
         $name = htmlspecialcharsbx($this->column);
         $fileId = (int)$currentValue;
         $existingHtml = '';
+        $readonly = $this->isReadOnlyFor($this->renderFormData);
         $deleteLabel = LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMAGE_DELETE', 'delete image');
         $selectLabel = LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_IMAGE_SELECT', 'Choose image');
 
@@ -45,19 +46,31 @@ class Image extends File
                     'height' => $this->previewHeight,
                 ], BX_RESIZE_IMAGE_PROPORTIONAL);
                 $thumbSrc = $thumb['src'] ?? $filePath;
+                $deleteControl = $readonly
+                    ? ''
+                    : <<<HTML
+                    <label>
+                        <input type="checkbox" name="{$name}_delete" value="Y">
+                        {$deleteLabel}
+                    </label>
+                    HTML;
 
                 $existingHtml = <<<HTML
                 <div class="adminkit-image-current">
                     <a href="{$filePath}" target="_blank">
                         <img class="adminkit-image-current__preview" src="{$thumbSrc}" width="{$this->previewWidth}" height="{$this->previewHeight}">
                     </a>
-                    <label>
-                        <input type="checkbox" name="{$name}_delete" value="Y">
-                        {$deleteLabel}
-                    </label>
+                    {$deleteControl}
                 </div>
                 HTML;
             }
+        }
+
+        if ($readonly) {
+            return <<<HTML
+            {$existingHtml}
+            <input type="hidden" name="{$name}" value="{$fileId}">
+            HTML;
         }
 
         return <<<HTML
@@ -71,6 +84,11 @@ class Image extends File
             </div>
         </div>
         HTML;
+    }
+
+    protected function previewReturnsHtml(): bool
+    {
+        return true;
     }
 
     public function previewValue(mixed $value): string

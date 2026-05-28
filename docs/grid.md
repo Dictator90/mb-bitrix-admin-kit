@@ -1,65 +1,147 @@
-# Грид
+# Grid
 
-Grid-слой разделён на сервисы, чтобы UI и ORM-логику не смешивать.
+## Что это
 
-## Зоны ответственности
+`mb-bitrix-admin-kit` строит списки на базе нативного Bitrix-компонента `bitrix:main.ui.grid`.
+Admin Kit не заменяет grid-движок Bitrix, а подготавливает:
 
-- `GridQueryBuilder` — единственный источник ORM-параметров (`select`, `filter`, `order`, `runtime`, `limit`, `offset`).
-- `GridDataLoader` — формирование `GridContext`, загрузка строк, total count, кеширование count, `QueryGuard`.
-- `Grid` — UI-состояние: поля, фильтры, строки, пагинация, action panel.
-- Bitrix-адаптеры (`BitrixGridAdapter`, `BitrixFilterAdapter`, `BitrixGridActionPanelAdapter`) — сборка параметров компонентов `main.ui.grid`/`main.ui.filter`.
-- `ToolbarRenderer` — интеграция фильтра, create-кнопки и sidepanel-настроек.
+- колонки (`COLUMNS`);
+- строки (`ROWS`);
+- row actions;
+- action panel для bulk actions;
+- параметры пагинации и сортировки;
+- интеграцию с `main.ui.filter`.
 
-## Порядок построения запроса
+## Когда использовать
 
-`GridQueryBuilder` учитывает:
+Используйте Grid на index-страницах CRUD, когда нужны:
 
-- `indexFields()` и фильтры;
-- `defaultSort()`, `defaultFilter()`, `defaultSelect()`;
-- `runtimeFields()`;
-- `indexSelect()`, `indexFilter()`, `indexOrder()`, `indexRuntime()`;
-- `beforeIndexQueryParams()` и `modifyIndexParams()`.
+- список записей;
+- сортируемые колонки;
+- inline-редактирование (для полей с `editable()`);
+- row actions;
+- bulk actions;
+- фильтрация через `main.ui.filter`;
+- пагинация;
+- экспорт выбранных записей и/или по фильтру (если разрешено ресурсом).
 
-## Интеграция с IndexPage
+## Базовый пример
 
-`Page\Crud\IndexPage` не должен строить ORM-параметры вручную — только делегировать в `GridDataLoader`/`GridQueryBuilder`.
+```php
+use MB\Bitrix\AdminKit\Action\BulkAction;
+use MB\Bitrix\AdminKit\Action\RowAction;
+use MB\Bitrix\AdminKit\Field\ID;
+use MB\Bitrix\AdminKit\Field\Text;
+use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
 
-## Загрузка данных
+public function indexFields(): iterable
+{
+    return [
+        ID::make('ID', 'ID')->sortable(),
+        Text::make('Название', 'NAME')->sortable()->asEditLink(),
+        Text::make('Код', 'CODE')->sortable(),
+    ];
+}
 
-Рекомендуемый сценарий:
+public function filters(): iterable
+{
+    return [
+        TextFilter::make('Название', 'NAME'),
+    ];
+}
 
-1. создать `GridContext`;
-2. собрать ORM-параметры через `GridQueryBuilder`;
-3. применить guard-ограничения;
-4. при необходимости посчитать `total`;
-5. получить `DataManager::getList($params)`;
-6. передать результат в `Grid::setRawRows()`.
+public function rowActions(): iterable
+{
+    return [
+        RowAction::view(),
+        RowAction::edit(),
+        RowAction::delete(),
+    ];
+}
 
-## Валидация сортировки
+public function bulkActions(): iterable
+{
+    return [
+        BulkAction::delete(),
+        BulkAction::make('activate', 'Активировать')
+            ->allowRunByFilter()
+            ->confirm('Активировать выбранные записи?')
+            ->handle(function (\MB\Bitrix\AdminKit\Database\BulkOperationContext $context) {
+                // ...
+            }),
+    ];
+}
+```
 
-Сортировка из запроса нормализуется и применяется только к явно sortable-полям.
+## Как Field становится колонкой
 
-## Группировка строк
+Колонки формируются из `indexFields()` (или `IndexPage::fields()`):
 
-Группировка строится через `Grid\Grouping\IndexGrouping` в рамках обычного `IndexPage`-потока.
+- `GridQueryBuilder` берет поля и строит `select/order/filter/runtime`;
+- `BitrixGridAdapter` конвертирует field config в `COLUMNS`;
+- `RowAssembler` собирает `ROWS` и actions для каждой строки.
 
-- synthetic row IDs: `group:{id}`, `item:{id}`;
-- bulk/inline-операции игнорируют `group:*` и нормализуют `item:*`.
+Практические моменты:
 
-## Relation-поля в гриде
+- `sortable()` включает сортировку поля;
+- `editable()` включает inline-редактирование (если поддерживается типом поля);
+- `asEditLink()`/`linkToEdit()` делает значение ссылкой на редактирование;
+- computed/selectable поля учитываются при построении select через field API.
 
-`HasMany`/`HasOne` не добавляют JOIN к базовому запросу списка и не должны дублировать строки грида. Загрузка связанных значений выполняется отдельным этапом после выборки базовых строк.
+## Фильтр над Grid
 
+`filters()` описывает элементы `main.ui.filter`.
 
-## Панель массовых действий
+Пайплайн:
 
-`BitrixGridActionPanelAdapter` остаётся нативным Bitrix-адаптером для `main.ui.grid` и `Bitrix\Main\Grid\Panel\Types/Actions`. Он не знает о бизнес-id действий: стандартные bulk actions используют JS-обработчик `runBulkAction`, а специальные сценарии задают обработчик через `BulkAction::clientHandler()` (например, export использует `exportSelected`).
+1. `Filter::getFilterFieldConfig()` формирует конфиг поля фильтра.
+2. `GridQueryBuilder` читает filter state (`FilterOptions`/request).
+3. `Filter::applyToOrmFilter()` преобразует пользовательское значение в ORM filter.
+4. Готовый `filter` передается в `DataManager::getList()`.
 
-AJAX-ответ bulk содержит `success`, `status`, `message`, `summary`, `errors`, `warnings`, `skipped`, `affected` и `successfulIds`; JS показывает ошибки до `reloadTable()`, а PHP flash используется для non-AJAX fallback.
+## Пагинация и сортировка
 
-## Матрица совместимости inline-редактирования
+- page size берется из `GridOptions` и ограничивается `resource->maxPageSize()`;
+- total count включается через `resource->useTotalCount()`;
+- кэш count-запроса задается `resource->countCacheTtl()`;
+- дефолтная сортировка: `defaultSort()` + `indexOrder()`;
+- пользовательская сортировка проходит whitelist через sortable-поля.
 
-- Стабильные inline-типы: `text`, `list`, `date`, `checkbox` (когда поле возвращает соответствующий `getGridColumnType()`).
-- Колонка считается inline-редактируемой только если её конфиг `editable` не `false` после проверок readonly.
-- Поля readonly (`readonly()` и readonly по умолчанию у relation-полей) всегда отключают метаданные inline-редактирования в итоговом конфиге колонки грида.
-- Сложные relation/entity selector поля намеренно исключены из inline-редактирования, чтобы избежать нестабильного поведения runtime грида; используйте ссылки редактирования в sidepanel.
+## Row actions
+
+Row actions отображаются в меню конкретной строки.
+Подробно: [Actions](actions.md).
+
+## Bulk actions / Action panel
+
+Bulk actions рендерятся в нативной нижней панели Bitrix Grid (`ACTION_PANEL`).
+`BitrixGridActionPanelAdapter` строит Bitrix panel controls (`BUTTON`/`DROPDOWN`) и JS-callback для запуска.
+
+### Важные различия выбора
+
+| Механизм | Что означает |
+|---|---|
+| Row checkbox | Выбор конкретной строки |
+| Header check-all | Выбор строк на текущей странице |
+| `SHOW_SELECT_ALL_RECORDS_CHECKBOX` | Отдельный флаг «для всех записей» (по фильтру) |
+
+`SHOW_SELECT_ALL_RECORDS_CHECKBOX` **не эквивалентен** row/header checkbox.
+Backend обязан явно обработать режим «все записи по фильтру», а опасные операции должны оставаться safe-by-default.
+
+## Практические сценарии
+
+- sortable-колонка через `sortable()`;
+- колонка-ссылка на edit через `asEditLink()`;
+- computed column через field API + `indexSelect()/runtime`;
+- фильтр по названию через `TextFilter`;
+- отключение total count через `useTotalCount()`;
+- добавление bulk action через `bulkActions()`.
+
+## Связанные разделы
+
+- [Fields](fields.md)
+- [Filters](user/reference/filters.md)
+- [Actions](actions.md)
+- [Bulk actions](bulk-actions.md)
+- [Resources](resources.md)
+- [Performance & diagnostics](user/guides/performance-diagnostics.md)

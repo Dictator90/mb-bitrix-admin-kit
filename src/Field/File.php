@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use CFile;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class File extends Field
 {
@@ -44,6 +45,9 @@ class File extends Field
         $name = htmlspecialcharsbx($this->column);
         $fileId = (int)$currentValue;
         $existingHtml = '';
+        $readonly = $this->isReadOnlyFor($this->renderFormData);
+        $deleteLabel = htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_FILE_DELETE', 'delete'));
+        $selectLabel = htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_FILE_SELECT', 'Choose file'));
 
         if ($fileId > 0) {
             $fileInfo = CFile::GetByID($fileId)->Fetch();
@@ -51,18 +55,30 @@ class File extends Field
                 $fileName = htmlspecialcharsbx($fileInfo['ORIGINAL_NAME'] ?? $fileInfo['FILE_NAME'] ?? '');
                 $filePath = CFile::GetFileSRC($fileInfo);
                 $fileSize = CFile::FormatSize((int)$fileInfo['FILE_SIZE']);
+                $deleteControl = $readonly
+                    ? ''
+                    : <<<HTML
+                    <label style="margin-left:16px;">
+                        <input type="checkbox" name="{$name}_delete" value="Y">
+                        {$deleteLabel}
+                    </label>
+                    HTML;
                 $existingHtml = <<<HTML
                 <div class="adminkit-file-current" style="margin-bottom:8px;">
                     <span class="ui-icon ui-icon-file" style="vertical-align:middle;"></span>
                     <a href="{$filePath}" target="_blank">{$fileName}</a>
                     <small style="color:#888;margin-left:8px;">{$fileSize}</small>
-                    <label style="margin-left:16px;">
-                        <input type="checkbox" name="{$name}_delete" value="Y">
-                        {LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_FILE_DELETE', 'delete')}
-                    </label>
+                    {$deleteControl}
                 </div>
                 HTML;
             }
+        }
+
+        if ($readonly) {
+            return <<<HTML
+            {$existingHtml}
+            <input type="hidden" name="{$name}" value="{$fileId}">
+            HTML;
         }
 
         $acceptAttr = '';
@@ -81,7 +97,7 @@ class File extends Field
                 style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
             <div class="ui-ctl-label-text" style="padding:8px 16px;cursor:pointer;">
                 <span class="ui-icon-16 ui-icon-16-upload" style="vertical-align:middle;margin-right:4px;"></span>
-                {LocalizedMessage::get(__FILE__,'MB_ADMIN_KIT_FILE_SELECT', 'Choose file')}
+                {$selectLabel}
             </div>
         </div>
         HTML;
