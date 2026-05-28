@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field;
 
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 
 class Password extends Field
 {
@@ -49,24 +50,26 @@ class Password extends Field
     protected function renderFormFieldWithOldValue(mixed $value): string
     {
         $name = htmlspecialcharsbx($this->column);
-        $reqAttr = $this->required ? ' required' : '';
+        $reqAttr = $this->requiredAttr();
+        $readonlyAttr = $this->formReadonlyAttr();
         $stored = $value !== null ? (string)$value : '';
         $escapedValue = htmlspecialcharsbx($stored);
         $placeholder = htmlspecialcharsbx((string)($this->placeholder ?? ''));
         $placeholderAttr = $placeholder !== '' && $stored === '' ? ' placeholder="' . $placeholder . '"' : '';
+        $toggleLabel = htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_PASSWORD_SHOW', 'Show password'));
 
         $toggle = <<<HTML
             <button type="button"
                 id="toggle_{$this->id}"
                 class="ui-ctl-after ui-ctl-icon-btn ui-ctl-icon-crossed-eye adminkit-password-toggle"
                 data-adminkit-password-toggle="Y"
-                aria-label="Show password"
+                aria-label="{$toggleLabel}"
                 aria-pressed="false"></button>
         HTML;
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textbox ui-ctl-after-icon adminkit-password-field">
-            <input id="{$this->id}" type="password" class="ui-ctl-element" name="{$name}" value="{$escapedValue}"{$reqAttr}{$placeholderAttr} autocomplete="off">
+            <input id="{$this->id}" type="password" class="ui-ctl-element" name="{$name}" value="{$escapedValue}"{$reqAttr}{$readonlyAttr}{$placeholderAttr} autocomplete="off">
             {$toggle}
         </div>
         <script>
@@ -81,19 +84,21 @@ class Password extends Field
     protected function renderFormFieldWithoutOldValue(mixed $value): string
     {
         $name = htmlspecialcharsbx($this->column);
-        $reqAttr = $this->required ? ' required' : '';
+        $reqAttr = $this->requiredAttr();
+        $readonlyAttr = $this->formReadonlyAttr();
         $hasStored = $value !== null && (string)$value !== '';
+        $keepHintPlaceholder = LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_PASSWORD_KEEP_PLACEHOLDER', 'Leave empty to keep current value');
         $placeholder = $hasStored
-            ? htmlspecialcharsbx($this->placeholder ?? 'Leave empty to keep current value')
+            ? htmlspecialcharsbx($this->placeholder ?? $keepHintPlaceholder)
             : htmlspecialcharsbx((string)($this->placeholder ?? ''));
         $placeholderAttr = $placeholder !== '' ? ' placeholder="' . $placeholder . '"' : '';
         $hint = $hasStored
-            ? '<div class="ui-form-hint">Stored value is preserved. Enter a new password only to replace it.</div>'
+            ? '<div class="ui-form-hint">' . htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_PASSWORD_KEEP_HINT', 'Stored value is preserved. Enter a new password only to replace it.')) . '</div>'
             : '';
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-textbox">
-            <input type="password" class="ui-ctl-element" name="{$name}" value=""{$reqAttr}{$placeholderAttr} autocomplete="new-password">
+            <input type="password" class="ui-ctl-element" name="{$name}" value=""{$reqAttr}{$readonlyAttr}{$placeholderAttr} autocomplete="new-password">
         </div>
         {$hint}
         HTML;

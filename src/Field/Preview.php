@@ -64,6 +64,11 @@ class Preview extends Field
         return true;
     }
 
+    protected function previewReturnsHtml(): bool
+    {
+        return true;
+    }
+
     public function renderFormField(mixed $value = null): string
     {
         return '<div class="adminkit-preview">' . $this->previewValue($this->resolveValue($value)) . '</div>';

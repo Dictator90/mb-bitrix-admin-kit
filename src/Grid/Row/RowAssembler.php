@@ -17,7 +17,6 @@ use MB\Bitrix\AdminKit\Grid\Grouping\GroupedRowsBuilder;
 use MB\Bitrix\AdminKit\Grid\Grouping\GroupLabelRenderer;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Grid\Relations\FieldRelationLoader;
-use MB\Bitrix\AdminKit\Support\AdminCollection;
 use MB\Bitrix\AdminKit\Support\UrlGenerator;
 
 class RowAssembler
@@ -59,7 +58,7 @@ class RowAssembler
         }
 
         $rows = [];
-        foreach (AdminCollection::make($dataRows)->all() as $data) {
+        foreach ($dataRows as $data) {
             if (is_array($data)) {
                 $rows[] = $this->prepareRow($data);
             }
@@ -79,7 +78,7 @@ class RowAssembler
             $data = ($this->indexPage ?? $this->resource)->mapIndexRow($data, $this->context);
         }
 
-        foreach (AdminCollection::make($this->fields)->all() as $field) {
+        foreach ($this->fields as $field) {
             if (!$field instanceof FieldContract) {
                 continue;
             }
@@ -90,7 +89,7 @@ class RowAssembler
 
         $row = ['data' => $data, 'columns' => []];
 
-        foreach (AdminCollection::make($this->fields)->all() as $field) {
+        foreach ($this->fields as $field) {
             if (!$field instanceof FieldContract) {
                 continue;
             }
@@ -126,7 +125,7 @@ class RowAssembler
 
         $actions = [];
         if (!$isGroupRow) {
-            foreach (AdminCollection::make($this->rowActions)->all() as $action) {
+            foreach ($this->rowActions as $action) {
                 if ($action instanceof RowAction) {
                     $actions[] = $action->toArray($row['data'], $this->baseUrl, $this->context?->gridId);
                 }
@@ -174,7 +173,7 @@ class RowAssembler
 
     private function firstFieldColumn(): ?string
     {
-        foreach (AdminCollection::make($this->fields)->all() as $field) {
+        foreach ($this->fields as $field) {
             if ($field instanceof FieldContract) {
                 return $field->getColumn();
             }

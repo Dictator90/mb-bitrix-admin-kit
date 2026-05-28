@@ -24,6 +24,10 @@ class EntitySelect extends Field
 
     protected ?Closure $labelResolver = null;
 
+    /** Per-instance id→title memo, reused across grid rows to avoid resolving the same id repeatedly. */
+    /** @var array<string,string> */
+    private array $titleCache = [];
+
     public function entityId(string $entityId, array $options = []): static
     {
         $this->entityId = $entityId;
@@ -186,12 +190,30 @@ class EntitySelect extends Field
     /** @param string[] $ids @return array<string,string> */
     protected function resolveTitles(array $ids): array
     {
-        return (new EntitySelectorLabelResolver())->resolve(
-            ids: $ids,
-            labelResolver: $this->labelResolver,
-            providerClass: (new EntitySelectorProviderResolver())->resolveProviderClass($this->entityId, $this->entities),
-            providerOptions: $this->entityOptions,
-        );
+        $missing = array_values(array_filter(
+            $ids,
+            fn (string $id): bool => !array_key_exists($id, $this->titleCache),
+        ));
+
+        if ($missing !== []) {
+            $resolved = (new EntitySelectorLabelResolver())->resolve(
+                ids: $missing,
+                labelResolver: $this->labelResolver,
+                providerClass: (new EntitySelectorProviderResolver())->resolveProviderClass($this->entityId, $this->entities),
+                providerOptions: $this->entityOptions,
+            );
+
+            foreach ($missing as $id) {
+                $this->titleCache[$id] = $resolved[$id] ?? $id;
+            }
+        }
+
+        $titles = [];
+        foreach ($ids as $id) {
+            $titles[$id] = $this->titleCache[$id];
+        }
+
+        return $titles;
     }
 
     /** @param string[] $ids */

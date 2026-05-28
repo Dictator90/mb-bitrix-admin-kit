@@ -28,17 +28,20 @@ class Date extends Field
         return new DateAssembler([$this->column], $this->dateFormat);
     }
 
-    public function renderFormField(mixed $value = null): string
+    /** @param array<string,mixed> $formData */
+    public function renderFormField(mixed $value = null, array $formData = []): string
     {
-        $val = htmlspecialcharsbx((string)$this->resolveValue($value));
+        $val = $this->escapedFormValue($value);
         $name = htmlspecialcharsbx($this->column);
         $inputId = 'date_' . $name . '_' . uniqid();
-        $reqAttr = $this->required ? ' required' : '';
+        $reqAttr = $this->requiredAttr();
+        $readonlyAttr = $this->formReadonlyAttr($formData);
+        $reactiveAttrs = $this->renderReactiveAttrs();
 
         return <<<HTML
         <div class="ui-ctl ui-ctl-after-icon ui-ctl-date">
             <div class="ui-ctl-after ui-ctl-icon-calendar"></div>
-            <input type="text" class="ui-ctl-element" id="{$inputId}" name="{$name}" value="{$val}"{$reqAttr} onclick="BX.calendar({node: this, field: this, bTime: false})">
+            <input type="text" class="ui-ctl-element" id="{$inputId}" name="{$name}" value="{$val}"{$reqAttr}{$readonlyAttr}{$reactiveAttrs} onclick="BX.calendar({node: this, field: this, bTime: false})">
         </div>
         HTML;
     }

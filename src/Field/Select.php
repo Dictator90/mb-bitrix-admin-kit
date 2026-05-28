@@ -74,7 +74,7 @@ class Select extends Field implements OptionFieldContract
         $currentValue = $this->resolveValue($value);
         $name = htmlspecialcharsbx($this->column . ($this->multiple ? '[]' : ''));
         $multipleAttr = $this->multiple ? ' multiple' : '';
-        $reqAttr = $this->required ? ' required' : '';
+        $reqAttr = $this->requiredAttr();
         $disabledAttr = $this->isReadOnlyFor($formData) ? ' disabled' : '';
         $optionsHtml = '';
 
