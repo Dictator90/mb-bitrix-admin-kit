@@ -13,7 +13,7 @@
 - [Email](email.md)
 - [Password](password.md)
 - [Hidden](hidden.md)
-- [Html](html.md)
+- [HtmlEditor](html-editor.md) (alias: `Html`)
 - [Color](color.md)
 - [Preview](preview.md)
 - [ID](id.md)

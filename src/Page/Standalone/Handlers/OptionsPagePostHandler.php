@@ -76,7 +76,9 @@ final class OptionsPagePostHandler
                 continue;
             }
             $field->{'applyDependency'}($formData);
-            $result[$field->getColumn()] = ['html' => $field->renderFormField(null)];
+            $result[$field->getColumn()] = [
+                'html' => $field->renderFormField($formData[$field->getColumn()] ?? null, $formData),
+            ];
         }
 
         ResponseTerminator::clearOutputBuffers();

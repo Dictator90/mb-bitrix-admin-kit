@@ -113,7 +113,7 @@ class Alert extends AbstractLayoutComponent
 
         $closeHtml = '';
         if ($this->closable) {
-            $closeHtml = '<span class="ui-alert-close-btn" onclick="this.closest(\'.ui-alert\').remove()" style="cursor:pointer;float:right;font-size:16px;line-height:1;">&times;</span>';
+            $closeHtml = '<span class="ui-alert-close-btn" onclick="this.closest(\'.ui-alert\').remove()"></span>';
         }
 
         return "<div{$class}{$style}{$attrs}>{$closeHtml}<span class=\"ui-alert-message\">{$iconHtml}{$message}</span></div>";
