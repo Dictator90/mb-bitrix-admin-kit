@@ -31,27 +31,17 @@ local/modules/vendor.demo/
 {
   "require": {
     "mb4it/bitrix-admin-kit": "^1.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Vendor\\Demo\\": "lib/"
-    }
   }
 }
 ```
 
-## 2) Где подключать `vendor/autoload.php`
+## 2) Подключаем `vendor/autoload.php`
 
-### Вариант A: vendor в корне проекта
-Если проект уже подключает корневой `vendor/autoload.php`, в модуле отдельный require обычно не нужен.
-
-### Вариант B: vendor внутри модуля
-`local/modules/vendor.demo/include.php`:
+В файле `include.php`:
 
 ```php
 <?php
-
-declare(strict_types=1);
+# local/modules/vendor.demo/include.php
 
 $autoload = __DIR__ . '/vendor/autoload.php';
 if (is_file($autoload)) {
@@ -89,27 +79,40 @@ final class ProductResource extends DataManagerResource
 
     public function indexFields(): iterable
     {
-        return [ID::make('ID', 'ID'), Text::make('Name', 'NAME')];
+        return [
+            ID::make('ID', 'ID'), 
+            Text::make('Name', 'NAME')
+        ];
     }
 
     public function formFields(): iterable
     {
-        return [Text::make('Name', 'NAME')->required()];
+        return [
+            Text::make('Name', 'NAME')->required()
+        ];
     }
 
     public function filters(): iterable
     {
-        return [TextFilter::make('Name', 'NAME')->contains()];
+        return [
+            TextFilter::make('Name', 'NAME')->contains()
+        ];
     }
 
     public function rowActions(): iterable
     {
-        return [RowAction::view(), RowAction::edit(), RowAction::delete()];
+        return [
+            RowAction::view(), 
+            RowAction::edit(), 
+            RowAction::delete()
+        ];
     }
 
     public function bulkActions(): iterable
     {
-        return [BulkAction::delete()];
+        return [
+            BulkAction::delete()
+        ];
     }
 }
 ```
@@ -141,8 +144,6 @@ final class SettingsPage extends OptionsPage
     {
         return 'Module settings';
     }
-
-    protected string $moduleId = 'vendor.demo';
 
     public function fields(): iterable
     {
@@ -193,10 +194,15 @@ use Bitrix\Main\Loader;
 use MB\Bitrix\AdminKit\AdminKit;
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
-Loader::includeModule('vendor.demo');
+
+global $adminPage;
+$adminPage->hideTitle();
+
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
 
-AdminKit::forModule('vendor.demo')->getCurrentPage()->render();
+if (Loader::includeModule('vendor.demo')) {
+    AdminKit::forModule('vendor.demo')->getCurrentPage()->render();
+}
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
 ```
@@ -210,5 +216,4 @@ require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.p
 
 - Не подключен `vendor/autoload.php`.
 - Нет `Loader::includeModule('vendor.demo')`.
-- В `DataManagerResource` указан `public static function dataManagerClass()` вместо `public function`.
 - URL меню не совпадает с реальным admin-файлом.

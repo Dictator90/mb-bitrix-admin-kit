@@ -211,9 +211,14 @@ final class GridQueryBuilder
         }
 
         $result = [];
+        $searchColumns = [];
         foreach (AdminCollection::make($indexPage->filters())->all() as $filter) {
             if (!$filter instanceof FilterContract) {
                 continue;
+            }
+
+            if (method_exists($filter, 'getType') && $filter->getType() === 'string') {
+                $searchColumns[] = $filter->getColumn();
             }
 
             $column = $filter->getColumn();
@@ -225,7 +230,58 @@ final class GridQueryBuilder
             $result = $filter->applyToOrmFilter($result, $value, $context);
         }
 
+        $result = $this->applyQuickSearch($result, $rawValues, $this->resolveSearchColumns($context, $searchColumns));
+
         return array_replace($indexPage->defaultFilter(), $result, $indexPage->indexFilter($context));
+    }
+
+    /**
+     * Колонки быстрого поиска: явно заданные в ресурсе ({@see ResourceFiltersContract::searchColumns()}),
+     * иначе — строковые поля фильтра.
+     *
+     * @param array<int,string> $fallback
+     * @return array<int,string>
+     */
+    private function resolveSearchColumns(GridContext $context, array $fallback): array
+    {
+        if (method_exists($context->resource, 'searchColumns')) {
+            $columns = $context->resource->searchColumns();
+            if (is_array($columns) && $columns !== []) {
+                return array_values(array_filter(array_map(static fn ($c): string => (string)$c, $columns)));
+            }
+        }
+
+        return $fallback;
+    }
+
+    /**
+     * Быстрый поиск из тулбара (поле FIND) — LIKE %value% по строковым полям фильтра.
+     *
+     * @param array<string,mixed> $filter
+     * @param array<string,mixed> $rawValues
+     * @param array<int,string> $columns
+     * @return array<string,mixed>
+     */
+    private function applyQuickSearch(array $filter, array $rawValues, array $columns): array
+    {
+        $find = isset($rawValues['FIND']) ? trim((string)$rawValues['FIND']) : '';
+        if ($find === '' || $columns === []) {
+            return $filter;
+        }
+
+        if (count($columns) === 1) {
+            $filter['%' . $columns[0]] = $find;
+
+            return $filter;
+        }
+
+        $or = ['LOGIC' => 'OR'];
+        foreach ($columns as $column) {
+            $or[] = ['%' . $column => $find];
+        }
+        $filter[] = $or;
+
+        return $filter;
     }
 
     private function buildRuntime(GridContext $context, IndexPageDefinitionContract $indexPage): array

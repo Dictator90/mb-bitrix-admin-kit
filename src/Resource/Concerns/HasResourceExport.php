@@ -6,6 +6,12 @@ namespace MB\Bitrix\AdminKit\Resource\Concerns;
 
 trait HasResourceExport
 {
+    /** Главный выключатель экспорта. По умолчанию выключен — включайте явно в ресурсе. */
+    public function exportEnabled(): bool
+    {
+        return false;
+    }
+
     public function allowExportByFilter(): bool
     {
         return true;

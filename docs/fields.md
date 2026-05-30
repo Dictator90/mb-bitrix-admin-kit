@@ -98,9 +98,10 @@ Text::make('Название', 'NAME')
 | `min()` / `max()` / `pattern()` / `in()` | - | ✅ | - | ✅ | ✅ | - | Ограничения значения |
 | `readonly()` / `readonlyWhen()` | - | ✅ | ✅ | ✅ | - | - | Read-only поведение |
 | `readonlyOnCreate()` / `readonlyOnUpdate()` | - | ✅ | - | - | - | - | Read-only в режиме create/edit |
-| `placeholder()` / `help()` / `hint()` | - | ✅ | - | ✅ | - | - | UX-подсказки |
+| `placeholder()` / `hint()` | - | ✅ | - | ✅ | - | - | Плейсхолдер инпута и тултип-подсказка у лейбла |
 | `displayUsing()` / `format()` / `preview()` | ✅ | ✅ | ✅ | ✅ | - | ✅ | Форматирование/преобразование |
 | `sortable()` / `editable()` / `asEditLink()` | ✅ | - | - | - | - | - | Grid-поведение |
+| `width()` / `align()` / `color()` / `sticked()` | ✅ | - | - | - | - | - | Оформление grid-колонки (ширина/выравнивание/цвет/закрепление) |
 | `selectable()` / `selectColumns()` / `computed()` | ✅ | - | - | - | - | ✅ | Участие в SELECT/экспорте |
 | `exportable()` / `importable()` | - | - | - | - | ✅ | ✅ | Участие в import/export |
 | `private()` / `system()` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Служебные флаги |

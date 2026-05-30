@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Field\Relation;
 
 use Closure;
+use MB\Bitrix\AdminKit\Field\Entity\EntitySelectorConfig;
+use MB\Bitrix\AdminKit\Field\Entity\Renderers\DialogSelectorRenderer;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Relation\RelationType;
+use MB\Bitrix\AdminKit\Support\AdminString;
 use MB\Bitrix\AdminKit\Support\LocalizedMessage;
 use Throwable;
 
@@ -145,10 +148,21 @@ class BelongsTo extends RelationField
         $this->renderMode = 'select';
         return $this;
     }
+    /**
+     * Рендерить как Dialog Selector (Bitrix ui.entity-selector в режиме диалога,
+     * компонент MB.AdminKit.DialogSelector). Опции связи становятся статическими
+     * элементами диалога.
+     */
+    public function asDialogSelector(): static
+    {
+        $this->renderMode = 'dialog_selector';
+        return $this;
+    }
+
+    /** @deprecated используйте asDialogSelector() */
     public function asEntitySelector(): static
     {
-        $this->renderMode = 'entity_selector';
-        return $this;
+        return $this->asDialogSelector();
     }
     public function asRadio(): static
     {
@@ -187,7 +201,7 @@ class BelongsTo extends RelationField
     {
         return match ($this->renderMode) {
             'radio' => $this->renderRadioField($value),
-            'entity_selector' => $this->renderEntitySelectorUnsupported(),
+            'dialog_selector' => $this->renderDialogSelectorField($value),
             'link' => $this->renderLinkField($this->resolveValue($value), []),
             default => $this->renderSelectField($value),
         };
@@ -266,11 +280,89 @@ class BelongsTo extends RelationField
         return $html;
     }
 
-    protected function renderEntitySelectorUnsupported(): string
+    /**
+     * Рендер связи через Dialog Selector (ui.entity-selector). Опции связи
+     * (loadOptions: id→label) передаются как статические элементы диалога.
+     */
+    protected function renderDialogSelectorField(mixed $value = null): string
     {
-        return '<div class="ui-alert ui-alert-warning"><span class="ui-alert-message">'
-            . htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BELONGS_TO_ENTITY_SELECTOR_UNSUPPORTED', 'Entity selector mode is not configured for this field.'))
-            . '</span></div>';
+        $ids = $this->dialogSelectedIds($value);
+        $options = $this->loadOptions();
+        $multiple = $this->dialogMultiple();
+        $entityId = 'adminkit_relation_' . $this->column;
+        $tabId = 'all';
+
+        $titles = [];
+        foreach ($ids as $id) {
+            $titles[$id] = (string)($options[$id] ?? $id);
+        }
+
+        $items = [];
+        foreach ($options as $optVal => $optLabel) {
+            $items[] = [
+                'id' => (string)$optVal,
+                'entityId' => $entityId,
+                'title' => (string)$optLabel,
+                'tabs' => [$tabId],
+            ];
+        }
+
+        $selectedItems = [];
+        foreach ($ids as $id) {
+            $selectedItems[] = [
+                'entityId' => $entityId,
+                'id' => (string)$id,
+                'title' => (string)($options[$id] ?? $id),
+            ];
+        }
+
+        $dialogId = AdminString::htmlId('adminkit_dialog', $this->column);
+        $dialogOptions = [
+            'id' => $dialogId,
+            'context' => $dialogId,
+            'multiple' => $multiple,
+            'dropdownMode' => true,
+            'enableSearch' => true,
+            'items' => $items,
+            'tabs' => [['id' => $tabId, 'title' => $this->label]],
+            'selectedItems' => $selectedItems,
+        ];
+
+        $config = new EntitySelectorConfig(
+            column: $this->column,
+            entityId: $entityId,
+            multiple: $multiple,
+            readonly: $this->isReadOnlyFor([]),
+        );
+
+        return (new DialogSelectorRenderer())->render(
+            config: $config,
+            ids: $ids,
+            titles: $titles,
+            entities: [],
+            dialogOptionsOverride: $dialogOptions,
+        );
+    }
+
+    /**
+     * Выбранные id для Dialog Selector. Для single-связи — [id] или [].
+     *
+     * @return list<string>
+     */
+    protected function dialogSelectedIds(mixed $value): array
+    {
+        $resolved = $this->resolveValue($value);
+        if ($resolved === null || $resolved === '') {
+            return [];
+        }
+
+        return [(string)$resolved];
+    }
+
+    /** Множественный выбор в Dialog Selector (single для BelongsTo). */
+    protected function dialogMultiple(): bool
+    {
+        return false;
     }
 
     public function normalize(mixed $value): mixed

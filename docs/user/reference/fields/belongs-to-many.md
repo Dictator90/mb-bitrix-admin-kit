@@ -7,6 +7,7 @@
 ## Доступные методы
 
 - `asCheckboxes(bool $v = true)` — рендерит форму как список checkbox вместо multi-select.
+- `asDialogSelector()` — рендерит форму как Dialog Selector (Bitrix `ui.entity-selector`, множественный выбор); опции связи становятся статическими элементами диалога. Прежнее имя `asEntitySelector()` — устаревший алиас.
 - `storedAsCsv(bool $enabled = true)` — включает/выключает хранение ID в CSV-колонке.
 - `saveUsingOrm()` — сохраняет связь через ORM relation mode.
 - `saveUsingManualSync()` — принудительно включает ручную синхронизацию pivot-таблицы.

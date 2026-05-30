@@ -91,7 +91,7 @@ class RowAction implements ActionContract
         return $this->useSidePanel;
     }
 
-    public function toArray(array $row, string $baseUrl = '', ?string $gridId = null): array
+    public function toArray(array $row, string $baseUrl = '', ?string $gridId = null, ?int $sidePanelWidth = null): array
     {
         $id = $row['ID'] ?? $row['id'] ?? '';
         $sep = str_contains($baseUrl, '?') ? '&' : '?';
@@ -113,7 +113,7 @@ class RowAction implements ActionContract
             $url = str_replace('#ID#', (string)$id, $url);
 
             if ($this->useSidePanel) {
-                $result['onclick'] = $this->buildSidePanelOpenJs($url, $gridId);
+                $result['onclick'] = $this->buildSidePanelOpenJs($url, $gridId, $sidePanelWidth);
             } else {
                 $result['href'] = $url;
             }
@@ -122,17 +122,20 @@ class RowAction implements ActionContract
         return $result;
     }
 
-    protected function buildSidePanelOpenJs(string $url, ?string $gridId = null): string
+    protected function buildSidePanelOpenJs(string $url, ?string $gridId = null, ?int $width = null): string
     {
         $urlJs = CUtil::JSEscape($url);
+        $width = (int)($width ?? 1100);
+
         if ($gridId === null || $gridId === '') {
-            return "BX.SidePanel.Instance.open('{$urlJs}',{cacheable:false,allowChangeHistory:false})";
+            return "BX.SidePanel.Instance.open('{$urlJs}',{width:{$width},cacheable:false,allowChangeHistory:false})";
         }
 
         $gridIdJson = json_encode($gridId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '""';
 
         return
             "BX.SidePanel.Instance.open('{$urlJs}',{" .
+                "width:{$width}," .
                 'cacheable:false,' .
                 'allowChangeHistory:false,' .
                 'events:{' .

@@ -16,6 +16,7 @@
 - `asSelect()` — рендер как `<select>`.
 - `asRadio()` — рендер как список radio.
 - `asLink()` — рендер read-only preview как ссылка/текст.
+- `asDialogSelector()` — рендер как Dialog Selector (Bitrix `ui.entity-selector`, компонент `MB.AdminKit.DialogSelector`); опции связи становятся статическими элементами диалога. Работает и для `BelongsToMany` (множественный выбор). Прежнее имя `asEntitySelector()` — устаревший алиас.
 
 Пример:
 ```php

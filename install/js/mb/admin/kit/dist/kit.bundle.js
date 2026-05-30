@@ -208,6 +208,18 @@ this.MB = this.MB || {};
         init: init
     });
 
+    function eventNameFor(el) {
+      if (el.tagName === 'TEXTAREA') {
+        return 'input';
+      }
+      if (el.tagName === 'INPUT') {
+        var type = (el.type || '').toLowerCase();
+        if (['text', 'search', 'email', 'url', 'tel', 'number', 'password', 'hidden'].indexOf(type) !== -1) {
+          return 'input';
+        }
+      }
+      return 'change';
+    }
     function getSourceValue(form, srcCol) {
       var els = form.querySelectorAll('[name="' + srcCol + '"]');
       for (var i = 0; i < els.length; i++) {
@@ -310,7 +322,7 @@ this.MB = this.MB || {};
       }
       sourceCols.forEach(function (col) {
         form.querySelectorAll('[name="' + col + '"]').forEach(function (el) {
-          el.addEventListener('change', triggerReactive);
+          el.addEventListener(eventNameFor(el), triggerReactive);
         });
       });
       var observer = new MutationObserver(function (mutations) {
@@ -1901,6 +1913,94 @@ this.MB = this.MB || {};
     });
 
     /**
+     * Drag-сортировка строк грида с сохранением порядка на сервер.
+     *
+     * Слушает нативное событие main.ui.grid `Grid::rowMoved` (упорядоченный список id),
+     * POST-ит порядок на серверный эндпоинт (action=rowsort), который вызывает Resource::reorder().
+     *
+     * Регистрируется как MB.AdminKit.GridRowSort (см. index.js).
+     * Инициализация: AdminKitJs::renderInit('GridRowSort', { gridId, url }).
+     *
+     * @typedef {Object} RowSortConfig
+     * @property {string} gridId
+     * @property {string} [url]
+     */
+
+    var boundGrids = {};
+    function notify$2(message, success) {
+      if (window.BX && BX.UI && BX.UI.Notification && BX.UI.Notification.Center) {
+        BX.UI.Notification.Center.notify({
+          content: message,
+          autoClose: success ? 4000 : 0,
+          category: 'adminkit-rowsort-result'
+        });
+      }
+    }
+
+    /**
+     * Перезагружает грид после ответа — синхронизирует UI с БД (порядок, группы,
+     * счётчики), а на ошибке откатывает неудавшееся перемещение к серверному состоянию.
+     *
+     * @param {RowSortConfig} config
+     * @param {Array<string|number>} ids
+     * @param {Object} grid  инстанс BX.Main.grid
+     */
+    function saveOrder(config, ids, grid) {
+      if (!ids || ids.length === 0 || !window.BX || typeof BX.ajax !== 'function') {
+        return;
+      }
+      var data = {
+        action: 'rowsort',
+        ids: ids
+      };
+      if (typeof BX.bitrix_sessid === 'function') {
+        data.sessid = BX.bitrix_sessid();
+      }
+      var reloadGrid = function reloadGrid() {
+        if (grid && typeof grid.reloadTable === 'function') {
+          grid.reloadTable();
+        }
+      };
+      BX.ajax({
+        method: 'POST',
+        dataType: 'json',
+        url: config.url || window.location.pathname + window.location.search,
+        data: data,
+        onsuccess: function onsuccess(response) {
+          if (response && response.success === false) {
+            notify$2(response.message || 'Не удалось сохранить порядок.', false);
+          }
+          reloadGrid();
+        },
+        onfailure: function onfailure() {
+          notify$2('Ошибка сервера при сохранении порядка.', false);
+          reloadGrid();
+        }
+      });
+    }
+
+    /**
+     * @param {RowSortConfig} config
+     */
+    function init$6(config) {
+      if (!config || !config.gridId || boundGrids[config.gridId]) {
+        return;
+      }
+      boundGrids[config.gridId] = true;
+      BX.addCustomEvent(window, 'Grid::rowMoved', function (ids, dragItem, grid) {
+        var currentId = grid && typeof grid.getId === 'function' ? grid.getId() : null;
+        if (currentId !== config.gridId) {
+          return;
+        }
+        saveOrder(config, ids || [], grid);
+      });
+    }
+
+    var rowSort = /*#__PURE__*/Object.freeze({
+        init: init$6
+    });
+
+    /**
      * Read-only HasMany preview as a table using Bitrix ui.tilegrid (BX.TileGrid.Grid).
      */
 
@@ -2026,7 +2126,7 @@ this.MB = this.MB || {};
       });
       return items;
     }
-    function init$6(config) {
+    function init$7(config) {
       var _container$parentNode;
       if (!BX.TileGrid || !BX.TileGrid.Grid) {
         return;
@@ -2053,7 +2153,7 @@ this.MB = this.MB || {};
       window.MB = window.MB || {};
       window.MB.AdminKit = window.MB.AdminKit || {};
       window.MB.AdminKit.RelationTileGrid = {
-        init: init$6
+        init: init$7
       };
     }
 
@@ -2071,6 +2171,7 @@ this.MB = this.MB || {};
     exports.Tabs = index;
     exports.DialogSelector = index$1;
     exports.GridBulkActions = bulkActions;
+    exports.GridRowSort = rowSort;
     exports.RelationTileGrid = relationTilegrid;
 
 }((this.MB.AdminKit = this.MB.AdminKit || {}),BX.Collections,BX.Event,BX,BX.UI.EntitySelector,BX));

@@ -17,6 +17,7 @@ use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceGrouping;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceLifecycle;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceQuery;
 use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceSidePanel;
+use MB\Bitrix\AdminKit\Resource\Concerns\HasResourceToolbar;
 
 /**
  * Base class for CRUD-enabled resources.
@@ -40,6 +41,7 @@ abstract class CrudResource extends Resource implements CrudResourceContract
     use HasResourceQuery;
     use HasResourceGrouping;
     use HasResourceExport;
+    use HasResourceToolbar;
     use HasResourceLifecycle;
 
     /**

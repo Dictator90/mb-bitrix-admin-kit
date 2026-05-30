@@ -28,38 +28,26 @@ local/admin/
 declare(strict_types=1);
 
 $autoload = $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
-if (!is_file($autoload)) {
-    $autoload = $_SERVER['DOCUMENT_ROOT'] . '/local/vendor/autoload.php';
-}
-
 if (is_file($autoload)) {
     require_once $autoload;
 }
+
+// Регистрируем Namespace
+\Bitrix\Main\Loader::registerNamespace('DemoAdmin', __DIR__ . '/lib');
+
 ```
 
-## 2) PSR-4 для классов
-
-```json
-{
-  "autoload": {
-    "psr-4": {
-      "DemoAdmin\\": "local/php_interface/lib/DemoAdmin/"
-    }
-  }
-}
-```
-
-## 3) Resource
+## 2) Resource
 
 Класс ресурса такой же, как в module-сценарии: `extends DataManagerResource` и `public function dataManagerClass(): string`.
 
-## 4) OptionsPage вне модуля
+## 3) OptionsPage вне модуля
 
 Поддерживается. Если scope не модульный, `OptionsPage` сохраняет опции через `main` (см. `AdminKitScope::optionModuleId()`), поэтому нужен стабильный `scopeId`, например `demo.admin`.
 
-## 5) Admin-файл
+## 6) Admin-файл
 
-`local/admin/demo_admin.php`:
+`bitrix/admin/demo_admin.php`:
 
 ```php
 <?php
@@ -69,6 +57,10 @@ declare(strict_types=1);
 use MB\Bitrix\AdminKit\AdminKit;
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
+
+global $adminPage;
+$adminPage->hideTitle();
+
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
 
 AdminKit::fromDirectory(
@@ -79,7 +71,7 @@ AdminKit::fromDirectory(
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
 ```
 
-## 6) Меню вне модуля
+## 6) Меню
 
 Через `OnBuildGlobalMenu` в `local/php_interface/init.php`.
 
@@ -87,22 +79,19 @@ require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.p
 use Bitrix\Main\EventManager;
 use MB\Bitrix\AdminKit\AdminKit;
 
-EventManager::getInstance()->addEventHandler('main', 'OnBuildGlobalMenu', static function (&$aGlobalMenu, &$aModuleMenu): void {
-    $aModuleMenu[] = [
-        'parent_menu' => 'global_menu_services',
-        'section' => 'demo_admin',
-        'sort' => 1000,
-        'text' => 'Demo admin',
-        'title' => 'Demo admin',
-        'items_id' => 'menu_demo_admin',
-        'items' => AdminKit::fromDirectory($_SERVER['DOCUMENT_ROOT'] . '/local/php_interface/lib/DemoAdmin', 'demo.admin')
-            ->getMenu('/local/admin/demo_admin.php'),
-    ];
-});
+EventManager::getInstance()->addEventHandler(
+    'main', 
+    'OnBuildGlobalMenu', 
+    static function (&$aGlobalMenu, &$aModuleMenu): void {
+        $aModuleMenu[] = [
+            'parent_menu' => 'global_menu_services',
+            'section' => 'demo_admin',
+            'sort' => 1000,
+            'text' => 'Demo admin',
+            'title' => 'Demo admin',
+            'items_id' => 'menu_demo_admin',
+            'items' => AdminKit::fromDirectory($_SERVER['DOCUMENT_ROOT'] . '/local/php_interface/lib/DemoAdmin', 'demo.admin')->getMenu('/bitrix/admin/demo_admin.php'),
+        ];
+    }
+);
 ```
-
-## Ограничения
-
-- Нет lifecycle install/uninstall модуля.
-- Нет `Loader::includeModule()` для «своего» module id.
-- Для поставляемых решений предпочтительнее module-сценарий.

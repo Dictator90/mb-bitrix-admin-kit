@@ -16,6 +16,7 @@ use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Grid\GridContext;
+use MB\Bitrix\AdminKit\Grid\GridSettings;
 use MB\Bitrix\AdminKit\Grid\GridDataLoader;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
@@ -24,6 +25,7 @@ use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexBulkActionHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexDeleteHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexExportHandler;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexInlineEditHandler;
+use MB\Bitrix\AdminKit\Page\Crud\Handlers\IndexRowSortHandler;
 use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Page\IndexPageDefinition;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
@@ -90,6 +92,13 @@ class IndexPage extends CrudPage implements IndexPageContract
             }
         }
 
+        if ($action === 'rowsort' && $this->isPost() && check_bitrix_sessid()) {
+            $result = (new IndexRowSortHandler())->handle($this);
+            $this->sendJson($result);
+
+            return;
+        }
+
         if ($this->isPost()) {
             if ((new IndexInlineEditHandler())->handle($this)) {
                 // Keep normal list rendering flow so main.ui.grid receives HTML for reloadTable().
@@ -115,14 +124,15 @@ class IndexPage extends CrudPage implements IndexPageContract
             return;
         }
 
-        if ($action === 'export') {
-            (new IndexExportHandler())->handle($this);
+        if ($action === 'export' || $action === 'export_selected') {
+            if (method_exists($this->resource, 'exportEnabled') && !$this->resource->exportEnabled()) {
+                $this->redirect($this->baseListUrl());
 
-            return;
-        }
+                return;
+            }
 
-        if ($action === 'export_selected') {
-            (new IndexExportHandler())->handle($this, $this->resolveSelectedIds());
+            $selectedIds = $action === 'export_selected' ? $this->resolveSelectedIds() : null;
+            (new IndexExportHandler())->handle($this, $selectedIds);
 
             return;
         }
@@ -145,6 +155,13 @@ class IndexPage extends CrudPage implements IndexPageContract
         if ($this->grouping() instanceof IndexGrouping) {
             AdminKitJs::renderInit('GridCollapsible', []);
         }
+
+        if ($grid->settings()->allowRowsSort && $this->resource->sortField() !== null) {
+            AdminKitJs::renderInit('GridRowSort', [
+                'gridId' => $grid->getId(),
+                'url' => $this->baseListUrl(),
+            ]);
+        }
     }
 
     public function buildGrid(): Grid
@@ -165,7 +182,12 @@ class IndexPage extends CrudPage implements IndexPageContract
             $this->baseListUrl(),
             $this->resource->getPrimaryKey(),
         );
+        $this->grid->setSettings(GridSettings::fromResource($this->resource));
         $this->grid->limitPageSize($this->resource->maxPageSize());
+
+        if (!$this->resource->showPagination()) {
+            $this->grid->showAllRecords($this->resource->maxPageSize());
+        }
 
         $bulkActions = array_filter(
             iterator_to_array($this->bulkActions()),
@@ -314,6 +336,12 @@ class IndexPage extends CrudPage implements IndexPageContract
     public function bulkActions(): iterable
     {
         $actions = iterator_to_array($this->resource->bulkActions());
+
+        // Экспорт выбранных добавляем только если экспорт включён у ресурса (по умолчанию выключен).
+        if (method_exists($this->resource, 'exportEnabled') && !$this->resource->exportEnabled()) {
+            return $actions;
+        }
+
         foreach ($actions as $action) {
             if ($action instanceof BulkAction && $action->getId() === 'export_selected') {
                 return $actions;
@@ -475,6 +503,7 @@ class IndexPage extends CrudPage implements IndexPageContract
         $sources = [
             $_POST['id'] ?? null,
             $_POST['ID'] ?? null,
+            $_POST['ids'] ?? null,
             $_POST['rows'] ?? null,
             $_POST[$this->resource->getPrimaryKey()] ?? null,
             $_POST[strtoupper($this->resource->getPrimaryKey())] ?? null,

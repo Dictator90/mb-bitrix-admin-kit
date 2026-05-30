@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Function check_bitrix_sessid not found\\.$#"
-			count: 1
-			path: src/Action/AsyncAction.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Action\\\\AsyncAction\\:\\:handle\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Action/AsyncAction.php
@@ -136,29 +131,14 @@ parameters:
 			path: src/Bitrix/Grid/BitrixGridActionPanelAdapter.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Component/Alert.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 5
 			path: src/Component/Alert.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Component/Badge.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: src/Component/Badge.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 5
-			path: src/Component/Button.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Button\\:\\:danger\\(\\) has parameter \\$attrs with no value type specified in iterable type array\\.$#"
@@ -201,19 +181,9 @@ parameters:
 			path: src/Component/Button.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Component/Heading.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: src/Component/Heading.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 4
-			path: src/Component/Layout/AbstractLayoutComponent.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\AbstractLayoutComponent\\:\\:buildClassAttr\\(\\) has parameter \\$extra with no value type specified in iterable type array\\.$#"
@@ -236,11 +206,6 @@ parameters:
 			path: src/Component/Layout/AbstractLayoutComponent.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Component/Layout/Box.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Box\\:\\:__construct\\(\\) has parameter \\$titleOrChildren with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Component/Layout/Box.php
@@ -256,24 +221,9 @@ parameters:
 			path: src/Component/Layout/Box.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Component/Layout/Collapse.php
-
-		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: src/Component/Layout/Collapse.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: src/Component/Layout/Column.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Component/Layout/Divider.php
 
 		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
@@ -311,11 +261,6 @@ parameters:
 			path: src/Component/Layout/Tab.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 4
-			path: src/Component/Layout/Tabs.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Layout\\\\Tabs\\:\\:buildClassAttr\\(\\) has parameter \\$extra with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Component/Layout/Tabs.php
@@ -351,16 +296,6 @@ parameters:
 			path: src/Component/Notification.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Component/Notification.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 6
-			path: src/Component/Relation/HasMany.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Relation\\\\HasMany\\:\\:extractFields\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Component/Relation/HasMany.php
@@ -386,11 +321,6 @@ parameters:
 			path: src/Component/Relation/HasMany.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 4
-			path: src/Component/Relation/HasOne.php
-
-		-
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: src/Component/Relation/HasOne.php
@@ -399,11 +329,6 @@ parameters:
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Component\\\\Renderers\\\\ChildrenRenderer\\:\\:render\\(\\) has parameter \\$children with no value type specified in iterable type iterable\\.$#"
 			count: 1
 			path: src/Component/Renderers/ChildrenRenderer.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Component/Renderers/VisibilityWrapper.php
 
 		-
 			message: "#^Call to static method JSEscape\\(\\) on an unknown class CUtil\\.$#"
@@ -418,11 +343,6 @@ parameters:
 		-
 			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
 			count: 2
-			path: src/Component/Toolbar.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
 			path: src/Component/Toolbar.php
 
 		-
@@ -651,109 +571,9 @@ parameters:
 			path: src/Export/ExporterInterface.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 8
-			path: src/Field/BelongsTo.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsTo\\:\\:filter\\(\\) has parameter \\$filter with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsTo.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsTo\\:\\:loadOptions\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsTo.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsTo\\:\\:\\$filter type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsTo.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsTo\\:\\:\\$order type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsTo.php
-
-		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: src/Field/BelongsTo.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 10
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsToMany\\:\\:loadLabels\\(\\) has parameter \\$ids with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsToMany\\:\\:loadLabels\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsToMany\\:\\:parseIds\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsToMany\\:\\:renderCheckboxes\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsToMany\\:\\:renderCheckboxes\\(\\) has parameter \\$selected with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsToMany\\:\\:renderMultiSelect\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\BelongsToMany\\:\\:renderMultiSelect\\(\\) has parameter \\$selected with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/BelongsToMany.php
-
-		-
-			message: "#^Unsafe usage of new static\\(\\)\\.$#"
-			count: 1
-			path: src/Field/Relation/BelongsTo.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Field/Checkbox.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
-			path: src/Field/Color.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Field/Date.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Field/DateTime.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\DialogSelect\\:\\:preparedItems\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/DialogSelect.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Field/Email.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Entity\\\\EntitySelectorConfig\\:\\:__construct\\(\\) has parameter \\$entityOptions with no value type specified in iterable type array\\.$#"
@@ -774,16 +594,6 @@ parameters:
 			message: "#^Class Bitrix\\\\UI\\\\EntitySelector\\\\Item not found\\.$#"
 			count: 1
 			path: src/Field/Entity/EntitySelectorLabelResolver.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 6
-			path: src/Field/Entity/Renderers/TagSelectorRenderer.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Field/EntitySelect.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\EntitySelect\\:\\:entity\\(\\) has parameter \\$entityOptions with no value type specified in iterable type array\\.$#"
@@ -823,11 +633,6 @@ parameters:
 		-
 			message: "#^Expression on left side of \\?\\? is not nullable\\.$#"
 			count: 2
-			path: src/Field/Field.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 8
 			path: src/Field/Field.php
 
 		-
@@ -881,11 +686,6 @@ parameters:
 			path: src/Field/Field.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:isReadOnlyFor\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/Field.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:normalizeCondition\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Field.php
@@ -906,11 +706,6 @@ parameters:
 			path: src/Field/Field.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:runValidation\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Field/Field.php
-
-		-
 			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Field\\:\\:\\$visibleWhenRule type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Field.php
@@ -921,7 +716,27 @@ parameters:
 			path: src/Field/Field.php
 
 		-
-			message: "#^Call to static method FormatSize\\(\\) on an unknown class CFile\\.$#"
+			message: "#^Access to constant UPLOAD_ANY_FILES on an unknown class Bitrix\\\\Main\\\\UI\\\\FileInput\\.$#"
+			count: 1
+			path: src/Field/File.php
+
+		-
+			message: "#^Access to constant UPLOAD_EXTENTION_LIST on an unknown class Bitrix\\\\Main\\\\UI\\\\FileInput\\.$#"
+			count: 2
+			path: src/Field/File.php
+
+		-
+			message: "#^Call to method show\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\FileInput\\.$#"
+			count: 1
+			path: src/Field/File.php
+
+		-
+			message: "#^Call to static method Delete\\(\\) on an unknown class CFile\\.$#"
+			count: 1
+			path: src/Field/File.php
+
+		-
+			message: "#^Call to static method GetAbsoluteRoot\\(\\) on an unknown class CTempFile\\.$#"
 			count: 1
 			path: src/Field/File.php
 
@@ -931,13 +746,38 @@ parameters:
 			path: src/Field/File.php
 
 		-
-			message: "#^Call to static method GetFileSRC\\(\\) on an unknown class CFile\\.$#"
+			message: "#^Call to static method GetFileArray\\(\\) on an unknown class CFile\\.$#"
+			count: 2
+			path: src/Field/File.php
+
+		-
+			message: "#^Call to static method SaveFile\\(\\) on an unknown class CFile\\.$#"
 			count: 1
 			path: src/Field/File.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
+			message: "#^Call to static method getCurrent\\(\\) on an unknown class Bitrix\\\\Main\\\\Context\\.$#"
+			count: 1
+			path: src/Field/File.php
+
+		-
+			message: "#^Call to static method getString\\(\\) on an unknown class Bitrix\\\\Main\\\\Security\\\\Random\\.$#"
+			count: 1
+			path: src/Field/File.php
+
+		-
+			message: "#^Call to static method includeModule\\(\\) on an unknown class Bitrix\\\\Main\\\\Loader\\.$#"
+			count: 1
+			path: src/Field/File.php
+
+		-
+			message: "#^Call to static method prepareFile\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\FileInput\\.$#"
+			count: 1
+			path: src/Field/File.php
+
+		-
+			message: "#^Instantiated class Bitrix\\\\Main\\\\UI\\\\FileInput not found\\.$#"
+			count: 1
 			path: src/Field/File.php
 
 		-
@@ -951,24 +791,9 @@ parameters:
 			path: src/Field/File.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Field/Hidden.php
-
-		-
 			message: "#^Constant LANGUAGE_ID not found\\.$#"
 			count: 1
 			path: src/Field/Html.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Field/Html.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Field/ID.php
 
 		-
 			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlockElement\\.$#"
@@ -1011,34 +836,24 @@ parameters:
 			path: src/Field/IblockSelect.php
 
 		-
-			message: "#^Call to static method GetByID\\(\\) on an unknown class CFile\\.$#"
+			message: "#^Access to constant UPLOAD_EXTENTION_LIST on an unknown class Bitrix\\\\Main\\\\UI\\\\FileInput\\.$#"
+			count: 1
+			path: src/Field/Image.php
+
+		-
+			message: "#^Access to constant UPLOAD_IMAGES on an unknown class Bitrix\\\\Main\\\\UI\\\\FileInput\\.$#"
 			count: 2
 			path: src/Field/Image.php
 
 		-
-			message: "#^Call to static method GetFileSRC\\(\\) on an unknown class CFile\\.$#"
-			count: 2
+			message: "#^Call to method IncludeComponent\\(\\) on an unknown class CMain\\.$#"
+			count: 1
 			path: src/Field/Image.php
 
 		-
-			message: "#^Call to static method ResizeImageGet\\(\\) on an unknown class CFile\\.$#"
-			count: 2
+			message: "#^PHPDoc tag @var for variable \\$APPLICATION contains unknown class CMain\\.$#"
+			count: 1
 			path: src/Field/Image.php
-
-		-
-			message: "#^Constant BX_RESIZE_IMAGE_PROPORTIONAL not found\\.$#"
-			count: 2
-			path: src/Field/Image.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Field/Image.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
-			path: src/Field/Number.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Options\\\\ArrayOptionsResolver\\:\\:resolve\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
@@ -1066,19 +881,14 @@ parameters:
 			path: src/Field/Options/OptionsResolverFactory.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 6
-			path: src/Field/Password.php
-
-		-
 			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
 			count: 1
 			path: src/Field/Preview.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
-			path: src/Field/Preview.php
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: src/Field/Relation/BelongsTo.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Renderers\\\\FieldRenderContextFactory\\:\\:make\\(\\) has parameter \\$errors with no value type specified in iterable type array\\.$#"
@@ -1091,29 +901,14 @@ parameters:
 			path: src/Field/Renderers/FieldRenderContextFactory.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 4
-			path: src/Field/Renderers/FieldRowRenderer.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Renderers\\\\FieldVisibilityEvaluator\\:\\:isVisible\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Renderers/FieldVisibilityEvaluator.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Field/Renderers/FieldVisibilityWrapper.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Renderers\\\\FieldVisibilityWrapper\\:\\:wrap\\(\\) has parameter \\$rule with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Field/Renderers/FieldVisibilityWrapper.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 6
-			path: src/Field/Select.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Select\\:\\:getOptions\\(\\) has parameter \\$context with no value type specified in iterable type array\\.$#"
@@ -1136,9 +931,9 @@ parameters:
 			path: src/Field/Select.php
 
 		-
-			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Select\\:\\:runValidation\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\Slug\\:\\:from\\(\\) has parameter \\$sourceColumns with no value type specified in iterable type array\\.$#"
 			count: 1
-			path: src/Field/Select.php
+			path: src/Field/Slug.php
 
 		-
 			message: "#^Call to static method load\\(\\) on an unknown class Bitrix\\\\Main\\\\UI\\\\Extension\\.$#"
@@ -1146,28 +941,8 @@ parameters:
 			path: src/Field/Switcher.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
-			path: src/Field/Switcher.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
-			path: src/Field/Text.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
-			path: src/Field/Textarea.php
-
-		-
 			message: "#^Constant LANGUAGE_ID not found\\.$#"
 			count: 1
-			path: src/Field/UfField.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 5
 			path: src/Field/UfField.php
 
 		-
@@ -1304,11 +1079,6 @@ parameters:
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Filter\\\\Types\\\\TextFilter\\:\\:applyValue\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Filter/Types/TextFilter.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:runValidation\\(\\)\\.$#"
-			count: 1
-			path: src/Form/DataPipeline.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Form\\\\FormData\\:\\:__construct\\(\\) has parameter \\$errors with no value type specified in iterable type array\\.$#"
@@ -1486,29 +1256,14 @@ parameters:
 			path: src/Grid/Row/Assembler/ImageAssembler.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Grid/Row/Assembler/ImageAssembler.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Row\\\\Assembler\\\\ImageAssembler\\:\\:__construct\\(\\) has parameter \\$columnIds with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Grid/Row/Assembler/ImageAssembler.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Grid/Row/Assembler/LinkAssembler.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Row\\\\Assembler\\\\LinkAssembler\\:\\:__construct\\(\\) has parameter \\$columnIds with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Grid/Row/Assembler/LinkAssembler.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Grid/Row/Assembler/SwitcherAssembler.php
 
 		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Grid\\\\Row\\\\Assembler\\\\SwitcherAssembler\\:\\:__construct\\(\\) has parameter \\$columnIds with no value type specified in iterable type array\\.$#"
@@ -1656,11 +1411,6 @@ parameters:
 			path: src/Manager/SidePanelAdapter.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 4
-			path: src/Manager/ToolbarAction.php
-
-		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:detailFields\\(\\)\\.$#"
 			count: 1
 			path: src/Page/Crud/DetailPage.php
@@ -1681,11 +1431,6 @@ parameters:
 			path: src/Page/Crud/DetailPage.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 2
-			path: src/Page/Crud/DetailPage.php
-
-		-
 			message: "#^Parameter \\#1 \\$resource of method MB\\\\Bitrix\\\\AdminKit\\\\Bitrix\\\\Toolbar\\\\ToolbarRenderer\\:\\:renderDetail\\(\\) expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 1
 			path: src/Page/Crud/DetailPage.php
@@ -1702,22 +1447,7 @@ parameters:
 
 		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:applyDependency\\(\\)\\.$#"
-			count: 2
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:getDependsOn\\(\\)\\.$#"
-			count: 2
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:afterValidate\\(\\)\\.$#"
-			count: 2
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:beforeValidate\\(\\)\\.$#"
-			count: 2
+			count: 1
 			path: src/Page/Crud/FormPage.php
 
 		-
@@ -1751,33 +1481,8 @@ parameters:
 			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canUpdate\\(\\)\\.$#"
-			count: 1
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canView\\(\\)\\.$#"
-			count: 1
-			path: src/Page/Crud/FormPage.php
-
-		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getPrimaryKey\\(\\)\\.$#"
-			count: 3
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Function bitrix_sessid_post not found\\.$#"
 			count: 1
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Function check_bitrix_sessid not found\\.$#"
-			count: 2
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 11
 			path: src/Page/Crud/FormPage.php
 
 		-
@@ -1786,22 +1491,7 @@ parameters:
 			path: src/Page/Crud/FormPage.php
 
 		-
-			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\DbOperationContext constructor expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\DataManagerResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
-			count: 1
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Field\\\\FieldRenderContext constructor expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
-			count: 1
-			path: src/Page/Crud/FormPage.php
-
-		-
 			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
-			count: 2
-			path: src/Page/Crud/FormPage.php
-
-		-
-			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Security\\\\PermissionContext constructor expects \\(MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceAuthorizationContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourceIdentityContract\\)\\|null, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 2
 			path: src/Page/Crud/FormPage.php
 
@@ -1847,11 +1537,6 @@ parameters:
 
 		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:canUpdate\\(\\)\\.$#"
-			count: 1
-			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
-
-		-
-			message: "#^Parameter \\$resource of class MB\\\\Bitrix\\\\AdminKit\\\\Database\\\\DbOperationContext constructor expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\DataManagerResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\ResourcePersistenceContract&MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract given\\.$#"
 			count: 1
 			path: src/Page/Crud/Handlers/IndexInlineEditHandler.php
 
@@ -1971,11 +1656,6 @@ parameters:
 			path: src/Page/Crud/IndexPage.php
 
 		-
-			message: "#^Function check_bitrix_sessid not found\\.$#"
-			count: 2
-			path: src/Page/Crud/IndexPage.php
-
-		-
 			message: "#^Parameter \\#1 \\$resource of method MB\\\\Bitrix\\\\AdminKit\\\\Bitrix\\\\Toolbar\\\\ToolbarRenderer\\:\\:render\\(\\) expects MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Resource\\\\CrudResourceContract, MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\|null given\\.$#"
 			count: 1
 			path: src/Page/Crud/IndexPage.php
@@ -1987,11 +1667,6 @@ parameters:
 
 		-
 			message: "#^Call to static method getCurrent\\(\\) on an unknown class Bitrix\\\\Main\\\\Context\\.$#"
-			count: 1
-			path: src/Page/Page.php
-
-		-
-			message: "#^Function LocalRedirect not found\\.$#"
 			count: 1
 			path: src/Page/Page.php
 
@@ -2021,11 +1696,6 @@ parameters:
 			path: src/Page/ResourcePageResolver.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 1
-			path: src/Page/Standalone/CustomPage.php
-
-		-
 			message: "#^PHPDoc type array\\<string\\> of property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Standalone\\\\CustomPage\\:\\:\\$extensions is not covariant with PHPDoc type array\\<int, string\\> of overridden property MB\\\\Bitrix\\\\AdminKit\\\\Page\\\\Page\\:\\:\\$extensions\\.$#"
 			count: 1
 			path: src/Page/Standalone/CustomPage.php
@@ -2044,71 +1714,6 @@ parameters:
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\ResourceContract\\:\\:getDataManagerClass\\(\\)\\.$#"
 			count: 1
 			path: src/Page/System/DatabaseHealthPage.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 7
-			path: src/Page/System/DatabaseHealthPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:applyDependency\\(\\)\\.$#"
-			count: 2
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:getDependsOn\\(\\)\\.$#"
-			count: 2
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Contracts\\\\Field\\\\FieldContract\\:\\:runValidation\\(\\)\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to static method delete\\(\\) on an unknown class Bitrix\\\\Main\\\\Config\\\\Option\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to static method get\\(\\) on an unknown class Bitrix\\\\Main\\\\Config\\\\Option\\.$#"
-			count: 2
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to static method getList\\(\\) on an unknown class Bitrix\\\\Main\\\\SiteTable\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Call to static method set\\(\\) on an unknown class Bitrix\\\\Main\\\\Config\\\\Option\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Function LocalRedirect not found\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Function bitrix_sessid_post not found\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Function check_bitrix_sessid not found\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 5
-			path: src/Pages/OptionsPage.php
-
-		-
-			message: "#^Property MB\\\\Bitrix\\\\AdminKit\\\\Pages\\\\OptionsPage\\:\\:\\$errors type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/Pages/OptionsPage.php
 
 		-
 			message: "#^Call to an undefined method MB\\\\Bitrix\\\\AdminKit\\\\Resource\\\\CrudResource\\<T of Bitrix\\\\Main\\\\ORM\\\\Data\\\\DataManager\\>\\:\\:getPrimaryKey\\(\\)\\.$#"
@@ -3046,11 +2651,6 @@ parameters:
 			path: src/UI/EntitySelector/UserListProvider.php
 
 		-
-			message: "#^Call to method getName\\(\\) on an unknown class Bitrix\\\\Main\\\\ORM\\\\Fields\\\\ExpressionField\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/UserListProvider.php
-
-		-
 			message: "#^Call to method getPersonalGender\\(\\) on an unknown class Bitrix\\\\Main\\\\EO_User\\.$#"
 			count: 2
 			path: src/UI/EntitySelector/UserListProvider.php
@@ -3156,11 +2756,6 @@ parameters:
 			path: src/UI/EntitySelector/UserListProvider.php
 
 		-
-			message: "#^Call to static method on\\(\\) on an unknown class Bitrix\\\\Main\\\\ORM\\\\Query\\\\Join\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/UserListProvider.php
-
-		-
 			message: "#^Call to static method prepareStringToken\\(\\) on an unknown class Bitrix\\\\Main\\\\Search\\\\Content\\.$#"
 			count: 1
 			path: src/UI/EntitySelector/UserListProvider.php
@@ -3187,16 +2782,6 @@ parameters:
 
 		-
 			message: "#^Instantiated class Bitrix\\\\Main\\\\EO_User_Collection not found\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/UserListProvider.php
-
-		-
-			message: "#^Instantiated class Bitrix\\\\Main\\\\ORM\\\\Fields\\\\ExpressionField not found\\.$#"
-			count: 1
-			path: src/UI/EntitySelector/UserListProvider.php
-
-		-
-			message: "#^Instantiated class Bitrix\\\\Main\\\\ORM\\\\Fields\\\\Relations\\\\Reference not found\\.$#"
 			count: 1
 			path: src/UI/EntitySelector/UserListProvider.php
 
@@ -3431,11 +3016,6 @@ parameters:
 			path: src/UI/EntitySelector/UserListProvider.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 4
-			path: src/Widget/AbstractWidget.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\AbstractWidget\\:\\:buildClassAttr\\(\\) has parameter \\$extra with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/Widget/AbstractWidget.php
@@ -3486,16 +3066,6 @@ parameters:
 			path: src/Widget/CountWidget.php
 
 		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 5
-			path: src/Widget/CountWidget.php
-
-		-
 			message: "#^Method MB\\\\Bitrix\\\\AdminKit\\\\Widget\\\\Dashboard\\\\WidgetAssetsCollector\\:\\:collect\\(\\) has parameter \\$widgets with no value type specified in iterable type iterable\\.$#"
 			count: 1
 			path: src/Widget/Dashboard/WidgetAssetsCollector.php
-
-		-
-			message: "#^Function htmlspecialcharsbx not found\\.$#"
-			count: 3
-			path: src/Widget/Renderers/ChartWidgetRenderer.php

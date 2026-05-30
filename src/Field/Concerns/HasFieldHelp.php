@@ -7,20 +7,11 @@ namespace MB\Bitrix\AdminKit\Field\Concerns;
 trait HasFieldHelp
 {
     protected ?string $hint = null;
-    protected ?string $help = null;
     protected ?string $placeholder = null;
 
     public function hint(string $hint): static
     {
         $this->hint = $hint;
-
-        return $this;
-    }
-
-    public function help(?string $text): static
-    {
-        $this->help = $text;
-        $this->hint = $text;
 
         return $this;
     }

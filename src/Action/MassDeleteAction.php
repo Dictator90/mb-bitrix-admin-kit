@@ -17,11 +17,10 @@ class MassDeleteAction extends BulkAction
 {
     public function __construct(string $id = 'delete', ?string $label = null)
     {
-        parent::__construct($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete selected'));
+        parent::__construct($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete'));
         $this
             ->confirm(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_CONFIRM', 'Are you sure you want to delete selected records?'))
-            ->danger()
-            ->group('danger', LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_GROUP', 'Deletion'), 900)
+            ->link()
             ->icon('ui-btn-icon-remove')
             ->sort(100);
     }

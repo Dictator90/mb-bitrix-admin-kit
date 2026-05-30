@@ -67,6 +67,14 @@ final class ProductResource extends DataManagerResource
 }
 ```
 
+## Дополнительно
+
+- **Кнопки тулбара** — `toolbarActions()` + `ToolbarAction` (ссылки, дропдаун-меню, split, side-panel, позиция). См. [Actions reference → ToolbarAction](../reference/actions.md).
+- **Стандартная кнопка «Создать»** — `showCreateButton()` (скрыть) и `createButtonLabel()` (своя подпись).
+- **Быстрый поиск** — `searchColumns()` задаёт колонки строки поиска тулбара. См. [Filters reference](../reference/filters.md).
+- **Без пагинации** — `showPagination(): false` выводит все записи одной страницей. См. [Grid (концепт)](../../grid.md).
+- **Экспорт** — выключен по умолчанию, включается `exportEnabled(): true`. См. [Import/Export](import-export.md).
+
 ## См. также
 
 - [Grid (концепт)](../../grid.md)

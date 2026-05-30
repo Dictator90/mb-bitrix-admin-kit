@@ -169,6 +169,10 @@ class BelongsToMany extends BelongsTo
 
     public function renderFormField(mixed $value = null): string
     {
+        if ($this->renderMode === 'dialog_selector') {
+            return $this->renderDialogSelectorField($value);
+        }
+
         $rawValue = $this->resolveFormValue($value);
         $selected = $this->parseIds($rawValue);
         $options = $this->loadOptions();
@@ -179,6 +183,21 @@ class BelongsToMany extends BelongsTo
         }
 
         return $this->renderMultiSelect($name, $options, $selected);
+    }
+
+    /**
+     * Выбранные id для Dialog Selector (multiple).
+     *
+     * @return list<string>
+     */
+    protected function dialogSelectedIds(mixed $value): array
+    {
+        return $this->parseIds($this->resolveFormValue($value));
+    }
+
+    protected function dialogMultiple(): bool
+    {
+        return true;
     }
 
     /** @return list<string> */

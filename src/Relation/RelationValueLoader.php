@@ -218,11 +218,15 @@ final class RelationValueLoader
 
         if ($field->isOrmRelationMode()) {
             if ($this->isCollection($value)) {
-                return $this->collectionToIds($value, $metadata->relatedKey);
-            }
-
-            if (is_array($value)) {
-                return $this->normalizeIdsFromArray($value, $metadata->relatedKey);
+                $ids = $this->collectionToIds($value, $metadata->relatedKey);
+                if ($ids !== [] || !$field->persistsViaPivotTable($metadata)) {
+                    return $ids;
+                }
+            } elseif (is_array($value)) {
+                $ids = $this->normalizeIdsFromArray($value, $metadata->relatedKey);
+                if ($ids !== [] || !$field->persistsViaPivotTable($metadata)) {
+                    return $ids;
+                }
             }
 
             if ($field->persistsViaPivotTable($metadata)) {
@@ -309,7 +313,6 @@ final class RelationValueLoader
             try {
                 return $item->get($relationName);
             } catch (\Throwable) {
-                // relation may be stored in scalar column fallback
             }
 
             $entity = $item->getEntity();
