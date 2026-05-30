@@ -150,8 +150,8 @@ final class BitrixGridActionPanelAdapter
 
         $class = trim(implode(' ', array_filter([
             $action->getButtonClass(),
+            $action->getColor(),
             $action->getIcon(),
-            $action->isDanger() ? 'ui-btn-danger' : null,
         ])));
 
         $item = [

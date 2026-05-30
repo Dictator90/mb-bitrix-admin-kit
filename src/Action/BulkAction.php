@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MB\Bitrix\AdminKit\Action;
 
 use Bitrix\Main\Grid\Panel\Types;
+use Bitrix\UI\Buttons\Color;
 use Closure;
 use MB\Bitrix\AdminKit\Contracts\Action\BulkPanelItemContract;
 use MB\Bitrix\AdminKit\Contracts\ActionContract;
@@ -23,7 +24,6 @@ class BulkAction implements ActionContract, BulkPanelItemContract
     protected string $label;
     protected bool $needsConfirm = false;
     protected ?string $confirmText = null;
-    protected bool $danger = false;
     protected bool $allowRunByFilter = false;
     protected bool $allowRunWithoutFilter = false;
     protected string $group = 'default';
@@ -32,6 +32,7 @@ class BulkAction implements ActionContract, BulkPanelItemContract
     protected int $sort = 100;
     protected ?string $icon = null;
     protected ?string $buttonClass = null;
+    protected ?string $color = null;
     protected ?string $title = null;
     protected string $panelType = Types::BUTTON;
     protected array|Closure|null $customPanelItem = null;
@@ -50,7 +51,7 @@ class BulkAction implements ActionContract, BulkPanelItemContract
 
     public static function delete(string $id = 'delete', ?string $label = null): MassDeleteAction
     {
-        return MassDeleteAction::make($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete selected'));
+        return MassDeleteAction::make($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete'));
     }
 
     public static function make(string $id, ?string $label = null): static
@@ -119,6 +120,46 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         return $this;
     }
 
+    /**
+     * Цвет кнопки — CSS-класс Bitrix UI (значение Bitrix\UI\Buttons\Color, напр. 'ui-btn-success').
+     */
+    public function color(?string $color): static
+    {
+        $this->color = $color;
+
+        return $this;
+    }
+
+    public function primary(): static
+    {
+        return $this->color(Color::PRIMARY);
+    }
+
+    public function success(): static
+    {
+        return $this->color(Color::SUCCESS);
+    }
+
+    public function secondary(): static
+    {
+        return $this->color(Color::SECONDARY);
+    }
+
+    public function light(): static
+    {
+        return $this->color(Color::LIGHT_BORDER);
+    }
+
+    public function link(): static
+    {
+        return $this->color(Color::LINK);
+    }
+
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
     public function title(?string $title): static
     {
         $this->title = $title;
@@ -148,11 +189,10 @@ class BulkAction implements ActionContract, BulkPanelItemContract
         return $this;
     }
 
+    /** Семантический шорткат: красная кнопка (color = ui-btn-danger). */
     public function danger(bool $danger = true): static
     {
-        $this->danger = $danger;
-
-        return $this;
+        return $this->color($danger ? Color::DANGER : null);
     }
 
     public function canSee(bool|Closure|ConditionTree|string $condition, ?string $operator = null, mixed $value = null): static
@@ -251,7 +291,7 @@ class BulkAction implements ActionContract, BulkPanelItemContract
 
     public function isDanger(): bool
     {
-        return $this->danger;
+        return $this->color === Color::DANGER;
     }
 
     public function canRunByFilter(): bool

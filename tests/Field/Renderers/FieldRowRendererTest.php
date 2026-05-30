@@ -15,7 +15,7 @@ final class FieldRowRendererTest extends TestCase
 {
     public function testRendersBitrixFormRowAndMetadata(): void
     {
-        $field = Text::make('Name', 'NAME')->required()->help('hint')->visibleWhen('TYPE', 'A');
+        $field = Text::make('Name', 'NAME')->required()->hint('hint')->visibleWhen('TYPE', 'A');
         $item = DataWrapper::fromArray(['TYPE' => 'B', 'NAME' => 'John']);
 
         $html = (new FieldRowRenderer())->render(new FieldRowContext(

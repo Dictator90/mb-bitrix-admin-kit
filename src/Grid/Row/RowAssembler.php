@@ -125,9 +125,13 @@ class RowAssembler
 
         $actions = [];
         if (!$isGroupRow) {
+            $sidePanelWidth = method_exists($this->resource, 'sidePanelWidth')
+                ? (int)$this->resource->sidePanelWidth()
+                : null;
+
             foreach ($this->rowActions as $action) {
                 if ($action instanceof RowAction) {
-                    $actions[] = $action->toArray($row['data'], $this->baseUrl, $this->context?->gridId);
+                    $actions[] = $action->toArray($row['data'], $this->baseUrl, $this->context?->gridId, $sidePanelWidth);
                 }
             }
         }

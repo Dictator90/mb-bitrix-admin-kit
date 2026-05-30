@@ -26,10 +26,27 @@ trait HasResourceActions
         return [];
     }
 
-    /** @return iterable<\MB\Bitrix\AdminKit\Manager\ToolbarAction|string> */
+    /**
+     * Кастомные кнопки тулбара. Экспорт сюда добавлять не нужно — он управляется
+     * единым флагом {@see \MB\Bitrix\AdminKit\Contracts\Resource\ResourceExportContract::exportEnabled()}.
+     *
+     * @return iterable<\MB\Bitrix\AdminKit\Manager\ToolbarAction|string>
+     */
     public function toolbarActions(): iterable
     {
-        return ['export'];
+        return [];
+    }
+
+    /** Кастомная подпись кнопки создания в тулбаре (null — стандартная "Create"). */
+    public function createButtonLabel(): ?string
+    {
+        return null;
+    }
+
+    /** Показывать стандартную кнопку "Создать" в тулбаре (false — резурс рисует свою через toolbarActions()). */
+    public function showCreateButton(): bool
+    {
+        return true;
     }
 
     /** @return array<string> */

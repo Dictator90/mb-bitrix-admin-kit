@@ -30,6 +30,8 @@ class Grid
     protected ?string $collapsibleShiftColumnId = null;
     protected ?string $groupingAlign = null;
     protected ?bool $showSelectAllRecordsCheckbox = null;
+    protected bool $showNavigation = true;
+    protected GridSettings $settings;
 
     /** @var BulkPanelItemContract[] */
     protected array $bulkActions = [];
@@ -49,6 +51,7 @@ class Grid
         int $defaultPageSize = 20,
     ) {
         $this->filterId = $id . '_filter';
+        $this->settings = new GridSettings();
         $this->gridOptions = new GridOptions($id);
 
         $navParams = $this->gridOptions->getNavParams(['nPageSize' => $defaultPageSize]);
@@ -81,6 +84,38 @@ class Grid
         if ($this->nav->getPageSize() > $maxPageSize) {
             $this->nav->setPageSize($maxPageSize);
         }
+    }
+
+    public function setSettings(GridSettings $settings): void
+    {
+        $this->settings = $settings;
+    }
+
+    public function settings(): GridSettings
+    {
+        return $this->settings;
+    }
+
+    public function setShowNavigation(bool $show): void
+    {
+        $this->showNavigation = $show;
+    }
+
+    public function shouldShowNavigation(): bool
+    {
+        return $this->showNavigation;
+    }
+
+    /**
+     * Выводит все записи на одной странице (без пагинации), ограничивая выборку $maxPageSize.
+     */
+    public function showAllRecords(int $maxPageSize): void
+    {
+        $this->showNavigation = false;
+        $this->nav
+            ->allowAllRecords(true)
+            ->setPageSize(max(1, $maxPageSize))
+            ->setCurrentPage(1);
     }
 
     public function setTotalCount(int $count): void

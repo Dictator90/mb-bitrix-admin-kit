@@ -16,6 +16,7 @@ use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 use MB\Bitrix\AdminKit\Contracts\UI\FieldContainerContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Exceptions\PermissionDeniedException;
+use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
 use MB\Bitrix\AdminKit\Page\Crud\Handlers\FormPageFormRenderer;
@@ -102,7 +103,7 @@ class FormPage extends CrudPage implements FormPageContract
                     $this->entityItem = $this->resource->findObject($this->id, $select);
                     $row = null;
                     if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
-                        $row = $this->entityItem->collectValues();
+                        $row = $this->mergeRelationValuesIntoRow($this->entityItem->collectValues());
                     }
                 } else {
                     $row = $this->resource->findItem($this->id);
@@ -456,6 +457,65 @@ class FormPage extends CrudPage implements FormPageContract
         return $this->formConditionContext();
     }
 
+    /**
+     * Дополняет загруженную строку значениями связей (BelongsToMany через pivot,
+     * HasMany и т.п.), которых нет в collectValues() сущности.
+     *
+     * Без этого поля-связи, вложенные в layout-компоненты (Tabs/Grid/Column),
+     * рендерятся через ChildrenRenderer, который читает значение напрямую из
+     * item->get(column) и не вызывает резолвер связей — поэтому ранее они
+     * приходили пустыми (например, в DialogSelector не отображались выбранные).
+     *
+     * @param array<string,mixed> $row
+     * @return array<string,mixed>
+     */
+    private function mergeRelationValuesIntoRow(array $row): array
+    {
+        if (
+            $this->entityItem === null
+            || !$this->resource instanceof DataManagerResourceContract
+        ) {
+            return $row;
+        }
+
+        foreach ($this->collectRelationFields() as $field) {
+            $column = $field->getColumn();
+            if (array_key_exists($column, $row) && $row[$column] !== null && $row[$column] !== '') {
+                continue;
+            }
+
+            $resolved = $this->resource->resolveRelationValue($this->entityItem, $field);
+            if ($resolved !== null && $resolved !== '') {
+                $row[$column] = $resolved;
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * Собирает все поля-связи из formFields(), включая вложенные в layout-компоненты.
+     *
+     * @return list<RelationField>
+     */
+    private function collectRelationFields(): array
+    {
+        $fields = [];
+        foreach ($this->resource->formFields() as $item) {
+            if ($item instanceof FieldContainerContract) {
+                foreach ($item->extractFields() as $field) {
+                    if ($field instanceof RelationField) {
+                        $fields[] = $field;
+                    }
+                }
+            } elseif ($item instanceof RelationField) {
+                $fields[] = $item;
+            }
+        }
+
+        return $fields;
+    }
+
     /** @internal */
     public function resolveFieldValueForField(FieldContract $field): mixed
     {
@@ -513,7 +573,10 @@ class FormPage extends CrudPage implements FormPageContract
                 $select = $this->resource->relationSelectForFields($this->resource->formFields());
                 $this->entityItem = $this->resource->findObject($this->id, $select);
                 if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
-                    $this->item = DataWrapper::fromArray($this->entityItem->collectValues(), $this->resource->getPrimaryKey());
+                    $this->item = DataWrapper::fromArray(
+                        $this->mergeRelationValuesIntoRow($this->entityItem->collectValues()),
+                        $this->resource->getPrimaryKey(),
+                    );
                 }
             } else {
                 $row = $this->resource->findItem($this->id);

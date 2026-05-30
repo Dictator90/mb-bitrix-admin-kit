@@ -28,3 +28,59 @@ if (!function_exists('LocalRedirect')) {
     {
     }
 }
+
+if (!class_exists('CUtil')) {
+    class CUtil
+    {
+        public static function JSEscape(string $str): string
+        {
+            return $str;
+        }
+    }
+}
+
+if (!class_exists('CFile')) {
+    class CFileResultMock
+    {
+        /** @return array<string, mixed>|false */
+        public function Fetch(): array|bool
+        {
+            return [];
+        }
+    }
+
+    class CFile
+    {
+        /** @return array<string, mixed>|false */
+        public static function MakeFileArray(mixed $file, mixed $mimeType = '', mixed $forceFile = false): array|bool
+        {
+            return [];
+        }
+
+        public static function Delete(mixed $id): void
+        {
+        }
+
+        public static function SaveFile(mixed $file, string $dir): mixed
+        {
+            return 1;
+        }
+
+        /** @return array<string, mixed>|false */
+        public static function GetFileArray(mixed $id): array|bool
+        {
+            return [];
+        }
+
+        public static function GetByID(mixed $id): CFileResultMock
+        {
+            return new CFileResultMock();
+        }
+
+        /** @return array<string, mixed>|false */
+        public static function ResizeImageGet(mixed $file, array $sizes, int $type = 1, bool $bInitSizes = false, mixed $arFilters = false, mixed $bImmediate = false, mixed $jpgQuality = false): array|bool
+        {
+            return [];
+        }
+    }
+}

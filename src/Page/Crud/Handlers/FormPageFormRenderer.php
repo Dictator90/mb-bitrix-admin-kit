@@ -90,7 +90,7 @@ final class FormPageFormRenderer
         $items = $page->getVisibleItemsList();
         $page->applyInitialDependenciesList($items);
 
-        echo '<div class="ui-form ui-form-section">';
+        echo '<div class="ui-form">';
         foreach ($items as $item) {
             if ($item instanceof ComponentContract) {
                 if ($item instanceof PageTypeAwareContract) {

@@ -22,6 +22,7 @@ interface CrudResourceContract extends
     ResourceQueryContract,
     ResourceGroupingContract,
     ResourceExportContract,
+    ResourceToolbarContract,
     ResourceLifecycleContract
 {
     public function indexPage(): IndexPage;

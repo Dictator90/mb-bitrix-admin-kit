@@ -1,4 +1,6 @@
-
+.adm-main-wrap {
+    min-width: unset;
+}
 .adm-workarea input[type="text"].ui-ctl-element,
 .adm-workarea input[type="password"].ui-ctl-element,
 .adm-workarea input[type="email"].ui-ctl-element,

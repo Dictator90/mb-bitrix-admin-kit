@@ -65,16 +65,20 @@ final class GridDataLoader
 
     public function makeContext(DataManagerResourceContract $resource, Grid $grid, mixed $request = null): GridContext
     {
+        $nav = $grid->getPagination();
+        $maxPageSize = method_exists($resource, 'maxPageSize') ? (int)$resource->maxPageSize() : 200;
+        $limit = $nav->allRecordsShown() ? $maxPageSize : (int)$nav->getLimit();
+
         return new GridContext(
             $resource,
             $grid->getId(),
             $grid->getFilterId(),
             [],
             [],
-            $grid->getPagination()->getPageSize(),
-            $grid->getPagination()->getCurrentPage(),
-            $grid->getPagination()->getOffset(),
-            $grid->getPagination()->getLimit(),
+            $nav->getPageSize(),
+            $nav->getCurrentPage(),
+            (int)$nav->getOffset(),
+            $limit,
             $request,
         );
     }

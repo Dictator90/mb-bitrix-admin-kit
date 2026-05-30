@@ -18,8 +18,10 @@ Text::make('Название', 'NAME');
 - Readonly-логика: `readonly()`, `readonlyWhen()`, `readonlyOnCreate()`, `readonlyOnUpdate()`
 - Валидация: `required()`, `requiredWhen()`, `minLength()`, `maxLength()`, `email()`, `url()`, `numeric()`, `min()`, `max()`, `pattern()`, `in()`
 - Форматирование вывода: `format()`, `preview()`, `displayUsing()`
+- UI-подсказки: `hint()` (тултип-«?» у лейбла поля), `placeholder()` (плейсхолдер инпута)
 - Реактивность: `dependsOn()`, `onChange()`
-- Грид-метаданные: `sortable()`, `editable()`
+- Грид-метаданные: `sortable()`, `editable()`, `asEditLink()`
+- Грид-колонка (оформление): `width(int)`, `align('left'|'center'|'right')`, `color(?string)`, `sticked(bool)`
 - Import/Export-флаги: `importable()`, `system()`, `exportable()`, `private()`
 - Рендер-хуки: `renderForm()`, `renderFormField()`, `renderIndex()`, `renderDetail()`
 ## Нормализация и сериализация

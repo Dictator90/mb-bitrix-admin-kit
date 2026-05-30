@@ -1,6 +1,38 @@
 # Changelog
 
-## Unreleased
+## [0.1.6]
+
+### Added
+- Тулбар index-страницы: `ToolbarAction` получил выпадающее меню (`items()`/`addItem()`), split-режим (`split()`), стиль (`color()`, `icon()`), произвольный клик (`onclick()`), открытие в слайдере (`sidePanel()`) и позиционирование (`location()` — значения `Bitrix\UI\Toolbar\ButtonLocation`). Пункты меню рендерятся через `Button::setMenu()`, split — через `Split\Button`.
+- `ToolbarAction` — расширенные опции кнопки: `counter()` (бейдж), `size()` (`Bitrix\UI\Buttons\Size`), `disabled()` (`State::DISABLED`), `round()`, `collapsedIcon()` (адаптивное сворачивание). Прокидываются в `Bitrix\UI\Buttons\Button` через `ToolbarRenderer::baseButtonOptions()`.
+- Фичи тулбара как хуки ресурса (`ResourceToolbarContract` / `HasResourceToolbar`), маппятся на фасад `Toolbar` в `ToolbarRenderer`: `toolbarTitle()`, `toolbarEditableTitle()`, `toolbarFavoriteStar()`, `toolbarCopyLink()`, `toolbarBeforeTitleHtml()`, `toolbarAfterTitleHtml()`, `toolbarUnderTitleHtml()`, `toolbarRightHtml()`. Все по умолчанию выключены. `toolbarEditableTitle()`/`toolbarFavoriteStar()` — только UI (без серверной персистентности).
+- Настройки грида как хуки ресурса (`ResourceGridContract` / `HasResourceGrid`) через value object `Grid\GridSettings`, маппятся на `bitrix:main.ui.grid` в `BitrixGridAdapter`: `allowColumnsSort()`, `allowColumnsResize()`, `allowHorizontalScroll()`, `allowRowsSort()`, `allowContextMenu()`, `pinHeader()`, `stickedColumns()`, `showGridSettingsMenu()`, `enableFieldsSearch()`, `showSelectedCounter()`, `showTotalCounter()`, `useAjax()`, `pageSizes()`, `gridEmptyMessage()`, `gridAggregates()`, `gridFooter()`, `tileMode()`/`tileSize()`/`tileItemJsClass()`/`rowLayout()`.
+- Опции grid-колонки в полях (`HasFieldGridColumn`): `width()`, `align()`, `color()`, `sticked()` — добавляются в config колонки `main.ui.grid` только когда заданы.
+- Drag-сортировка строк грида с сохранением порядка: хуки `Resource::allowRowsSort()` + `sortField()` + `reorder()`; JS-расширение `MB.AdminKit.GridRowSort` (слушает `Grid::rowMoved`, POST `action=rowsort`) и серверный `IndexRowSortHandler`. Дефолтный `reorder()` пишет инкрементальные значения в `sortField()` через DataManager. Нативный `ALLOW_ROWS_SORT_INSTANT_SAVE` отключён (порядок персистится своим обработчиком). Для сгруппированного грида поддержан перенос строки между группами: `IndexRowSortHandler` извлекает целевую группу из `group:`-маркеров payload и передаёт в `reorder($orderedIds, $groupByItemId, $groupField)`, обновляя и порядок, и FK группировки. Шаг инкремента SORT настраивается хуком `Resource::sortStep()` (default 100).
+- `Resource::showCreateButton()` (скрыть стандартную кнопку «Создать») и `Resource::createButtonLabel()` (своя подпись).
+- `Resource::exportEnabled()` — единый выключатель экспорта (default `false`): управляет кнопкой экспорта в тулбаре, действием «Экспорт выбранных» в групповой панели и эндпоинтами `action=export`/`export_selected`.
+- `Resource::searchColumns()` — явный список колонок для строки быстрого поиска тулбара (`FIND`); при пустом значении используются строковые поля `filters()`.
+- `Resource::showPagination()` — при `false` все записи выводятся одной страницей, нижняя панель навигации скрывается; добавлены `Grid::showAllRecords()` / `Grid::setShowNavigation()`.
+- - Added fluent settings methods on `Field\File` for configuring Bitrix native `FileInput`: `canUpload()`, `canEdit()`, `canDelete()`, `useCloud()`, `medialib()`, `fileDialog()`, `maxCount()`, `uploadType()`, and `description()`.
+
+### Changed
+- Relation-поля: `asEntitySelector()` переименован в `asDialogSelector()` (старое имя — `@deprecated` алиас) и теперь действительно рендерит Dialog Selector на базе Bitrix `ui.entity-selector` (компонент `MB.AdminKit.DialogSelector`) вместо прежней заглушки-warning. Поддержано для `BelongsTo` (одиночный) и `BelongsToMany` (множественный); опции связи (`loadOptions`) передаются как статические элементы диалога.
+- Экспорт по умолчанию **выключен** (раньше кнопка экспорта и `export_selected` добавлялись всегда). Включается флагом `exportEnabled()`; `allowExportByFilter()/allowExportAll()/maxExportRows()` уточняют политику при включённом экспорте.
+- `Resource::toolbarActions()` по умолчанию возвращает `[]` (раньше `['export']`); экспорт отвязан от `toolbarActions()`.
+- Параметры `bitrix:main.ui.grid` `ALLOW_COLUMNS_SORT/RESIZE`, `ALLOW_HORIZONTAL_SCROLL`, `ALLOW_ROWS_SORT`, `AJAX_MODE` теперь конфигурируемы через хуки ресурса (раньше были зашиты в `BitrixGridAdapter`). Поведение по умолчанию не изменилось.
+- Upgraded `Field\File` to render using Bitrix's native `Bitrix\Main\UI\FileInput` control.
+- Upgraded `Field\Image` to render using Bitrix's native `bitrix:ui.image.input` component, with defaults suitable for image inputs.
+- Implemented robust, idempotent file deletion and new file upload persistence inside `File::normalize()`, ensuring it works uniformly for both `CrudResource` and `DataManagerResource` pipelines.
+
+
+### Fixed
+- Строка быстрого поиска тулбара (`FIND`) теперь применяется к ORM-запросу (`LIKE %value%` по `searchColumns()`); ранее игнорировалась — искал только явный фильтр.
+- `GridDataLoader::makeContext()`: устранён `TypeError` (`$limit` = `null`) при выборе «Показать все» — лимит берётся как `maxPageSize()`.
+- Fixed `Field\Image` rendering in AJAX/SidePanel context and resolved the `onUploaderIsInited` race condition: if the uploader is initialized before `BX.UI.ImageInput` registers its listener, the container remains hidden with `display: none`. Added explicit JS/CSS preloading and an inline helper initialization script.
+- Fixed `Field\File` (and `Field\Image`) to properly handle multiple files saving by adding support for temporary string paths (resolved via `\CFile::MakeFileArray`) and standard multipart `$_FILES` uploads fallback.
+- Fixed `Field\File` (and `Field\Image`) to support parsing and loading stored multiple file values represented as JSON array strings, serialized PHP arrays, or comma-separated lists of IDs, preventing display issues and file loss on save. Multiple file values on OptionsPage are now stored using standard PHP serialize/unserialize for native Bitrix compatibility, while maintaining backward-compatible reading of older JSON array strings.
+- Fixed `resolveValue` in `HasFieldValue` trait to correctly handle multiple field resolved values (indexed array of IDs) and prevent them from being mistaken for row data arrays (which was resolving to `null` and failing to display).
+
 
 ### Documentation
 - Документация интеграции переработана в end-to-end формате: добавлены user guides `module-integration.md`, `standalone-integration.md`, `admin-menu-and-pages.md`; обновлены `docs/installation.md`, `docs/quick-start.md`, `docs/options-page.md`, cookbook `first-crud.md`/`options-page.md`, карта docs и README-ссылки. Исправлена сигнатура `DataManagerResource::dataManagerClass()` в cookbook (не static), дубли cookbook переведены в bridge-файлы к каноническим рецептам (`add-bulk-action`, `add-row-action`, `add-filter`, `custom-field`).
@@ -9,18 +41,7 @@
 - Docs hardening fix: дополнительно выверены README и обзорные ссылки документации (`docs/actions.md`, `docs/options-page.md`, `docs/dashboard-page.md`, `docs/user/guides/import-export.md`) без изменения runtime-кода; подтверждена валидность минимального `DataManagerResource` примера по текущему API.
 - Этап 5 документации: исправлены stub/схлопнутые markdown-страницы (`docs/options-page.md`, `docs/dashboard-page.md`, cookbook import/export/options/dashboard), выровнены относительные ссылки без лишнего префикса `docs/`, обновлены PHP-примеры под фактический API (`OptionsPage`, `DashboardPage`, `ImportAction`, export-политики), и синхронизирован статус import/export (CSV export UI включен, import UI на index временно отключен, XLSX не поддерживается).
 
-### Added
-- Added fluent settings methods on `Field\File` for configuring Bitrix native `FileInput`: `canUpload()`, `canEdit()`, `canDelete()`, `useCloud()`, `medialib()`, `fileDialog()`, `maxCount()`, `uploadType()`, and `description()`.
-
-### Changed
-- Upgraded `Field\File` to render using Bitrix's native `Bitrix\Main\UI\FileInput` control.
-- Upgraded `Field\Image` to render using Bitrix's native `bitrix:ui.image.input` component, with defaults suitable for image inputs.
-- Implemented robust, idempotent file deletion and new file upload persistence inside `File::normalize()`, ensuring it works uniformly for both `CrudResource` and `DataManagerResource` pipelines.
-### Fixed
-- Fixed `Field\Image` rendering in AJAX/SidePanel context and resolved the `onUploaderIsInited` race condition: if the uploader is initialized before `BX.UI.ImageInput` registers its listener, the container remains hidden with `display: none`. Added explicit JS/CSS preloading and an inline helper initialization script.
-- Fixed `Field\File` (and `Field\Image`) to properly handle multiple files saving by adding support for temporary string paths (resolved via `\CFile::MakeFileArray`) and standard multipart `$_FILES` uploads fallback.
-- Fixed `Field\File` (and `Field\Image`) to support parsing and loading stored multiple file values represented as JSON array strings, serialized PHP arrays, or comma-separated lists of IDs, preventing display issues and file loss on save. Multiple file values on OptionsPage are now stored using standard PHP serialize/unserialize for native Bitrix compatibility, while maintaining backward-compatible reading of older JSON array strings.
-- Fixed `resolveValue` in `HasFieldValue` trait to correctly handle multiple field resolved values (indexed array of IDs) and prevent them from being mistaken for row data arrays (which was resolving to `null` and failing to display).
+## [0.1.5]
 
 ### Added
 

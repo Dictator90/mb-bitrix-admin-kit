@@ -10,6 +10,7 @@ import * as ChartWidget from './chart-widget';
 import * as Tabs from './tabs/index'
 import * as DialogSelector from './dialog-selector/index'
 import * as GridBulkActions from './grid/bulk-actions';
+import * as GridRowSort from './grid/row-sort';
 import * as RelationTileGrid from './relation-tilegrid';
 
 export {
@@ -23,5 +24,6 @@ export {
 	Tabs,
 	DialogSelector,
 	GridBulkActions,
+	GridRowSort,
 	RelationTileGrid,
 };

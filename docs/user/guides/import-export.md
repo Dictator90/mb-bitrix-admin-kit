@@ -8,20 +8,41 @@ CSV-first экспорт и сервисный импорт для `DataManagerR
 
 | Возможность | Статус |
 |---|---|
-| CSV export UI | Да |
-| Export selected | Да |
-| Export by filter | Да (по умолчанию) |
-| Full export | По умолчанию выключен |
+| Экспорт в целом | **По умолчанию выключен** (`exportEnabled()`) |
+| CSV export UI | Да (когда экспорт включён) |
+| Export selected | Да (когда экспорт включён) |
+| Export by filter | Да (когда экспорт включён) |
+| Full export | По умолчанию выключен (`allowExportAll()`) |
 | CSV import service layer | Да |
 | Import UI | Временно отключен на IndexPage |
 | XLSX | Не поддерживается |
 
 ## Export
 
+### Главный выключатель
+
+Экспорт целиком управляется одним методом `exportEnabled()` (default `false`).
+Он действует везде: кнопка экспорта в тулбаре, действие «Экспорт выбранных» в групповой панели
+и эндпоинты `action=export`/`export_selected` (прямой URL при выключенном экспорте редиректит на список).
+
+```php
+<?php
+
+public function exportEnabled(): bool
+{
+    return true; // по умолчанию экспорт выключен
+}
+```
+
 ### Базовый пример
 
 ```php
 <?php
+
+public function exportEnabled(): bool
+{
+    return true;
+}
 
 public function allowExportByFilter(): bool
 {
@@ -41,6 +62,7 @@ public function maxExportRows(): int
 
 ### Политика безопасности
 
+- экспорт выключен по умолчанию — включается явно через `exportEnabled()`;
 - нужен `canView(..., 'export')`;
 - full export блокируется без selected IDs/filter, пока не включен opt-in (`allowRunAll()` или `resource->allowExportAll()`);
 - export by filter можно запретить action-level или resource-level;
