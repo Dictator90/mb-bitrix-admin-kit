@@ -14,4 +14,13 @@ final class AdminStringTest extends TestCase
         self::assertSame('product', AdminString::resourceId('App\\Admin\\ProductResource'));
         self::assertStringStartsWith('ADMINKIT_GRID_', AdminString::gridId('product'));
     }
+
+    public function testSlugTransliteratesCyrillicViaBitrix(): void
+    {
+        if (!class_exists(\CUtil::class) || !method_exists(\CUtil::class, 'translit')) {
+            self::markTestSkipped('CUtil::translit is not available.');
+        }
+
+        self::assertSame('primer-tovara', AdminString::slug('Пример товара', '-'));
+    }
 }

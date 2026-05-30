@@ -793,7 +793,7 @@ parameters:
 		-
 			message: "#^Constant LANGUAGE_ID not found\\.$#"
 			count: 1
-			path: src/Field/Html.php
+			path: src/Field/HtmlEditor.php
 
 		-
 			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlockElement\\.$#"

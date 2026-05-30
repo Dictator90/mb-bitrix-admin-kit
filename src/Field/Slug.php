@@ -27,10 +27,7 @@ class Slug extends Text
     /** @param string|list<string> $sourceColumns */
     public function from(string|array $sourceColumns): static
     {
-        $columns = array_values(array_filter(array_map(
-            static fn (mixed $column): string => is_scalar($column) ? (string) $column : '',
-            (array) $sourceColumns,
-        ), static fn (string $column): bool => $column !== ''));
+        $columns = $this->normalizeSourceColumns($sourceColumns);
 
         $this->fromColumns = $columns;
 
@@ -38,13 +35,29 @@ class Slug extends Text
             return $this;
         }
 
-        return $this->dependsOn($columns, function (self $field, mixed $value, array $formData): void {
-            unset($value);
+        return $this->dependsOn($columns, $this->dependencyModifier());
+    }
 
-            $generated = $field->generateFromData($formData);
-            $field->pendingGenerated = $generated;
-            $field->shouldApplyPending = $field->shouldOverwriteFromDependency($formData);
-        });
+    /** @param string|list<string> $sourceColumns */
+    public function dependsOn(string|array $sourceColumns, ?\Closure $modifier = null): static
+    {
+        $columns = $this->normalizeSourceColumns($sourceColumns);
+
+        if ($columns === []) {
+            return $this;
+        }
+
+        if ($modifier === null) {
+            foreach ($columns as $column) {
+                if (!in_array($column, $this->fromColumns, true)) {
+                    $this->fromColumns[] = $column;
+                }
+            }
+
+            $modifier = $this->dependencyModifier();
+        }
+
+        return parent::dependsOn($columns, $modifier);
     }
 
     /** @param array<string,mixed> $formData */
@@ -138,5 +151,27 @@ class Slug extends Text
     protected function generatedStateFieldName(): string
     {
         return '__adminkit_slug_generated_' . $this->column;
+    }
+
+    /** @param string|list<string> $sourceColumns
+     * @return list<string>
+     */
+    protected function normalizeSourceColumns(string|array $sourceColumns): array
+    {
+        return array_values(array_filter(array_map(
+            static fn (mixed $column): string => is_scalar($column) ? (string) $column : '',
+            (array) $sourceColumns,
+        ), static fn (string $column): bool => $column !== ''));
+    }
+
+    protected function dependencyModifier(): \Closure
+    {
+        return function (self $field, mixed $value, array $formData): void {
+            unset($value);
+
+            $generated = $field->generateFromData($formData);
+            $field->pendingGenerated = $generated;
+            $field->shouldApplyPending = $field->shouldOverwriteFromDependency($formData);
+        };
     }
 }

@@ -4,19 +4,52 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Support;
 
-use MB\Support\Str;
+use Bitrix\Main\Application;
 
 final class AdminString
 {
     public static function slug(string $value, string $separator = '_'): string
     {
-        if (method_exists(Str::class, 'slug')) {
-            return Str::slug($value, $separator);
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        if (class_exists(\CUtil::class) && method_exists(\CUtil::class, 'translit')) {
+            return trim((string) \CUtil::translit($value, self::translitLanguage(), [
+                'max_len' => max(mb_strlen($value) * 2, 255),
+                'change_case' => 'L',
+                'replace_space' => $separator,
+                'replace_other' => $separator,
+                'delete_repeat_replace' => true,
+            ]), $separator);
         }
 
         $value = preg_replace('/[^\pL\pN]+/u', $separator, $value) ?: '';
 
         return trim(mb_strtolower($value), $separator);
+    }
+
+    private static function translitLanguage(): string
+    {
+        if (defined('LANGUAGE_ID')) {
+            $languageId = constant('LANGUAGE_ID');
+            if (is_string($languageId) && $languageId !== '') {
+                return $languageId;
+            }
+        }
+
+        if (class_exists(Application::class)) {
+            try {
+                $language = Application::getInstance()->getContext()->getLanguage();
+                if ($language !== '') {
+                    return $language;
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        return 'ru';
     }
 
     public static function id(string $prefix, string $value): string

@@ -243,7 +243,7 @@ final class FormPagePostHandler
                 $field->applyDependency($formData);
             }
             $value = $formData[$field->getColumn()] ?? $page->getItemValue()?->get($field->getColumn());
-            $result[$field->getColumn()] = ['html' => $field->renderFormField($value)];
+            $result[$field->getColumn()] = ['html' => $field->renderFormField($value, $formData)];
         }
 
         ResponseTerminator::clearOutputBuffers();

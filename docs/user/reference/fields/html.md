@@ -1,22 +1,5 @@
 # Html
 
-Класс: `MB\Bitrix\AdminKit\Field\Html`.
+Deprecated. Use [HtmlEditor](html-editor.md) (`MB\Bitrix\AdminKit\Field\HtmlEditor`).
 
-Назначение: HTML-контент с editor/fallback textarea.
-
-## Доступные методы
-
-- `rows(int $rows)` — задает высоту редактора/textarea.
-- `disableEditor(bool $disable = true)` — отключает `bitrix:main.html.editor` и оставляет обычную textarea.
-
-Пример:
-```php
-Html::make('Контент', 'HTML')
-    ->rows(20)
-    ->disableEditor(false);
-```
-
-## Значения по умолчанию
-
-- `rows = 15`
-- `useEditor = true`
+`Field\Html` remains as a backward-compatible alias.

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.7]
+
+### Changed
+- `Field\Html` renamed to `Field\HtmlEditor`; `Html` kept as deprecated alias.
+- `Field\Slug` — `dependsOn('COLUMN')` without callback now registers the column as slug source (same as `from()`).
+- `Support\AdminString::slug()` — uses Bitrix `CUtil::translit()` for Cyrillic and other non-Latin characters.
+
+### Fixed
+- Reactive form updates pass `$formData` into `renderFormField()` for dependent fields (OptionsPage and FormPage).
+- `Field\HtmlEditor` — replaced non-existent `bitrix:main.html.editor` component with native Bitrix `CHTMLEditor` (`fileman` module / `BXHtmlEditor`). Falls back to textarea when `fileman` is unavailable or editor is disabled.
+
+### Added
+- `Field\HtmlEditor` — extends `Textarea`, uses `HasHtmlEditor` trait; CHTMLEditor options and rendering live in the field (no separate renderer/options class).
+- `examples/component-showcase/AdminKitTestPage.php` — portable `OptionsPage` showcase for fields and UI/layout components (`KIT_TEST_*` option keys, six tabs including `visibleWhen` demo). Requires explicit `$moduleId` on the page class (e.g. `vendor.demo`).
+
 ## [0.1.6]
 
 ### Added
