@@ -85,9 +85,12 @@ class Slug extends Text
         $generatedStateName = htmlspecialcharsbx($this->generatedStateFieldName());
         $generatedStateValue = htmlspecialcharsbx((string) ($generated ?? ''));
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         $html = <<<HTML
-        <div class="ui-ctl ui-ctl-textbox">
-            <input type="text" class="ui-ctl-element" name="{$name}" value="{$val}"{$maxAttr}{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
+        <div{$wrapperAttrs}>
+            <input type="text"{$elementAttrs} name="{$name}" value="{$val}"{$maxAttr}{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
         </div>
         <input type="hidden" name="{$generatedStateName}" value="{$generatedStateValue}">
         HTML;

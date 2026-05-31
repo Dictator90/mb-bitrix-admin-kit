@@ -20,6 +20,9 @@ final class OptionFieldExtractor
         $fields = [];
         foreach ($components as $item) {
             if ($item instanceof Tab) {
+                if (!$item->isVisible()) {
+                    continue;
+                }
                 $fields = array_merge($fields, $this->extract($item->getItems()));
             } elseif ($item instanceof FieldContainerContract) {
                 $fields = array_merge($fields, $item->extractFields());

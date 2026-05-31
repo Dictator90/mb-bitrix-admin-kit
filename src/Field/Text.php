@@ -26,9 +26,12 @@ class Text extends Field
         $placeholderAttr = $this->placeholderAttr();
         $reactiveAttrs = $this->renderReactiveAttrs();
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-textbox">
-            <input type="text" class="ui-ctl-element" name="{$name}" value="{$val}"{$maxAttr}{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
+        <div{$wrapperAttrs}>
+            <input type="text"{$elementAttrs} name="{$name}" value="{$val}"{$maxAttr}{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
         </div>
         HTML;
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Page\Crud;
 
-use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
 use MB\Bitrix\AdminKit\Component\Notification;
@@ -13,11 +12,10 @@ use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\IndexPageDefinitionContract;
 use MB\Bitrix\AdminKit\Contracts\Page\IndexPageContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Grid\Grid;
 use MB\Bitrix\AdminKit\Grid\GridContext;
-use MB\Bitrix\AdminKit\Grid\GridSettings;
 use MB\Bitrix\AdminKit\Grid\GridDataLoader;
+use MB\Bitrix\AdminKit\Grid\GridSettings;
 use MB\Bitrix\AdminKit\Grid\Grouping\IndexGrouping;
 use MB\Bitrix\AdminKit\Grid\Row\GridRowId;
 use MB\Bitrix\AdminKit\Manager\AssetManager;
@@ -38,15 +36,14 @@ class IndexPage extends CrudPage implements IndexPageContract
 {
     protected ?Grid $grid = null;
 
-    public function __construct(?ResourceContract $resource = null, mixed $id = null, array $params = [])
-    {
-        parent::__construct($resource, $id, $params);
-        $this->pageType = PageType::INDEX;
-    }
-
     public static function pageName(): string
     {
         return 'index';
+    }
+
+    protected static function defaultPageType(): PageType
+    {
+        return PageType::INDEX;
     }
 
     public function definition(): IndexPageDefinitionContract
@@ -438,19 +435,6 @@ class IndexPage extends CrudPage implements IndexPageContract
         return $this->resource->modifyIndexParams($params, $context);
     }
 
-    /** @return FieldContract[] */
-    protected function getVisibleFields(): array
-    {
-        $fields = [];
-        foreach ($this->fields() as $field) {
-            if ($field instanceof FieldContract && $field->isVisibleOn(PageType::INDEX)) {
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
-    }
-
     /**
      * Base URL for the current resource list — path + `page` param only.
      * Strips action/id/saved/IFRAME so redirects and links always land on the list.
@@ -566,10 +550,8 @@ class IndexPage extends CrudPage implements IndexPageContract
             return true;
         }
 
-        Extension::load(['ui.alerts']);
-        echo Notification::alert(
+        $this->renderPermissionError(
             $this->message('MB_ADMIN_KIT_INDEX_ERR_CANNOT_VIEW', 'Insufficient permissions to view this section.'),
-            Notification::TYPE_WARNING,
         );
 
         return false;

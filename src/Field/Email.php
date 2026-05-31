@@ -16,9 +16,12 @@ class Email extends Field
         $placeholderAttr = $this->placeholderAttr();
         $reactiveAttrs = $this->renderReactiveAttrs();
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-textbox">
-            <input type="email" class="ui-ctl-element" name="{$name}" value="{$val}"{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
+        <div{$wrapperAttrs}>
+            <input type="email"{$elementAttrs} name="{$name}" value="{$val}"{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
         </div>
         HTML;
     }

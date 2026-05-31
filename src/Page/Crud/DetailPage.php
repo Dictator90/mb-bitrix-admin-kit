@@ -6,11 +6,9 @@ namespace MB\Bitrix\AdminKit\Page\Crud;
 
 use Bitrix\Main\UI\Extension;
 use MB\Bitrix\AdminKit\Bitrix\Toolbar\ToolbarRenderer;
-use MB\Bitrix\AdminKit\Component\Notification;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Page\DetailPageContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\ResourcePersistenceContract;
-use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Field\FieldRenderContext;
 use MB\Bitrix\AdminKit\Page\CrudPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
@@ -22,16 +20,14 @@ class DetailPage extends CrudPage implements DetailPageContract
 {
     protected ?DataWrapper $item = null;
 
-    public function __construct(?ResourceContract $resource = null, mixed $id = null, array $params = [])
-    {
-        parent::__construct($resource, $id, $params);
-        $this->pageType = PageType::DETAIL;
-        $this->id = $id;
-    }
-
     public static function pageName(): string
     {
         return 'detail';
+    }
+
+    protected static function defaultPageType(): PageType
+    {
+        return PageType::DETAIL;
     }
 
     public function render(): void
@@ -41,7 +37,7 @@ class DetailPage extends CrudPage implements DetailPageContract
         Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.toolbar']);
 
         if (!$this->resource instanceof ResourcePersistenceContract) {
-            echo Notification::alert('Resource does not support persistence.', Notification::TYPE_WARNING);
+            $this->renderError('Resource does not support persistence.');
             return;
         }
 
@@ -51,18 +47,16 @@ class DetailPage extends CrudPage implements DetailPageContract
             : null;
 
         if (!$this->item) {
-            echo Notification::alert(
+            $this->renderError(
                 LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_DETAIL_NOT_FOUND', 'Item not found.'),
-                Notification::TYPE_WARNING,
             );
 
             return;
         }
 
         if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
-            echo Notification::alert(
+            $this->renderError(
                 LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_DETAIL_ERR_CANNOT_VIEW', 'Insufficient permissions to view this record.'),
-                Notification::TYPE_WARNING,
             );
 
             return;
@@ -70,9 +64,22 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         $APPLICATION->SetTitle($this->resource->getTitle() . ' #' . $this->id);
 
+        // JS, закрывающий слайдер (боковую панель) или уходящий назад по истории.
+        $backAction =
+            '(function(){' .
+            'var topWindow=window.top||window;' .
+            'var sidePanel=topWindow.BX&&topWindow.BX.SidePanel&&topWindow.BX.SidePanel.Instance;' .
+            "var slider=sidePanel&&typeof sidePanel.getTopSlider==='function'?sidePanel.getTopSlider():null;" .
+            "if(slider&&typeof slider.close==='function'){slider.close();return;}" .
+            'window.history.back();' .
+            '})();';
+
+        // ── 1. Тулбар ПЕРЕД полями ──────────────────────────────────────────
+        (new ToolbarRenderer())->renderDetail($this->resource, $backAction, $this->editUrl());
+
         $fields = $this->getVisibleFields();
 
-        echo '<div class="ui-form">';
+        echo '<div class="ui-form ui-form-section">';
 
         foreach ($fields as $field) {
             $value = $field->resolveValue($this->item, $this->item->toArray());
@@ -92,21 +99,6 @@ class DetailPage extends CrudPage implements DetailPageContract
             echo '</div>';
         }
 
-        echo '</div>';
-
-        $backAction = '(function(){' .
-            'var topWindow=window.top||window;' .
-            'var sidePanel=topWindow.BX&&topWindow.BX.SidePanel&&topWindow.BX.SidePanel.Instance;' .
-            "var slider=sidePanel&&typeof sidePanel.getTopSlider==='function'?sidePanel.getTopSlider():null;" .
-            "if(slider&&typeof slider.close==='function'){slider.close();return;}" .
-            'window.history.back();' .
-        '})();';
-
-        (new ToolbarRenderer())->renderDetail($this->resource, $backAction, $this->editUrl());
-
-        $backLabel = htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_DETAIL_BACK', 'Back'));
-        echo '<div class="ui-button-panel">';
-        echo '<button type="button" class="ui-btn ui-btn-link" onclick="' . htmlspecialchars($backAction, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">' . $backLabel . '</button>';
         echo '</div>';
     }
 
@@ -130,20 +122,4 @@ class DetailPage extends CrudPage implements DetailPageContract
     {
         return $this->resource->detailFields();
     }
-
-    /**
-     * @return FieldContract[]
-     */
-    protected function getVisibleFields(): array
-    {
-        $fields = [];
-        foreach ($this->fields() as $field) {
-            if ($field->isVisibleOn(PageType::DETAIL)) {
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
-    }
-
 }

@@ -67,9 +67,12 @@ class Password extends Field
                 aria-pressed="false"></button>
         HTML;
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox', 'ui-ctl-after-icon', 'adminkit-password-field');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-textbox ui-ctl-after-icon adminkit-password-field">
-            <input id="{$this->id}" type="password" class="ui-ctl-element" name="{$name}" value="{$escapedValue}"{$reqAttr}{$readonlyAttr}{$placeholderAttr} autocomplete="off">
+        <div{$wrapperAttrs}>
+            <input id="{$this->id}" type="password"{$elementAttrs} name="{$name}" value="{$escapedValue}"{$reqAttr}{$readonlyAttr}{$placeholderAttr} autocomplete="off">
             {$toggle}
         </div>
         <script>
@@ -96,9 +99,12 @@ class Password extends Field
             ? '<div class="ui-form-hint">' . htmlspecialcharsbx(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_PASSWORD_KEEP_HINT', 'Stored value is preserved. Enter a new password only to replace it.')) . '</div>'
             : '';
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-textbox">
-            <input type="password" class="ui-ctl-element" name="{$name}" value=""{$reqAttr}{$readonlyAttr}{$placeholderAttr} autocomplete="new-password">
+        <div{$wrapperAttrs}>
+            <input type="password"{$elementAttrs} name="{$name}" value=""{$reqAttr}{$readonlyAttr}{$placeholderAttr} autocomplete="new-password">
         </div>
         {$hint}
         HTML;

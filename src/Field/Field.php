@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Field;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Field\Concerns\HasComputedValue;
 use MB\Bitrix\AdminKit\Field\Concerns\HasEditLink;
+use MB\Bitrix\AdminKit\Field\Concerns\HasFieldAttributes;
 use MB\Bitrix\AdminKit\Field\Concerns\HasFieldConditions;
 use MB\Bitrix\AdminKit\Field\Concerns\HasFieldDefault;
 use MB\Bitrix\AdminKit\Field\Concerns\HasFieldExport;
@@ -38,6 +39,7 @@ abstract class Field implements FieldContract
     use HasFieldReadonly;
     use HasFieldConditions;
     use HasFieldHelp;
+    use HasFieldAttributes;
     use HasEditLink;
     use HasComputedValue;
 

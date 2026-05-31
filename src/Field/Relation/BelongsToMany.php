@@ -226,9 +226,12 @@ class BelongsToMany extends BelongsTo
                 . htmlspecialcharsbx($optLabel) . '</option>';
         }
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-dropdown');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-dropdown">
-            <select class="ui-ctl-element" name="{$inputName}" multiple size="5">{$optionsHtml}</select>
+        <div{$wrapperAttrs}>
+            <select{$elementAttrs} name="{$inputName}" multiple size="5">{$optionsHtml}</select>
         </div>
         HTML;
     }

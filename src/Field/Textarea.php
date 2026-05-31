@@ -25,9 +25,12 @@ class Textarea extends Field
         $placeholderAttr = $this->placeholderAttr();
         $reactiveAttrs = $this->renderReactiveAttrs();
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textarea');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-textarea">
-            <textarea class="ui-ctl-element" name="{$name}" rows="{$this->rows}"{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>{$val}</textarea>
+        <div{$wrapperAttrs}>
+            <textarea{$elementAttrs} name="{$name}" rows="{$this->rows}"{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>{$val}</textarea>
         </div>
         HTML;
     }
