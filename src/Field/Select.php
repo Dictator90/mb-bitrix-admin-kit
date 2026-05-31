@@ -91,10 +91,13 @@ class Select extends Field implements OptionFieldContract
 
         $reactiveAttrs = $this->renderReactiveAttrs();
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-after-icon', 'ui-ctl-dropdown');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-after-icon ui-ctl-dropdown">
+        <div{$wrapperAttrs}>
             <div class="ui-ctl-after ui-ctl-icon-angle"></div>
-            <select class="ui-ctl-element" name="{$name}"{$multipleAttr}{$reqAttr}{$disabledAttr}{$reactiveAttrs}>{$optionsHtml}</select>
+            <select{$elementAttrs} name="{$name}"{$multipleAttr}{$reqAttr}{$disabledAttr}{$reactiveAttrs}>{$optionsHtml}</select>
         </div>
         HTML;
     }

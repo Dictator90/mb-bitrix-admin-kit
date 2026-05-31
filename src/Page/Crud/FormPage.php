@@ -54,14 +54,17 @@ class FormPage extends CrudPage implements FormPageContract
     public function __construct(?ResourceContract $resource = null, mixed $id = null, array $params = [])
     {
         parent::__construct($resource, $id, $params);
-        $this->pageType = PageType::FORM;
-        $this->id = $id;
         $this->mode = (string)($params['mode'] ?? ($this->id !== null ? 'edit' : 'create'));
     }
 
     public static function pageName(): string
     {
         return 'form';
+    }
+
+    protected static function defaultPageType(): PageType
+    {
+        return PageType::FORM;
     }
 
 
@@ -114,7 +117,8 @@ class FormPage extends CrudPage implements FormPageContract
                 } else {
                     $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
                     if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
-                        $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW');
+                        $this->renderPermissionError((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW'));
+                        return;
                     }
                     if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
                         $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT');
@@ -122,7 +126,8 @@ class FormPage extends CrudPage implements FormPageContract
                 }
             }
         } elseif (!$this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
-            $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_CREATE');
+            $this->renderPermissionError((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_CREATE'));
+            return;
         }
 
         if ($this->isPost() && !check_bitrix_sessid()) {
@@ -411,6 +416,9 @@ class FormPage extends CrudPage implements FormPageContract
         if (!empty($tabs)) {
             $fields = [];
             foreach ($tabs as $tab) {
+                if (!$tab->isVisible()) {
+                    continue;
+                }
                 foreach ($tab->getItems() as $item) {
                     if ($item instanceof FieldContainerContract) {
                         $fields = array_merge($fields, $item->extractFields());
@@ -725,10 +733,21 @@ class FormPage extends CrudPage implements FormPageContract
 
         if ($this->resource instanceof DataManagerResourceContract) {
             $this->handleDataManagerObjectPost();
-            return;
+        } else {
+            $this->handleCrudResourcePost();
         }
 
-        $this->handleCrudResourcePost();
+        $items = array_merge(
+            iterator_to_array($this->fields()),
+            iterator_to_array($this->tabs()),
+        );
+
+        \MB\Bitrix\AdminKit\Support\ComponentPostHandlers::runAll(
+            $items,
+            function (string $error): void {
+                $this->addGlobalError($error);
+            },
+        );
     }
 
     protected function handleCrudResourcePost(): void

@@ -27,4 +27,10 @@ trait HasChildren
 
         return $this;
     }
+
+    /** @return array<int, FieldContract|ComponentContract> */
+    public function getChildren(): array
+    {
+        return $this->children;
+    }
 }

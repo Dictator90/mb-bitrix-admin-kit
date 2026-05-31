@@ -29,12 +29,15 @@ class Color extends Field
         $readonlyAttr = $this->formReadonlyAttr();
         $pickerDisabled = $readonlyAttr !== '' ? ' disabled' : '';
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox', 'adminkit-color-text');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
         <div class="adminkit-color-field">
             <input type="color" id="{$inputId}" class="adminkit-color-swatch" value="{$escapedValue}"{$pickerDisabled}
                 oninput="document.getElementById('{$inputId}_text').value = this.value">
-            <div class="ui-ctl ui-ctl-textbox adminkit-color-text">
-                <input type="text" id="{$inputId}_text" name="{$name}" class="ui-ctl-element"
+            <div{$wrapperAttrs}>
+                <input type="text" id="{$inputId}_text" name="{$name}"{$elementAttrs}
                     value="{$escapedValue}" maxlength="7" placeholder="#000000"{$readonlyAttr}
                     oninput="if(/^#[0-9A-Fa-f]{6}$/.test(this.value)){document.getElementById('{$inputId}').value=this.value}">
             </div>

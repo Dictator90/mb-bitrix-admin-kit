@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Component\Layout;
 
+use Closure;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\UI\ComponentContract;
 
@@ -19,6 +20,8 @@ class Tab
     protected ?string $icon = null;
     /** Badge counter on the tab header (e.g. 3 or '99+'). Rendered via mb.admin.kit Tabs. */
     protected int|string|null $count = null;
+    /** Visibility predicate — bool or Closure(Tab): bool. Evaluated each render. */
+    protected Closure|bool $visible = true;
 
     /**
      * @param string $title Human-readable tab label.
@@ -117,6 +120,38 @@ class Tab
         $this->active = $active;
 
         return $this;
+    }
+
+    // ── Visibility ───────────────────────────────────────────────────────
+
+    /**
+     * Hide or conditionally show the entire tab (header + body).
+     * Closure receives the Tab instance and must return a bool.
+     *
+     * Hidden tabs are excluded from rendering AND from field extraction —
+     * their fields are not validated, not persisted, and not posted.
+     */
+    public function canSee(bool|Closure $condition = true): static
+    {
+        $this->visible = $condition;
+
+        return $this;
+    }
+
+    /** Alias of canSee() — matches Field's `visible()` builder. */
+    public function visible(bool|Closure $condition = true): static
+    {
+        return $this->canSee($condition);
+    }
+
+    /** Evaluates the visibility predicate. Always true unless `canSee(false|Closure)` was used. */
+    public function isVisible(): bool
+    {
+        if (is_bool($this->visible)) {
+            return $this->visible;
+        }
+
+        return (bool)($this->visible)($this);
     }
 
     // ── Getters ──────────────────────────────────────────────────────────

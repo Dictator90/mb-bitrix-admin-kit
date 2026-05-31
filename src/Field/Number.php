@@ -62,9 +62,12 @@ class Number extends Field
         }
         $attrs .= $this->renderReactiveAttrs();
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-textbox">
-            <input type="number" class="ui-ctl-element" name="{$name}" value="{$val}"{$attrs}>
+        <div{$wrapperAttrs}>
+            <input type="number"{$elementAttrs} name="{$name}" value="{$val}"{$attrs}>
         </div>
         HTML;
     }

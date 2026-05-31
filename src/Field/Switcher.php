@@ -61,10 +61,13 @@ class Switcher extends Field
         $stored = htmlspecialcharsbx($checked ? $this->checkedValue : $this->uncheckedValue);
         $checkedAttr = $checked ? ' checked' : '';
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-checkbox');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
         <input type="hidden" name="{$name}" value="{$stored}">
-        <label class="ui-ctl ui-ctl-checkbox">
-            <input type="checkbox" class="ui-ctl-element" disabled{$checkedAttr}>
+        <label{$wrapperAttrs}>
+            <input type="checkbox"{$elementAttrs} disabled{$checkedAttr}>
         </label>
         HTML;
     }

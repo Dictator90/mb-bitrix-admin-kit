@@ -112,16 +112,22 @@ class Tabs implements LayoutComponentContract
             $this->activateTabById($this->rememberedActiveTabId);
         }
 
-        // Ensure at least one tab is active
-        $hasActive = (bool)array_filter($this->tabs, fn (Tab $t) => $t->isActive());
-        if (!$hasActive && $this->tabs !== []) {
-            $this->tabs[0]->active();
+        $visibleTabs = array_values(array_filter($this->tabs, static fn (Tab $t): bool => $t->isVisible()));
+
+        if ($visibleTabs === []) {
+            return '';
+        }
+
+        // Ensure at least one visible tab is active
+        $hasActive = (bool)array_filter($visibleTabs, static fn (Tab $t): bool => $t->isActive());
+        if (!$hasActive) {
+            $visibleTabs[0]->active();
         }
 
         $containerId = 'adminkit-tabs-' . bin2hex(random_bytes(5));
 
         $html = (new TabsRenderer())->render(
-            tabs: $this->tabs,
+            tabs: $visibleTabs,
             config: new TabsConfig($containerId, $this->remember),
             context: new ComponentContext($this->item, $this->pageType),
         );
@@ -133,12 +139,21 @@ class Tabs implements LayoutComponentContract
         return '<div' . $this->buildClassAttr() . $this->buildStyleAttr() . $this->buildExtraAttrs() . '>' . $html . '</div>';
     }
 
+    /** @return Tab[] */
+    public function getTabs(): array
+    {
+        return $this->tabs;
+    }
+
     /** @return list<FieldContract> */
     public function extractFields(): array
     {
         $fields = [];
 
         foreach ($this->tabs as $tab) {
+            if (!$tab->isVisible()) {
+                continue;
+            }
             foreach ($tab->getItems() as $item) {
                 if ($item instanceof FieldContract) {
                     $fields[] = $item;

@@ -38,10 +38,13 @@ class Date extends Field
         $readonlyAttr = $this->formReadonlyAttr($formData);
         $reactiveAttrs = $this->renderReactiveAttrs();
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-after-icon', 'ui-ctl-date');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-after-icon ui-ctl-date">
+        <div{$wrapperAttrs}>
             <div class="ui-ctl-after ui-ctl-icon-calendar"></div>
-            <input type="text" class="ui-ctl-element" id="{$inputId}" name="{$name}" value="{$val}"{$reqAttr}{$readonlyAttr}{$reactiveAttrs} onclick="BX.calendar({node: this, field: this, bTime: false})">
+            <input type="text"{$elementAttrs} id="{$inputId}" name="{$name}" value="{$val}"{$reqAttr}{$readonlyAttr}{$reactiveAttrs} onclick="BX.calendar({node: this, field: this, bTime: false})">
         </div>
         HTML;
     }

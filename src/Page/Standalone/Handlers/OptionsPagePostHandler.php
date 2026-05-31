@@ -7,6 +7,7 @@ namespace MB\Bitrix\AdminKit\Page\Standalone\Handlers;
 use Bitrix\Main\Config\Option;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Page\Standalone\OptionsPage;
+use MB\Bitrix\AdminKit\Support\ComponentPostHandlers;
 use MB\Bitrix\AdminKit\Support\ResponseTerminator;
 
 final class OptionsPagePostHandler
@@ -16,6 +17,8 @@ final class OptionsPagePostHandler
         $page->rememberActiveTabFromRequest();
         $siteId = $page->request->getPost('site_id') ?: '';
         $page->setErrors($this->persist($page, $moduleId, $siteId));
+
+        $this->runComponentPostHandlers($page);
 
         if ($page->errors() === []) {
             $uri = $page->request->getRequestUri();
@@ -30,6 +33,8 @@ final class OptionsPagePostHandler
         $siteId = $page->request->getPost('site_id') ?: '';
         $errors = $this->persist($page, $moduleId, $siteId);
 
+        $this->runComponentPostHandlers($page);
+
         if ($errors === []) {
             $this->sendJsonAndExit($page, [
                 'status' => 'success',
@@ -42,6 +47,24 @@ final class OptionsPagePostHandler
             'message' => $page->message('MB_ADMIN_KIT_OPTIONS_SAVE_ERROR', 'Save failed'),
             'errors' => $errors,
         ]);
+    }
+
+    /**
+     * Run any component-level POST handlers (e.g. GroupRights, which delegates
+     * its save to Bitrix's group_rights.php). Must run for both sync and async
+     * flows — async short-circuits before render, so the render-time side
+     * effect never fires.
+     */
+    protected function runComponentPostHandlers(OptionsPage $page): void
+    {
+        $errors = $page->errors();
+        ComponentPostHandlers::runAll(
+            iterator_to_array($page->components()),
+            static function (string $error) use (&$errors): void {
+                $errors[] = $error;
+            },
+        );
+        $page->setErrors($errors);
     }
 
     public function handleReactive(OptionsPage $page, string $moduleId): void

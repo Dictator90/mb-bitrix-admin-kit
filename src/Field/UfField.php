@@ -47,17 +47,22 @@ class UfField extends Field
             return (string)ob_get_clean();
         }
 
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         if ($this->multiple) {
+            $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox', 'adminkit-uf-field', 'adminkit-uf-field--multiple');
             $values = AdminCollection::make(is_array($currentValue) ? $currentValue : ($currentValue === null ? [] : [$currentValue]))->all();
             $inputs = '';
             foreach ($values ?: [''] as $item) {
-                $inputs .= '<input type="text" class="ui-ctl-element" name="' . $name . '" value="' . htmlspecialcharsbx((string)$item) . '">';
+                $inputs .= '<input type="text"' . $elementAttrs . ' name="' . $name . '" value="' . htmlspecialcharsbx((string)$item) . '">';
             }
 
-            return '<div class="ui-ctl ui-ctl-textbox adminkit-uf-field adminkit-uf-field--multiple">' . $inputs . '</div>';
+            return '<div' . $wrapperAttrs . '>' . $inputs . '</div>';
         }
 
-        return '<div class="ui-ctl ui-ctl-textbox adminkit-uf-field"><input type="text" class="ui-ctl-element" name="'
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox', 'adminkit-uf-field');
+
+        return '<div' . $wrapperAttrs . '><input type="text"' . $elementAttrs . ' name="'
             . $name . '" value="' . htmlspecialcharsbx((string)$currentValue) . '"></div>';
     }
 

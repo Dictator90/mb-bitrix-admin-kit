@@ -226,10 +226,13 @@ class BelongsTo extends RelationField
                 . htmlspecialcharsbx($optLabel) . '</option>';
         }
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-after-icon', 'ui-ctl-dropdown');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
-        <div class="ui-ctl ui-ctl-after-icon ui-ctl-dropdown">
+        <div{$wrapperAttrs}>
             <div class="ui-ctl-after ui-ctl-icon-angle"></div>
-            <select class="ui-ctl-element" name="{$name}"{$required}{$reactive}>{$optionsHtml}</select>
+            <select{$elementAttrs} name="{$name}"{$required}{$reactive}>{$optionsHtml}</select>
         </div>
         HTML;
     }

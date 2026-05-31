@@ -25,10 +25,13 @@ class Checkbox extends Field
         $checked = $this->isCheckedState($currentValue) ? ' checked' : '';
         $readonlyAttr = $this->formReadonlyAttr();
 
+        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-checkbox');
+        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
+
         return <<<HTML
         <input type="hidden" name="{$name}" value="{$uncheckedVal}">
-        <label class="ui-ctl ui-ctl-checkbox">
-            <input type="checkbox" class="ui-ctl-element" name="{$name}" value="{$checkedVal}"{$checked}{$readonlyAttr}>
+        <label{$wrapperAttrs}>
+            <input type="checkbox"{$elementAttrs} name="{$name}" value="{$checkedVal}"{$checked}{$readonlyAttr}>
             <div class="ui-ctl-label-text">{$label}</div>
         </label>
         HTML;

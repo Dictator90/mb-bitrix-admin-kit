@@ -656,8 +656,10 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
     display: flex;
     -ms-flex-wrap: wrap;
         flex-wrap: wrap;
-    gap: 6px;
     margin-bottom: 16px;
+    border: 1px solid #c6cdd3;
+    padding: 6px;
+    border-radius: 7px;
 }
 
 /* AdminKit: dependent field states */
@@ -829,9 +831,16 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
 }
 
 .adminkit-grid-group-label {
-    display: block;
+    display: inline;
     -webkit-box-sizing: border-box;
             box-sizing: border-box;
+}
+
+.adminkit-grid-group-actions-button {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    top: 0 !important;
 }
 
 .adminkit-dashboard {
