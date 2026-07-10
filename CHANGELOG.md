@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.1.9]
+
+### Added
+- `Field\YandexMap` — интерактивный редактор меток на Яндекс.Картах. Значение — единый JSON (центр/зум + список цветных меток с заголовком и описанием). Список меток под картой остаётся источником истины и полностью редактируем, даже если скрипт карт не загрузился или не задан API-ключ (карта — прогрессивное улучшение). Настройки: `center()`, `zoom()`, `apiKey()`, `height()`.
+- `Field\Email` теперь повторяемый: `multiple()` включает список адресов с добавлением/удалением (значение — плоский массив строк), как у `Field\Phone`.
+- Перетаскивание для смены порядка. Для повторяемых скалярных полей (`Phone`, `Email` и др. на трейте `RepeatableScalar`) появилась опция `sortable()` с drag-and-drop строк. Для `Field\EntitySelect` в множественном режиме `sortable()` включает перетаскивание выбранных чипсов; порядок скрытых инпутов синхронизируется с DOM.
+- `Field\Image` — миниатюры изображений в гриде «из коробки» через `Grid\Row\Assembler\ImageAssembler` (поддержка нескольких значений: массив, id через запятую, файловые массивы). Размер миниатюры настраивается `gridThumbSize(int $width, ?int $height)` (по умолчанию 40×40).
+- Поля можно объявлять без метки: `label` во всех конструкторах полей и в `make()` теперь необязателен. При пустой метке `column` обязателен (иначе `InvalidArgumentException`); строка формы рендерится без ярлыка (`adminkit-form-row--no-label`).
+
+### Changed
+- `Field\Phone` — маска стала страно-независимой и поддерживает **несколько масок** с авто-выбором по коду страны (`mask([Phone::MASK_RU, Phone::MASK_US])`). Ввод ограничивается ёмкостью маски (`maxlength` + обрезка хвоста). Значение приводится к каноничному виду при хранении (`+` и только цифры, напр. `+79999999999`), на вывод снова форматируется маской. **BC:** константа `Phone::DEFAULT_MASK` заменена на `Phone::MASK_RU` / `Phone::MASK_US` / `Phone::DEFAULT_MASKS`.
+- `Field\Json` — ширина колонок в гриде берётся из `getColumnWidth()` каждого сабполя (`minmax(0, 1fr)` по умолчанию); `label` необязателен.
+
+### Fixed
+- `Field\File` / `Field\Image` — uploads (especially video) intermittently failed with a bogus **"Unexpected server response"** while the file actually reached the server. Root cause is a Bitrix core bug in `BX.UI.FileInput.replaceInput` (`bitrix/js/main/core/core_fileinput.js`): after a successful upload its DOM-cleanup loop walks into a sibling node without a `name` and throws `Cannot read properties of undefined (reading 'indexOf')`, which the uploader catches and mislabels. The `File` field now emits a one-time client patch that reinstalls a guarded copy of `replaceInput` (`typeof input.name === 'string'` in the loop + null-input bailout). No Bitrix core files are modified.
+
+## [0.1.8]
+
+### Fixed
+- `Field\File` / `Field\Image` on UserField "file" columns (Highload-block `UF_*` files, and other UF-enabled DataManagers) now persist correctly. The ORM EntityObject `save()` path does not process UF file fields (only the DataManager `add()`/`update()` API does), and the UF save layer rejects a foreign pre-saved file id. Such columns are now detected and written via the DataManager API with a file array in `Relation\EntityObjectFormSaver`. Previously the file id silently reset to `0`.
+
+### Added
+- `Support\UserFieldFileColumns` — resolves which DataManager columns are UserField `file` fields (via `getUfId()` or Highload-block entity lookup), cached per class.
+- `Field\File::ormExpectsFileArray()` — makes the field hand the ORM a file array instead of a pre-saved id (set automatically by the persistence layer for UF file columns).
+- `Field\Image` — renders image thumbnails in the grid out of the box via `Grid\Row\Assembler\ImageAssembler` (multiple values supported: array, comma-separated ids, or file arrays). Thumbnail size is configurable with `gridThumbSize(int $width, ?int $height)` (default 40×40).
+
+### Changed
+- `Field\Image::getGridColumnType()` now returns `text` instead of `file`. `main.ui.grid` has no native `file`/`image` column type — the value had no rendering effect; image display is handled by the cell HTML (assembler).
+
 ## [0.1.7]
 
 ### Changed

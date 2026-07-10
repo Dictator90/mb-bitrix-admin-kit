@@ -40,6 +40,11 @@ if (!class_exists(Entity::class)) {
         {
             return new class {};
         }
+
+        public function getName(): string
+        {
+            return '';
+        }
     }
 }
 
@@ -402,6 +407,34 @@ if (!class_exists(ExpressionField::class)) {
         public function getName(): string
         {
             return '';
+        }
+    }
+}
+
+namespace Bitrix\Highloadblock;
+
+if (!class_exists(DataManager::class)) {
+    abstract class DataManager extends \Bitrix\Main\ORM\Data\DataManager
+    {
+        public static function getEntity(): \Bitrix\Main\ORM\Entity\Entity
+        {
+            return new \Bitrix\Main\ORM\Entity\Entity();
+        }
+    }
+}
+
+if (!class_exists(HighloadBlockTable::class)) {
+    class HighloadBlockTable
+    {
+        public static function getList(array $params): object
+        {
+            return new class {
+                /** @return array<string, mixed>|false */
+                public function fetch()
+                {
+                    return false;
+                }
+            };
         }
     }
 }

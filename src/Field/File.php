@@ -35,9 +35,40 @@ class File extends Field
 
     protected bool|Closure $deletePhysicalFiles = true;
 
-    public function __construct(string $label, ?string $column = null)
+    /**
+     * When true, newly uploaded/linked files are handed to the ORM as a file
+     * array instead of a pre-saved file id. Required for UserField "file"
+     * columns (e.g. Highload-block UF_* files), whose save layer rejects a
+     * foreign integer id but persists a fresh file array. Set automatically by
+     * the persistence layer via {@see self::ormExpectsFileArray()}.
+     */
+    protected bool $ormExpectsFileArray = false;
+
+    public function __construct(?string $label = null, ?string $column = null)
     {
         parent::__construct($label, $column);
+    }
+
+    public function ormExpectsFileArray(bool $value = true): static
+    {
+        $this->ormExpectsFileArray = $value;
+
+        return $this;
+    }
+
+    /**
+     * In file-array mode the raw POST value is passed through untouched so the
+     * file array is produced by a single {@see self::normalize()} pass in the
+     * pipeline. Normalizing here (the default) would run twice and a file array
+     * is not idempotent under re-normalization (unlike a saved integer id).
+     */
+    public function serializePostValue(mixed $value): mixed
+    {
+        if ($this->ormExpectsFileArray) {
+            return $value;
+        }
+
+        return parent::serializePostValue($value);
     }
 
     /**
@@ -145,12 +176,85 @@ class File extends Field
         return 'text';
     }
 
+    private static bool $replaceInputPatched = false;
+
     public function renderFormField(mixed $value = null): string
     {
         $currentValue = $this->resolveValue($value);
 
-        return (new FileInput($this->getFileInputParams($currentValue)))
+        $html = (new FileInput($this->getFileInputParams($currentValue)))
             ->show($this->prepareFileValue($currentValue));
+
+        return $html . self::renderFileInputCrashPatch();
+    }
+
+    /**
+     * Guards a Bitrix core bug in {@see BX.UI.FileInput.replaceInput}
+     * (bitrix/js/main/core/core_fileinput.js): after a successful upload the
+     * DOM-cleanup loop walks into a sibling node without a `name` property and
+     * throws `Cannot read properties of undefined (reading 'indexOf')`. The
+     * uploader catches it and mislabels it as "Unexpected server response",
+     * so an uploaded file (typically video) intermittently fails to attach.
+     *
+     * We reinstall a guarded copy of the method (adds `typeof input.name ===
+     * 'string'` to the loop condition and a null-input bailout). Emitted once
+     * per page, right after the first File/Image field.
+     */
+    private static function renderFileInputCrashPatch(): string
+    {
+        if (self::$replaceInputPatched) {
+            return '';
+        }
+        self::$replaceInputPatched = true;
+
+        return <<<'HTML'
+<script data-adminkit-fileinput-patch>
+(function patch(){
+    if (!(window.BX && BX.UI && BX.UI.FileInput && BX.UI.FileInput.prototype)) { setTimeout(patch, 50); return; }
+    var proto = BX.UI.FileInput.prototype;
+    if (proto.__adminKitReplaceInputPatched) { return; }
+    proto.__adminKitReplaceInputPatched = true;
+    proto.replaceInput = function(item, data){
+        var pointer = this.agent.getItem(item.id);
+        if (!pointer || !pointer.node) { return; }
+        var node = pointer.node,
+            input_name = node["__replaceInputName"],
+            id = item.id + 'Value',
+            input = BX.findChild(node, {tagName: "INPUT", attr: {id: id}}, true),
+            tmp,
+            file = (data && data['file'] && data['file']['files'] && data['file']['files']['default']) ? data['file']['files']['default'] : false;
+        if (!input) { return; }
+        if (!input_name) { input_name = node["__replaceInputName"] = input.name; }
+        if (file) {
+            input.parentNode.insertBefore(BX.create("INPUT", {attrs: {type: "hidden", name: input_name + '[name]', id: input.id, value: item.name}}), input);
+            input.parentNode.insertBefore(BX.create("INPUT", {attrs: {type: "hidden", name: input_name + '[type]', value: file['type']}}), input);
+            input.parentNode.insertBefore(BX.create("INPUT", {attrs: {type: "hidden", name: input_name + '[tmp_name]', value: file['path']}}), input);
+            input.parentNode.insertBefore(BX.create("INPUT", {attrs: {type: "hidden", name: input_name + '[size]', value: file['size']}}), input);
+            input.parentNode.insertBefore(BX.create("INPUT", {attrs: {type: "hidden", name: input_name + '[error]', value: 0}}), input);
+        } else {
+            input.parentNode.insertBefore(BX.create("INPUT", {attrs: {type: "hidden", name: input_name, id: input.id, value: (data && data['file'] ? data['file']['uploadId'] : '')}}), input);
+        }
+        while (BX(input) && typeof input.name === "string" && input.name.indexOf(input_name) === 0) {
+            tmp = input.nextSibling;
+            BX.remove(input);
+            input = tmp;
+        }
+        if (this.uploadParams["maxCount"] <= 1) {
+            var n = BX.findChild(this.container, {tagName: "INPUT", attr: {name: input_name}}, false);
+            if (n) {
+                BX.adjust(n, {attrs: {disabled: true}});
+                var nDelName = input_name + '_del';
+                if (input_name.indexOf('[') > 0) {
+                    nDelName = input_name.substr(0, input_name.indexOf('[')) + '_del' + input_name.substr(input_name.indexOf('['));
+                }
+                n = BX.findChild(this.container, {tagName: "INPUT", attr: {name: nDelName}}, false);
+                if (n) { BX.adjust(n, {attrs: {disabled: true}}); }
+            }
+        }
+    };
+})();
+</script>
+HTML;
     }
 
     public function normalize(mixed $value): mixed
@@ -190,6 +294,12 @@ class File extends Field
 
             $file = $this->makeFileArray($fileValue);
             if ($file === null) {
+                continue;
+            }
+
+            if ($this->ormExpectsFileArray) {
+                $this->validateFileBeforeSave($file, $value);
+                $result[] = $file;
                 continue;
             }
 

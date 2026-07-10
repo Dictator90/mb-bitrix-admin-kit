@@ -19,15 +19,59 @@ class ImageAssembler implements FieldAssembler
     public function processRow(array $row): array
     {
         foreach ($this->columnIds as $id) {
-            $row['columns'][$id] = $this->renderImage($row['data'][$id] ?? null);
+            $row['columns'][$id] = $this->renderColumn($row['data'][$id] ?? null);
         }
 
         return $row;
     }
 
-    protected function renderImage(mixed $value): string
+    protected function renderColumn(mixed $value): string
     {
-        $fileId = (int)$value;
+        $images = [];
+        foreach ($this->extractFileIds($value) as $fileId) {
+            $image = $this->renderImage($fileId);
+            if ($image !== '') {
+                $images[] = $image;
+            }
+        }
+
+        return implode('', $images);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function extractFileIds(mixed $value): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        if (is_array($value)) {
+            $items = $value;
+        } elseif (is_string($value) && str_contains($value, ',')) {
+            $items = explode(',', $value);
+        } else {
+            $items = [$value];
+        }
+
+        $ids = [];
+        foreach ($items as $item) {
+            if (is_array($item)) {
+                $item = $item['ID'] ?? null;
+            }
+
+            $fileId = (int)$item;
+            if ($fileId > 0) {
+                $ids[] = $fileId;
+            }
+        }
+
+        return $ids;
+    }
+
+    protected function renderImage(int $fileId): string
+    {
         if ($fileId <= 0) {
             return '';
         }
@@ -50,6 +94,6 @@ class ImageAssembler implements FieldAssembler
         $src = htmlspecialcharsbx($thumb['src']);
         $alt = htmlspecialcharsbx($fileInfo['ORIGINAL_NAME'] ?? '');
 
-        return '<img src="' . $src . '" alt="' . $alt . '" style="max-width:' . $this->width . 'px;max-height:' . $this->height . 'px;object-fit:contain;">';
+        return '<img src="' . $src . '" alt="' . $alt . '" style="max-width:' . $this->width . 'px;max-height:' . $this->height . 'px;object-fit:contain;margin:2px;">';
     }
 }

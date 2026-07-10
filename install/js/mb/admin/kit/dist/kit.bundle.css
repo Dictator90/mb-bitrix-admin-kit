@@ -1301,3 +1301,17 @@ a.ui-ctl-ext-after[class*=ui-ctl-icon-]:hover {
     margin: 2px !important;
     height: 30px !important;
 }
+
+.mb-adminkit-sortable-tag {
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
+.mb-adminkit-sortable-tag:active {
+    cursor: -webkit-grabbing;
+    cursor: grabbing;
+}
+
+.mb-adminkit-sortable-tag--dragging {
+    opacity: .5;
+}

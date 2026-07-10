@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Field;
 
+use MB\Bitrix\AdminKit\Field\Concerns\RepeatableScalar;
+
+/**
+ * Поле электронной почты (`input[type=email]`).
+ *
+ * Одиночное по умолчанию; {@see multiple()} включает повторяемый список адресов
+ * с добавлением/удалением (значение — плоский массив строк).
+ */
 class Email extends Field
 {
-    /** @param array<string,mixed> $formData */
-    public function renderFormField(mixed $value = null, array $formData = []): string
+    use RepeatableScalar;
+
+    protected function scalarInputType(): string
     {
-        $val = $this->escapedFormValue($value);
-        $name = htmlspecialcharsbx($this->column);
-        $reqAttr = $this->requiredAttr();
-        $readonlyAttr = $this->formReadonlyAttr($formData);
-        $placeholderAttr = $this->placeholderAttr();
-        $reactiveAttrs = $this->renderReactiveAttrs();
+        return 'email';
+    }
 
-        $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-textbox');
-        $elementAttrs = $this->renderElementAttributes('ui-ctl-element');
-
-        return <<<HTML
-        <div{$wrapperAttrs}>
-            <input type="email"{$elementAttrs} name="{$name}" value="{$val}"{$reqAttr}{$readonlyAttr}{$placeholderAttr}{$reactiveAttrs}>
-        </div>
-        HTML;
+    protected function defaultAddButtonLabel(): string
+    {
+        return 'Добавить почту';
     }
 }

@@ -13,10 +13,17 @@ trait HasFieldIdentity
     protected string $column;
     protected string $label;
 
-    protected function bootFieldIdentity(string $label, ?string $column = null): void
+    protected function bootFieldIdentity(?string $label = null, ?string $column = null): void
     {
-        $this->label = $label;
-        $this->column = $column ?? AdminString::safeKey($label);
+        $this->label = $label ?? '';
+        $this->column = ($column !== null && $column !== '')
+            ? $column
+            : AdminString::safeKey($this->label);
+
+        if ($this->column === '') {
+            throw new \InvalidArgumentException('Field requires a column when the label is empty.');
+        }
+
         $suffix = class_exists(Random::class) ? Random::getString(10) : bin2hex(random_bytes(5));
         $this->id = $this->column . '_' . $suffix;
     }

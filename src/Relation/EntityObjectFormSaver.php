@@ -8,11 +8,13 @@ use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Database\TransactionManager;
+use MB\Bitrix\AdminKit\Field\File;
 use MB\Bitrix\AdminKit\Field\Relation\BelongsToMany;
 use MB\Bitrix\AdminKit\Field\Relation\RelationField;
 use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Support\ExceptionDiagnostics;
+use MB\Bitrix\AdminKit\Support\UserFieldFileColumns;
 use RuntimeException;
 use Throwable;
 
@@ -49,6 +51,7 @@ final class EntityObjectFormSaver
         }
 
         [$scalarFields, $relationFields] = $this->splitFields($fields);
+        $this->markUserFieldFileFields($resource, $scalarFields);
         if ($fields === []) {
             $scalarFormData = new FormData($rawPost, $rawPost, $rawPost);
             $relationFormData = new FormData([], [], []);
@@ -141,7 +144,87 @@ final class EntityObjectFormSaver
 
         $savedId = $this->resolveSavedId($saveResult, $entityObject, $primaryKey, $itemId);
 
+        $this->persistUserFieldFiles($resource, $savedId, $scalarFields, $scalarFormData);
+
         return new EntityObjectSaveResult(true, $savedId);
+    }
+
+    /**
+     * Persist UserField "file" columns via the DataManager add/update API.
+     *
+     * Highload-block UF file fields are processed by the DataManager
+     * add()/update() layer (which runs CFile::SaveFile on a file array), not by
+     * the ORM EntityObject save() path — so these columns are skipped in
+     * {@see self::applyScalarValues()} and written here instead.
+     *
+     * @param DataManagerResourceContract&object $resource
+     * @param list<FieldContract> $scalarFields
+     */
+    private function persistUserFieldFiles(
+        DataManagerResourceContract $resource,
+        mixed $savedId,
+        array $scalarFields,
+        FormData $scalarFormData,
+    ): void {
+        if ($savedId === null || $savedId === '') {
+            return;
+        }
+
+        $class = $resource->getDataManagerClass();
+        if ($class === null || $class === '') {
+            return;
+        }
+
+        $ufFileColumns = UserFieldFileColumns::forDataManager($class);
+        if ($ufFileColumns === []) {
+            return;
+        }
+
+        $validated = $scalarFormData->validated();
+        $updates = [];
+        foreach ($scalarFields as $field) {
+            $column = $field->getColumn();
+            if (isset($ufFileColumns[$column]) && array_key_exists($column, $validated)) {
+                $updates[$column] = $validated[$column];
+            }
+        }
+
+        if ($updates === []) {
+            return;
+        }
+
+        /** @phpstan-ignore staticMethod.notFound */
+        $result = $class::update($savedId, $updates);
+        if (method_exists($result, 'isSuccess') && !$result->isSuccess()) {
+            throw new RuntimeException(implode('; ', $this->extractSaveErrors($result)));
+        }
+    }
+
+    /**
+     * Enable file-array ORM output on File fields that map to UserField "file"
+     * columns (e.g. Highload-block UF_* files), whose save layer rejects a
+     * pre-saved integer id.
+     *
+     * @param DataManagerResourceContract&object $resource
+     * @param list<FieldContract> $scalarFields
+     */
+    private function markUserFieldFileFields(DataManagerResourceContract $resource, array $scalarFields): void
+    {
+        $class = $resource->getDataManagerClass();
+        if ($class === null || $class === '') {
+            return;
+        }
+
+        $ufFileColumns = UserFieldFileColumns::forDataManager($class);
+        if ($ufFileColumns === []) {
+            return;
+        }
+
+        foreach ($scalarFields as $field) {
+            if ($field instanceof File && isset($ufFileColumns[$field->getColumn()])) {
+                $field->ormExpectsFileArray(true);
+            }
+        }
     }
 
     /**
@@ -235,10 +318,18 @@ final class EntityObjectFormSaver
         $forcedColumns = array_keys($validatedScalars);
         $values = array_merge($formData->validated(), $validatedScalars);
 
+        // UserField "file" columns are written via the DataManager add/update
+        // API in persistUserFieldFiles(); the EntityObject save() path does not
+        // process them. Skip them here so they are not set twice / lost.
+        $ufFileColumns = UserFieldFileColumns::forDataManager((string) $resource->getDataManagerClass());
+
         if ($scalarFields === []) {
             foreach ($values as $column => $value) {
                 $column = (string) $column;
                 if ($itemId !== null && $itemId !== '' && $column === $primaryKey) {
+                    continue;
+                }
+                if (isset($ufFileColumns[$column])) {
                     continue;
                 }
                 $entityObject->set($column, $value);
@@ -274,6 +365,10 @@ final class EntityObjectFormSaver
             }
 
             if (in_array($column, $readonlyColumns, true) && !in_array($column, $forcedColumns, true)) {
+                continue;
+            }
+
+            if (isset($ufFileColumns[$column])) {
                 continue;
             }
 

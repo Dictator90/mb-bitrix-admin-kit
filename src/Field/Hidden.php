@@ -8,7 +8,7 @@ use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 class Hidden extends Field
 {
-    public function __construct(string $label, ?string $column = null)
+    public function __construct(?string $label = null, ?string $column = null)
     {
         parent::__construct($label, $column);
         $this->sortable = false;

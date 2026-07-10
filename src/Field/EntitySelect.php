@@ -24,9 +24,29 @@ class EntitySelect extends Field
 
     protected ?Closure $labelResolver = null;
 
+    /** Drag-reorder of selected items in the form (multiple mode). Opt-in. */
+    protected bool $reorderable = false;
+
     /** Per-instance id→title memo, reused across grid rows to avoid resolving the same id repeatedly. */
     /** @var array<string,string> */
     private array $titleCache = [];
+
+    /**
+     * Включает перетаскивание выбранных элементов для смены их порядка
+     * (только в множественном режиме). Переопределяет грид-метод sortable();
+     * для entity-полей порядок в форме важнее сортировки грид-колонки.
+     */
+    public function sortable(bool $value = true): static
+    {
+        $this->reorderable = $value;
+
+        return $this;
+    }
+
+    public function isReorderable(): bool
+    {
+        return $this->reorderable;
+    }
 
     public function entityId(string $entityId, array $options = []): static
     {
@@ -249,6 +269,7 @@ class EntitySelect extends Field
             multiple: $this->multiple,
             readonly: $this->isReadOnlyFor($formData),
             placeholder: $this->placeholder,
+            sortable: $this->reorderable,
         );
     }
 }

@@ -15,6 +15,7 @@ final class EntitySelectorConfig
         public readonly bool $multiple = false,
         public readonly bool $readonly = false,
         public readonly ?string $placeholder = null,
+        public readonly bool $sortable = false,
     ) {
     }
 }

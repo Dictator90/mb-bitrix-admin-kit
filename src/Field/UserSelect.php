@@ -8,7 +8,7 @@ use Bitrix\Main\UserTable;
 
 class UserSelect extends DialogSelect
 {
-    public function __construct(string $label, ?string $column = null)
+    public function __construct(?string $label = null, ?string $column = null)
     {
         parent::__construct($label, $column);
 

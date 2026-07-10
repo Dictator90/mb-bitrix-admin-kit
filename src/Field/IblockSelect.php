@@ -14,7 +14,7 @@ use CIBlock;
  */
 class IblockSelect extends DialogSelect
 {
-    public function __construct(string $label, ?string $column = null)
+    public function __construct(?string $label = null, ?string $column = null)
     {
         parent::__construct($label, $column);
 

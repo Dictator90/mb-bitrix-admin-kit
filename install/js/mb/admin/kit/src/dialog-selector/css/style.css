@@ -22,3 +22,15 @@
     margin: 2px !important;
     height: 30px !important;
 }
+
+.mb-adminkit-sortable-tag {
+    cursor: grab;
+}
+
+.mb-adminkit-sortable-tag:active {
+    cursor: grabbing;
+}
+
+.mb-adminkit-sortable-tag--dragging {
+    opacity: .5;
+}

@@ -33,6 +33,7 @@ final class DialogSelectorRenderer
         $dialogId = htmlspecialchars(AdminString::htmlId('adminkit_dialog', $config->column), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $readonlyJs = $config->readonly ? 'true' : 'false';
         $multipleJs = $config->multiple ? 'true' : 'false';
+        $sortableJs = ($config->sortable && $config->multiple && !$config->readonly) ? 'true' : 'false';
 
         $selectedItems = [];
         foreach ($ids as $id) {
@@ -63,6 +64,7 @@ final class DialogSelectorRenderer
                     name: '{$baseName}',
                     multiple: {$multipleJs},
                     readonly: {$readonlyJs},
+                    sortable: {$sortableJs},
                     dialog: {$dialogJson}
                 })).render();
             };

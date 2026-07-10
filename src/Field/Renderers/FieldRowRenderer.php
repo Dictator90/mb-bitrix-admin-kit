@@ -41,8 +41,13 @@ final class FieldRowRenderer
             $inner .= '<div class="ui-alert ui-alert-inline ui-alert-xs ui-alert-danger adminkit-field-error"><span class="ui-alert-message">' . htmlspecialcharsbx($message) . '</span></div>';
         }
 
-        return '<div class="ui-form-row' . $extraClass . '" data-field-column="' . $column . '"' . $visibilityAttr . '>'
-            . '<div class="ui-form-label"><div class="ui-ctl-label-text">' . $label . $requiredMark . $hint . '</div></div>'
+        $labelHtml = ($label !== '' || $requiredMark !== '' || $hint !== '')
+            ? '<div class="ui-form-label"><div class="ui-ctl-label-text">' . $label . $requiredMark . $hint . '</div></div>'
+            : '';
+        $rowClass = 'ui-form-row' . ($labelHtml === '' ? ' adminkit-form-row--no-label' : '') . $extraClass;
+
+        return '<div class="' . $rowClass . '" data-field-column="' . $column . '"' . $visibilityAttr . '>'
+            . $labelHtml
             . '<div class="ui-form-content">' . $inner . '</div>'
             . '</div>';
     }

@@ -37,13 +37,13 @@ class BelongsTo extends RelationField
     /** @var array<array-key,string>|null */
     private ?array $previewOptionsCache = null;
 
-    public function __construct(string $label, ?string $column = null, string $dataManagerClass = '')
+    public function __construct(?string $label = null, ?string $column = null, string $dataManagerClass = '')
     {
         parent::__construct($label, $column);
         $this->dataManagerClass = $dataManagerClass;
     }
 
-    public static function make(string $label, ?string $column = null, string $dataManagerClass = ''): static
+    public static function make(?string $label = null, ?string $column = null, string $dataManagerClass = ''): static
     {
         return new static($label, $column, $dataManagerClass);
     }

@@ -11,7 +11,7 @@ class Password extends Field
 {
     protected bool $showOldValue = true;
 
-    public function __construct(string $label, ?string $column = null)
+    public function __construct(?string $label = null, ?string $column = null)
     {
         parent::__construct($label, $column);
         $this->hideOn(PageType::INDEX, PageType::DETAIL);

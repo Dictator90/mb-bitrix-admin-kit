@@ -8,6 +8,8 @@ use Bitrix\Main\UI\FileInput;
 use CFile;
 use Closure;
 use InvalidArgumentException;
+use MB\Bitrix\AdminKit\Grid\Row\Assembler\ImageAssembler;
+use MB\Bitrix\AdminKit\Grid\Row\FieldAssembler;
 
 class Image extends File
 {
@@ -15,11 +17,34 @@ class Image extends File
     protected int|Closure|null $maxImageHeight = null;
     protected int|Closure|null $resizeType = null;
 
-    public function __construct(string $label, ?string $column = null)
+    protected int $gridThumbWidth = 40;
+    protected int $gridThumbHeight = 40;
+
+    public function __construct(?string $label = null, ?string $column = null)
     {
         parent::__construct($label, $column);
 
         $this->uploadType = FileInput::UPLOAD_IMAGES;
+    }
+
+    public function getGridColumnType(): string
+    {
+        return 'text';
+    }
+
+    /** Renders image thumbnails in the grid cell out of the box. */
+    public function getFieldAssembler(): ?FieldAssembler
+    {
+        return new ImageAssembler([$this->column], $this->gridThumbWidth, $this->gridThumbHeight);
+    }
+
+    /** Thumbnail size (in pixels) used to render the image in the grid. */
+    public function gridThumbSize(int $width, ?int $height = null): static
+    {
+        $this->gridThumbWidth = $width;
+        $this->gridThumbHeight = $height ?? $width;
+
+        return $this;
     }
 
     public function uploadType(string|Closure|null $type): static

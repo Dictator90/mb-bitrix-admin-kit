@@ -8,7 +8,7 @@ use MB\Bitrix\AdminKit\Support\Enums\PageType;
 
 class ID extends Field
 {
-    public function __construct(string $label = 'ID', ?string $column = 'ID')
+    public function __construct(?string $label = 'ID', ?string $column = 'ID')
     {
         parent::__construct($label, $column);
         $this->hideOn(PageType::FORM);

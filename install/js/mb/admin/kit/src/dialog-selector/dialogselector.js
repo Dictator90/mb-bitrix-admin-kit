@@ -12,8 +12,10 @@ export class DialogSelector
 {
     name: string;
     multiple: boolean = false;
+    sortable: boolean = false;
 
     #target: HTMLElement;
+    #sortableBound: boolean = false;
 
     #inputValueCollection: ValueItemCollection;
     entitySelector: TagSelector;
@@ -28,6 +30,7 @@ export class DialogSelector
     {
         this.name = options.name;
         this.multiple = options.multiple ?? false;
+        this.sortable = (options.sortable ?? false) && this.multiple;
 
         if (Type.isDomNode(options.target)) {
             this.#target = options.target;
@@ -85,6 +88,7 @@ export class DialogSelector
                         value: tag.getId(),
                     })
                 );
+                this.#refreshDraggable();
             },
             onTagRemove: (event) => {
                 let {tag} = event.getData();
@@ -100,9 +104,114 @@ export class DialogSelector
         if (Type.isDomNode(this.#target)) {
             this.#inputValueCollection.renderTo(this.#target);
             this.entitySelector.renderTo(this.#target);
+            this.#setupSortable();
         }
 
         return null;
+    }
+
+    /**
+     * Помечает чипсы выбранных элементов как draggable (для новых тегов, добавленных
+     * после инициализации, вызывается повторно из onTagAdd).
+     */
+    #refreshDraggable()
+    {
+        if (!this.sortable) {
+            return;
+        }
+
+        this.entitySelector.getTags().forEach((tag) => {
+            let node = tag.getContainer();
+            if (Type.isDomNode(node) && node.getAttribute('draggable') !== 'true') {
+                node.setAttribute('draggable', 'true');
+                Dom.addClass(node, 'mb-adminkit-sortable-tag');
+            }
+        });
+    }
+
+    /**
+     * Включает перетаскивание чипсов для смены порядка. При завершении перетаскивания
+     * порядок скрытых инпутов синхронизируется с DOM-порядком чипсов.
+     */
+    #setupSortable()
+    {
+        if (!this.sortable || this.#sortableBound) {
+            return;
+        }
+
+        let container = this.entitySelector.getItemsContainer();
+        if (!Type.isDomNode(container)) {
+            return;
+        }
+
+        this.#sortableBound = true;
+        this.#refreshDraggable();
+
+        let dragged = null;
+
+        bind(container, 'dragstart', (e) => {
+            let item = e.target.closest('.ui-tag-selector-item');
+            if (!item || !container.contains(item)) {
+                return;
+            }
+            dragged = item;
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', ''); } catch (err) { /* IE */ }
+            Dom.addClass(item, 'mb-adminkit-sortable-tag--dragging');
+        });
+
+        bind(container, 'dragover', (e) => {
+            if (!dragged) {
+                return;
+            }
+            let over = e.target.closest('.ui-tag-selector-item');
+            if (!over || over === dragged || !container.contains(over) || over.getAttribute('draggable') !== 'true') {
+                return;
+            }
+            e.preventDefault();
+            let rect = over.getBoundingClientRect();
+            if ((e.clientX - rect.left) > rect.width / 2) {
+                over.after(dragged);
+            } else {
+                over.before(dragged);
+            }
+        });
+
+        bind(container, 'drop', (e) => {
+            if (dragged) {
+                e.preventDefault();
+            }
+        });
+
+        bind(container, 'dragend', () => {
+            if (!dragged) {
+                return;
+            }
+            Dom.removeClass(dragged, 'mb-adminkit-sortable-tag--dragging');
+            dragged = null;
+            this.#syncOrderFromDom();
+        });
+    }
+
+    /**
+     * Читает текущий DOM-порядок чипсов и переупорядочивает под него скрытые инпуты.
+     */
+    #syncOrderFromDom()
+    {
+        let container = this.entitySelector.getItemsContainer();
+        if (!Type.isDomNode(container)) {
+            return;
+        }
+
+        let nodeToId = new Map(this.entitySelector.getTags().map((tag) => [tag.getContainer(), String(tag.getId())]));
+        let order = [];
+        container.querySelectorAll('.ui-tag-selector-item').forEach((node) => {
+            if (nodeToId.has(node)) {
+                order.push(nodeToId.get(node));
+            }
+        });
+
+        this.#inputValueCollection.reorder(order);
     }
 
     static buildFromSelect(targetNode: HTMLElement|string): DialogSelector

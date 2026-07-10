@@ -6,7 +6,9 @@ export type DialogSelectorOptionsType = {
     items?: Array<ItemOptions>,
     dialog: Array,
     selected?: Array|number|string,
-    multiple: boolean
+    multiple: boolean,
+    readonly?: boolean,
+    sortable?: boolean
 }
 
 export type ValueOptionsType = {

@@ -39,6 +39,12 @@ trait HasFieldGridColumn
         return $this;
     }
 
+    /** Заданная ширина колонки в пикселях (или null). */
+    public function getColumnWidth(): ?int
+    {
+        return $this->columnWidth;
+    }
+
     /** Горизонтальное выравнивание содержимого: left|center|right. */
     public function align(string $align): static
     {

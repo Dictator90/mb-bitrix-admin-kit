@@ -36,6 +36,31 @@ export class ValueItemCollection
         });
     }
 
+    /**
+     * Переупорядочивает скрытые инпуты согласно переданному списку значений.
+     * Значения, которых нет в списке, сохраняются в конце в исходном порядке.
+     *
+     * @param {Array<string|number>} orderedValues
+     */
+    reorder(orderedValues: Array)
+    {
+        let byValue = new Map(this.#items.map((item: ValueItem) => [String(item.getValue()), item]));
+        let ordered = [];
+
+        orderedValues.forEach((value) => {
+            let key = String(value);
+            if (byValue.has(key)) {
+                ordered.push(byValue.get(key));
+                byValue.delete(key);
+            }
+        });
+
+        byValue.forEach((item: ValueItem) => ordered.push(item));
+
+        this.#items = ordered;
+        ordered.forEach((item: ValueItem) => Dom.append(item.getNode(), this.#container));
+    }
+
     #fillContainer()
     {
         this.#container = Dom.create('div', {

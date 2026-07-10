@@ -1561,6 +1561,35 @@ this.MB = this.MB || {};
             }
           });
         }
+        /**
+         * Переупорядочивает скрытые инпуты согласно переданному списку значений.
+         * Значения, которых нет в списке, сохраняются в конце в исходном порядке.
+         *
+         * @param {Array<string|number>} orderedValues
+         */
+      }, {
+        key: "reorder",
+        value: function reorder(orderedValues) {
+          var _this2 = this;
+          var byValue = new Map(babelHelpers.classPrivateFieldGet(this, _items$1).map(function (item) {
+            return [String(item.getValue()), item];
+          }));
+          var ordered = [];
+          orderedValues.forEach(function (value) {
+            var key = String(value);
+            if (byValue.has(key)) {
+              ordered.push(byValue.get(key));
+              byValue["delete"](key);
+            }
+          });
+          byValue.forEach(function (item) {
+            return ordered.push(item);
+          });
+          babelHelpers.classPrivateFieldSet(this, _items$1, ordered);
+          ordered.forEach(function (item) {
+            return main_core.Dom.append(item.getNode(), babelHelpers.classPrivateFieldGet(_this2, _container));
+          });
+        }
       }, {
         key: "renderTo",
         value: function renderTo(node) {
@@ -1588,20 +1617,32 @@ this.MB = this.MB || {};
      * @namespace MB.UI
      */
     var _target = /*#__PURE__*/new WeakMap();
+    var _sortableBound = /*#__PURE__*/new WeakMap();
     var _inputValueCollection = /*#__PURE__*/new WeakMap();
     var _fillOptions = /*#__PURE__*/new WeakSet();
     var _setSelectedInputs = /*#__PURE__*/new WeakSet();
     var _getTagSelectorOptions = /*#__PURE__*/new WeakSet();
+    var _refreshDraggable = /*#__PURE__*/new WeakSet();
+    var _setupSortable = /*#__PURE__*/new WeakSet();
+    var _syncOrderFromDom = /*#__PURE__*/new WeakSet();
     var DialogSelector = /*#__PURE__*/function () {
       function DialogSelector(_options) {
         babelHelpers.classCallCheck(this, DialogSelector);
+        _classPrivateMethodInitSpec$5(this, _syncOrderFromDom);
+        _classPrivateMethodInitSpec$5(this, _setupSortable);
+        _classPrivateMethodInitSpec$5(this, _refreshDraggable);
         _classPrivateMethodInitSpec$5(this, _getTagSelectorOptions);
         _classPrivateMethodInitSpec$5(this, _setSelectedInputs);
         _classPrivateMethodInitSpec$5(this, _fillOptions);
         babelHelpers.defineProperty(this, "multiple", false);
+        babelHelpers.defineProperty(this, "sortable", false);
         _classPrivateFieldInitSpec$5(this, _target, {
           writable: true,
           value: void 0
+        });
+        _classPrivateFieldInitSpec$5(this, _sortableBound, {
+          writable: true,
+          value: false
         });
         _classPrivateFieldInitSpec$5(this, _inputValueCollection, {
           writable: true,
@@ -1615,9 +1656,14 @@ this.MB = this.MB || {};
           if (main_core.Type.isDomNode(babelHelpers.classPrivateFieldGet(this, _target))) {
             babelHelpers.classPrivateFieldGet(this, _inputValueCollection).renderTo(babelHelpers.classPrivateFieldGet(this, _target));
             this.entitySelector.renderTo(babelHelpers.classPrivateFieldGet(this, _target));
+            _classPrivateMethodGet$5(this, _setupSortable, _setupSortable2).call(this);
           }
           return null;
         }
+        /**
+         * Помечает чипсы выбранных элементов как draggable (для новых тегов, добавленных
+         * после инициализации, вызывается повторно из onTagAdd).
+         */
       }], [{
         key: "buildFromSelect",
         value: function buildFromSelect(targetNode) {
@@ -1647,9 +1693,10 @@ this.MB = this.MB || {};
       return DialogSelector;
     }();
     function _fillOptions2(options) {
-      var _options$multiple;
+      var _options$multiple, _options$sortable;
       this.name = options.name;
       this.multiple = (_options$multiple = options.multiple) !== null && _options$multiple !== void 0 ? _options$multiple : false;
+      this.sortable = ((_options$sortable = options.sortable) !== null && _options$sortable !== void 0 ? _options$sortable : false) && this.multiple;
       if (main_core.Type.isDomNode(options.target)) {
         babelHelpers.classPrivateFieldSet(this, _target, options.target);
       } else if (main_core.Type.isStringFilled(options.target)) {
@@ -1704,6 +1751,7 @@ this.MB = this.MB || {};
             multiple: _this2.multiple,
             value: tag.getId()
           }));
+          _classPrivateMethodGet$5(_this2, _refreshDraggable, _refreshDraggable2).call(_this2);
         },
         onTagRemove: function onTagRemove(event) {
           var _event$getData2 = event.getData(),
@@ -1712,6 +1760,88 @@ this.MB = this.MB || {};
         }
       };
       return tagSelectorOptions;
+    }
+    function _refreshDraggable2() {
+      if (!this.sortable) {
+        return;
+      }
+      this.entitySelector.getTags().forEach(function (tag) {
+        var node = tag.getContainer();
+        if (main_core.Type.isDomNode(node) && node.getAttribute('draggable') !== 'true') {
+          node.setAttribute('draggable', 'true');
+          main_core.Dom.addClass(node, 'mb-adminkit-sortable-tag');
+        }
+      });
+    }
+    function _setupSortable2() {
+      var _this3 = this;
+      if (!this.sortable || babelHelpers.classPrivateFieldGet(this, _sortableBound)) {
+        return;
+      }
+      var container = this.entitySelector.getItemsContainer();
+      if (!main_core.Type.isDomNode(container)) {
+        return;
+      }
+      babelHelpers.classPrivateFieldSet(this, _sortableBound, true);
+      _classPrivateMethodGet$5(this, _refreshDraggable, _refreshDraggable2).call(this);
+      var dragged = null;
+      main_core.bind(container, 'dragstart', function (e) {
+        var item = e.target.closest('.ui-tag-selector-item');
+        if (!item || !container.contains(item)) {
+          return;
+        }
+        dragged = item;
+        e.dataTransfer.effectAllowed = 'move';
+        try {
+          e.dataTransfer.setData('text/plain', '');
+        } catch (err) {/* IE */}
+        main_core.Dom.addClass(item, 'mb-adminkit-sortable-tag--dragging');
+      });
+      main_core.bind(container, 'dragover', function (e) {
+        if (!dragged) {
+          return;
+        }
+        var over = e.target.closest('.ui-tag-selector-item');
+        if (!over || over === dragged || !container.contains(over) || over.getAttribute('draggable') !== 'true') {
+          return;
+        }
+        e.preventDefault();
+        var rect = over.getBoundingClientRect();
+        if (e.clientX - rect.left > rect.width / 2) {
+          over.after(dragged);
+        } else {
+          over.before(dragged);
+        }
+      });
+      main_core.bind(container, 'drop', function (e) {
+        if (dragged) {
+          e.preventDefault();
+        }
+      });
+      main_core.bind(container, 'dragend', function () {
+        if (!dragged) {
+          return;
+        }
+        main_core.Dom.removeClass(dragged, 'mb-adminkit-sortable-tag--dragging');
+        dragged = null;
+        _classPrivateMethodGet$5(_this3, _syncOrderFromDom, _syncOrderFromDom2).call(_this3);
+      });
+    }
+    function _syncOrderFromDom2() {
+      var container = this.entitySelector.getItemsContainer();
+      if (!main_core.Type.isDomNode(container)) {
+        return;
+      }
+      var nodeToId = new Map(this.entitySelector.getTags().map(function (tag) {
+        return [tag.getContainer(), String(tag.getId())];
+      }));
+      var order = [];
+      container.querySelectorAll('.ui-tag-selector-item').forEach(function (node) {
+        if (nodeToId.has(node)) {
+          order.push(nodeToId.get(node));
+        }
+      });
+      babelHelpers.classPrivateFieldGet(this, _inputValueCollection).reorder(order);
     }
     function _parseSelectNode(target) {
       var items = [];

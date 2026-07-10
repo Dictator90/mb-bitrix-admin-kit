@@ -12,13 +12,13 @@ class IblockElementSelect extends DialogSelect
 {
     protected int $iblockId = 0;
 
-    public function __construct(string $label, ?string $column = null, int $iblockId = 0)
+    public function __construct(?string $label = null, ?string $column = null, int $iblockId = 0)
     {
         parent::__construct($label, $column);
         $this->iblockId($iblockId);
     }
 
-    public static function make(string $label, ?string $column = null, int $iblockId = 0): static
+    public static function make(?string $label = null, ?string $column = null, int $iblockId = 0): static
     {
         return new static($label, $column, $iblockId);
     }

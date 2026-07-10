@@ -58,7 +58,7 @@ abstract class Field implements FieldContract
      */
     protected array $renderFormData = [];
 
-    public function __construct(string $label, ?string $column = null)
+    public function __construct(?string $label = null, ?string $column = null)
     {
         $this->bootFieldIdentity($label, $column);
     }
