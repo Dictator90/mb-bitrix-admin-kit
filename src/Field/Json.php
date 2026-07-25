@@ -19,6 +19,12 @@ use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
  *       Textarea::make('Описание', 'description'),
  *   ])
  *
+ * Layout is switchable with {@see layout()} / {@see stacked()}: the default
+ * {@see LAYOUT_ROW} keeps sub-fields in a horizontal row under a shared header;
+ * {@see LAYOUT_STACK} lays them vertically (one under another), each carrying
+ * its own inline label. Stacking applies to both shapes below and, in the list
+ * shape, turns every row into a self-contained card.
+ *
  * Two shapes, switched by {@see multiple()}:
  *
  *  - multiple(true) (default): a user-managed LIST of rows. Value is a JSON
@@ -44,6 +50,17 @@ class Json extends Field
     protected ?int $maxRows = null;
 
     protected bool $sortable = false;
+
+    /**
+     * Sub-field layout inside a row: 'row' (default) lays them out horizontally
+     * as columns under one shared header; 'stack' lays them vertically, one
+     * under another, each with its own inline label (no shared header).
+     */
+    protected string $layout = self::LAYOUT_ROW;
+
+    public const LAYOUT_ROW = 'row';
+
+    public const LAYOUT_STACK = 'stack';
 
     protected string $addButtonLabel = 'Добавить';
 
@@ -91,6 +108,34 @@ class Json extends Field
     public function reorderable(bool $value = true): static
     {
         return $this->sortable($value);
+    }
+
+    /**
+     * Sub-field layout: {@see LAYOUT_ROW} (horizontal columns, default) or
+     * {@see LAYOUT_STACK} (vertical, one field under another).
+     */
+    public function layout(string $layout): static
+    {
+        $this->layout = $layout === self::LAYOUT_STACK ? self::LAYOUT_STACK : self::LAYOUT_ROW;
+
+        return $this;
+    }
+
+    /** Lay sub-fields out vertically (one under another). Alias of layout(stack). */
+    public function stacked(bool $value = true): static
+    {
+        return $this->layout($value ? self::LAYOUT_STACK : self::LAYOUT_ROW);
+    }
+
+    /** Alias of {@see stacked()}. */
+    public function vertical(bool $value = true): static
+    {
+        return $this->stacked($value);
+    }
+
+    public function isStacked(): bool
+    {
+        return $this->layout === self::LAYOUT_STACK;
     }
 
     public function minRows(int $min): static
@@ -166,7 +211,9 @@ class Json extends Field
         $addLabel = htmlspecialcharsbx($this->addButtonLabel);
         $maxAttr = $this->maxRows !== null ? ' data-max-rows="' . $this->maxRows . '"' : '';
         $sortableAttr = $this->sortable ? ' data-json-sortable="1"' : '';
-        $gridStyle = ' style="' . $this->gridTemplateColumns() . '"';
+        $headerHtml = $this->isStacked()
+            ? ''
+            : '<div class="adminkit-json-header" style="' . $this->gridTemplateColumns() . '">' . $this->renderHeader(true) . '</div>';
         Extension::load(['ui.buttons']);
         $addButton = $readonly
             ? ''
@@ -177,7 +224,7 @@ class Json extends Field
         return <<<HTML
         <div{$wrapperAttrs} id="{$groupId}" data-json-group="{$groupId}" data-json-template="{$templateJson}"{$maxAttr}{$sortableAttr}>
             <div class="adminkit-json-table">
-                <div class="adminkit-json-header"{$gridStyle}>{$this->renderHeader(true)}</div>
+                {$headerHtml}
                 <div class="adminkit-json-rows">{$rowsHtml}</div>
             </div>
             {$addButton}
@@ -196,6 +243,27 @@ class Json extends Field
         $wrapperAttrs = $this->renderWrapperAttributes('ui-ctl', 'ui-ctl-json');
         $label = htmlspecialcharsbx($this->label);
         $hint = $this->renderHint();
+
+        if ($this->isStacked()) {
+            $cellsHtml = '';
+            foreach ($this->schema as $subField) {
+                $subColumn = $subField->getColumn();
+                $cellsHtml .= $this->renderStackCell(
+                    $subField,
+                    "{$this->column}[{$subColumn}]",
+                    $object[$subColumn] ?? null,
+                );
+            }
+
+            return <<<HTML
+            <div{$wrapperAttrs} id="adminkit_json_{$this->column}">
+                <div class="adminkit-json-label">{$label}{$hint}</div>
+                <div class="adminkit-json-row adminkit-json-row--stack">{$cellsHtml}</div>
+            </div>
+            {$this->renderStyleOnce()}
+            HTML;
+        }
+
         $gridStyle = $this->gridTemplateColumns(false);
 
         $cellsHtml = '';
@@ -221,6 +289,24 @@ class Json extends Field
         </div>
         {$this->renderStyleOnce()}
         HTML;
+    }
+
+    /**
+     * Renders one sub-field as a stacked cell: its own label above the control.
+     * The sub-field's POST column is temporarily rewritten to the positional
+     * path, mirroring {@see renderRow()}.
+     */
+    protected function renderStackCell(FieldContract $subField, string $name, mixed $value): string
+    {
+        $originalColumn = $this->fieldColumn($subField);
+        $this->setFieldColumn($subField, $name);
+        $control = $subField->renderForm($value);
+        $this->setFieldColumn($subField, $originalColumn);
+
+        $label = htmlspecialcharsbx($subField->getLabel());
+        $labelHtml = $label !== '' ? '<div class="adminkit-json-cell-label">' . $label . '</div>' : '';
+
+        return '<div class="adminkit-json-cell adminkit-json-cell--stack">' . $labelHtml . $control . '</div>';
     }
 
     protected function gridTemplateColumns(bool $withActions = true): string
@@ -260,6 +346,16 @@ class Json extends Field
      */
     protected function renderRow(string $groupId, int|string $index, array $row, bool $readonly): string
     {
+        $removeButton = $readonly
+            ? ''
+            : <<<HTML
+            <button type="button" class="ui-btn ui-btn-icon-remove ui-btn-link ui-btn-sm adminkit-json-remove" title="Удалить" data-group="{$groupId}"></button>
+            HTML;
+
+        if ($this->isStacked()) {
+            return $this->renderStackedRow($index, $row, $readonly, $removeButton);
+        }
+
         $cellsHtml = '';
 
         if ($this->sortable && !$readonly) {
@@ -282,18 +378,48 @@ class Json extends Field
             $this->setFieldColumn($subField, $originalColumn);
         }
 
-        $removeButton = $readonly
-            ? ''
-            : <<<HTML
-            <button type="button" class="ui-btn ui-btn-icon-remove ui-btn-link ui-btn-sm adminkit-json-remove" title="Удалить" data-group="{$groupId}"></button>
-            HTML;
-
         $gridStyle = ' style="' . $this->gridTemplateColumns() . '"';
 
         return <<<HTML
         <div class="adminkit-json-row" data-json-row{$gridStyle}>
             {$cellsHtml}
             <div class="adminkit-json-cell adminkit-json-cell--action">{$removeButton}</div>
+        </div>
+        HTML;
+    }
+
+    /**
+     * Renders one row with sub-fields stacked vertically. Drag handle and the
+     * remove button share a small toolbar above the fields; the row keeps the
+     * same `data-json-row` / control-name contract as the grid layout so the
+     * shared add/remove/reorder JS works unchanged.
+     *
+     * @param array<string,mixed> $row
+     */
+    protected function renderStackedRow(int|string $index, array $row, bool $readonly, string $removeButton): string
+    {
+        $handle = ($this->sortable && !$readonly)
+            ? '<span class="adminkit-json-handle" draggable="true" title="Перетащите для сортировки">⠿</span>'
+            : '';
+
+        $head = ($handle !== '' || $removeButton !== '')
+            ? '<div class="adminkit-json-stack-head">' . $handle . '<span class="adminkit-json-stack-spacer"></span>' . $removeButton . '</div>'
+            : '';
+
+        $cellsHtml = '';
+        foreach ($this->schema as $subField) {
+            $subColumn = $subField->getColumn();
+            $cellsHtml .= $this->renderStackCell(
+                $subField,
+                "{$this->column}[{$index}][{$subColumn}]",
+                $row[$subColumn] ?? null,
+            );
+        }
+
+        return <<<HTML
+        <div class="adminkit-json-row adminkit-json-row--stack" data-json-row>
+            {$head}
+            {$cellsHtml}
         </div>
         HTML;
     }
@@ -453,6 +579,33 @@ class Json extends Field
             display: grid;
             gap: 8px;
             align-items: center;
+        }
+        .adminkit-json-row--stack {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            border: 1px solid #e1e7ec;
+            border-radius: var(--ui-border-radius-md, 8px);
+            padding: 10px 12px;
+        }
+        .adminkit-json-stack-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .adminkit-json-stack-spacer {
+            flex: 1 1 auto;
+        }
+        .adminkit-json-cell--stack {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .adminkit-json-cell-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ui-color-base-70, #828b95);
         }
         .adminkit-json-header-cell {
             font-size: 12px;
