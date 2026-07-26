@@ -7,10 +7,17 @@ namespace MB\Bitrix\AdminKit\Tests\Page;
 use MB\Bitrix\AdminKit\Page\Crud\DetailPage;
 use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
+use MB\Bitrix\AdminKit\Tests\Support\ComponentApplicationStub;
 use PHPUnit\Framework\TestCase;
 
 final class DetailPagePermissionTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $GLOBALS['APPLICATION'] = new ComponentApplicationStub();
+    }
+
     public function testNotFoundShowsLocalizedMessage(): void
     {
         $resource = new class () extends ProductResource {

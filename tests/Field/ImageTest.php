@@ -29,20 +29,27 @@ final class ImageTest extends TestCase
         self::assertTrue($canEdit);
         self::assertTrue($canDelete);
         self::assertTrue($useCloud);
-        self::assertTrue($medialib);
+        self::assertFalse($medialib);
         self::assertTrue($fileDialog);
         self::assertNull($maxCount);
         self::assertSame(\Bitrix\Main\UI\FileInput::UPLOAD_IMAGES, $uploadType);
-        self::assertTrue($description);
+        self::assertFalse($description);
     }
 
     public function testRenderFormField(): void
     {
-        $field = Image::make('Test Image', 'test_image');
+        // bitrix-core-test does not ship the main.core extension assets. The
+        // FileInput markup itself only needs the core to be considered loaded.
+        \CJSCore::markExtensionLoaded('core');
+
+        $field = Image::make('Test Image', 'test_image')
+            ->useCloud(false)
+            ->fileDialog(false);
         $html = $field->renderFormField();
 
-        self::assertStringContainsString('bx_file_test_image__ind_', $html);
-        self::assertStringContainsString('bx_file_test_image__ind__input_container', $html);
-        self::assertStringContainsString('BX.UI.ImageInput.getById', $html);
+        self::assertStringContainsString('adm-fileinput-wrapper-single', $html);
+        self::assertStringContainsString('"name":"test_image[#IND#]"', $html);
+        self::assertStringContainsString('new BX.UI.FileInput', $html);
+        self::assertStringContainsString('"allowUpload":"I"', $html);
     }
 }

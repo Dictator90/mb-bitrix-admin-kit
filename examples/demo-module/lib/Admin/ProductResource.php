@@ -9,6 +9,7 @@ use Bitrix\Main\ORM\Fields\Relations\Reference;
 use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Database\BulkResult;
+use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Field\ID;
 use MB\Bitrix\AdminKit\Field\Number;
 use MB\Bitrix\AdminKit\Field\Select;
@@ -16,6 +17,7 @@ use MB\Bitrix\AdminKit\Field\Switcher;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Filter\Types\SelectFilter;
 use MB\Bitrix\AdminKit\Filter\Types\TextFilter;
+use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Grid\GridContext;
 use MB\Bitrix\AdminKit\Resource\DataManagerResource;
 use Vendor\Demo\Orm\ProductTable;
@@ -130,11 +132,9 @@ final class ProductResource extends DataManagerResource
         return $params;
     }
 
-    protected function beforeCreate(array $data): array
+    public function beforeCreate(FormData $data, DbOperationContext $context): void
     {
-        $data['SORT'] = isset($data['SORT']) ? (int)$data['SORT'] : 500;
-
-        return $data;
+        $data->set('SORT', (int)$data->get('SORT', 500));
     }
 
     /** @return array<string,string> */

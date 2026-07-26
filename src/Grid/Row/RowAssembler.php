@@ -127,7 +127,7 @@ class RowAssembler
 
         $actions = [];
         if (!$isGroupRow) {
-            $sidePanelWidth = method_exists($this->resource, 'sidePanelWidth')
+            $sidePanelWidth = $this->resource !== null && method_exists($this->resource, 'sidePanelWidth')
                 ? (int)$this->resource->sidePanelWidth()
                 : null;
 

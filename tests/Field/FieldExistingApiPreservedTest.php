@@ -46,6 +46,17 @@ final class FieldExistingApiPreservedTest extends TestCase
         }
     }
 
+    public function testHelpIsBackwardCompatibleAliasForHint(): void
+    {
+        $field = Text::make('Name', 'NAME')->help('Helpful text');
+
+        self::assertStringContainsString('data-hint="Helpful text"', $field->renderHint());
+
+        $field->help(null);
+
+        self::assertSame('', $field->renderHint());
+    }
+
     public function testPrivateSystemExportableImportableFlagsArePreserved(): void
     {
         $field = Text::make('Secret', 'SECRET')->private()->system()->exportable(false)->importable(false);

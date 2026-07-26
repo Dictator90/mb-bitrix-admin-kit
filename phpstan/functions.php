@@ -61,6 +61,18 @@ if (!class_exists('CFile')) {
         {
         }
 
+        /** @param array<string, mixed> $file */
+        public static function CheckFile(array $file, mixed $maxFileSize = 0, mixed $flash = false, mixed $image = false, mixed $makeServerFile = false): string
+        {
+            return '';
+        }
+
+        /** @param array<string, mixed> $file */
+        public static function CheckImageFile(array $file, mixed $maxFileSize = 0, mixed $maxWidth = 0, mixed $maxHeight = 0): string
+        {
+            return '';
+        }
+
         public static function SaveFile(mixed $file, string $dir): mixed
         {
             return 1;
@@ -81,6 +93,26 @@ if (!class_exists('CFile')) {
         public static function ResizeImageGet(mixed $file, array $sizes, int $type = 1, bool $bInitSizes = false, mixed $arFilters = false, mixed $bImmediate = false, mixed $jpgQuality = false): array|bool
         {
             return [];
+        }
+
+        /** @param array<string, mixed> $file */
+        public static function ResizeImage(array &$file, array $sizes, int $type = 1): bool
+        {
+            return true;
+        }
+    }
+}
+
+if (!class_exists('CHTMLEditor')) {
+    class CHTMLEditor
+    {
+        /** @param array<string, mixed> $params */
+        public function __construct(array $params = [])
+        {
+        }
+
+        public function Show(mixed $result = null): void
+        {
         }
     }
 }

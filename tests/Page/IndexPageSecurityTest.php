@@ -8,6 +8,7 @@ use MB\Bitrix\AdminKit\Action\BulkAction;
 use MB\Bitrix\AdminKit\Page\Crud\IndexPage;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use MB\Bitrix\AdminKit\Tests\Support\BitrixContextTrait;
+use MB\Bitrix\AdminKit\Tests\Support\ComponentApplicationStub;
 use PHPUnit\Framework\TestCase;
 
 final class IndexPageSecurityTest extends TestCase
@@ -20,19 +21,7 @@ final class IndexPageSecurityTest extends TestCase
         $this->setGetRequest();
         $_SESSION = [];
         $GLOBALS['last_redirect'] = null;
-        $GLOBALS['APPLICATION'] = new class () {
-            public function SetTitle(string $title): void
-            {
-            }
-
-            public function IncludeComponent(string $name, string $template, array $params): void
-            {
-            }
-
-            public function StoreCookies(): void
-            {
-            }
-        };
+        $GLOBALS['APPLICATION'] = new ComponentApplicationStub();
     }
 
     protected function tearDown(): void

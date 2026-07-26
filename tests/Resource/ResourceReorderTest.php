@@ -62,8 +62,24 @@ final class ResourceReorderTest extends TestCase
         // item 1 и 2 перенесены в группу '5' (TYPE_ID), порядок 1,2
         $resource->reorder(['1', '2'], ['1' => '5', '2' => '5'], 'TYPE_ID');
 
-        self::assertSame(['1', '2'], ProductTable::$updatedIds);
+        // DataManager updates use the canonical integer primary key, while the
+        // group value remains the value supplied by the grouped-grid payload.
+        self::assertSame([1, 2], ProductTable::$updatedIds);
         self::assertSame(['id' => 2, 'data' => ['SORT' => 200, 'TYPE_ID' => '5']], ProductTable::$lastUpdated);
+    }
+
+    public function testReorderPreservesIntegerGroupValue(): void
+    {
+        $resource = new class () extends ProductResource {
+            public function sortField(): ?string
+            {
+                return 'SORT';
+            }
+        };
+
+        $resource->reorder([1], ['1' => 5], 'TYPE_ID');
+
+        self::assertSame(['id' => 1, 'data' => ['SORT' => 100, 'TYPE_ID' => 5]], ProductTable::$lastUpdated);
     }
 
     public function testReorderIgnoresGroupWhenFieldNull(): void

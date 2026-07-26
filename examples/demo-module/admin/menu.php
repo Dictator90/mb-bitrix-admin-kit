@@ -8,10 +8,11 @@ use MB\Bitrix\AdminKit\Manager\AdminKitScope;
 use Vendor\Demo\Admin\DashboardPage;
 use Vendor\Demo\Admin\ProductResource;
 use Vendor\Demo\Admin\SettingsPage;
+use Vendor\Demo\Admin\SettingsResource;
 
-Loader::includeModule('demo.module');
+Loader::includeModule('vendor.demo');
 
-$scope = AdminKitScope::fromModuleId('demo.module');
+$scope = AdminKitScope::fromModuleId('vendor.demo');
 
 return [
     'parent_menu' => 'global_menu_content',
@@ -43,6 +44,12 @@ return [
             'title' => SettingsPage::getTitle(),
             'url' => 'demo_admin.php?page=' . SettingsPage::getId(),
             'sort' => SettingsPage::getSort(),
+        ],
+        [
+            'text' => 'Settings registry',
+            'title' => 'Demo settings registry',
+            'url' => 'demo_admin.php?page=' . SettingsResource::getId(),
+            'sort' => SettingsResource::getSort(),
         ],
     ],
     */

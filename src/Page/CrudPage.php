@@ -6,8 +6,11 @@ namespace MB\Bitrix\AdminKit\Page;
 
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Page\CrudPageContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\CrudResourceContract;
+use MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract;
 use MB\Bitrix\AdminKit\Contracts\ResourceContract;
 use MB\Bitrix\AdminKit\Support\Enums\PageType;
+use RuntimeException;
 
 abstract class CrudPage extends ResourcePage implements CrudPageContract
 {
@@ -32,6 +35,52 @@ abstract class CrudPage extends ResourcePage implements CrudPageContract
     ) {
         parent::__construct($resource, $id, $params);
         $this->pageType = static::defaultPageType();
+    }
+
+    /**
+     * CRUD pages require the complete CRUD resource surface, while
+     * ResourcePageContract deliberately keeps its public resource accessor
+     * typed to the generic ResourceContract.
+     */
+    public function resource(): CrudResourceContract
+    {
+        $resource = parent::resource();
+
+        if (!$resource instanceof CrudResourceContract) {
+            throw new RuntimeException(sprintf(
+                '%s requires an instance of %s; %s was provided.',
+                static::class,
+                CrudResourceContract::class,
+                $resource::class,
+            ));
+        }
+
+        return $resource;
+    }
+
+    public function getResource(): CrudResourceContract
+    {
+        return $this->resource();
+    }
+
+    /**
+     * @internal CRUD page helpers that address a persisted record need an
+     * ORM-backed resource. Keep that requirement explicit instead of relying
+     * on a method that is not part of CrudResourceContract.
+     */
+    protected function resourcePrimaryKey(): string
+    {
+        $resource = $this->resource();
+
+        if (!$resource instanceof ResourceOrmContract) {
+            throw new RuntimeException(sprintf(
+                '%s requires an ORM-backed resource to resolve a primary key; %s was provided.',
+                static::class,
+                $resource::class,
+            ));
+        }
+
+        return $resource->getPrimaryKey();
     }
 
     /**

@@ -9,11 +9,19 @@ trait HasFieldHelp
     protected ?string $hint = null;
     protected ?string $placeholder = null;
 
-    public function hint(string $hint): static
+    public function hint(?string $hint): static
     {
         $this->hint = $hint;
 
         return $this;
+    }
+
+    /**
+     * Backward-compatible alias for hint().
+     */
+    public function help(?string $text): static
+    {
+        return $this->hint($text);
     }
 
     public function placeholder(?string $text): static

@@ -12,6 +12,8 @@ use MB\Bitrix\AdminKit\Page\Page;
 use MB\Bitrix\AdminKit\Page\ResourcePage;
 use MB\Bitrix\AdminKit\Page\Standalone\CustomPage;
 use MB\Bitrix\AdminKit\Page\StandalonePage;
+use MB\Bitrix\AdminKit\Resource\Resource;
+use MB\Bitrix\AdminKit\Support\Enums\PageType;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -77,6 +79,28 @@ final class PageArchitectureTest extends TestCase
         self::assertTrue(is_subclass_of(CrudIndexPage::class, CrudPage::class));
         self::assertTrue(is_subclass_of(CrudFormPage::class, ResourcePage::class));
         self::assertTrue(is_subclass_of(CrudDetailPage::class, CrudPage::class));
+    }
+
+    public function testCrudPageRejectsCoreOnlyResourceWithClearException(): void
+    {
+        $resource = new class () extends Resource {
+            protected string $title = 'Core only';
+        };
+        $page = new class ($resource) extends CrudPage {
+            public function render(): void
+            {
+            }
+
+            protected static function defaultPageType(): PageType
+            {
+                return PageType::INDEX;
+            }
+        };
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('requires an instance of');
+
+        $page->resource();
     }
 
     public function testStandalonePageExtendsCorePage(): void

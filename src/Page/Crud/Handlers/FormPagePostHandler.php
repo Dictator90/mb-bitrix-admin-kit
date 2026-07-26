@@ -13,7 +13,6 @@ use MB\Bitrix\AdminKit\Form\DataPipeline;
 use MB\Bitrix\AdminKit\Form\FormData;
 use MB\Bitrix\AdminKit\Page\Crud\FormPage;
 use MB\Bitrix\AdminKit\Relation\EntityObjectFormSaver;
-use MB\Bitrix\AdminKit\Support\ComponentPostHandlers;
 use MB\Bitrix\AdminKit\Support\DataWrapper;
 use MB\Bitrix\AdminKit\Support\ExceptionDiagnostics;
 use MB\Bitrix\AdminKit\Support\ResponseTerminator;

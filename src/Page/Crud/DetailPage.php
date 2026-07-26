@@ -36,14 +36,14 @@ class DetailPage extends CrudPage implements DetailPageContract
 
         Extension::load(['ui', 'ui.layout-form', 'ui.buttons', 'ui.toolbar']);
 
-        if (!$this->resource instanceof ResourcePersistenceContract) {
+        if (!$this->resource() instanceof ResourcePersistenceContract) {
             $this->renderError('Resource does not support persistence.');
             return;
         }
 
-        $row = $this->resource->findItem($this->id);
+        $row = $this->resource()->findItem($this->id);
         $this->item = is_array($row)
-            ? DataWrapper::fromArray($row, $this->resource->getPrimaryKey())
+            ? DataWrapper::fromArray($row, $this->resourcePrimaryKey())
             : null;
 
         if (!$this->item) {
@@ -54,7 +54,7 @@ class DetailPage extends CrudPage implements DetailPageContract
             return;
         }
 
-        if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
+        if (!$this->resource()->canView(new PermissionContext(resource: $this->resource(), operation: 'view', item: $row))) {
             $this->renderError(
                 LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_DETAIL_ERR_CANNOT_VIEW', 'Insufficient permissions to view this record.'),
             );
@@ -62,7 +62,7 @@ class DetailPage extends CrudPage implements DetailPageContract
             return;
         }
 
-        $APPLICATION->SetTitle($this->resource->getTitle() . ' #' . $this->id);
+        $APPLICATION->SetTitle($this->resource()->getTitle() . ' #' . $this->id);
 
         // JS, закрывающий слайдер (боковую панель) или уходящий назад по истории.
         $backAction =
@@ -75,7 +75,7 @@ class DetailPage extends CrudPage implements DetailPageContract
             '})();';
 
         // ── 1. Тулбар ПЕРЕД полями ──────────────────────────────────────────
-        (new ToolbarRenderer())->renderDetail($this->resource, $backAction, $this->editUrl());
+        (new ToolbarRenderer())->renderDetail($this->resource(), $backAction, $this->editUrl());
 
         $fields = $this->getVisibleFields();
 
@@ -86,7 +86,7 @@ class DetailPage extends CrudPage implements DetailPageContract
             $label = htmlspecialcharsbx($field->getLabel());
             $displayValue = $field->renderDetail(new FieldRenderContext(
                 field: $field,
-                resource: $this->resource,
+                resource: $this->resource(),
                 item: $this->item,
                 value: $value,
                 page: 'detail',
@@ -120,6 +120,6 @@ class DetailPage extends CrudPage implements DetailPageContract
     /** @return iterable<FieldContract> */
     public function fields(): iterable
     {
-        return $this->resource->detailFields();
+        return $this->resource()->detailFields();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Tests\Grid;
 
+use MB\Bitrix\AdminKit\Action\RowAction;
 use MB\Bitrix\AdminKit\Field\Text;
 use MB\Bitrix\AdminKit\Grid\Row\RowAssembler;
 use MB\Bitrix\AdminKit\Tests\Fixtures\FakeQueryResult;
@@ -23,5 +24,19 @@ final class ComputedColumnTest extends TestCase
 
         self::assertSame('Ada Lovelace', $rows[0]['data']['USER_FULL_NAME']);
         self::assertSame('Ada Lovelace', $rows[0]['columns']['USER_FULL_NAME']);
+    }
+
+    public function testItBuildsRowActionsWithoutResource(): void
+    {
+        $rows = (new RowAssembler(
+            [Text::make('Name', 'NAME')],
+            [RowAction::edit()],
+            '/admin/example.php',
+        ))->buildRows(new FakeQueryResult([
+            ['ID' => 1, 'NAME' => 'Ada Lovelace'],
+        ]));
+
+        self::assertCount(1, $rows[0]['actions']);
+        self::assertTrue($rows[0]['actions'][0]['default']);
     }
 }

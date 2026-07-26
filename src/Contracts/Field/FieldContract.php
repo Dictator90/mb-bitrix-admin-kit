@@ -34,7 +34,9 @@ interface FieldContract extends
 
     public function multiple(bool $multiple = true): static;
 
-    public function hint(string $hint): static;
+    public function hint(?string $hint): static;
+
+    public function help(?string $text): static;
 
     public function placeholder(?string $text): static;
 

@@ -65,6 +65,23 @@ final class FileTest extends TestCase
         self::assertSame([123, 456], $multipleField->normalize([123, 456]));
     }
 
+    public function testNormalizeMultipleUsesValuesForNumericIndexes(): void
+    {
+        $field = File::make('Test Multiple', 'test_multiple')->multiple();
+
+        self::assertSame([123, 456], $field->normalize([123, 456]));
+    }
+
+    public function testNormalizeMultipleSupportsFileInputExistingFileKeys(): void
+    {
+        $field = File::make('Test Multiple', 'test_multiple')->multiple();
+
+        self::assertSame([123, 456], $field->normalize([
+            'isset_123' => 123,
+            'isset_456' => 456,
+        ]));
+    }
+
     public function testNormalizeWithDelete(): void
     {
         $context = \Bitrix\Main\Context::getCurrent();
@@ -177,5 +194,15 @@ final class FileTest extends TestCase
         // 6. Test resolveValue when value is an array of IDs itself
         self::assertSame([957, 958], $field->resolveValue([957, 958]));
         self::assertSame([957, 958], $field->resolveValue(['test_multiple' => [957, 958]]));
+    }
+
+    public function testParseFileValueRejectsSerializedObjects(): void
+    {
+        $field = File::make('Test Multiple', 'test_multiple')->multiple();
+        $ref = new \ReflectionClass($field);
+        $method = $ref->getMethod('parseFileValue');
+        $method->setAccessible(true);
+
+        self::assertSame([], $method->invoke($field, serialize([new \stdClass()])));
     }
 }

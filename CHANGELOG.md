@@ -9,6 +9,11 @@
 ## [0.1.9]
 
 ### Added
+- `examples/demo-module` now includes a copyable `SettingsResource` and
+  `SettingsTable`: a complete D7 ORM settings registry with CRUD pages,
+  SidePanel, filters, row actions and safe bulk updates. The example installer
+  creates its table, and the demo module documentation explains how to copy it
+  into another module.
 - `Field\YandexMap` — интерактивный редактор меток на Яндекс.Картах. Значение — единый JSON (центр/зум + список цветных меток с заголовком и описанием). Список меток под картой остаётся источником истины и полностью редактируем, даже если скрипт карт не загрузился или не задан API-ключ (карта — прогрессивное улучшение). Настройки: `center()`, `zoom()`, `apiKey()`, `height()`.
 - `Field\Email` теперь повторяемый: `multiple()` включает список адресов с добавлением/удалением (значение — плоский массив строк), как у `Field\Phone`.
 - Перетаскивание для смены порядка. Для повторяемых скалярных полей (`Phone`, `Email` и др. на трейте `RepeatableScalar`) появилась опция `sortable()` с drag-and-drop строк. Для `Field\EntitySelect` в множественном режиме `sortable()` включает перетаскивание выбранных чипсов; порядок скрытых инпутов синхронизируется с DOM.
@@ -20,6 +25,10 @@
 - `Field\Json` — ширина колонок в гриде берётся из `getColumnWidth()` каждого сабполя (`minmax(0, 1fr)` по умолчанию); `label` необязателен.
 
 ### Fixed
+- `Field\File` correctly preserves every existing ID from multiple values, including PHP-serialized arrays and native `FileInput` keys; numeric array indexes are no longer interpreted as file IDs.
+- `Grid\Row\RowAssembler` supports computed columns and row actions when no resource instance is supplied.
+- `BulkAction::delete()` again uses the danger visual treatment and its `Deletion` action-panel group.
+- Restored the backward-compatible `Field::help()` alias for `hint()`.
 - `Field\File` / `Field\Image` — uploads (especially video) intermittently failed with a bogus **"Unexpected server response"** while the file actually reached the server. Root cause is a Bitrix core bug in `BX.UI.FileInput.replaceInput` (`bitrix/js/main/core/core_fileinput.js`): after a successful upload its DOM-cleanup loop walks into a sibling node without a `name` and throws `Cannot read properties of undefined (reading 'indexOf')`, which the uploader catches and mislabels. The `File` field now emits a one-time client patch that reinstalls a guarded copy of `replaceInput` (`typeof input.name === 'string'` in the loop + null-input bailout). No Bitrix core files are modified.
 
 ## [0.1.8]

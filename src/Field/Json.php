@@ -686,6 +686,8 @@ class Json extends Field
             flex-direction: column;
             align-items: stretch;
             gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
             border: 1px solid #e1e7ec;
             border-radius: var(--ui-border-radius-md, 8px);
             padding: 10px 12px;

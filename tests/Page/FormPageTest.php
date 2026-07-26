@@ -10,6 +10,7 @@ use MB\Bitrix\AdminKit\Security\PermissionContext;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductResource;
 use MB\Bitrix\AdminKit\Tests\Fixtures\ProductTable;
 use MB\Bitrix\AdminKit\Tests\Support\BitrixContextTrait;
+use MB\Bitrix\AdminKit\Tests\Support\ComponentApplicationStub;
 use PHPUnit\Framework\TestCase;
 
 final class FormPageTest extends TestCase
@@ -21,15 +22,7 @@ final class FormPageTest extends TestCase
         parent::setUp();
         ProductTable::reset();
         $this->setGetRequest();
-        $GLOBALS['APPLICATION'] = new class () {
-            public function SetTitle(string $title): void
-            {
-            }
-
-            public function IncludeComponent(string $name, string $template, array $params): void
-            {
-            }
-        };
+        $GLOBALS['APPLICATION'] = new ComponentApplicationStub();
     }
 
     protected function tearDown(): void

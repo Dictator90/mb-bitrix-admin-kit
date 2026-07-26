@@ -75,7 +75,7 @@ final class ToolbarRendererTest extends TestCase
 
         self::assertTrue(Toolbar::hasFavoriteStar());
         self::assertStringContainsString($marker, (string)Toolbar::getAfterTitleHtml());
-        self::assertNotEmpty(Toolbar::getCopyLinkButtonParams());
+        self::assertNotEmpty(Toolbar::getCopyLinkButton());
     }
 
     public function testItRendersButtonOptionActionWithoutError(): void

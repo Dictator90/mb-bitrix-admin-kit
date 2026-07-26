@@ -28,26 +28,41 @@ class vendor_demo extends CModule
     public function installDb(): void
     {
         $connection = Application::getConnection();
-        if ($connection->isTableExists('vendor_demo_product')) {
-            return;
+        if (!$connection->isTableExists('vendor_demo_product')) {
+            $connection->queryExecute(
+                "CREATE TABLE vendor_demo_product (
+                    ID int(11) NOT NULL AUTO_INCREMENT,
+                    NAME varchar(255) NOT NULL,
+                    TYPE varchar(32) NOT NULL DEFAULT 'simple',
+                    ACTIVE char(1) NOT NULL DEFAULT 'Y',
+                    SORT int(11) NOT NULL DEFAULT 500,
+                    PRICE decimal(12,2) NULL,
+                    CREATED_BY int(11) NULL,
+                    PRIMARY KEY (ID)
+                )"
+            );
         }
 
-        $connection->queryExecute(
-            "CREATE TABLE vendor_demo_product (
-                ID int(11) NOT NULL AUTO_INCREMENT,
-                NAME varchar(255) NOT NULL,
-                TYPE varchar(32) NOT NULL DEFAULT 'simple',
-                ACTIVE char(1) NOT NULL DEFAULT 'Y',
-                SORT int(11) NOT NULL DEFAULT 500,
-                PRICE decimal(12,2) NULL,
-                CREATED_BY int(11) NULL,
-                PRIMARY KEY (ID)
-            )"
-        );
+        if (!$connection->isTableExists('vendor_demo_settings')) {
+            $connection->queryExecute(
+                "CREATE TABLE vendor_demo_settings (
+                    ID int(11) NOT NULL AUTO_INCREMENT,
+                    CODE varchar(100) NOT NULL,
+                    NAME varchar(255) NOT NULL,
+                    SCOPE varchar(32) NOT NULL DEFAULT 'general',
+                    VALUE text NULL,
+                    ACTIVE char(1) NOT NULL DEFAULT 'Y',
+                    SORT int(11) NOT NULL DEFAULT 500,
+                    PRIMARY KEY (ID),
+                    UNIQUE KEY UX_VENDOR_DEMO_SETTINGS_CODE (CODE)
+                )"
+            );
+        }
     }
 
     public function uninstallDb(): void
     {
         Application::getConnection()->queryExecute('DROP TABLE IF EXISTS vendor_demo_product');
+        Application::getConnection()->queryExecute('DROP TABLE IF EXISTS vendor_demo_settings');
     }
 }

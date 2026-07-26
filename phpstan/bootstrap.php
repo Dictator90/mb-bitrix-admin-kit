@@ -225,6 +225,11 @@ if (!class_exists(PageNavigation::class)) {
             return $this;
         }
 
+        public function setCurrentPage(int $page): self
+        {
+            return $this;
+        }
+
         public function setRecordCount(int $count): void
         {
         }
@@ -248,6 +253,11 @@ if (!class_exists(PageNavigation::class)) {
         {
             return 20;
         }
+
+        public function allRecordsShown(): bool
+        {
+            return false;
+        }
     }
 }
 
@@ -259,11 +269,22 @@ if (!class_exists(Button::class)) {
         public function __construct(array $params)
         {
         }
+
+        /** @param array<string, mixed> $menu */
+        public function setMenu(array $menu): self
+        {
+            return $this;
+        }
     }
 
     final class Color
     {
+        public const PRIMARY = 'primary';
         public const SUCCESS = 'success';
+        public const SECONDARY = 'secondary';
+        public const LIGHT_BORDER = 'light-border';
+        public const LINK = 'link';
+        public const DANGER = 'danger';
     }
 
     final class Icon
@@ -284,7 +305,35 @@ namespace Bitrix\UI\Toolbar;
 if (!class_exists(ButtonLocation::class)) {
     final class ButtonLocation
     {
+        public const AFTER_FILTER = 'after_filter';
         public const AFTER_TITLE = 'after_title';
+        public const RIGHT = 'right';
+    }
+}
+
+namespace Bitrix\UI\Buttons\Split;
+
+if (!class_exists(Button::class)) {
+    class Button extends \Bitrix\UI\Buttons\Button
+    {
+        public function setDisabled(bool $disabled = true): self
+        {
+            return $this;
+        }
+    }
+
+    final class Type
+    {
+        public const MENU = 'menu';
+    }
+}
+
+namespace Bitrix\UI\Buttons;
+
+if (!class_exists(State::class)) {
+    final class State
+    {
+        public const DISABLED = 'disabled';
     }
 }
 
@@ -298,6 +347,38 @@ if (!class_exists(Toolbar::class)) {
         }
 
         public static function addButton(object $button, string $location): void
+        {
+        }
+
+        public static function setTitle(string $title): void
+        {
+        }
+
+        public static function addEditableTitle(): void
+        {
+        }
+
+        public static function addFavoriteStar(): void
+        {
+        }
+
+        public static function setCopyLinkButton(array $params): void
+        {
+        }
+
+        public static function addBeforeTitleHtml(string $html): void
+        {
+        }
+
+        public static function addAfterTitleHtml(string $html): void
+        {
+        }
+
+        public static function addUnderTitleHtml(string $html): void
+        {
+        }
+
+        public static function addRightCustomHtml(string $html): void
         {
         }
     }
@@ -321,6 +402,21 @@ if (!class_exists(Loc::class)) {
 }
 
 namespace Bitrix\Main;
+
+if (!class_exists(Loader::class)) {
+    final class Loader
+    {
+        public static function includeModule(string $moduleName): bool
+        {
+            return false;
+        }
+
+        public static function getLocal(string $path): ?string
+        {
+            return null;
+        }
+    }
+}
 
 if (!class_exists(HttpRequest::class)) {
     class HttpRequest
@@ -354,6 +450,30 @@ if (!class_exists(HttpRequest::class)) {
         public function getHeader(string $name): ?string
         {
             return null;
+        }
+    }
+}
+
+namespace Bitrix\Main\Security;
+
+if (!class_exists(Random::class)) {
+    final class Random
+    {
+        public static function getString(int $length, bool $caseSensitive = false): string
+        {
+            return str_repeat('a', $length);
+        }
+    }
+}
+
+namespace Bitrix\Main\UI;
+
+if (!class_exists(Extension::class)) {
+    final class Extension
+    {
+        /** @param string|list<string> $extensions */
+        public static function load(string|array $extensions): void
+        {
         }
     }
 }

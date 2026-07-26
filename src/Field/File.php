@@ -188,6 +188,15 @@ class File extends Field
         return $html . self::renderFileInputCrashPatch();
     }
 
+    public function resolveValue(mixed $item, array $row = []): mixed
+    {
+        if (is_array($item) && ($this->looksLikeFileArray($item) || array_is_list($item))) {
+            return $item;
+        }
+
+        return parent::resolveValue($item, $row);
+    }
+
     /**
      * Guards a Bitrix core bug in {@see BX.UI.FileInput.replaceInput}
      * (bitrix/js/main/core/core_fileinput.js): after a successful upload the
@@ -320,6 +329,26 @@ HTML;
         return array_values($result);
     }
 
+    public function serializeOptionValue(mixed $value): string
+    {
+        if (!$this->multiple) {
+            return (string)($value ?? '');
+        }
+
+        $values = is_array($value) ? array_values($value) : $this->parseFileValue($value);
+
+        return serialize($values);
+    }
+
+    public function unserializeOptionValue(string $value): mixed
+    {
+        if (!$this->multiple) {
+            return $value;
+        }
+
+        return array_values($this->parseFileValue($value));
+    }
+
     public function previewValue(mixed $value): string
     {
         $items = [];
@@ -371,6 +400,15 @@ HTML;
                 }
             }
 
+            if (str_starts_with($value, 'a:')) {
+                $unserialized = $this->unserializeFileValueArray($value);
+                if ($unserialized === null) {
+                    return [];
+                }
+
+                return $this->looksLikeFileArray($unserialized) ? [$unserialized] : $unserialized;
+            }
+
             if (str_contains($value, ',')) {
                 return array_values(array_filter(
                     array_map('trim', explode(',', $value)),
@@ -382,6 +420,45 @@ HTML;
         }
 
         return is_scalar($value) ? [$value] : [];
+    }
+
+    /**
+     * @return array<array-key, mixed>|null
+     */
+    protected function unserializeFileValueArray(string $value): ?array
+    {
+        set_error_handler(static function (): never {
+            throw new \UnexpectedValueException('Invalid serialized file value.');
+        });
+
+        try {
+            $unserialized = unserialize($value, ['allowed_classes' => false]);
+        } catch (\Throwable) {
+            return null;
+        } finally {
+            restore_error_handler();
+        }
+
+        if (!is_array($unserialized) || !$this->containsOnlySafeSerializedValues($unserialized)) {
+            return null;
+        }
+
+        return $unserialized;
+    }
+
+    protected function containsOnlySafeSerializedValues(mixed $value): bool
+    {
+        if (is_array($value)) {
+            foreach ($value as $item) {
+                if (!$this->containsOnlySafeSerializedValues($item)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return $value === null || is_scalar($value);
     }
 
     /**
@@ -696,14 +773,23 @@ HTML;
 
     protected function extractExistingFileId(int|string|null $key, mixed $value): int
     {
-        if ($key !== null) {
-            $keyId = $this->extractFileIdFromDeleteKey($key);
+        if (is_string($key)) {
+            $keyId = $this->extractFileInputExistingFileId($key);
             if ($keyId > 0) {
                 return $keyId;
             }
         }
 
         return $this->extractFileId($value);
+    }
+
+    protected function extractFileInputExistingFileId(string $key): int
+    {
+        if (preg_match('#^isset_([0-9]+)$#', $key, $match)) {
+            return (int)$match[1];
+        }
+
+        return 0;
     }
 
     protected function extractFileId(mixed $value): int

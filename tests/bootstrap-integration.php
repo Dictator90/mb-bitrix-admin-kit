@@ -36,6 +36,9 @@ $request = new \Bitrix\Main\HttpRequest($server, ['sessid' => $sessid], ['sessid
 $response = new \Bitrix\Main\HttpResponse();
 $context = new \Bitrix\Main\Context($app);
 $context->initialize($request, $response, $server);
+$culture = \Bitrix\Main\Localization\CultureTable::createObject();
+$culture->setWeekStart(1);
+$context->setCulture($culture);
 $app->setContext($context);
 
 if ($app->getSessionLocalStorageManager()) {

@@ -254,9 +254,9 @@ final class ToolbarRenderer
 
         return "BX.SidePanel.Instance.open({$urlJson}, {"
             . "width: {$width}, cacheable: false, allowChangeHistory: false,"
-            . "events: { onClose: function() {"
+            . 'events: { onClose: function() {'
             . "if (BX.Main && BX.Main.gridManager) { var grid = BX.Main.gridManager.getInstanceById({$gridJson}); if (grid) { grid.reload(); } }"
-            . "} } });";
+            . '} } });';
     }
 
     public function renderForm(CrudResourceContract $resource, string $formId, string $cancelJs): void

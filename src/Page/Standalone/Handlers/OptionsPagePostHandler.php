@@ -100,7 +100,7 @@ final class OptionsPagePostHandler
             }
             $field->{'applyDependency'}($formData);
             $result[$field->getColumn()] = [
-                'html' => $field->renderFormField($formData[$field->getColumn()] ?? null, $formData),
+                'html' => $field->renderForm($formData[$field->getColumn()] ?? null, $formData),
             ];
         }
 

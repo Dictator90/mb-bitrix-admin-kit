@@ -183,8 +183,8 @@ class Image extends File
             return $file;
         }
 
-        $width = (int)($imageSize[0] ?? 0);
-        $height = (int)($imageSize[1] ?? 0);
+        $width = (int)$imageSize[0];
+        $height = (int)$imageSize[1];
 
         if ($width <= 0 || $height <= 0) {
             return $file;

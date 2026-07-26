@@ -89,43 +89,43 @@ class FormPage extends CrudPage implements FormPageContract
         $assetManager->load();
 
         $title = $this->id
-            ? $this->resource->getTitle() . ' - ' . Loc::getMessage('MB_ADMIN_KIT_FORM_TITLE_EDIT', ['#ID#' => (string)$this->id])
-            : $this->resource->getTitle() . ' - ' . Loc::getMessage('MB_ADMIN_KIT_FORM_TITLE_CREATE');
+            ? $this->resource()->getTitle() . ' - ' . Loc::getMessage('MB_ADMIN_KIT_FORM_TITLE_EDIT', ['#ID#' => (string)$this->id])
+            : $this->resource()->getTitle() . ' - ' . Loc::getMessage('MB_ADMIN_KIT_FORM_TITLE_CREATE');
         $APPLICATION->SetTitle($title);
 
         $this->formId = 'adminkit-form-' . md5(static::class . ($this->id ?? ''));
 
-        (new ToolbarRenderer())->renderForm($this->resource, $this->formId, $this->getCancelActionJs());
+        (new ToolbarRenderer())->renderForm($this->resource(), $this->formId, $this->getCancelActionJs());
 
         if ($this->id !== null && $this->id !== '') {
-            if (!$this->resource instanceof ResourcePersistenceContract) {
+            if (!$this->resource() instanceof ResourcePersistenceContract) {
                 $this->globalErrors[] = 'Resource does not support persistence.';
             } else {
-                if ($this->resource instanceof DataManagerResourceContract) {
-                    $select = $this->resource->relationSelectForFields($this->resource->formFields());
-                    $this->entityItem = $this->resource->findObject($this->id, $select);
+                if ($this->resource() instanceof DataManagerResourceContract) {
+                    $select = $this->resource()->relationSelectForFields($this->resource()->formFields());
+                    $this->entityItem = $this->resource()->findObject($this->id, $select);
                     $row = null;
                     if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
                         $row = $this->mergeRelationValuesIntoRow($this->entityItem->collectValues());
                     }
                 } else {
-                    $row = $this->resource->findItem($this->id);
+                    $row = $this->resource()->findItem($this->id);
                 }
 
                 if ($row === null) {
                     $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_NOT_FOUND');
                 } else {
-                    $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
-                    if (!$this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view', item: $row))) {
+                    $this->item = DataWrapper::fromArray($row, $this->resourcePrimaryKey());
+                    if (!$this->resource()->canView(new PermissionContext(resource: $this->resource(), operation: 'view', item: $row))) {
                         $this->renderPermissionError((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_VIEW'));
                         return;
                     }
-                    if (!$this->resource->canUpdate(new PermissionContext(resource: $this->resource, operation: 'update', item: $row))) {
+                    if (!$this->resource()->canUpdate(new PermissionContext(resource: $this->resource(), operation: 'update', item: $row))) {
                         $this->globalErrors[] = (string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT');
                     }
                 }
             }
-        } elseif (!$this->resource->canCreate(new PermissionContext(resource: $this->resource, operation: 'create'))) {
+        } elseif (!$this->resource()->canCreate(new PermissionContext(resource: $this->resource(), operation: 'create'))) {
             $this->renderPermissionError((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_CREATE'));
             return;
         }
@@ -311,13 +311,13 @@ class FormPage extends CrudPage implements FormPageContract
     /** @return iterable<FieldContract|ComponentContract> */
     public function fields(): iterable
     {
-        return $this->resource->formFields();
+        return $this->resource()->formFields();
     }
 
     /** @return iterable<Tab> */
     protected function tabs(): iterable
     {
-        return $this->resource->formTabs();
+        return $this->resource()->formTabs();
     }
 
     /**
@@ -345,16 +345,16 @@ class FormPage extends CrudPage implements FormPageContract
     protected function assertSavePermission(DbOperationContext $context): void
     {
         $permission = new PermissionContext(
-            resource: $this->resource,
+            resource: $this->resource(),
             operation: $context->operation,
             item: $context->oldData ?: null,
         );
 
-        if ($this->id && !$this->resource->canUpdate($permission)) {
+        if ($this->id && !$this->resource()->canUpdate($permission)) {
             throw new PermissionDeniedException((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_EDIT'));
         }
 
-        if (!$this->id && !$this->resource->canCreate($permission)) {
+        if (!$this->id && !$this->resource()->canCreate($permission)) {
             throw new PermissionDeniedException((string)Loc::getMessage('MB_ADMIN_KIT_FORM_ERR_CANNOT_CREATE'));
         }
     }
@@ -447,7 +447,7 @@ class FormPage extends CrudPage implements FormPageContract
         $context['_id'] = $this->id ?? '';
 
         if ($this->id !== null && $this->id !== '') {
-            $resource = $this->resource;
+            $resource = $this->resource();
             if ($resource instanceof \MB\Bitrix\AdminKit\Contracts\Resource\ResourceOrmContract) {
                 $context[$resource->getPrimaryKey()] = $this->id;
             }
@@ -481,7 +481,7 @@ class FormPage extends CrudPage implements FormPageContract
     {
         if (
             $this->entityItem === null
-            || !$this->resource instanceof DataManagerResourceContract
+            || !$this->resource() instanceof DataManagerResourceContract
         ) {
             return $row;
         }
@@ -492,7 +492,7 @@ class FormPage extends CrudPage implements FormPageContract
                 continue;
             }
 
-            $resolved = $this->resource->resolveRelationValue($this->entityItem, $field);
+            $resolved = $this->resource()->resolveRelationValue($this->entityItem, $field);
             if ($resolved !== null && $resolved !== '') {
                 $row[$column] = $resolved;
             }
@@ -509,7 +509,7 @@ class FormPage extends CrudPage implements FormPageContract
     private function collectRelationFields(): array
     {
         $fields = [];
-        foreach ($this->resource->formFields() as $item) {
+        foreach ($this->resource()->formFields() as $item) {
             if ($item instanceof FieldContainerContract) {
                 foreach ($item->extractFields() as $field) {
                     if ($field instanceof RelationField) {
@@ -537,10 +537,10 @@ class FormPage extends CrudPage implements FormPageContract
 
         if (
             $field instanceof \MB\Bitrix\AdminKit\Field\Relation\RelationField
-            && $this->resource instanceof DataManagerResourceContract
+            && $this->resource() instanceof DataManagerResourceContract
             && $this->entityItem !== null
         ) {
-            $resolved = $this->resource->resolveRelationValue($this->entityItem, $field);
+            $resolved = $this->resource()->resolveRelationValue($this->entityItem, $field);
             if ($resolved !== null && $resolved !== '') {
                 return $resolved;
             }
@@ -552,7 +552,7 @@ class FormPage extends CrudPage implements FormPageContract
     /** @internal */
     public function closeSidePanelAfterSave(): bool
     {
-        return $this->resource->closeSidePanelAfterSave();
+        return $this->resource()->closeSidePanelAfterSave();
     }
 
     /** @internal */
@@ -576,20 +576,20 @@ class FormPage extends CrudPage implements FormPageContract
             $this->mode = 'edit';
         }
 
-        if ($this->resource instanceof ResourcePersistenceContract) {
-            if ($this->resource instanceof DataManagerResourceContract) {
-                $select = $this->resource->relationSelectForFields($this->resource->formFields());
-                $this->entityItem = $this->resource->findObject($this->id, $select);
+        if ($this->resource() instanceof ResourcePersistenceContract) {
+            if ($this->resource() instanceof DataManagerResourceContract) {
+                $select = $this->resource()->relationSelectForFields($this->resource()->formFields());
+                $this->entityItem = $this->resource()->findObject($this->id, $select);
                 if ($this->entityItem !== null && method_exists($this->entityItem, 'collectValues')) {
                     $this->item = DataWrapper::fromArray(
                         $this->mergeRelationValuesIntoRow($this->entityItem->collectValues()),
-                        $this->resource->getPrimaryKey(),
+                        $this->resourcePrimaryKey(),
                     );
                 }
             } else {
-                $row = $this->resource->findItem($this->id);
+                $row = $this->resource()->findItem($this->id);
                 if ($row !== null) {
-                    $this->item = DataWrapper::fromArray($row, $this->resource->getPrimaryKey());
+                    $this->item = DataWrapper::fromArray($row, $this->resourcePrimaryKey());
                 }
             }
         }
@@ -633,7 +633,7 @@ class FormPage extends CrudPage implements FormPageContract
             'validationError' => $this->hasValidationErrors,
             'globalErrors' => $this->globalErrors,
             'fieldErrors' => $this->fieldErrors,
-            'gridId' => $this->resource->getGridId(),
+            'gridId' => $this->resource()->getGridId(),
             'closeSidePanel' => $success && $this->savedInSidePanel && $this->closeSidePanelAfterSave(),
             'reloadParentGrid' => $success && $this->savedInSidePanel,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -731,7 +731,7 @@ class FormPage extends CrudPage implements FormPageContract
             return;
         }
 
-        if ($this->resource instanceof DataManagerResourceContract) {
+        if ($this->resource() instanceof DataManagerResourceContract) {
             $this->handleDataManagerObjectPost();
         } else {
             $this->handleCrudResourcePost();

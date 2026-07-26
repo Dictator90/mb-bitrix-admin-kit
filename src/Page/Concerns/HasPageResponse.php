@@ -10,6 +10,10 @@ trait HasPageResponse
 {
     public function redirect(string $url): void
     {
+        if (ResponseTerminator::isTesting()) {
+            return;
+        }
+
         LocalRedirect($url);
     }
 

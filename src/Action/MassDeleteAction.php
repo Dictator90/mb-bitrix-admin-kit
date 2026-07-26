@@ -20,7 +20,8 @@ class MassDeleteAction extends BulkAction
         parent::__construct($id, $label ?? LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_SELECTED', 'Delete'));
         $this
             ->confirm(LocalizedMessage::get(__FILE__, 'MB_ADMIN_KIT_BULK_DELETE_CONFIRM', 'Are you sure you want to delete selected records?'))
-            ->link()
+            ->danger()
+            ->group('danger', 'Deletion', 900)
             ->icon('ui-btn-icon-remove')
             ->sort(100);
     }

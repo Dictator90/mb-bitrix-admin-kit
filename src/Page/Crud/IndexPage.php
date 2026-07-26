@@ -122,7 +122,7 @@ class IndexPage extends CrudPage implements IndexPageContract
         }
 
         if ($action === 'export' || $action === 'export_selected') {
-            if (method_exists($this->resource, 'exportEnabled') && !$this->resource->exportEnabled()) {
+            if (method_exists($this->resource(), 'exportEnabled') && !$this->resource()->exportEnabled()) {
                 $this->redirect($this->baseListUrl());
 
                 return;
@@ -140,7 +140,7 @@ class IndexPage extends CrudPage implements IndexPageContract
             ->addExtensions(['ui.notification', 'ui.alerts'])
             ->load();
 
-        $APPLICATION->SetTitle($this->resource->getTitle());
+        $APPLICATION->SetTitle($this->resource()->getTitle());
 
         $grid = $this->buildGrid();
         $this->loadData($grid);
@@ -153,7 +153,7 @@ class IndexPage extends CrudPage implements IndexPageContract
             AdminKitJs::renderInit('GridCollapsible', []);
         }
 
-        if ($grid->settings()->allowRowsSort && $this->resource->sortField() !== null) {
+        if ($grid->settings()->allowRowsSort && $this->resource()->sortField() !== null) {
             AdminKitJs::renderInit('GridRowSort', [
                 'gridId' => $grid->getId(),
                 'url' => $this->baseListUrl(),
@@ -172,18 +172,18 @@ class IndexPage extends CrudPage implements IndexPageContract
         $rowActions = iterator_to_array($this->rowActions());
 
         $this->grid = new Grid(
-            $this->resource->getGridId(),
+            $this->resource()->getGridId(),
             $fields,
             $filters,
             $rowActions,
             $this->baseListUrl(),
-            $this->resource->getPrimaryKey(),
+            $this->resourcePrimaryKey(),
         );
-        $this->grid->setSettings(GridSettings::fromResource($this->resource));
-        $this->grid->limitPageSize($this->resource->maxPageSize());
+        $this->grid->setSettings(GridSettings::fromResource($this->resource()));
+        $this->grid->limitPageSize($this->resource()->maxPageSize());
 
-        if (!$this->resource->showPagination()) {
-            $this->grid->showAllRecords($this->resource->maxPageSize());
+        if (!$this->resource()->showPagination()) {
+            $this->grid->showAllRecords($this->resource()->maxPageSize());
         }
 
         $bulkActions = array_filter(
@@ -206,21 +206,21 @@ class IndexPage extends CrudPage implements IndexPageContract
 
     protected function loadData(Grid $grid): void
     {
-        if (!$this->resource instanceof DataManagerResourceContract) {
+        if (!$this->resource() instanceof DataManagerResourceContract) {
             return;
         }
 
-        (new GridDataLoader())->load($this->resource, $grid, $this->request, null, $this->definition());
+        (new GridDataLoader())->load($this->resource(), $grid, $this->request, null, $this->definition());
     }
 
     protected function renderIndexToolbar(Grid $grid): void
     {
-        (new ToolbarRenderer())->render($this->resource, $grid, $this->baseFormUrl('add'));
+        (new ToolbarRenderer())->render($this->resource(), $grid, $this->baseFormUrl('add'));
     }
 
     protected function renderBulkResult(): void
     {
-        $gridId = $this->resource->getGridId();
+        $gridId = $this->resource()->getGridId();
         $result = $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$gridId] ?? null;
 
         if (!is_array($result)) {
@@ -260,7 +260,7 @@ class IndexPage extends CrudPage implements IndexPageContract
     /** @return iterable<FieldContract> */
     public function fields(): iterable
     {
-        return $this->resource->indexFields();
+        return $this->resource()->indexFields();
     }
 
     /**
@@ -268,7 +268,7 @@ class IndexPage extends CrudPage implements IndexPageContract
      */
     protected function grouping(): ?IndexGrouping
     {
-        return $this->resource->indexGrouping();
+        return $this->resource()->indexGrouping();
     }
 
     public function indexGrouping(): ?IndexGrouping
@@ -320,22 +320,22 @@ class IndexPage extends CrudPage implements IndexPageContract
     /** @return iterable<\MB\Bitrix\AdminKit\Contracts\FilterContract> */
     protected function filters(): iterable
     {
-        return $this->resource->filters();
+        return $this->resource()->filters();
     }
 
     /** @return iterable<\MB\Bitrix\AdminKit\Contracts\ActionContract> */
     protected function rowActions(): iterable
     {
-        return $this->resource->rowActions();
+        return $this->resource()->rowActions();
     }
 
     /** @return iterable<\MB\Bitrix\AdminKit\Contracts\ActionContract> */
     public function bulkActions(): iterable
     {
-        $actions = iterator_to_array($this->resource->bulkActions());
+        $actions = iterator_to_array($this->resource()->bulkActions());
 
         // Экспорт выбранных добавляем только если экспорт включён у ресурса (по умолчанию выключен).
-        if (method_exists($this->resource, 'exportEnabled') && !$this->resource->exportEnabled()) {
+        if (method_exists($this->resource(), 'exportEnabled') && !$this->resource()->exportEnabled()) {
             return $actions;
         }
 
@@ -354,49 +354,49 @@ class IndexPage extends CrudPage implements IndexPageContract
     /** @return array<string,string> */
     protected function defaultSort(): array
     {
-        return $this->resource->defaultSort();
+        return $this->resource()->defaultSort();
     }
 
     /** @return array<string,mixed> */
     protected function defaultFilter(): array
     {
-        return $this->resource->defaultFilter();
+        return $this->resource()->defaultFilter();
     }
 
     /** @return array<int,string> */
     protected function defaultSelect(): array
     {
-        return $this->resource->defaultSelect();
+        return $this->resource()->defaultSelect();
     }
 
     /** @return array<int,mixed> */
     protected function runtimeFields(): array
     {
-        return $this->resource->runtimeFields();
+        return $this->resource()->runtimeFields();
     }
 
     /** @return array<int,string> */
     protected function indexSelect(GridContext $context): array
     {
-        return $this->resource->indexSelect($context);
+        return $this->resource()->indexSelect($context);
     }
 
     /** @return array<string,mixed> */
     protected function indexFilter(GridContext $context): array
     {
-        return $this->resource->indexFilter($context);
+        return $this->resource()->indexFilter($context);
     }
 
     /** @return array<string,string> */
     protected function indexOrder(GridContext $context): array
     {
-        return $this->resource->indexOrder($context);
+        return $this->resource()->indexOrder($context);
     }
 
     /** @return array<int,mixed> */
     protected function indexRuntime(GridContext $context): array
     {
-        return $this->resource->indexRuntime($context);
+        return $this->resource()->indexRuntime($context);
     }
 
     /**
@@ -405,7 +405,7 @@ class IndexPage extends CrudPage implements IndexPageContract
      */
     protected function beforeIndexQueryParams(array $params, GridContext $context): array
     {
-        return $this->resource->beforeIndexQueryParams($params, $context);
+        return $this->resource()->beforeIndexQueryParams($params, $context);
     }
 
     /**
@@ -414,7 +414,7 @@ class IndexPage extends CrudPage implements IndexPageContract
      */
     protected function afterIndexRows(array $rows, GridContext $context): array
     {
-        return $this->resource->afterIndexRows($rows, $context);
+        return $this->resource()->afterIndexRows($rows, $context);
     }
 
     /**
@@ -423,7 +423,7 @@ class IndexPage extends CrudPage implements IndexPageContract
      */
     protected function mapIndexRow(array $row, GridContext $context): array
     {
-        return $this->resource->mapIndexRow($row, $context);
+        return $this->resource()->mapIndexRow($row, $context);
     }
 
     /**
@@ -432,7 +432,7 @@ class IndexPage extends CrudPage implements IndexPageContract
      */
     protected function modifyIndexParams(array $params, GridContext $context): array
     {
-        return $this->resource->modifyIndexParams($params, $context);
+        return $this->resource()->modifyIndexParams($params, $context);
     }
 
     /**
@@ -463,7 +463,7 @@ class IndexPage extends CrudPage implements IndexPageContract
             return $controlsAction;
         }
 
-        $panelActionKey = 'action_button_' . $this->resource->getGridId();
+        $panelActionKey = 'action_button_' . $this->resource()->getGridId();
         $panelAction = (string)($_POST[$panelActionKey] ?? '');
         if ($panelAction !== '') {
             return $panelAction;
@@ -476,7 +476,7 @@ class IndexPage extends CrudPage implements IndexPageContract
 
     public function isForAllRowsSelected(): bool
     {
-        $key = 'action_all_rows_' . $this->resource->getGridId();
+        $key = 'action_all_rows_' . $this->resource()->getGridId();
 
         return (string)($_POST[$key] ?? '') === 'Y';
     }
@@ -489,8 +489,8 @@ class IndexPage extends CrudPage implements IndexPageContract
             $_POST['ID'] ?? null,
             $_POST['ids'] ?? null,
             $_POST['rows'] ?? null,
-            $_POST[$this->resource->getPrimaryKey()] ?? null,
-            $_POST[strtoupper($this->resource->getPrimaryKey())] ?? null,
+            $_POST[$this->resourcePrimaryKey()] ?? null,
+            $_POST[strtoupper($this->resourcePrimaryKey())] ?? null,
         ];
 
         foreach ($sources as $candidate) {
@@ -546,7 +546,7 @@ class IndexPage extends CrudPage implements IndexPageContract
 
     protected function canViewIndex(): bool
     {
-        if ($this->resource->canView(new PermissionContext(resource: $this->resource, operation: 'view'))) {
+        if ($this->resource()->canView(new PermissionContext(resource: $this->resource(), operation: 'view'))) {
             return true;
         }
 
@@ -571,7 +571,7 @@ class IndexPage extends CrudPage implements IndexPageContract
             ]);
         }
 
-        $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$this->resource->getGridId()] = [
+        $_SESSION['MB_ADMIN_KIT_BULK_RESULT'][$this->resource()->getGridId()] = [
             'message' => $message,
             'success' => false,
         ];
