@@ -40,14 +40,12 @@ class Grid extends AbstractLayoutComponent
 
     public function render(): string
     {
-        $styleExtra = [
+        $class = $this->buildClassAttr(['ui-form-row']);
+        $style = $this->buildStyleAttr([
             'display' => 'grid',
             'grid-template-columns' => "repeat({$this->columns}, 1fr)",
             'gap' => $this->gap . 'px',
-        ];
-
-        $class = $this->buildClassAttr();
-        $style = $this->buildStyleAttr($styleExtra);
+        ]);
         $attrs = $this->buildExtraAttrs();
 
         return "<div{$class}{$style}{$attrs}>{$this->renderChildren()}</div>";
