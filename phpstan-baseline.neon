@@ -826,6 +826,21 @@ parameters:
 			path: src/Field/IblockSectionSelect.php
 
 		-
+			message: "#^Call to static method query\\(\\) on an unknown class Bitrix\\\\Iblock\\\\ElementTable\\.$#"
+			count: 2
+			path: src/Field/IblockSectionElementSelect.php
+
+		-
+			message: "#^Call to static method query\\(\\) on an unknown class Bitrix\\\\Iblock\\\\SectionTable\\.$#"
+			count: 2
+			path: src/Field/IblockSectionElementSelect.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: src/Field/IblockSectionElementSelect.php
+
+		-
 			message: "#^Call to static method GetList\\(\\) on an unknown class CIBlock\\.$#"
 			count: 1
 			path: src/Field/IblockSelect.php

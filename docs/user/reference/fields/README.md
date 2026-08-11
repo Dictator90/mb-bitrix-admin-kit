@@ -43,6 +43,7 @@
 - [IblockSelect](iblock-select.md)
 - [IblockElementSelect](iblock-element-select.md)
 - [IblockSectionSelect](iblock-section-select.md)
+- [IblockSectionElementSelect](iblock-section-element-select.md)
 
 ## UF и relation fields
 
