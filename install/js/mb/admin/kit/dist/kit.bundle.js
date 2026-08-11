@@ -1536,30 +1536,50 @@ this.MB = this.MB || {};
         babelHelpers.classPrivateFieldSet(this, _items$1, valueItems);
         _classPrivateMethodGet$4(this, _fillContainer, _fillContainer2).call(this);
       }
+
+      /**
+       * Добавляет скрытый инпут значения, если такого значения ещё нет.
+       *
+       * Проверка обязательна: значение попадает в коллекцию из двух независимых
+       * источников — `DialogSelector` перебирает `dialog.selectedItems` при
+       * инициализации, а событие `onTagAdd` срабатывает ещё и на предвыбранные
+       * теги, которые `TagSelector` восстанавливает из тех же selectedItems.
+       * Без проверки каждое сохранение формы удваивало сохранённый список.
+       */
       babelHelpers.createClass(ValueItemCollection, [{
         key: "add",
         value: function add(item) {
+          if (this.get(item.getValue()) !== null) {
+            return;
+          }
           babelHelpers.classPrivateFieldGet(this, _items$1).push(item);
           main_core.Dom.append(item.getNode(), babelHelpers.classPrivateFieldGet(this, _container));
         }
+        /**
+         * Значения сравниваются как строки: из `dialog.selectedItems` приходит `id`
+         * сущности, из `onTagAdd` — `tag.getId()`, и для числовых ID это могут быть
+         * число и строка соответственно.
+         */
       }, {
         key: "get",
         value: function get(value) {
-          babelHelpers.classPrivateFieldGet(this, _items$1).forEach(function (e) {
-            return e.getValue === value;
-          });
-          return null;
+          var _babelHelpers$classPr;
+          var key = String(value);
+          return (_babelHelpers$classPr = babelHelpers.classPrivateFieldGet(this, _items$1).find(function (item) {
+            return String(item.getValue()) === key;
+          })) !== null && _babelHelpers$classPr !== void 0 ? _babelHelpers$classPr : null;
         }
       }, {
         key: "delete",
         value: function _delete(value) {
-          var _this = this;
-          babelHelpers.classPrivateFieldGet(this, _items$1).forEach(function (e, i) {
-            if (e.getValue() === value) {
-              main_core.Dom.remove(e.getNode());
-              babelHelpers.classPrivateFieldGet(_this, _items$1).splice(i, 1);
+          var key = String(value);
+          babelHelpers.classPrivateFieldSet(this, _items$1, babelHelpers.classPrivateFieldGet(this, _items$1).filter(function (item) {
+            if (String(item.getValue()) !== key) {
+              return true;
             }
-          });
+            main_core.Dom.remove(item.getNode());
+            return false;
+          }));
         }
         /**
          * Переупорядочивает скрытые инпуты согласно переданному списку значений.
@@ -1570,7 +1590,7 @@ this.MB = this.MB || {};
       }, {
         key: "reorder",
         value: function reorder(orderedValues) {
-          var _this2 = this;
+          var _this = this;
           var byValue = new Map(babelHelpers.classPrivateFieldGet(this, _items$1).map(function (item) {
             return [String(item.getValue()), item];
           }));
@@ -1587,7 +1607,7 @@ this.MB = this.MB || {};
           });
           babelHelpers.classPrivateFieldSet(this, _items$1, ordered);
           ordered.forEach(function (item) {
-            return main_core.Dom.append(item.getNode(), babelHelpers.classPrivateFieldGet(_this2, _container));
+            return main_core.Dom.append(item.getNode(), babelHelpers.classPrivateFieldGet(_this, _container));
           });
         }
       }, {
@@ -2304,5 +2324,5 @@ this.MB = this.MB || {};
     exports.GridRowSort = rowSort;
     exports.RelationTileGrid = relationTilegrid;
 
-}((this.MB.AdminKit = this.MB.AdminKit || {}),BX.Collections,BX.Event,BX,BX.UI.EntitySelector,BX));
+}((this.MB.AdminKit = this.MB.AdminKit || {}),BX,BX,BX,BX,BX));
 //# sourceMappingURL=kit.bundle.js.map

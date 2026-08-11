@@ -11,28 +11,49 @@ export class ValueItemCollection
         this.#fillContainer();
     }
 
+    /**
+     * Добавляет скрытый инпут значения, если такого значения ещё нет.
+     *
+     * Проверка обязательна: значение попадает в коллекцию из двух независимых
+     * источников — `DialogSelector` перебирает `dialog.selectedItems` при
+     * инициализации, а событие `onTagAdd` срабатывает ещё и на предвыбранные
+     * теги, которые `TagSelector` восстанавливает из тех же selectedItems.
+     * Без проверки каждое сохранение формы удваивало сохранённый список.
+     */
     add(item: ValueItem)
     {
+        if (this.get(item.getValue()) !== null) {
+            return;
+        }
+
         this.#items.push(item);
         Dom.append(item.getNode(), this.#container)
     }
 
+    /**
+     * Значения сравниваются как строки: из `dialog.selectedItems` приходит `id`
+     * сущности, из `onTagAdd` — `tag.getId()`, и для числовых ID это могут быть
+     * число и строка соответственно.
+     */
     get(value: string|number): ?ValueItem
     {
-        this.#items.forEach((e: ValueItem) => {
-            return e.getValue === value;
-        });
+        let key = String(value);
 
-        return null;
+        return this.#items.find((item: ValueItem) => String(item.getValue()) === key) ?? null;
     }
 
     delete(value: string|number)
     {
-        this.#items.forEach((e: ValueItem, i: number) => {
-            if (e.getValue() === value) {
-                Dom.remove(e.getNode());
-                this.#items.splice(i, 1);
+        let key = String(value);
+
+        this.#items = this.#items.filter((item: ValueItem) => {
+            if (String(item.getValue()) !== key) {
+                return true;
             }
+
+            Dom.remove(item.getNode());
+
+            return false;
         });
     }
 
