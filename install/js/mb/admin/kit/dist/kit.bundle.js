@@ -2324,5 +2324,5 @@ this.MB = this.MB || {};
     exports.GridRowSort = rowSort;
     exports.RelationTileGrid = relationTilegrid;
 
-}((this.MB.AdminKit = this.MB.AdminKit || {}),BX,BX,BX,BX,BX));
+}((this.MB.AdminKit = this.MB.AdminKit || {}),BX.Collections,BX.Event,BX,BX.UI.EntitySelector,BX));
 //# sourceMappingURL=kit.bundle.js.map

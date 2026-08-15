@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.16]
+
+### Fixed
+- `dist/kit.bundle.js` — весь JS-слой пакета не работал начиная с 0.1.9: бандл получал `BX` вместо реальных неймспейсов зависимостей (`BX.Collections`, `BX.Event`, `BX.UI.EntitySelector`), поэтому падал на `main_core_events.EventEmitter` («Super expression must either be null or a function») ещё до присвоения `exports`. В `MB.AdminKit` оставался только `RelationTileGrid` (его добавляет отдельный файл расширения), а всё остальное — массовые действия грида, вкладки, DialogSelect, сохранение формы, реактивность полей — молча не запускалось: `BX.Runtime.loadExtension('mb.admin.kit')` резолвился, но `kit.GridBulkActions` не существовал.
+
+  Причина — контекст сборки: `@bitrix/cli` резолвит неймспейс зависимости, читая `bundle.config.js` соответствующего расширения ядра, и при сборке вне дерева модулей Bitrix не находит их, молча подставляя `BX`. Бандл пересобран в контексте сайта (`local/modules/<module>/install/js/mb/admin/kit`, рядом есть `bitrix/modules/main|ui/install/js`). Собирать `install/js/mb/admin/kit` только так — сборка из корня репозитория снова даст нерабочий бандл.
+
 ## [0.1.15]
 
 ### Fixed
