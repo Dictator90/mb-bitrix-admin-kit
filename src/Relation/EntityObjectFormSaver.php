@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MB\Bitrix\AdminKit\Relation;
 
+use MB\Bitrix\AdminKit\Component\Layout\Tab;
 use MB\Bitrix\AdminKit\Contracts\Field\FieldContract;
 use MB\Bitrix\AdminKit\Contracts\Resource\DataManagerResourceContract;
+use MB\Bitrix\AdminKit\Contracts\UI\FieldContainerContract;
 use MB\Bitrix\AdminKit\Database\DbOperationContext;
 use MB\Bitrix\AdminKit\Database\TransactionManager;
 use MB\Bitrix\AdminKit\Field\File;
@@ -28,18 +30,20 @@ final class EntityObjectFormSaver
 
     /**
      * @param DataManagerResourceContract&object $resource
-     * @param list<FieldContract> $fields
+     * @param iterable<FieldContract|Tab|FieldContainerContract> $fields Плоский список полей либо раскладка (Tabs, Grid, Column, Box) — разворачивается автоматически.
      * @param array<string,mixed> $rawPost
      * @param array<string,mixed> $validatedScalars Values from FormPage hooks (e.g. beforeValidate), including readonly defaults.
      */
     public function save(
         DataManagerResourceContract $resource,
         mixed $itemId,
-        array $fields,
+        iterable $fields,
         array $rawPost,
         DbOperationContext $context,
         array $validatedScalars = [],
     ): EntityObjectSaveResult {
+        $fields = $this->flattenFields($fields);
+
         if ($itemId !== null && $itemId !== '') {
             $filteredFields = [];
             foreach ($fields as $field) {
@@ -225,6 +229,47 @@ final class EntityObjectFormSaver
                 $field->ormExpectsFileArray(true);
             }
         }
+    }
+
+    /**
+     * Разворачивает раскладку в плоский список полей.
+     *
+     * Resource::formFields() возвращает верхнеуровневые layout-компоненты (Tabs, Grid,
+     * Column, Box), поэтому программные точки сохранения (createItemResult /
+     * updateItemResult, а через них массовые действия грида) получают не поля, а
+     * контейнеры. Без разворачивания вызов getColumn() на контейнере роняет операцию.
+     *
+     * @param iterable<mixed> $fields
+     * @return list<FieldContract>
+     */
+    public function flattenFields(iterable $fields): array
+    {
+        $flat = [];
+
+        foreach ($fields as $item) {
+            if ($item instanceof FieldContract) {
+                $flat[] = $item;
+                continue;
+            }
+
+            if ($item instanceof Tab) {
+                if (!$item->isVisible()) {
+                    continue;
+                }
+                foreach ($this->flattenFields($item->getItems()) as $field) {
+                    $flat[] = $field;
+                }
+                continue;
+            }
+
+            if ($item instanceof FieldContainerContract) {
+                foreach ($item->extractFields() as $field) {
+                    $flat[] = $field;
+                }
+            }
+        }
+
+        return $flat;
     }
 
     /**

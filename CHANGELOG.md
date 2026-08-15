@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.15]
+
+### Fixed
+- Массовые действия грида и любое программное сохранение через `Resource::createItemResult()` / `updateItemResult()` падали с `Call to undefined method …\Component\Layout\Tabs::getColumn()`, если `formFields()` ресурса описан раскладкой (`Tabs`, `Grid`, `Column`, `Box`), а не плоским списком полей. `EntityObjectFormSaver::save()` получал контейнеры раскладки как поля и звал у них `getColumn()`. Теперь `save()` разворачивает раскладку сам — новый публичный `EntityObjectFormSaver::flattenFields()` рекурсивно достаёт поля из `Tabs`/`Tab`/любого `FieldContainerContract`, пропуская невидимые вкладки. Путь `FormPage` не менялся: он и раньше передавал плоский список, разворачивание для него идемпотентно.
+- `EntityObjectFormSaver::save()` принимает `iterable $fields` вместо `array` — `Resource::formFields()` объявлен как `iterable`, и генератор больше не роняет сохранение по `TypeError`.
+
 ## [0.1.14]
 
 ### Added
